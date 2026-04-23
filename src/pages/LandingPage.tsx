@@ -213,7 +213,7 @@ const features: Feature[] = [
 const pricingPlans: PricingPlan[] = [
   {
     name: "Starter",
-    price: "KES 499",
+    price: "KES 1,000",
     sub: "/month",
     desc: "Perfect for single-owner shops starting out.",
     color: "#F9C7E0",
@@ -222,7 +222,7 @@ const pricingPlans: PricingPlan[] = [
   },
   {
     name: "Growth",
-    price: "KES 1,499",
+    price: "KES 2,500",
     sub: "/month",
     desc: "For growing businesses with employees.",
     color: "#B2EDE0",
@@ -232,7 +232,7 @@ const pricingPlans: PricingPlan[] = [
   },
   {
     name: "Enterprise",
-    price: "KES 3,999",
+    price: "KES 5,000",
     sub: "/month",
     desc: "For large shops and multiple locations.",
     color: "#FFD166",
