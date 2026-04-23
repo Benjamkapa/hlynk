@@ -104,7 +104,7 @@ export default function AdminLayout() {
                           <ChevronDown size={14} className={`transition-transform duration-300 ${openMenus[item.key!] ? 'rotate-180' : ''}`} />
                         </button>
                       ) : (
-                        <NavLink to={item.to!} end={item.end}
+                        <NavLink to={item.to!} end={(item as any).end}
                           className={({ isActive }) => `flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all duration-200 ${isActive
                               ? "bg-[#20C997] text-white shadow-lg shadow-[#20C997]/20"
                               : "text-[#7A8896] hover:bg-white/5 hover:text-white"
