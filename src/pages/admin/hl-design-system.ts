@@ -354,6 +354,10 @@ export const ADMIN_CSS = `
 .hl-grid-3    { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
 .hl-grid-4    { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
 
+/* ── Utilities ── */
+.hl-stack-md { display: flex; flex-direction: column; gap: 40px; align-items: center; }
+@media (min-width: 768px) { .hl-stack-md { flex-direction: row; } }
+
 /* ── Responsive ── */
 @media (max-width: 1200px) { .hl-main-grid { grid-template-columns: 1fr !important; } }
 @media (max-width: 1060px) { .hl-grid-4 { grid-template-columns: repeat(2, 1fr) !important; }

@@ -1,4 +1,4 @@
-import { HelpCircle, MessageSquare, Book, Phone, ExternalLink, LifeBuoy, FileText, Headphones } from 'lucide-react'
+import { HelpCircle, MessageSquare, Book, Phone, ExternalLink, LifeBuoy, FileText, Headphones, Shield, Globe } from 'lucide-react'
 import { PROVIDER_CSS } from '../admin/hl-design-system'
 
 export default function HelpPage() {
@@ -44,7 +44,7 @@ export default function HelpPage() {
           {/* Urgent Assistance Section */}
           <div className="hl-card" style={{ padding: '40px', background: 'var(--forest)', position: 'relative', overflow: 'hidden', animation: 'hl-up .6s ease .3s both' }}>
             <div style={{ position: 'absolute', top: 0, right: 0, width: 240, height: 240, background: 'radial-gradient(circle, rgba(255,255,255,.1) 0%, transparent 70%)', opacity: 0.5 }} />
-            <div style={{ display: 'flex', flexDirection: 'column', md: 'row', alignItems: 'center', gap: 40 }}>
+            <div className="hl-stack-md" style={{ flex: 1 }}>
               <div style={{ flex: 1, textAlign: 'left' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
                    <div style={{ width: 40, height: 40, borderRadius: 10, background: 'rgba(255,255,255,.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
