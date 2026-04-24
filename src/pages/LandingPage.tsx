@@ -2,11 +2,75 @@ import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import {
   Zap, LayoutDashboard, ShieldCheck, BarChart3, PackageSearch,
-  TrendingUp, Receipt, Users, ArrowRight, Check, Menu, X,
+  TrendingUp, Receipt, Users, ArrowRight, Check, Menu, X, AlignRight,
   Star, Bell,
   Scissors, Wrench, Smartphone, Sparkles, Utensils, Shirt, Camera,
   Monitor, GraduationCap, Cpu, Plus, Phone, Mail, MessageSquare
 } from "lucide-react";
+
+/* ─── STYLES ─── */
+const HL_AESTHETICS = `
+:root {
+  --teal: #20C997;
+  --teal-dim: rgba(32,201,151,0.12);
+  --teal-glow: rgba(32,201,151,0.25);
+  --blue: #4A90E2;
+  --orange: #FF8C42;
+  --bg: #080C10;
+  --bg2: #0D1319;
+  --bg3: #111820;
+  --surface: rgba(255,255,255,0.03);
+  --surface2: rgba(255,255,255,0.06);
+  --border: rgba(255,255,255,0.07);
+  --border-teal: rgba(32,201,151,0.2);
+  --text: #F0F4F8;
+  --text-muted: #A0B0C0;
+  --text-dim: #506070;
+}
+
+.hl-landing-wrap {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Archivo', sans-serif;
+}
+
+.hl-serif { font-family: 'Red Rose', serif; }
+.hl-mono { font-family: 'Saira', monospace; }
+
+/* Brighter labels with glow */
+.label-glow {
+  color: #fff;
+  text-shadow: 0 0 8px rgba(255,255,255,0.3);
+  letter-spacing: 0.1em;
+  font-weight: 600;
+}
+
+/* Dashboard Mockup Aesthetics */
+.dashboard-wrap { position: relative; z-index: 2; margin-top: 4rem; max-width: 680px; margin-left: auto; margin-right: auto; }
+.dash-glow { position: absolute; inset: -40px; background: radial-gradient(ellipse at center, rgba(32,201,151,0.08) 0%, transparent 70%); pointer-events: none; z-index: 0; }
+.dashboard { background: var(--bg2); border: 1px solid var(--border-teal); border-radius: 14px; overflow: hidden; position: relative; z-index: 1; box-shadow: 0 40px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(32,201,151,0.08); }
+
+/* Table styling from HTML */
+.dash-table-head { display: grid; grid-template-columns: 1fr auto auto; gap: 0.5rem; padding: 0.6rem 1rem; font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.07em; color: #fff; font-family: 'Saira'; border-bottom: 1px solid var(--border); margin-bottom: 0.3rem; text-shadow: 0 0 5px rgba(255,255,255,0.2); }
+.dash-row { display: grid; grid-template-columns: 1fr auto auto; gap: 0.5rem; padding: 0.5rem 1rem; font-size: 0.75rem; align-items: center; border-radius: 5px; transition: background .15s; }
+.row-name { color: #fff; }
+.row-qty { color: var(--text-muted); font-family: 'Saira'; text-align: right; }
+
+/* Pillars */
+.pillars { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin-top: 4rem; }
+.pillar { padding: 2.5rem 2rem; background: var(--bg2); position: relative; overflow: hidden; }
+.pillar::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; }
+.pillar:nth-child(1)::before { background: var(--teal); }
+.pillar:nth-child(2)::before { background: var(--blue); }
+.pillar:nth-child(3)::before { background: var(--orange); }
+
+/* Divider */
+.divider { width: 100%; height: 1px; background: linear-gradient(90deg, transparent, var(--border-teal), transparent); margin: 0; }
+
+@media (max-width: 900px) {
+  .pillars { grid-template-columns: 1fr; }
+}
+`;
 
 /* ─── TYPES ─── */
 interface NavItem { label: string; href: string }
@@ -18,25 +82,7 @@ interface PricingPlan {
 interface Testimonial { name: string; role: string; quote: string; initials: string }
 interface WhoCard { icon: React.ReactNode; label: string }
 
-/* ─── COUNTER HOOK ─── */
-function useCounter(target: number, duration = 2000, start = false) {
-  const [count, setCount] = useState(0);
-  useEffect(() => {
-    if (!start) return;
-    let startTime: number | null = null;
-    const step = (timestamp: number) => {
-      if (!startTime) startTime = timestamp;
-      const progress = Math.min((timestamp - startTime) / duration, 1);
-      const ease = 1 - Math.pow(1 - progress, 3);
-      setCount(Math.floor(ease * target));
-      if (progress < 1) requestAnimationFrame(step);
-    };
-    requestAnimationFrame(step);
-  }, [start, target, duration]);
-  return count;
-}
-
-/* ─── INTERSECTION OBSERVER HOOK ─── */
+/* ─── HOOKS ─── */
 function useInView(threshold = 0.15) {
   const ref = useRef<HTMLDivElement>(null);
   const [inView, setInView] = useState(false);
@@ -48,299 +94,360 @@ function useInView(threshold = 0.15) {
   return { ref, inView };
 }
 
-/* ─── POS CANVAS ANIMATION ─── */
-function POSCanvas() {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-
-    const setSize = () => {
-      canvas.width = canvas.offsetWidth;
-      canvas.height = canvas.offsetHeight;
-    };
-    setSize();
-    const W = canvas.width, H = canvas.height;
-
-    type ReceiptLine = { x: number; y: number; w: number; alpha: number; speed: number; color: string };
-    const receipts: ReceiptLine[] = [];
-
-    type Coin = { x: number; y: number; vy: number; alpha: number; size: number; text: string };
-    const coins: Coin[] = [];
-
-    const nodeCount = 7;
-    const nodes = Array.from({ length: nodeCount }, (_, i) => ({
-      angle: (i / nodeCount) * Math.PI * 2,
-      radius: Math.min(W, H) * 0.28 + (i % 2) * 30,
-      speed: 0.003 + i * 0.0005,
-      size: 6 + (i % 3) * 3,
-      color: ["#20C997", "#0B5ED7", "#FD7E14", "#20C997", "#fff", "#20C997", "#0B5ED7"][i],
-    }));
-
-    for (let i = 0; i < 40; i++) {
-      receipts.push({ x: Math.random() * W, y: Math.random() * H, w: 30 + Math.random() * 60, alpha: Math.random() * 0.15, speed: 0.2 + Math.random() * 0.4, color: i % 3 === 0 ? "#20C997" : i % 3 === 1 ? "#0B5ED7" : "#FD7E14" });
-    }
-    for (let i = 0; i < 12; i++) {
-      coins.push({ x: Math.random() * W, y: Math.random() * H + H, vy: -(0.3 + Math.random() * 0.6), alpha: 0, size: 10 + Math.random() * 8, text: ["KES", "+", "₊", "✓"][Math.floor(Math.random() * 4)] });
-    }
-
-    let raf: number;
-    const draw = () => {
-      ctx.clearRect(0, 0, W, H);
-      const cx = W / 2, cy = H / 2;
-      const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, Math.min(W, H) * 0.5);
-      g.addColorStop(0, "rgba(32,201,151,0.07)");
-      g.addColorStop(1, "transparent");
-      ctx.fillStyle = g;
-      ctx.fillRect(0, 0, W, H);
-
-      ctx.beginPath();
-      ctx.arc(cx, cy, Math.min(W, H) * 0.38, 0, Math.PI * 2);
-      ctx.strokeStyle = "rgba(32,201,151,0.08)";
-      ctx.lineWidth = 1;
-      ctx.stroke();
-
-      nodes.forEach((n) => {
-        n.angle += n.speed;
-        const nx = cx + Math.cos(n.angle) * n.radius;
-        const ny = cy + Math.sin(n.angle) * n.radius;
-        ctx.beginPath();
-        ctx.moveTo(cx, cy);
-        ctx.lineTo(nx, ny);
-        ctx.strokeStyle = `rgba(32,201,151,0.07)`;
-        ctx.stroke();
-        ctx.beginPath();
-        ctx.arc(nx, ny, n.size, 0, Math.PI * 2);
-        ctx.fillStyle = n.color;
-        ctx.fill();
-      });
-
-      ctx.save();
-      ctx.translate(cx, cy);
-      const ts = Math.min(W, H) * 0.07;
-      ctx.fillStyle = "rgba(32,201,151,0.18)";
-      ctx.beginPath();
-      ctx.roundRect(-ts, -ts * 1.2, ts * 2, ts * 2.4, ts * 0.2);
-      ctx.fill();
-      ctx.strokeStyle = "rgba(32,201,151,0.5)";
-      ctx.stroke();
-      ctx.restore();
-
-      receipts.forEach(r => {
-        r.y -= r.speed;
-        if (r.y < -20) r.y = H + 10;
-        ctx.fillStyle = r.color;
-        ctx.globalAlpha = Math.sin(r.y / H * Math.PI) * 0.18;
-        ctx.fillRect(r.x, r.y, r.w, 1.5);
-        ctx.globalAlpha = 1;
-      });
-
-      coins.forEach(c => {
-        c.y += c.vy;
-        if (c.y < -30) c.y = H + 10;
-        ctx.globalAlpha = Math.sin(Math.abs(c.y / H) * Math.PI) * 0.55;
-        ctx.fillStyle = "#20C997";
-        ctx.font = `bold ${c.size}px sans-serif`;
-        ctx.fillText(c.text, c.x, c.y);
-        ctx.globalAlpha = 1;
-      });
-
-      raf = requestAnimationFrame(draw);
-    };
-    draw();
-
-    window.addEventListener("resize", setSize);
-    return () => { cancelAnimationFrame(raf); window.removeEventListener("resize", setSize); };
-  }, []);
-
-  return <canvas ref={canvasRef} className="absolute inset-0 w-full h-full pointer-events-none" />;
-}
-
-/* ─── FADE UP WRAPPER ─── */
+/* ─── COMPONENTS ─── */
 function FadeUp({ children, delay = 0, className = "", style = {} }: { children: React.ReactNode; delay?: number; className?: string; style?: React.CSSProperties }) {
   const { ref, inView } = useInView();
   return (
     <div ref={ref} className={className} style={{
       ...style,
-      opacity: inView ? 1 : 0, transform: inView ? "translateY(0)" : "translateY(32px)",
-      transition: `opacity 0.65s ease ${delay}s, transform 0.65s ease ${delay}s`
+      opacity: inView ? 1 : 0, transform: inView ? "translateY(24px)" : "translateY(32px)",
+      transition: `opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1) ${delay}s, transform 0.8s cubic-bezier(0.16, 1, 0.3, 1) ${delay}s`
     }}>
       {children}
     </div>
   );
 }
 
-/* ─── CONTACT FORM ─── */
+function POSCanvas() {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    const dpr = window.devicePixelRatio || 1;
+    let W = 0, H = 0, raf = 0, t = 0;
+
+    const C = {
+      teal: "rgba(32,201,151,",
+      blue: "rgba(74,144,226,",
+      orange: "rgba(255,140,66,",
+    };
+
+    type Particle = { x: number; y: number; vx: number; vy: number; size: number; alpha: number; color: string; twinkle: number; twinkleSpeed: number };
+    type Stream   = { x: number; y: number; len: number; speed: number; alpha: number; width: number; color: string };
+    type Hex      = { cx: number; cy: number; r: number; rot: number; rotSpeed: number; alpha: number; color: string; phase: number };
+    type Ring     = { cx: number; cy: number; r: number; maxR: number; speed: number; alpha: number; color: string; t: number };
+    type Floater  = { x: number; y: number; vy: number; alpha: number; size: number; text: string; color: string; phase: number };
+
+    let particles: Particle[], streams: Stream[], hexes: Hex[], rings: Ring[], floaters: Floater[];
+
+    const rand = (a: number, b: number) => a + Math.random() * (b - a);
+
+    function init() {
+      if (!canvas) return;
+      W = canvas.width  = canvas.offsetWidth  * dpr;
+      H = canvas.height = canvas.offsetHeight * dpr;
+
+      particles = Array.from({ length: 90 }, () => ({
+        x: rand(0, W), y: rand(0, H),
+        vx: rand(-0.25, 0.25), vy: rand(-0.5, -0.1),
+        size: rand(1, 3.5) * dpr,
+        alpha: rand(0.15, 0.85),
+        color: [C.teal, C.blue, C.orange, "rgba(255,255,255,"][Math.floor(rand(0, 4))],
+        twinkle: rand(0, Math.PI * 2),
+        twinkleSpeed: rand(0.015, 0.05),
+      }));
+
+      streams = Array.from({ length: 22 }, (_, i) => ({
+        x: rand(0, W), y: rand(-H, H),
+        len: rand(80, 220) * dpr,
+        speed: rand(0.5, 1.4),
+        alpha: rand(0.04, 0.16),
+        width: rand(0.5, 2) * dpr,
+        color: [C.teal, C.blue, C.orange][i % 3],
+      }));
+
+      hexes = Array.from({ length: 12 }, (_, i) => ({
+        cx: W * (0.08 + (i % 4) * 0.28),
+        cy: H * (0.15 + Math.floor(i / 4) * 0.38),
+        r: rand(24, 60) * dpr,
+        rot: rand(0, Math.PI),
+        rotSpeed: rand(-0.004, 0.004),
+        alpha: rand(0.025, 0.09),
+        color: [C.teal, C.blue, C.orange][i % 3],
+        phase: rand(0, Math.PI * 2),
+      }));
+
+      rings = [
+        { cx: W * 0.12, cy: H * 0.5,  color: C.teal,   maxR: 160 * dpr, t: 0 },
+        { cx: W * 0.88, cy: H * 0.3,  color: C.blue,   maxR: 130 * dpr, t: -70 },
+        { cx: W * 0.5,  cy: H * 0.85, color: C.orange, maxR: 110 * dpr, t: -140 },
+        { cx: W * 0.25, cy: H * 0.12, color: C.teal,   maxR: 90  * dpr, t: -210 },
+        { cx: W * 0.75, cy: H * 0.7,  color: C.blue,   maxR: 75  * dpr, t: -280 },
+      ].map(r => ({ ...r, r: 0, speed: rand(0.7, 1.3), alpha: 0.5 }));
+
+      const labels = ["KES", "+", "✓", "₊", "→", "%", "↑"];
+      floaters = Array.from({ length: 22 }, (_, i) => ({
+        x: rand(0, W), y: rand(0, H),
+        vy: rand(-0.25, -0.75),
+        alpha: rand(0.08, 0.45),
+        size: rand(9, 17) * dpr,
+        text: labels[i % labels.length],
+        color: [C.teal, C.blue, C.orange][i % 3] + "1)",
+        phase: rand(0, Math.PI * 2),
+      }));
+    }
+
+    function hexPath(cx: number, cy: number, r: number, rot: number) {
+      if (!ctx) return;
+      ctx.beginPath();
+      for (let i = 0; i < 6; i++) {
+        const a = rot + (i / 6) * Math.PI * 2;
+        i === 0 ? ctx.moveTo(cx + Math.cos(a) * r, cy + Math.sin(a) * r)
+                : ctx.lineTo(cx + Math.cos(a) * r, cy + Math.sin(a) * r);
+      }
+      ctx.closePath();
+    }
+
+    function drawMeshLines() {
+      if (!ctx) return;
+      const nodes = particles.slice(0, 32);
+      for (let i = 0; i < nodes.length; i++) {
+        for (let j = i + 1; j < nodes.length; j++) {
+          const dx = nodes[i].x - nodes[j].x, dy = nodes[i].y - nodes[j].y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          const maxD = 130 * dpr;
+          if (dist < maxD) {
+            ctx.beginPath();
+            ctx.moveTo(nodes[i].x, nodes[i].y);
+            ctx.lineTo(nodes[j].x, nodes[j].y);
+            ctx.strokeStyle = C.teal + (1 - dist / maxD) * 0.1 + ")";
+            ctx.lineWidth = 0.5 * dpr;
+            ctx.stroke();
+          }
+        }
+      }
+    }
+
+    function draw() {
+      if (!ctx) return;
+      t++;
+      ctx.clearRect(0, 0, W, H);
+
+      // Atmosphere
+      let g = ctx.createRadialGradient(W / 2, H * 0.42, 0, W / 2, H * 0.42, W * 0.7);
+      g.addColorStop(0, "rgba(32,201,151,0.08)");
+      g.addColorStop(0.45, "rgba(74,144,226,0.04)");
+      g.addColorStop(1, "transparent");
+      ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+
+      g = ctx.createRadialGradient(W * 0.08, H * 0.82, 0, W * 0.08, H * 0.82, W * 0.5);
+      g.addColorStop(0, "rgba(255,140,66,0.06)");
+      g.addColorStop(1, "transparent");
+      ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+
+      g = ctx.createRadialGradient(W * 0.92, H * 0.15, 0, W * 0.92, H * 0.15, W * 0.4);
+      g.addColorStop(0, "rgba(74,144,226,0.05)");
+      g.addColorStop(1, "transparent");
+      ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+
+      // Hexagons
+      hexes.forEach(h => {
+        h.rot += h.rotSpeed;
+        const pulse = Math.sin(t * 0.018 + h.phase) * 0.5 + 0.5;
+        const a = h.alpha * (0.5 + pulse * 0.5);
+        ctx.lineWidth = dpr;
+        ctx.strokeStyle = h.color + a + ")";
+        hexPath(h.cx, h.cy, h.r, h.rot); ctx.stroke();
+        ctx.strokeStyle = h.color + (a * 0.45) + ")";
+        hexPath(h.cx, h.cy, h.r * 0.58, h.rot + Math.PI / 6); ctx.stroke();
+      });
+
+      // Data streams
+      streams.forEach(s => {
+        s.y -= s.speed;
+        if (s.y + s.len < 0) { s.y = H + s.len; s.x = rand(0, W); }
+        const gr = ctx.createLinearGradient(s.x, s.y - s.len, s.x, s.y);
+        gr.addColorStop(0, s.color + "0)");
+        gr.addColorStop(0.5, s.color + s.alpha + ")");
+        gr.addColorStop(1, s.color + "0)");
+        ctx.beginPath(); ctx.moveTo(s.x, s.y - s.len); ctx.lineTo(s.x, s.y);
+        ctx.strokeStyle = gr; ctx.lineWidth = s.width; ctx.stroke();
+      });
+
+      drawMeshLines();
+
+      // Particles
+      particles.forEach(p => {
+        p.x += p.vx; p.y += p.vy; p.twinkle += p.twinkleSpeed;
+        if (p.y < -10) { p.y = H + 10; p.x = rand(0, W); }
+        if (p.x < -10) p.x = W + 10;
+        if (p.x > W + 10) p.x = -10;
+        const ta = p.alpha * (0.45 + 0.55 * Math.sin(p.twinkle));
+        ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fillStyle = p.color + ta + ")"; ctx.fill();
+        if (p.size > 2.2 * dpr) {
+          const glow = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.size * 5);
+          glow.addColorStop(0, p.color + ta * 0.35 + ")");
+          glow.addColorStop(1, "transparent");
+          ctx.beginPath(); ctx.arc(p.x, p.y, p.size * 5, 0, Math.PI * 2);
+          ctx.fillStyle = glow; ctx.fill();
+        }
+      });
+
+      // Rings
+      rings.forEach(ring => {
+        ring.t++;
+        if (ring.t < 0) return;
+        ring.r += ring.speed;
+        ring.alpha = (1 - ring.r / ring.maxR) * 0.45;
+        if (ring.r > ring.maxR) { ring.r = 0; ring.alpha = 0.45; ring.t = 0; }
+        ctx.beginPath(); ctx.arc(ring.cx, ring.cy, ring.r, 0, Math.PI * 2);
+        ctx.strokeStyle = ring.color + ring.alpha + ")";
+        ctx.lineWidth = 1.5 * dpr; ctx.stroke();
+      });
+
+      // Floaters
+      floaters.forEach(f => {
+        f.y += f.vy; f.phase += 0.018;
+        if (f.y < -30) { f.y = H + 20; f.x = rand(0, W); }
+        ctx.globalAlpha = f.alpha * (0.55 + 0.45 * Math.sin(f.phase));
+        ctx.fillStyle = f.color;
+        ctx.font = `${Math.round(f.size)}px "Saira", monospace`;
+        ctx.fillText(f.text, f.x, f.y);
+        ctx.globalAlpha = 1;
+      });
+
+      raf = requestAnimationFrame(draw);
+    }
+
+    const handleResize = () => {
+      cancelAnimationFrame(raf);
+      init();
+      draw();
+    };
+
+    init();
+    draw();
+    window.addEventListener("resize", handleResize);
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
+
+  return <canvas ref={canvasRef} className="absolute inset-0 w-full h-full pointer-events-none" />;
+}
+
 function ContactForm() {
-  const [form, setForm] = useState({ name: "", phone: "", message: "" });
+  const [form, setForm] = useState({ name: "", contact: "", message: "" });
   const [sent, setSent] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    // Replace with real submission logic
-    setSent(true);
-  };
+  const handleSubmit = (e: React.FormEvent) => { e.preventDefault(); setSent(true); };
 
   return sent ? (
     <div className="text-center py-12">
-      <div className="w-16 h-16 rounded-full bg-[#20C997]/20 flex items-center justify-center mx-auto mb-4">
+      <div className="w-16 h-16 rounded-full bg-[#20C997]/10 flex items-center justify-center mx-auto mb-6 border border-[#20C997]/30">
         <Check size={28} className="text-[#20C997]" />
       </div>
-      <p className="text-white font-bold font-ubuntu text-lg">Message sent. We'll be in touch shortly.</p>
+      <p className="text-white font-bold text-lg hl-serif italic">Message Sent.</p>
     </div>
   ) : (
-    <div className="flex flex-col gap-4">
-      <input
-        type="text"
-        placeholder="Your name"
-        value={form.name}
-        onChange={e => setForm({ ...form, name: e.target.value })}
-        className="w-full px-5 py-3.5 rounded-xl bg-white/10 border border-white/10 text-white placeholder-white/30 text-sm font-medium focus:outline-none focus:border-[#20C997]/50 transition-colors"
-      />
-      <input
-        type="tel"
-        placeholder="Phone number"
-        value={form.phone}
-        onChange={e => setForm({ ...form, phone: e.target.value })}
-        className="w-full px-5 py-3.5 rounded-xl bg-white/10 border border-white/10 text-white placeholder-white/30 text-sm font-medium focus:outline-none focus:border-[#20C997]/50 transition-colors"
-      />
-      <textarea
-        placeholder="Your message"
-        rows={4}
-        value={form.message}
-        onChange={e => setForm({ ...form, message: e.target.value })}
-        className="w-full px-5 py-3.5 rounded-xl bg-white/10 border border-white/10 text-white placeholder-white/30 text-sm font-medium focus:outline-none focus:border-[#20C997]/50 transition-colors resize-none"
-      />
-      <button
-        onClick={handleSubmit}
-        className="w-full py-4 rounded-xl bg-[#20C997] text-white font-bold font-ubuntu text-sm hover:bg-[#1ab785] transition-colors flex items-center justify-center gap-2"
-      >
-        <MessageSquare size={16} /> Send Message
+    <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+      <div className="space-y-1.5">
+        <label className="text-[10px] hl-mono label-glow uppercase tracking-[0.2em] ml-1">Your Name</label>
+        <input
+          type="text"
+          placeholder="Jane Wanjiku"
+          required
+          value={form.name}
+          onChange={e => setForm({ ...form, name: e.target.value })}
+          className="w-full px-5 py-4 rounded-xl bg-[#080C10] border border-white/5 text-white placeholder-white/20 text-sm focus:outline-none focus:border-[#20C997]/40 transition-colors"
+        />
+      </div>
+      <div className="space-y-1.5">
+        <label className="text-[10px] hl-mono label-glow uppercase tracking-[0.2em] ml-1">Phone or Email</label>
+        <input
+          type="text"
+          placeholder="07XX XXX XXX"
+          required
+          value={form.contact}
+          onChange={e => setForm({ ...form, contact: e.target.value })}
+          className="w-full px-5 py-4 rounded-xl bg-[#080C10] border border-white/5 text-white placeholder-white/20 text-sm focus:outline-none focus:border-[#20C997]/40 transition-colors"
+        />
+      </div>
+      <div className="space-y-1.5">
+        <label className="text-[10px] hl-mono label-glow uppercase tracking-[0.2em] ml-1">Message</label>
+        <textarea
+          placeholder="How can we help your business?"
+          rows={4}
+          required
+          value={form.message}
+          onChange={e => setForm({ ...form, message: e.target.value })}
+          className="w-full px-5 py-4 rounded-xl bg-[#080C10] border border-white/5 text-white placeholder-white/20 text-sm focus:outline-none focus:border-[#20C997]/40 transition-colors resize-none"
+        />
+      </div>
+      <button type="submit" className="w-full py-5 rounded-xl bg-[#20C997] text-[#050D0A] font-bold text-[11px] uppercase tracking-widest hover:bg-[#1aad80] transition-colors">
+        Send Message
       </button>
-    </div>
+    </form>
   );
 }
 
 /* ─── DATA ─── */
 const navItems: NavItem[] = [
   { label: "Features", href: "#features" },
+  { label: "Who Uses", href: "#who" },
   { label: "Pricing", href: "#pricing" },
-  { label: "How it Works", href: "#how" },
   { label: "Reviews", href: "#reviews" },
   { label: "Contact", href: "#contact" },
 ];
 
 const features: Feature[] = [
-  {
-    icon: <TrendingUp size={22} />,
-    title: "Know Your Real Profit",
-    desc: "See how much money you actually make after expenses. No guessing. No confusion. Just a clear number at the end of each day."
-  },
-  {
-    icon: <Receipt size={22} />,
-    title: "Record Every Sale",
-    desc: "Every sale saved automatically. Find any transaction anytime. No more paper books or forgotten receipts."
-  },
-  {
-    icon: <PackageSearch size={22} />,
-    title: "Stock That Updates Automatically",
-    desc: "Every time you record a sale, stock reduces instantly. Know when to restock — before you run out."
-  },
-  {
-    icon: <BarChart3 size={22} />,
-    title: "Track Every Expense",
-    desc: "Record rent, supplies, transport, or wages in seconds. Stay in control of your cash and see where it actually goes."
-  },
-  {
-    icon: <LayoutDashboard size={22} />,
-    title: "Daily & Monthly Summaries",
-    desc: "See your profit clearly at any time — daily or monthly. Built for business owners who need answers fast."
-  },
-  {
-    icon: <ShieldCheck size={22} />,
-    title: "Secure Cloud Backup",
-    desc: "Your data is safe and accessible from any phone or laptop. No risk of losing records if your phone is lost or broken."
-  },
+  { icon: <TrendingUp size={20} />, title: "See Your Daily Profit", desc: "Know exactly how much money you made after all costs. No more guessing." },
+  { icon: <Receipt size={20} />, title: "Record Every Sale", desc: "Save every single sale instantly. Never lose a receipt or forget a payment." },
+  { icon: <PackageSearch size={20} />, title: "Manage Your Stock", desc: "Stock updates as you sell. Get alerts when items are running low." },
+  { icon: <BarChart3 size={20} />, title: "Track Your Expenses", desc: "List your rent, supplies, and wages. See where your cash is really going." },
+  { icon: <LayoutDashboard size={20} />, title: "Easy Daily Reports", desc: "Get a simple summary of your business health every morning and evening." },
+  { icon: <ShieldCheck size={20} />, title: "Safe In The Cloud", desc: "Your data is always backed up. It stays safe even if you lose your phone." },
 ];
 
 const pricingPlans: PricingPlan[] = [
   {
-    name: "Starter",
-    price: "KES 1,000",
-    sub: "/month",
-    bestFor: "Single-owner shops & service providers",
-    desc: "Everything you need to finally know what your business makes.",
-    color: "#F9C7E0",
-    textColor: "#1a1a1a",
-    features: [
-      "Record every sale",
-      "Track every expense",
-      "Basic stock tracking",
-      "See your daily profit",
-      "Secure cloud backup",
-      "Mobile-friendly dashboard",
-    ],
+    name: "Starter", price: "KES 1,000", sub: "/month",
+    bestFor: "Small Shops", desc: "Perfect for single owners to finally track their profit.",
+    color: "#FFB7C5", textColor: "#000", badge: "14-Day Free Trial",
+    features: ["Record every sale", "Track every expense", "Basic stock tracking", "Daily profit dashboard", "Secure cloud backup"],
   },
   {
-    name: "Growth",
-    price: "KES 2,000",
-    sub: "/month",
-    bestFor: "Businesses with staff or growing stock",
-    desc: "More control as your business gets busier.",
-    color: "#B2EDE0",
-    textColor: "#1a1a1a",
-    badge: "Most Popular",
-    features: [
-      "Everything in Starter",
-      "Full inventory management",
-      "Know when stock is running low",
-      "Multiple user accounts",
-      "See your monthly profit clearly",
-      "Sales & expense reports",
-    ],
+    name: "Growth", price: "KES 2,000", sub: "/month",
+    bestFor: "Growing Teams", desc: "More control for businesses with staff or many products.",
+    color: "#C0E8E0", textColor: "#000", badge: "Most Popular",
+    features: ["Full inventory management", "Know when to restock", "Multiple user accounts", "Monthly profit reports", "Sales & expense logs"],
   },
   {
-    name: "Business",
-    price: "KES 5,000",
-    sub: "/month",
-    bestFor: "Busy shops & high-volume businesses",
-    desc: "For businesses that need deeper insight and faster support.",
-    color: "#FFD166",
-    textColor: "#1a1a1a",
-    features: [
-      "Everything in Growth",
-      "Advanced performance insights",
-      "Export data to Excel or PDF",
-      "Priority WhatsApp support",
-      "Understand your busiest periods",
-      "Built for high-volume operations",
-    ],
+    name: "Business", price: "KES 5,000", sub: "/month",
+    bestFor: "High Volume", desc: "Advanced tools for busy shops that need deeper insight.",
+    color: "#FFF9C4", textColor: "#000",
+    features: ["Advanced performance insights", "Export data to Excel/PDF", "Priority support", "Customer trends", "Built for busy operations"],
   },
 ];
 
 const testimonials: Testimonial[] = [
-  { name: "Mama Njeri", role: "Njeri Beauty Salon, Westlands", initials: "MN", quote: "I used to count cash at the end of the day and wonder where it all went. Now I see every sale, every expense. My salon actually grew 40% once I started tracking properly." },
-  { name: "John Kamau", role: "Kamau Electronics Repair, Thika", initials: "JK", quote: "The low stock alerts alone saved me. I used to order parts I already had and run out of ones I needed. Now my workshop runs like a proper business." },
-  { name: "Aisha Osman", role: "Clean & Shine Services, Mombasa", initials: "AO", quote: "I finally know my real profit. Not just what comes in — what stays after expenses. That changed everything about how I price my services." },
+  { name: "Mama Njeri", role: "Beauty Salon // Nairobi", initials: "MN", quote: "My salon grew 40% once I started tracking everything properly with hlynk." },
+  { name: "John Kamau", role: "Auto Repair // Thika", initials: "JK", quote: "The stock alerts saved my workshop. Now I run like a proper business owner." },
+  { name: "Aisha Osman", role: "Cleaning Services // Mombasa", initials: "AO", quote: "I finally know my real profit. This changed how I price my services." },
 ];
 
 const whoCards: WhoCard[] = [
-  { icon: <Scissors size={22} />, label: "Salons & Barbershops" },
-  { icon: <Wrench size={22} />, label: "Mechanics" },
-  { icon: <Smartphone size={22} />, label: "Phone Repair" },
-  { icon: <Sparkles size={22} />, label: "Cleaning Services" },
-  { icon: <Zap size={22} />, label: "Electricians & Plumbers" },
-  { icon: <Utensils size={22} />, label: "Food & Catering" },
-  { icon: <Shirt size={22} />, label: "Tailors & Designers" },
-  { icon: <Camera size={22} />, label: "Photographers" },
-  { icon: <Monitor size={22} />, label: "Freelancers" },
-  { icon: <GraduationCap size={22} />, label: "Tutors" },
-  { icon: <Cpu size={22} />, label: "Electronics Repair" },
-  { icon: <Plus size={22} />, label: "And many more…" },
+  { icon: <Scissors size={18} />, label: "Salons" },
+  { icon: <Wrench size={18} />, label: "Mechanics" },
+  { icon: <Smartphone size={18} />, label: "Phone Repair" },
+  { icon: <Sparkles size={18} />, label: "Cleaning" },
+  { icon: <Zap size={18} />, label: "Electricians" },
+  { icon: <Utensils size={18} />, label: "Catering" },
+  { icon: <Shirt size={18} />, label: "Tailors" },
+  { icon: <Camera size={18} />, label: "Photography" },
+  { icon: <Monitor size={18} />, label: "Freelancers" },
+  { icon: <GraduationCap size={18} />, label: "Tutors" },
+  { icon: <Cpu size={18} />, label: "Tech Repair" },
+  { icon: <Plus size={18} />, label: "More..." },
 ];
 
+/* ─── MAIN PAGE ─── */
 export default function LandingPage() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [navVisible, setNavVisible] = useState(true);
@@ -359,123 +466,110 @@ export default function LandingPage() {
   }, []);
 
   return (
-    <div className="bg-[#F5F7F8] text-[#161E2A] selection:bg-[#20C997] selection:text-white font-nunito">
+    <div className="hl-landing-wrap selection:bg-[#20C997] selection:text-[#080C10]">
+      <style>{HL_AESTHETICS}</style>
 
       {/* ─── NAVIGATION ─── */}
-      <header className={`fixed top-0 left-0 right-0 z-[100] bg-white/95 backdrop-blur-xl border-b border-[#E5E9EC] transition-transform duration-300 ${navVisible ? "translate-y-0" : "-translate-y-full"}`}>
-        <div className="max-w-7xl mx-auto px-6 h-[72px] flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-3 group">
-            <img src="/logo.png" alt="hlynk logo" className="h-10 w-auto transition-transform group-hover:scale-105" />
+      <header className={`fixed top-0 left-0 right-0 z-[100] bg-[#080C10]/85 backdrop-blur-xl border-b border-white/10 transition-transform duration-300 ${navVisible ? "translate-y-0" : "-translate-y-full"}`}>
+        <div className="max-w-6xl mx-auto px-8 h-[76px] flex items-center justify-between">
+          <Link to="/" className="flex items-center gap-3">
+            <img src="/logo.png" className="h-10 w-auto" alt="hlynk" />
           </Link>
-
           <nav className="hidden lg:flex items-center gap-10">
             {navItems.map(n => (
-              <a key={n.label} href={n.href} className="text-sm font-semibold text-[#7A8896] hover:text-[#161E2A] transition-colors">{n.label}</a>
+              <a key={n.label} href={n.href} className="text-[11px] font-bold uppercase tracking-widest text-[#7A8A96] hover:text-[#20C997] transition-colors">{n.label}</a>
             ))}
           </nav>
-
-          <div className="flex items-center gap-4">
-            <Link to="/login" className="hidden sm:block text-sm font-bold font-ubuntu text-[#161E2A] hover:text-[#20C997] transition-colors">Log in</Link>
-            <Link to="/register" className="hidden sm:flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#20C997] text-white text-sm font-bold font-ubuntu shadow-lg shadow-[#20C997]/20 hover:bg-[#1ab785] hover:-translate-y-0.5 transition-all">Get Started Free</Link>
-            <button onClick={() => setMenuOpen(true)} className="lg:hidden p-2 text-[#161E2A] hover:bg-[#F5F7F8] rounded-xl transition-colors">
-              <Menu size={24} />
+          <div className="flex items-center gap-5">
+            <Link to="/login" className="text-xs font-bold uppercase tracking-wider text-[#7A8A96] hover:text-white transition-colors">Log in</Link>
+            <Link to="/register" className="hidden md:flex px-5 py-2.5 rounded-lg bg-[#20C997] text-[#050D0A] text-xs font-bold uppercase tracking-wider hover:bg-[#1aad80] transition-all">Register</Link>
+            <button onClick={() => setMenuOpen(true)} className="lg:hidden p-2 text-white hover:bg-white/5 rounded-lg">
+              <AlignRight size={24} />
             </button>
           </div>
         </div>
       </header>
 
       {/* ─── MOBILE MENU ─── */}
-      <div className={`fixed inset-0 z-[200] bg-white p-8 flex flex-col gap-8 transition-transform duration-500 lg:hidden ${menuOpen ? "translate-x-0" : "translate-x-full"}`}>
-        <button onClick={() => setMenuOpen(false)} className="self-end p-2 text-[#161E2A] hover:bg-[#F5F7F8] rounded-xl"><X size={32} /></button>
+      <div className={`fixed inset-0 z-[200] bg-[#080C10] p-8 flex flex-col gap-8 transition-transform duration-500 lg:hidden ${menuOpen ? "translate-x-0" : "translate-x-full"}`}>
+        <button onClick={() => setMenuOpen(false)} className="self-end p-2 text-white hover:bg-white/5 rounded-lg"><X size={32} /></button>
         <nav className="flex flex-col gap-6">
           {navItems.map(n => (
-            <a key={n.label} href={n.href} onClick={() => setMenuOpen(false)} className="text-3xl font-bold text-[#161E2A]" style={{ fontFamily: "'Red Rose', serif" }}>{n.label}</a>
+            <a key={n.label} href={n.href} onClick={() => setMenuOpen(false)} className="text-2xl font-bold hl-serif text-white hover:text-[#20C997] transition-colors">{n.label}</a>
           ))}
-          <div className="h-[1px] bg-[#E5E9EC] w-full" />
-          <Link to="/login" onClick={() => setMenuOpen(false)} className="text-3xl font-bold text-[#20C997]" style={{ fontFamily: "'Red Rose', serif" }}>Log in</Link>
-          <Link to="/register" onClick={() => setMenuOpen(false)} className="w-full py-4 rounded-2xl bg-[#20C997] text-white font-bold font-ubuntu text-center text-xl shadow-xl shadow-[#20C997]/20">Get Started Free</Link>
+          <div className="h-[1px] bg-white/10 w-full" />
+          <Link to="/login" onClick={() => setMenuOpen(false)} className="text-xl font-bold hl-serif text-[#20C997]">Log in</Link>
+          <Link to="/register" onClick={() => setMenuOpen(false)} className="w-full py-4 rounded-xl bg-[#20C997] text-[#050D0A] font-bold text-center text-lg">Start Free Trial</Link>
         </nav>
       </div>
 
-      {/* ─── HERO SECTION ─── */}
-      <section className="relative pt-32 pb-20 md:pt-48 md:pb-32 bg-gradient-to-br from-[#0D2419] via-[#0a3d28] to-[#0d5534] overflow-hidden min-h-[92vh] flex items-center">
-        <div className="absolute inset-0 bg-[radial-gradient(rgba(32,201,151,0.15)_1px,transparent_1px)] [background-size:32px_32px] pointer-events-none" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_60%_at_70%_50%,rgba(32,201,151,0.1)_0%,transparent_70%)] pointer-events-none" />
-
-        <div className="max-w-7xl mx-auto px-6 relative z-10 w-full grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
-          <POSCanvas />
-          <FadeUp className="text-center lg:text-left">
-            <h1 className="text-4xl md:text-6xl xl:text-7xl font-bold text-white leading-[1.1] mb-6" style={{ fontFamily: "'Red Rose', serif" }}>
-              Run Your Business Better.
-              <br />
-              <span className="text-[#20C997]">Know Your Numbers Every Day.</span>
+      {/* ─── HERO ─── */}
+      <section className="relative min-h-[100vh] flex items-center justify-center pt-32 pb-20 overflow-hidden">
+        <POSCanvas />
+        <div className="max-w-6xl mx-auto px-8 relative z-10 w-full text-center">
+          <FadeUp className="inline-flex items-center gap-3 px-4 py-1.5 rounded-full border border-[#20C997]/20 bg-[#20C997]/5 text-[#20C997] text-[10px] font-bold uppercase tracking-[0.2em] mb-10">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#20C997] animate-pulse" />
+            Built for Kenyan Business Owners
+          </FadeUp>
+          <FadeUp delay={0.1}>
+            <h1 className="text-5xl md:text-7xl xl:text-8xl font-bold hl-serif text-white leading-[1.1] mb-8">
+              Run Your Business.<br />
+              <span className="italic text-[#20C997]">Know Your Numbers.</span>
             </h1>
-            <p className="text-base md:text-lg text-white/60 leading-relaxed mb-10 max-w-lg mx-auto lg:mx-0">
-              Most small business owners work hard every day — but still don't know their real profit. Not because they're careless. Because they don't have a simple system. hlynk is that system.
+          </FadeUp>
+          <FadeUp delay={0.2}>
+            <p className="text-lg md:text-xl text-[#A0B0C0] leading-relaxed mb-12 max-w-2xl mx-auto">
+              Hard work alone isn't enough. You need to know your <span className="text-white font-bold italic">real profit</span> every day. hlynk is the simple system you've been waiting for.
             </p>
-            <div className="flex flex-wrap items-center justify-center lg:justify-start gap-4 md:gap-6 text-[10px] md:text-xs text-white/40 tracking-widest font-bold font-ubuntu">
-              <span className="flex items-center gap-2"><Check size={14} className="text-[#20C997]" /> No credit card</span>
-              <span className="hidden md:block w-1 h-1 rounded-full bg-white/20" />
-              <span className="flex items-center gap-2"><Check size={14} className="text-[#20C997]" /> M-Pesa payments</span>
-              <span className="hidden md:block w-1 h-1 rounded-full bg-white/20" />
-              <span className="flex items-center gap-2"><Check size={14} className="text-[#20C997]" /> Cancel anytime</span>
-            </div>
+          </FadeUp>
+          <FadeUp delay={0.3} className="flex flex-wrap items-center justify-center gap-4 mb-24">
+            <Link to="/register" className="px-10 py-4 rounded-xl bg-[#20C997] text-[#050D0A] text-sm font-bold uppercase tracking-widest hover:bg-[#1aad80] transition-all">Start Free 14-Day Trial</Link>
+            <a href="#how" className="px-10 py-4 rounded-xl border border-white/10 text-[#A0B0C0] text-sm font-bold uppercase tracking-widest hover:border-[#20C997]/30 hover:text-[#20C997] transition-all">See How It Works</a>
           </FadeUp>
 
-          <FadeUp delay={0.2} className="hidden lg:block relative">
-            <div className="relative bg-white rounded-2xl shadow-2xl overflow-hidden border border-white/10 transform perspective-[1200px] -rotate-y-[5deg] rotate-x-[2deg] hover:rotate-0 transition-transform duration-500">
-              <div className="bg-[#0D2419] px-4 py-2.5 flex items-center gap-2 border-b border-white/5">
-                <div className="flex gap-1.5">
-                  <div className="w-2.5 h-2.5 rounded-full bg-[#FF5F57]" />
-                  <div className="w-2.5 h-2.5 rounded-full bg-[#FFBD2E]" />
-                  <div className="w-2.5 h-2.5 rounded-full bg-[#28C940]" />
-                </div>
-                <div className="text-[10px] text-white/30 font-medium ml-4">hlynk Dashboard</div>
+          {/* Dashboard Preview */}
+          <FadeUp delay={0.5} className="dashboard-wrap">
+            <div className="dash-glow" />
+            <div className="dashboard">
+              <div className="bg-[#111820] px-4 py-2.5 flex items-center gap-2 border-b border-white/5">
+                <div className="flex gap-1.5"><div className="w-2 h-2 rounded-full bg-[#FF5F57]" /><div className="w-2 h-2 rounded-full bg-[#FFBD2E]" /><div className="w-2 h-2 rounded-full bg-[#28C940]" /></div>
+                <div className="flex-1 text-center text-[10px] hl-mono label-glow tracking-[0.3em]">HLYNK // DASHBOARD</div>
               </div>
-              <div className="flex h-[380px]">
-                <div className="w-40 bg-[#0D2419] p-4 flex flex-col gap-1 border-r border-white/5">
-                  <div className="text-[#20C997] font-bold font-ubuntu text-xs mb-6 px-2">HLYNK</div>
-                  {[
-                    { icon: <LayoutDashboard size={14} />, label: "Dashboard", active: true },
-                    { icon: <PackageSearch size={14} />, label: "Inventory" },
-                    { icon: <Receipt size={14} />, label: "Sales" },
-                    { icon: <BarChart3 size={14} />, label: "Reports" },
-                    { icon: <Users size={14} />, label: "Requests" },
-                  ].map(item => (
-                    <div key={item.label} className={`flex items-center gap-3 px-3 py-2 rounded-lg text-[10px] font-bold font-ubuntu ${item.active ? "bg-[#20C997]/20 text-[#20C997]" : "text-white/40"}`}>
-                      {item.icon} {item.label}
-                    </div>
-                  ))}
-                </div>
-                <div className="flex-1 bg-[#F8FAF9] p-6">
-                  <div className="grid grid-cols-2 gap-4 mb-6">
-                    {[
-                      { val: "KES 24,500", label: "Today's Revenue", color: "text-[#20C997]" },
-                      { val: "KES 8,200", label: "Net Profit", color: "text-[#0B5ED7]" },
-                      { val: "18", label: "Low Stock Items", color: "text-[#FD7E14]" },
-                      { val: "KES 3,100", label: "Expenses Today", color: "text-[#161E2A]" },
-                    ].map(s => (
-                      <div key={s.label} className="bg-white p-3 rounded-xl border border-[#E5E9EC]">
-                        <div className={`text-sm font-black ${s.color}`}>{s.val}</div>
-                        <div className="text-[9px] text-[#7A8896] font-bold font-ubuntu uppercase mt-0.5">{s.label}</div>
-                      </div>
-                    ))}
+              <div className="flex h-[400px] text-left">
+                <div className="w-44 bg-[#080C10] p-6 border-r border-white/5 hidden md:block">
+                  <div className="text-[#20C997] hl-mono text-sm font-bold mb-8">hlynk</div>
+                  <div className="space-y-4">
+                    <div className="text-[#20C997] text-[10px] font-bold hl-mono flex items-center gap-2 bg-[#20C997]/10 p-2 rounded"> <LayoutDashboard size={12} /> DASHBOARD</div>
+                    <div className="text-[#506070] text-[10px] font-bold hl-mono flex items-center gap-2 p-2"> <PackageSearch size={12} /> INVENTORY</div>
+                    <div className="text-[#506070] text-[10px] font-bold hl-mono flex items-center gap-2 p-2"> <Receipt size={12} /> SALES</div>
                   </div>
-                  <div className="bg-white rounded-xl border border-[#E5E9EC] overflow-hidden">
-                    <div className="bg-[#F5F7F8] px-3 py-2 text-[8px] font-bold font-ubuntu text-[#7A8896] uppercase tracking-widest flex justify-between">
-                      <span>Item Sold</span><span>Qty</span><span>Status</span>
+                </div>
+                <div className="flex-1 bg-[#0D1319] p-8">
+                  <div className="text-[10px] hl-mono text-[#506070] mb-4">Good morning · Thursday, 24 Apr</div>
+                  <div className="grid grid-cols-2 gap-4 mb-8">
+                    <div className="bg-white/5 p-4 rounded-xl border border-teal/20 shadow-2xl">
+                      <div className="text-[9px] hl-mono label-glow uppercase mb-1">Today's Revenue</div>
+                      <div className="text-xl hl-mono font-bold text-[#20C997]">KES 24,500</div>
+                      <div className="text-[8px] hl-mono text-[#20C997] mt-1">↑ 12% vs yesterday</div>
                     </div>
-                    {[
-                      { item: "Haircut — Full", qty: "x4", status: "Done", bg: "bg-[#E6FAF5]", text: "text-[#20C997]" },
-                      { item: "Phone Screen", qty: "x1", status: "Pending", bg: "bg-[#FFF3E0]", text: "text-[#FD7E14]" },
-                      { item: "Catering", qty: "x2", status: "Done", bg: "bg-[#E6FAF5]", text: "text-[#20C997]" },
-                    ].map(r => (
-                      <div key={r.item} className="px-3 py-2 border-t border-[#E5E9EC] text-[9px] flex justify-between items-center">
-                        <span className="font-bold font-ubuntu">{r.item}</span>
-                        <span className="text-[#7A8896]">{r.qty}</span>
-                        <span className={`px-2 py-0.5 rounded-full font-bold font-ubuntu uppercase ${r.bg} ${r.text}`}>{r.status}</span>
-                      </div>
-                    ))}
+                    <div className="bg-white/5 p-4 rounded-xl border border-teal/20 shadow-2xl">
+                      <div className="text-[9px] hl-mono label-glow uppercase mb-1">Net Profit</div>
+                      <div className="text-xl hl-mono font-bold text-[#4A90E2]">KES 8,200</div>
+                      <div className="text-[8px] hl-mono text-[#4A90E2] mt-1">After expenses</div>
+                    </div>
+                  </div>
+                  <div className="bg-white/5 rounded-xl border border-white/5 overflow-hidden">
+                    <div className="dash-table-head"><span>Item Sold</span><span>Qty</span><span>Status</span></div>
+                    <div className="dash-row border-t border-white/5">
+                      <span className="row-name">Haircut — Full</span>
+                      <span className="row-qty">×4</span>
+                      <span className="px-2 py-0.5 rounded bg-[#20C997]/10 text-[#20C997] text-[10px] hl-mono">Done</span>
+                    </div>
+                    <div className="dash-row border-t border-white/5">
+                      <span className="row-name">Phone Screen</span>
+                      <span className="row-qty">×1</span>
+                      <span className="px-2 py-0.5 rounded bg-[#FF8C42]/10 text-[#FF8C42] text-[10px] hl-mono">Pending</span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -484,188 +578,156 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ─── TRUST STRIP ─── */}
-      <div className="bg-white border-y border-[#E5E9EC]">
-        <div className="max-w-7xl mx-auto px-6 py-12 grid grid-cols-1 md:grid-cols-3 gap-12 md:gap-6 items-center">
-          <div className="text-center">
-            <div className="font-bold text-[clamp(1.2rem,3vw,1.8rem)] text-[#0D2419] uppercase tracking-widest" style={{ fontFamily: "'Red Rose', serif" }}>Simple</div>
-            <div className="text-sm text-[#7A8896] mt-1">No technical skills needed</div>
-          </div>
-          <div className="text-center">
-            <div className="font-bold text-[clamp(1.2rem,3vw,1.8rem)] text-[#0D2419] uppercase tracking-widest" style={{ fontFamily: "'Red Rose', serif" }}>Honest</div>
-            <div className="text-sm text-[#7A8896] mt-1">Real numbers. Real profit. No surprises.</div>
-          </div>
-          <div className="text-center">
-            <div className="font-bold text-[clamp(1.2rem,3vw,1.8rem)] text-[#0D2419] uppercase tracking-widest" style={{ fontFamily: "'Red Rose', serif" }}>Reliable</div>
-            <div className="text-sm text-[#7A8896] mt-1">Built for Kenyan businesses</div>
+      <div className="divider" />
+
+      {/* ─── PILLARS ─── */}
+      <section className="py-24 bg-[#080C10]">
+        <div className="max-w-6xl mx-auto px-8">
+          <div className="pillars">
+            {[
+              { n: "01", w: "Simple", d: "If you can send a WhatsApp message, you can use hlynk. No tech skills needed." },
+              { n: "02", w: "Honest", d: "Real numbers. Real profit. See exactly what your business makes every single day." },
+              { n: "03", w: "Reliable", d: "Built for Kenya. Works on any phone. Your data is always safe and backed up." },
+            ].map((p, i) => (
+              <FadeUp key={p.w} delay={i * 0.1} className="pillar">
+                <div className="text-[10px] hl-mono label-glow uppercase tracking-widest mb-6">{p.n} · {p.w.toUpperCase()}</div>
+                <div className="text-4xl hl-serif text-white mb-4 italic">{p.w}</div>
+                <p className="text-sm text-[#A0B0C0] leading-relaxed">{p.d}</p>
+              </FadeUp>
+            ))}
           </div>
         </div>
-      </div>
+      </section>
+
+      <div className="divider" />
 
       {/* ─── FEATURES ─── */}
-      <section id="features" className="py-24 md:py-32 bg-[#F5F7F8]">
-        <div className="max-w-7xl mx-auto px-6">
-          <FadeUp className="mb-16">
-            <span className="text-xs font-bold uppercase tracking-[0.2em] text-[#20C997] mb-4 block" style={{ fontFamily: "'Red Rose', serif" }}>Why hlynk</span>
-            <h2 className="text-3xl md:text-5xl font-bold text-[#161E2A] leading-tight mb-6" style={{ fontFamily: "'Red Rose', serif" }}>Run your business. <br className="hidden md:block" /> Know your numbers.</h2>
-            <p className="text-base md:text-lg text-[#7A8896] max-w-2xl leading-relaxed">
-              Most Kenyan business owners work hard but never see real profit — because they have no system. hlynk gives you the tools to record sales, track expenses, manage stock, and see profit clearly.
-            </p>
+      <section id="features" className="py-32 bg-[#0D1319]">
+        <div className="max-w-6xl mx-auto px-8">
+          <FadeUp className="mb-20">
+            <span className="text-xs font-bold hl-mono uppercase tracking-[0.3em] text-[#20C997] mb-4 block">How We Help</span>
+            <h2 className="text-4xl md:text-6xl hl-serif text-white mb-8">Stop guessing.<br />Start <span className="italic text-[#20C997]">growing.</span></h2>
           </FadeUp>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
             {features.map((f, i) => (
               <FadeUp key={f.title} delay={i * 0.05}>
-                <div className="h-full bg-white p-8 rounded-2xl border border-[#E5E9EC] hover:border-[#20C997]/40 hover:shadow-2xl hover:shadow-[#0D2419]/5 transition-all group">
-                  <div className="w-12 h-12 rounded-xl bg-[#20C997]/10 flex items-center justify-center text-[#20C997] mb-6 group-hover:scale-110 transition-transform">
+                <div className="bg-[#080C10] p-10 rounded-2xl border border-white/5 hover:border-[#20C997]/30 transition-all group">
+                  <div className="w-12 h-12 rounded-xl bg-[#20C997]/10 flex items-center justify-center text-[#20C997] mb-8 group-hover:scale-110 transition-transform">
                     {f.icon}
                   </div>
-                  <h3 className="text-lg font-bold text-[#161E2A] mb-3" style={{ fontFamily: "'Red Rose', serif" }}>{f.title}</h3>
-                  <p className="text-sm md:text-base text-[#7A8896] leading-relaxed">{f.desc}</p>
+                  <h3 className="text-xl font-bold text-white mb-4 hl-serif italic">{f.title}</h3>
+                  <p className="text-sm text-[#A0B0C0] leading-relaxed">{f.desc}</p>
                 </div>
               </FadeUp>
             ))}
           </div>
         </div>
       </section>
+
+      <div className="divider" />
+
+      {/* ─── WHO USES ─── */}
+      <section id="who" className="py-32 bg-[#080C10]">
+        <div className="max-w-6xl mx-auto px-8 text-center">
+          <FadeUp className="mb-16">
+            <span className="text-xs font-bold hl-mono uppercase tracking-[0.3em] text-[#20C997] mb-4 block">Who Uses hlynk</span>
+            <h2 className="text-4xl md:text-5xl hl-serif text-white leading-tight">Built for every <br className="hidden md:block" /> <span className="italic text-[#20C997]">business owner.</span></h2>
+          </FadeUp>
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+            {whoCards.map((w, i) => (
+              <FadeUp key={w.label} delay={i * 0.05} className="group">
+                <div className="p-6 rounded-2xl bg-[#0D1319] border border-white/5 hover:border-[#20C997]/30 transition-all flex flex-col items-center gap-4">
+                  <div className="w-10 h-10 rounded-xl bg-[#20C997]/5 flex items-center justify-center text-[#20C997] group-hover:scale-110 transition-transform">
+                    {w.icon}
+                  </div>
+                  <span className="text-[11px] hl-mono uppercase tracking-widest text-[#A0B0C0] group-hover:text-white transition-colors">{w.label}</span>
+                </div>
+              </FadeUp>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <div className="divider" />
 
       {/* ─── HOW IT WORKS ─── */}
-      <section id="how" className="py-24 md:py-32 bg-white">
-        <div className="max-w-7xl mx-auto px-6">
-          <FadeUp className="text-center mb-16 md:mb-20">
-            <span className="text-xs font-bold uppercase tracking-[0.2em] text-[#20C997] mb-4 block" style={{ fontFamily: "'Red Rose', serif" }}>How It Works</span>
-            <h2 className="text-3xl md:text-5xl font-bold text-[#161E2A] mb-6" style={{ fontFamily: "'Red Rose', serif" }}>Up and running in 3 minutes</h2>
-            <p className="text-base md:text-lg text-[#7A8896] max-w-xl mx-auto">No setup fees. No tech skills. Just create your account and start tracking.</p>
+      <section id="how" className="py-32 bg-[#0D1319]">
+        <div className="max-w-6xl mx-auto px-8">
+          <FadeUp className="text-center mb-20 text-white">
+            <span className="text-[10px] font-bold hl-mono uppercase tracking-[0.4em] text-[#20C997] mb-4 block">Easy Start</span>
+            <h2 className="text-4xl md:text-6xl hl-serif">Up and running in <span className="italic text-[#20C997]">3 minutes.</span></h2>
           </FadeUp>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-12 md:gap-8 relative">
-            <div className="hidden md:block absolute top-8 left-[20%] right-[20%] h-0.5 bg-gradient-to-r from-[#20C997] via-[#20C997]/20 to-[#20C997]/5" />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-16 relative">
+            <div className="hidden md:block absolute top-[28px] left-[15%] right-[15%] h-[1px] bg-gradient-to-r from-transparent via-[#20C997]/20 to-transparent" />
             {[
-              { n: "01", title: "Sign Up Free", desc: "Create your account in under 3 minutes. Add your business name and category. No card required." },
-              { n: "02", title: "Add Services & Stock", desc: "List your services and products with prices. Set stock levels and let hlynk track everything automatically as you sell." },
-              { n: "03", title: "Record Sales. See Profit.", desc: "Record every sale and expense. Watch your real profit appear on your dashboard. Stay in control every day." },
+              { n: "01", t: "Sign Up Free", d: "Create your account in seconds. Add your business name. No card needed." },
+              { n: "02", t: "Add Services", d: "List your products and prices. Set stock levels once and you're ready." },
+              { n: "03", t: "Track Profit", d: "Record every sale and expense. Watch your real profit appear instantly." },
             ].map((s, i) => (
               <FadeUp key={s.n} delay={i * 0.1} className="text-center">
-                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[#0D2419] to-[#0d5534] text-[#20C997] flex items-center justify-center font-black text-xl mb-8 mx-auto shadow-xl shadow-[#0D2419]/20 relative z-10">
-                  {s.n}
+                <div className="w-14 h-14 rounded-full border border-[#20C997]/30 bg-[#080C10] text-[#20C997] flex items-center justify-center hl-mono text-xs mb-8 mx-auto relative">
+                  <div className="absolute inset-[-4px] rounded-full border border-[#20C997]/5" /> {s.n}
                 </div>
-                <h3 className="text-xl font-bold text-[#161E2A] mb-4" style={{ fontFamily: "'Red Rose', serif" }}>{s.title}</h3>
-                <p className="text-[#7A8896] leading-relaxed px-4">{s.desc}</p>
+                <h3 className="text-lg font-bold text-white mb-4 hl-serif italic">{s.t}</h3>
+                <p className="text-sm text-[#A0B0C0] leading-relaxed px-4">{s.d}</p>
               </FadeUp>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ─── WHO IS IT FOR ─── */}
-      <section className="py-24 md:py-32 bg-[#F5F7F8]">
-        <div className="max-w-7xl mx-auto px-6">
-          <FadeUp className="text-center mb-16">
-            <span className="text-xs font-bold uppercase tracking-[0.2em] text-[#20C997] mb-4 block" style={{ fontFamily: "'Red Rose', serif" }}>Who Uses hlynk</span>
-            <h2 className="text-3xl md:text-5xl font-bold text-[#161E2A] mb-6" style={{ fontFamily: "'Red Rose', serif" }}>Built for every service provider</h2>
-            <p className="text-base md:text-lg text-[#7A8896] max-w-xl mx-auto">Whether you cut hair, fix cars, or feed people — if money moves through your hands, you need hlynk.</p>
-          </FadeUp>
-
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
-            {whoCards.map((w, i) => (
-              <FadeUp key={w.label} delay={i * 0.03}>
-                <div className="bg-white p-6 rounded-2xl text-center border border-transparent hover:border-[#20C997]/30 hover:shadow-xl hover:shadow-[#0D2419]/5 transition-all group">
-                  <div className="text-[#20C997] mb-4 flex justify-center group-hover:scale-110 transition-transform">{w.icon}</div>
-                  <div className="text-xs md:text-sm font-bold font-ubuntu text-[#161E2A] uppercase tracking-wider">{w.label}</div>
-                </div>
-              </FadeUp>
-            ))}
-          </div>
-        </div>
-      </section>
+      <div className="divider" />
 
       {/* ─── PRICING ─── */}
-      <section id="pricing" className="py-24 md:py-32 bg-[#0D0D0D] text-white overflow-hidden relative">
-        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[#20C997]/10 rounded-full blur-[120px] pointer-events-none" />
-        <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-[#0B5ED7]/10 rounded-full blur-[120px] pointer-events-none" />
-
-        <div className="max-w-7xl mx-auto px-6 relative z-10">
+      <section id="pricing" className="py-32 bg-[#080C10]">
+        <div className="max-w-6xl mx-auto px-8">
           <FadeUp className="text-center mb-20">
-            <span className="text-xs font-bold uppercase tracking-[0.2em] text-[#20C997] mb-4 block" style={{ fontFamily: "'Red Rose', serif" }}>Pricing</span>
-            <h2 className="text-4xl md:text-6xl font-bold mb-6" style={{ fontFamily: "'Red Rose', serif" }}>Simple, honest pricing</h2>
-            <p className="text-white/40 max-w-xl mx-auto">Pay for what your business actually needs today. Start with a 14-day free trial — no card required.</p>
+            <span className="text-xs font-bold hl-mono uppercase tracking-[0.3em] text-[#20C997] mb-4 block">Pricing</span>
+            <h2 className="text-4xl md:text-6xl hl-serif text-white mb-8">Simple, <span className="italic text-[#20C997]">honest</span> prices.</h2>
           </FadeUp>
-
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
             {pricingPlans.map((p, i) => (
               <FadeUp key={p.name} delay={i * 0.1}>
-                <div className={`h-full p-10 rounded-[32px] flex flex-col relative overflow-hidden transition-transform hover:-translate-y-2 duration-300 ${p.badge ? "scale-105 z-10 ring-2 ring-[#20C997]/50" : ""}`} style={{ backgroundColor: p.color }}>
-                  {p.badge && (
-                    <div className="absolute top-6 right-6 px-4 py-1.5 bg-[#0D0D0D] text-white text-[10px] font-bold uppercase tracking-widest rounded-full">{p.badge}</div>
-                  )}
-                  <div className="text-xs font-bold uppercase tracking-widest text-black/50 mb-2">{p.name}</div>
-                  <div className="text-4xl md:text-5xl font-bold text-black mb-1" style={{ fontFamily: "'Red Rose', serif" }}>{p.price}</div>
-                  <div className="text-xs font-bold font-ubuntu text-black/40 mb-1">{p.sub}</div>
-
-                  {/* Best For pill */}
-                  <div className="inline-flex items-start mb-4">
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-black/50 bg-black/10 px-3 py-1 rounded-full leading-snug">{p.bestFor}</span>
-                  </div>
-
-                  <p className="text-sm text-black/70 mb-8 leading-relaxed">{p.desc}</p>
-
-                  <ul className="space-y-4 mb-12 flex-1">
+                <div style={{ backgroundColor: p.color }} className="p-10 rounded-2xl relative h-full flex flex-col shadow-2xl">
+                  {p.badge && <div className="absolute top-0 right-10 -translate-y-1/2 px-4 py-1 bg-[#000] text-white text-[9px] font-bold hl-mono uppercase tracking-widest rounded-full">{p.badge}</div>}
+                  <div className="text-[10px] hl-mono text-[#000]/60 uppercase font-bold mb-4">{p.name}</div>
+                  <div className="text-4xl hl-serif text-[#000] mb-2">{p.price} <span className="text-xs font-normal opacity-60 hl-sans italic">/month</span></div>
+                  <p className="text-xs text-[#000]/70 mb-8 font-medium">{p.desc}</p>
+                  <ul className="space-y-4 mb-10 flex-1">
                     {p.features.map(f => (
-                      <li key={f} className="flex items-start gap-3 text-sm text-black font-semibold leading-tight">
-                        <div className="w-5 h-5 rounded-full bg-black flex items-center justify-center shrink-0 mt-0.5">
-                          <Check size={12} color="white" />
-                        </div>
-                        {f}
-                      </li>
+                      <li key={f} className="flex items-center gap-3 text-xs text-[#000]/80 font-semibold"> <Check size={14} className="text-[#000]/40" /> {f} </li>
                     ))}
                   </ul>
-
-                  <Link to="/register" className="w-full py-4 rounded-2xl bg-[#0D0D0D] text-white font-bold font-ubuntu text-center hover:opacity-80 transition-opacity">
-                    Start Free — {p.name}
+                  <Link to="/register" className="block text-center py-4 rounded-xl bg-[#000] text-white text-[11px] font-bold uppercase tracking-widest hover:scale-[1.02] transition-all">
+                    {p.name === "Starter" ? "Start Free 14-Day Trial" : "Get Started Now"}
                   </Link>
                 </div>
               </FadeUp>
             ))}
           </div>
-
-          {/* All plans include strip */}
-          <FadeUp delay={0.3}>
-            <div className="mt-16 border border-white/10 rounded-2xl p-8">
-              <p className="text-center text-xs font-bold uppercase tracking-widest text-white/40 mb-8" style={{ fontFamily: "'Red Rose', serif" }}>All Plans Include</p>
-              <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-center">
-                {["14-day free trial", "M-Pesa payments", "Cancel anytime", "No setup fee", "Secure cloud backup"].map(item => (
-                  <div key={item} className="flex flex-col items-center gap-2">
-                    <Check size={16} className="text-[#20C997]" />
-                    <span className="text-xs font-bold font-ubuntu text-white/50">{item}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </FadeUp>
         </div>
       </section>
 
-      {/* ─── TESTIMONIALS ─── */}
-      <section id="reviews" className="py-24 md:py-32 bg-[#0D2419]">
-        <div className="max-w-7xl mx-auto px-6">
-          <FadeUp className="mb-16">
-            <span className="text-xs font-bold uppercase tracking-[0.2em] text-[#20C997] mb-4 block" style={{ fontFamily: "'Red Rose', serif" }}>Reviews</span>
-            <h2 className="text-3xl md:text-5xl font-bold text-white leading-tight" style={{ fontFamily: "'Red Rose', serif" }}>Business owners who finally <br className="hidden md:block" /> know their numbers</h2>
-          </FadeUp>
+      <div className="divider" />
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {/* ─── REVIEWS ─── */}
+      <section id="reviews" className="py-32 bg-[#0D1319]">
+        <div className="max-w-6xl mx-auto px-8">
+          <FadeUp className="mb-20">
+            <span className="text-xs font-bold hl-mono uppercase tracking-[0.3em] text-[#20C997] mb-4 block">Reviews</span>
+            <h2 className="text-4xl md:text-6xl hl-serif text-white leading-tight">Business owners who finally <br className="hidden md:block" /> know their <span className="italic text-[#20C997]">numbers.</span></h2>
+          </FadeUp>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {testimonials.map((t, i) => (
               <FadeUp key={t.name} delay={i * 0.1}>
-                <div className="h-full bg-white/5 border border-white/10 p-8 rounded-3xl hover:bg-white/10 transition-all">
-                  <div className="flex gap-1 mb-6 text-[#20C997]">
-                    {[...Array(5)].map((_, j) => <Star key={j} size={16} fill="currentColor" />)}
-                  </div>
-                  <p className="text-white/70 italic text-base leading-relaxed mb-10">"{t.quote}"</p>
-                  <div className="flex items-center gap-4 mt-auto">
-                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#20C997] to-[#0d5534] flex items-center justify-center text-white font-black text-sm uppercase">{t.initials}</div>
+                <div className="bg-[#080C10] p-10 rounded-2xl border border-white/5 hover:border-[#20C997]/30 transition-all group relative">
+                  <div className="absolute top-4 right-8 text-4xl text-[#20C997]/10 hl-serif italic">"</div>
+                  <p className="text-lg text-[#A0B0C0] italic mb-10 leading-relaxed">"{t.quote}"</p>
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#20C997] to-[#0d5534] flex items-center justify-center text-white font-black text-sm uppercase">{t.initials}</div>
                     <div>
-                      <div className="text-white font-bold font-ubuntu">{t.name}</div>
-                      <div className="text-white/40 text-xs font-medium">{t.role}</div>
+                      <div className="text-white font-bold hl-serif">{t.name}</div>
+                      <div className="text-[10px] hl-mono uppercase tracking-widest label-glow">{t.role}</div>
                     </div>
                   </div>
                 </div>
@@ -675,94 +737,43 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ─── CONTACT SECTION ─── */}
-      <section id="contact" className="py-24 md:py-32 bg-[#F5F7F8]">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24 items-start">
-            <FadeUp>
-              <span className="text-xs font-bold uppercase tracking-[0.2em] text-[#20C997] mb-4 block" style={{ fontFamily: "'Red Rose', serif" }}>Contact</span>
-              <h2 className="text-3xl md:text-5xl font-bold text-[#161E2A] leading-tight mb-6" style={{ fontFamily: "'Red Rose', serif" }}>
-                Need help? <br /> We're here.
-              </h2>
-              <p className="text-base md:text-lg text-[#7A8896] leading-relaxed mb-10 max-w-md">
-                Have a question or need help setting up your business? Reach us anytime. No bots. Real people ready to help.
-              </p>
+      <div className="divider" />
 
-              <div className="flex flex-col gap-6">
-                <a href="https://wa.me/254700000000" className="flex items-center gap-5 group">
-                  <div className="w-14 h-14 rounded-2xl bg-[#20C997]/10 flex items-center justify-center text-[#20C997] group-hover:bg-[#20C997] group-hover:text-white transition-all shrink-0">
-                    <Phone size={22} />
-                  </div>
-                  <div>
-                    <div className="text-xs font-black uppercase tracking-widest text-[#7A8896] mb-1">Phone & WhatsApp</div>
-                    <div className="text-lg font-bold text-[#161E2A] group-hover:text-[#20C997] transition-colors">+254 XXX XXX XXX</div>
-                  </div>
-                </a>
-
-                <a href="mailto:support@hlynk.co.ke" className="flex items-center gap-5 group">
-                  <div className="w-14 h-14 rounded-2xl bg-[#20C997]/10 flex items-center justify-center text-[#20C997] group-hover:bg-[#20C997] group-hover:text-white transition-all shrink-0">
-                    <Mail size={22} />
-                  </div>
-                  <div>
-                    <div className="text-xs font-black uppercase tracking-widest text-[#7A8896] mb-1">Email</div>
-                    <div className="text-lg font-bold text-[#161E2A] group-hover:text-[#20C997] transition-colors">support@hlynk.co.ke</div>
-                  </div>
-                </a>
-              </div>
-            </FadeUp>
-
-            <FadeUp delay={0.15}>
-              <div className="bg-[#0D2419] rounded-3xl p-8 md:p-10">
-                <h3 className="text-xl font-bold text-white mb-2" style={{ fontFamily: "'Red Rose', serif" }}>Send us a message</h3>
-                <p className="text-white/40 text-sm mb-8">We'll get back to you as soon as possible.</p>
-                <ContactForm />
-              </div>
-            </FadeUp>
-          </div>
-        </div>
-      </section>
-
-      {/* ─── CTA BANNER ─── */}
-      <section className="relative py-24 md:py-40 bg-gradient-to-br from-[#0D2419] via-[#0a3d28] to-[#0d5534] flex items-center justify-center overflow-hidden">
-        <div className="max-w-4xl mx-auto px-6 text-center relative z-10">
+      {/* ─── CONTACT ─── */}
+      <section id="contact" className="py-32 bg-[#080C10]">
+        <div className="max-w-6xl mx-auto px-8 grid md:grid-cols-2 gap-24">
           <FadeUp>
-            <h2 className="text-4xl md:text-6xl font-bold text-white mb-8 leading-tight" style={{ fontFamily: "'Red Rose', serif" }}>
-              Ready to know what <br /> your business <span className="text-[#20C997]">really makes?</span>
-            </h2>
-            <p className="text-base md:text-lg text-white/50 mb-12 max-w-xl mx-auto">
-              Join Kenyan service providers using hlynk to record sales, track expenses, manage stock, and see real profit — every day.
-            </p>
-            <Link to="/register" className="inline-flex items-center gap-3 px-10 py-5 rounded-2xl bg-[#20C997] text-white font-bold font-ubuntu text-lg shadow-2xl shadow-[#20C997]/30 hover:bg-[#1ab785] hover:-translate-y-1 transition-all">
-              Start Free 14-Day Trial <ArrowRight size={22} />
-            </Link>
-            <p className="text-white/20 text-xs font-bold font-ubuntu uppercase tracking-widest mt-6">No card needed · M-Pesa ready · Cancel anytime</p>
+            <span className="text-xs font-bold hl-mono uppercase tracking-[0.3em] text-[#20C997] mb-4 block">Contact</span>
+            <h2 className="text-4xl md:text-6xl hl-serif text-white mb-8">Need help?<br /><span className="italic text-[#20C997]">We're here.</span></h2>
+            <p className="text-[#A0B0C0] leading-relaxed mb-10">Have a question or need help setting up? Reach us anytime. We're ready to help your business grow.</p>
+            <div className="space-y-6">
+              <div className="flex items-center gap-4 text-white hl-mono text-sm">
+                <div className="w-10 h-10 rounded-lg bg-[#20C997]/10 flex items-center justify-center text-[#20C997] border border-[#20C997]/20">
+                  <Phone size={18} />
+                </div>
+                +254 XXX XXX XXX
+              </div>
+              <div className="flex items-center gap-4 text-white hl-mono text-sm">
+                <div className="w-10 h-10 rounded-lg bg-[#20C997]/10 flex items-center justify-center text-[#20C997] border border-[#20C997]/20">
+                  <Mail size={18} />
+                </div>
+                support@hlynk.co.ke
+              </div>
+            </div>
+          </FadeUp>
+          <FadeUp delay={0.2} className="bg-[#0D1319] p-10 rounded-2xl border border-white/5 shadow-2xl">
+            <ContactForm />
           </FadeUp>
         </div>
       </section>
 
       {/* ─── FOOTER ─── */}
-      <footer className="bg-[#0D2419] py-16 md:py-24 border-t border-white/5">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-12 mb-16">
-            <div>
-              <Link to="/" className="flex items-center gap-3 mb-6">
-                <img src="/logo.png" alt="hlynk logo" className="h-10 w-auto" />
-              </Link>
-              <p className="text-white/30 text-sm font-bold font-ubuntu tracking-widest">Run your business. Know your numbers.</p>
-            </div>
-            <div className="flex flex-wrap gap-8 md:gap-12">
-              {[...navItems, { label: "Register", href: "/register" }, { label: "Log In", href: "/login" }].map(l => (
-                <a key={l.label} href={l.href} className="text-sm font-bold font-ubuntu text-white/40 hover:text-[#20C997] transition-colors tracking-widest">{l.label}</a>
-              ))}
-            </div>
-          </div>
-          <div className="pt-5 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6 text-[10px] font-black text-white/20 tracking-[0.3em]">
-            <span>© 2025 hlynk. All rights reserved.</span>
-            <span>Built with ❤️ for Kenya 🇰🇪</span>
-          </div>
+      <footer className="py-16 border-t border-white/5 bg-[#080C10]">
+        <div className="max-w-6xl mx-auto px-8 flex flex-col md:flex-row items-center justify-between gap-8">
+          <img src="/logo.png" className="h-8 w-auto opacity-80" alt="hlynk" />
+          <div className="text-[10px] hl-mono label-glow capitalize tracking-[0.2em]">© 2025 hlynk. All Rights Reserved.</div>
         </div>
       </footer>
-
     </div>
   );
 }

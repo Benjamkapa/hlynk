@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>hlynk — Run Your Business. Know Your Numbers.</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --teal:#20C997;
+  --teal-dim:rgba(32,201,151,0.12);
+  --teal-glow:rgba(32,201,151,0.25);
+  --blue:#4A90E2;
+  --orange:#FF8C42;
+  --bg:#080C10;
+  --bg2:#0D1319;
+  --bg3:#111820;
+  --surface:rgba(255,255,255,0.03);
+  --surface2:rgba(255,255,255,0.06);
+  --border:rgba(255,255,255,0.07);
+  --border-teal:rgba(32,201,151,0.2);
+  --text:#F0F4F8;
+  --text-muted:#7A8A96;
+  --text-dim:#3A4A56;
+  --serif:'DM Serif Display',Georgia,serif;
+  --mono:'DM Mono','Fira Code',monospace;
+  --sans:'Outfit',sans-serif;
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-weight:400;line-height:1.6;overflow-x:hidden}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:1.1rem 2.5rem;background:rgba(8,12,16,0.85);backdrop-filter:blur(16px);border-bottom:1px solid var(--border)}
+.nav-logo{font-family:var(--mono);font-size:1.15rem;font-weight:500;color:var(--teal);letter-spacing:-0.02em}
+.nav-logo span{color:var(--text-muted)}
+.nav-links{display:flex;gap:2rem;list-style:none}
+.nav-links a{color:var(--text-muted);text-decoration:none;font-size:0.85rem;font-weight:500;letter-spacing:0.03em;text-transform:uppercase;transition:color .2s}
+.nav-links a:hover{color:var(--teal)}
+.nav-cta{display:flex;gap:0.75rem;align-items:center}
+.btn-ghost{padding:0.5rem 1.1rem;border:1px solid var(--border);border-radius:6px;color:var(--text-muted);font-size:0.82rem;font-weight:500;text-decoration:none;transition:all .2s;font-family:var(--sans)}
+.btn-ghost:hover{border-color:var(--border-teal);color:var(--teal)}
+.btn-primary{padding:0.5rem 1.25rem;border-radius:6px;background:var(--teal);color:#050D0A;font-size:0.82rem;font-weight:600;text-decoration:none;transition:all .2s;font-family:var(--sans)}
+.btn-primary:hover{background:#1aad80;box-shadow:0 0 20px var(--teal-glow)}
+
+/* HERO */
+.hero{position:relative;min-height:100vh;display:flex;align-items:center;justify-content:center;text-align:center;padding:8rem 2rem 6rem;overflow:hidden}
+#hero-canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.hero-inner{position:relative;z-index:2;max-width:780px}
+.hero-badge{display:inline-flex;align-items:center;gap:0.5rem;padding:0.35rem 0.9rem;border:1px solid var(--border-teal);border-radius:999px;font-family:var(--mono);font-size:0.72rem;color:var(--teal);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:2rem;background:rgba(32,201,151,0.06)}
+.hero-badge::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--teal);animation:pulse-dot 2s infinite}
+@keyframes pulse-dot{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.5;transform:scale(0.7)}}
+h1.hero-title{font-family:var(--serif);font-size:clamp(2.8rem,6vw,4.8rem);line-height:1.1;letter-spacing:-0.02em;color:var(--text);margin-bottom:1.5rem}
+h1.hero-title em{font-style:italic;color:var(--teal)}
+.hero-sub{font-size:1.05rem;color:var(--text-muted);max-width:540px;margin:0 auto 2.5rem;line-height:1.7}
+.hero-sub strong{color:var(--text);font-weight:500}
+.hero-actions{display:flex;align-items:center;justify-content:center;gap:1rem;flex-wrap:wrap;margin-bottom:2rem}
+.btn-big{padding:0.85rem 2rem;border-radius:8px;font-size:0.95rem;font-weight:600;text-decoration:none;font-family:var(--sans);transition:all .25s}
+.btn-big.primary{background:var(--teal);color:#050D0A;box-shadow:0 0 30px rgba(32,201,151,0.2)}
+.btn-big.primary:hover{background:#1aad80;box-shadow:0 0 40px rgba(32,201,151,0.35);transform:translateY(-1px)}
+.btn-big.ghost{border:1px solid var(--border);color:var(--text-muted)}
+.btn-big.ghost:hover{border-color:var(--border-teal);color:var(--teal)}
+.hero-pills{display:flex;align-items:center;justify-content:center;gap:1.5rem;flex-wrap:wrap}
+.pill{display:flex;align-items:center;gap:0.4rem;font-size:0.78rem;color:var(--text-muted)}
+.pill::before{content:'✓';color:var(--teal);font-weight:700;font-size:0.85rem}
+
+/* DASHBOARD MOCKUP */
+.dashboard-wrap{position:relative;z-index:2;margin-top:4rem;max-width:680px;margin-left:auto;margin-right:auto}
+.dash-glow{position:absolute;inset:-40px;background:radial-gradient(ellipse at center,rgba(32,201,151,0.08) 0%,transparent 70%);pointer-events:none;z-index:0}
+.dashboard{background:var(--bg2);border:1px solid var(--border-teal);border-radius:14px;overflow:hidden;position:relative;z-index:1;box-shadow:0 40px 80px rgba(0,0,0,0.6),0 0 0 1px rgba(32,201,151,0.08)}
+.dash-topbar{display:flex;align-items:center;gap:0.5rem;padding:0.75rem 1rem;background:rgba(32,201,151,0.05);border-bottom:1px solid var(--border)}
+.dash-dot{width:8px;height:8px;border-radius:50%}
+.dash-dot.r{background:#FF5F57}
+.dash-dot.y{background:#FFBD2E}
+.dash-dot.g{background:#28C840}
+.dash-title-bar{flex:1;text-align:center;font-family:var(--mono);font-size:0.7rem;color:var(--text-dim);letter-spacing:0.06em}
+.dash-layout{display:grid;grid-template-columns:140px 1fr}
+.dash-sidebar{border-right:1px solid var(--border);padding:1rem 0}
+.dash-brand{padding:0 1rem 1rem;font-family:var(--mono);font-size:0.8rem;color:var(--teal);font-weight:500;border-bottom:1px solid var(--border);margin-bottom:0.75rem}
+.dash-nav-item{display:flex;align-items:center;gap:0.5rem;padding:0.45rem 1rem;font-size:0.72rem;color:var(--text-dim);cursor:default;transition:all .15s}
+.dash-nav-item.active{color:var(--teal);background:var(--teal-dim)}
+.dash-nav-item .dot{width:4px;height:4px;border-radius:50%;background:currentColor;flex-shrink:0}
+.dash-main{padding:1.25rem}
+.dash-greeting{font-size:0.68rem;color:var(--text-muted);margin-bottom:0.75rem;font-family:var(--mono)}
+.dash-metrics{display:grid;grid-template-columns:1fr 1fr;gap:0.6rem;margin-bottom:1rem}
+.metric-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:0.75rem}
+.metric-card.highlight{border-color:var(--border-teal);background:rgba(32,201,151,0.05)}
+.metric-label{font-size:0.6rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.07em;font-family:var(--mono);margin-bottom:0.3rem}
+.metric-value{font-family:var(--mono);font-size:0.95rem;font-weight:500;color:var(--text)}
+.metric-card.highlight .metric-value{color:var(--teal)}
+.metric-badge{display:inline-block;font-size:0.55rem;padding:0.1rem 0.4rem;border-radius:3px;background:rgba(32,201,151,0.15);color:var(--teal);font-family:var(--mono);margin-top:0.2rem}
+.dash-table-head{display:grid;grid-template-columns:1fr auto auto;gap:0.5rem;padding:0.4rem 0.6rem;font-size:0.58rem;text-transform:uppercase;letter-spacing:0.07em;color:var(--text-dim);font-family:var(--mono);border-bottom:1px solid var(--border);margin-bottom:0.3rem}
+.dash-row{display:grid;grid-template-columns:1fr auto auto;gap:0.5rem;padding:0.4rem 0.6rem;font-size:0.68rem;align-items:center;border-radius:5px;transition:background .15s}
+.dash-row:hover{background:var(--surface)}
+.row-name{color:var(--text)}
+.row-qty{color:var(--text-muted);font-family:var(--mono);text-align:right}
+.badge{display:inline-block;padding:0.15rem 0.5rem;border-radius:3px;font-size:0.58rem;font-family:var(--mono)}
+.badge.done{background:rgba(32,201,151,0.12);color:var(--teal)}
+.badge.pending{background:rgba(255,140,66,0.12);color:var(--orange)}
+
+/* SECTIONS */
+section{padding:6rem 2rem}
+.section-inner{max-width:1080px;margin:0 auto}
+.section-label{font-family:var(--mono);font-size:0.72rem;color:var(--teal);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:1rem;display:flex;align-items:center;gap:0.5rem}
+.section-label::before{content:'';display:block;width:24px;height:1px;background:var(--teal)}
+h2.section-title{font-family:var(--serif);font-size:clamp(2rem,4vw,3rem);line-height:1.15;margin-bottom:1rem;color:var(--text)}
+h2.section-title em{font-style:italic;color:var(--teal)}
+.section-sub{color:var(--text-muted);font-size:1rem;max-width:520px;line-height:1.7}
+
+/* PILLARS */
+.pillars{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-top:4rem}
+.pillar{padding:2.5rem 2rem;background:var(--bg2);position:relative;overflow:hidden}
+.pillar::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+.pillar:nth-child(1)::before{background:var(--teal)}
+.pillar:nth-child(2)::before{background:var(--blue)}
+.pillar:nth-child(3)::before{background:var(--orange)}
+.pillar-num{font-family:var(--mono);font-size:0.65rem;color:var(--text-dim);letter-spacing:0.1em;margin-bottom:1rem}
+.pillar-word{font-family:var(--serif);font-size:1.7rem;margin-bottom:0.75rem;color:var(--text)}
+.pillar-desc{font-size:0.85rem;color:var(--text-muted);line-height:1.6}
+
+/* WHY */
+.why-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.25rem;margin-top:3rem}
+.why-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:1.75rem;transition:border-color .2s,transform .2s}
+.why-card:hover{border-color:var(--border-teal);transform:translateY(-2px)}
+.why-icon{width:36px;height:36px;border-radius:8px;background:var(--teal-dim);border:1px solid var(--border-teal);display:flex;align-items:center;justify-content:center;margin-bottom:1rem;font-size:1rem}
+.why-card h3{font-size:0.95rem;font-weight:600;margin-bottom:0.5rem;color:var(--text)}
+.why-card p{font-size:0.82rem;color:var(--text-muted);line-height:1.6}
+
+/* HOW */
+.how-steps{display:grid;grid-template-columns:repeat(3,1fr);gap:2rem;margin-top:3.5rem;position:relative}
+.how-steps::before{content:'';position:absolute;top:28px;left:10%;right:10%;height:1px;background:linear-gradient(90deg,transparent,var(--border-teal),transparent)}
+.step{text-align:center;position:relative}
+.step-num{width:56px;height:56px;border-radius:50%;border:1px solid var(--border-teal);background:var(--bg2);display:flex;align-items:center;justify-content:center;margin:0 auto 1.25rem;font-family:var(--mono);font-size:0.75rem;color:var(--teal);position:relative}
+.step-num::after{content:'';position:absolute;inset:-4px;border-radius:50%;border:1px solid rgba(32,201,151,0.1)}
+.step h3{font-size:0.95rem;font-weight:600;margin-bottom:0.5rem}
+.step p{font-size:0.82rem;color:var(--text-muted);line-height:1.6}
+
+/* WHO */
+.who-wrap{margin-top:3rem}
+.who-grid{display:flex;flex-wrap:wrap;gap:0.6rem}
+.who-tag{padding:0.5rem 1rem;border:1px solid var(--border);border-radius:999px;font-size:0.8rem;color:var(--text-muted);transition:all .2s;cursor:default}
+.who-tag:hover{border-color:var(--border-teal);color:var(--teal);background:var(--teal-dim)}
+.who-tag.more{border-style:dashed;font-style:italic}
+
+/* PRICING */
+.pricing-wrap{margin-top:3.5rem}
+.pricing-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.25rem;margin-bottom:2.5rem}
+.plan-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:2rem;position:relative;transition:border-color .2s}
+.plan-card.popular{border-color:var(--border-teal);background:rgba(32,201,151,0.03)}
+.popular-badge{position:absolute;top:-1px;left:50%;transform:translateX(-50%);background:var(--teal);color:#050D0A;font-size:0.65rem;font-weight:700;padding:0.25rem 0.9rem;border-radius:0 0 6px 6px;font-family:var(--mono);letter-spacing:0.05em;text-transform:uppercase}
+.plan-name{font-family:var(--mono);font-size:0.7rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-muted);margin-bottom:0.5rem}
+.plan-price{font-family:var(--serif);font-size:2.2rem;color:var(--text);margin-bottom:0.2rem}
+.plan-price span{font-family:var(--sans);font-size:0.85rem;color:var(--text-muted);font-weight:400}
+.plan-desc{font-size:0.78rem;color:var(--text-muted);margin-bottom:1.5rem;padding-bottom:1.5rem;border-bottom:1px solid var(--border);line-height:1.5}
+.plan-features{list-style:none;margin-bottom:1.75rem}
+.plan-features li{display:flex;align-items:flex-start;gap:0.5rem;font-size:0.8rem;color:var(--text-muted);margin-bottom:0.5rem}
+.plan-features li::before{content:'✓';color:var(--teal);font-weight:700;flex-shrink:0;margin-top:1px}
+.plan-btn{display:block;text-align:center;padding:0.7rem;border-radius:7px;font-size:0.82rem;font-weight:600;text-decoration:none;transition:all .2s;font-family:var(--sans)}
+.plan-card:not(.popular) .plan-btn{border:1px solid var(--border);color:var(--text-muted)}
+.plan-card:not(.popular) .plan-btn:hover{border-color:var(--border-teal);color:var(--teal)}
+.plan-card.popular .plan-btn{background:var(--teal);color:#050D0A}
+.plan-card.popular .plan-btn:hover{background:#1aad80;box-shadow:0 0 20px var(--teal-glow)}
+.all-plans{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1.5rem 2rem;display:flex;flex-wrap:wrap;gap:1.5rem;justify-content:center}
+.all-plans-item{display:flex;align-items:center;gap:0.5rem;font-size:0.8rem;color:var(--text-muted)}
+.all-plans-item::before{content:'✓';color:var(--teal);font-weight:700}
+
+/* REVIEWS */
+.reviews-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.25rem;margin-top:3rem}
+.review-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:1.75rem;position:relative}
+.review-card::before{content:'❝';position:absolute;top:1rem;right:1.25rem;font-size:2rem;color:var(--teal);opacity:0.2;font-family:Georgia}
+.review-text{font-size:0.85rem;color:var(--text-muted);line-height:1.7;margin-bottom:1.25rem;font-style:italic}
+.review-author{display:flex;align-items:center;gap:0.75rem}
+.review-avatar{width:36px;height:36px;border-radius:50%;background:var(--teal-dim);border:1px solid var(--border-teal);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:0.65rem;color:var(--teal);font-weight:500;flex-shrink:0}
+.review-name{font-size:0.82rem;font-weight:600;color:var(--text)}
+.review-biz{font-size:0.72rem;color:var(--text-muted)}
+
+/* CONTACT */
+.contact-grid{display:grid;grid-template-columns:1fr 1fr;gap:3rem;margin-top:3rem}
+.contact-info h3{font-size:1rem;font-weight:600;margin-bottom:0.5rem;color:var(--text)}
+.contact-info p{font-size:0.85rem;color:var(--text-muted);line-height:1.7;margin-bottom:2rem}
+.contact-detail{display:flex;align-items:flex-start;gap:0.75rem;margin-bottom:1.25rem}
+.contact-detail-label{font-family:var(--mono);font-size:0.65rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:0.2rem}
+.contact-detail-val{font-size:0.9rem;color:var(--teal)}
+.contact-icon{width:38px;height:38px;border-radius:8px;background:var(--teal-dim);border:1px solid var(--border-teal);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1rem}
+.form-group{margin-bottom:1rem}
+.form-group label{display:block;font-size:0.72rem;font-family:var(--mono);color:var(--text-muted);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:0.4rem}
+.form-group input,.form-group textarea{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:0.65rem 0.9rem;color:var(--text);font-family:var(--sans);font-size:0.87rem;outline:none;transition:border-color .2s;resize:vertical}
+.form-group input:focus,.form-group textarea:focus{border-color:var(--border-teal)}
+.form-group textarea{min-height:100px}
+.form-submit{width:100%;padding:0.8rem;background:var(--teal);border:none;border-radius:7px;color:#050D0A;font-size:0.9rem;font-weight:600;cursor:pointer;font-family:var(--sans);transition:all .2s}
+.form-submit:hover{background:#1aad80;box-shadow:0 0 20px var(--teal-glow)}
+
+/* CTA */
+.cta-section{padding:6rem 2rem;text-align:center;position:relative;overflow:hidden}
+.cta-section::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at center,rgba(32,201,151,0.08) 0%,transparent 65%)}
+.cta-inner{position:relative;z-index:1;max-width:600px;margin:0 auto}
+.cta-title{font-family:var(--serif);font-size:clamp(2rem,4vw,3rem);line-height:1.15;margin-bottom:1rem}
+.cta-title em{color:var(--teal);font-style:italic}
+.cta-sub{color:var(--text-muted);margin-bottom:2rem;font-size:0.95rem}
+.cta-pills{font-size:0.78rem;color:var(--text-dim);margin-top:1rem}
+.cta-pills span{margin:0 0.5rem}
+
+/* FOOTER */
+footer{padding:2.5rem;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:gap;background:var(--bg)}
+.footer-logo{font-family:var(--mono);font-size:0.9rem;color:var(--teal)}
+.footer-links{display:flex;gap:1.75rem;list-style:none;flex-wrap:wrap}
+.footer-links a{font-size:0.78rem;color:var(--text-dim);text-decoration:none;transition:color .2s}
+.footer-links a:hover{color:var(--teal)}
+.footer-copy{font-size:0.75rem;color:var(--text-dim)}
+
+/* DIVIDER */
+.divider{width:100%;height:1px;background:linear-gradient(90deg,transparent,var(--border-teal),transparent);margin:0}
+
+/* FADE IN ANIMATIONS */
+@keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+.hero-inner>*{animation:fadeUp .7s ease both}
+.hero-badge{animation-delay:.1s}
+.hero-title{animation-delay:.2s}
+.hero-sub{animation-delay:.35s}
+.hero-actions{animation-delay:.5s}
+.hero-pills{animation-delay:.6s}
+.dashboard-wrap{animation-delay:.7s}
+
+@media(max-width:900px){
+  .pillars,.why-grid,.how-steps,.pricing-grid,.reviews-grid,.contact-grid{grid-template-columns:1fr}
+  .dash-layout{grid-template-columns:1fr}
+  .dash-sidebar{display:none}
+  nav{padding:1rem 1.25rem}
+  .nav-links{display:none}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">hl<span>y</span>nk</div>
+  <ul class="nav-links">
+    <li><a href="#features">Features</a></li>
+    <li><a href="#pricing">Pricing</a></li>
+    <li><a href="#how">How it Works</a></li>
+    <li><a href="#reviews">Reviews</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ul>
+  <div class="nav-cta">
+    <a href="#" class="btn-ghost">Log In</a>
+    <a href="#" class="btn-primary">Register</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <canvas id="hero-canvas"></canvas>
+  <div style="position:relative;z-index:2;width:100%">
+    <div class="hero-inner">
+      <div class="hero-badge">Built for Kenyan Business Owners</div>
+      <h1 class="hero-title">Run Your Business Better.<br><em>Know Your Numbers</em> Every Day.</h1>
+      <p class="hero-sub">Most small business owners work hard every day — but still don't know their <strong>real profit</strong>. Not because they're careless. Because they don't have a simple system. <strong>hlynk</strong> is that system.</p>
+      <div class="hero-actions">
+        <a href="#" class="btn-big primary">Start Free 14-Day Trial</a>
+        <a href="#how" class="btn-big ghost">See How It Works</a>
+      </div>
+      <div class="hero-pills">
+        <span class="pill">No credit card</span>
+        <span class="pill">M-Pesa payments</span>
+        <span class="pill">Cancel anytime</span>
+      </div>
+    </div>
+
+    <!-- DASHBOARD MOCKUP -->
+    <div class="dashboard-wrap">
+      <div class="dash-glow"></div>
+      <div class="dashboard">
+        <div class="dash-topbar">
+          <div class="dash-dot r"></div><div class="dash-dot y"></div><div class="dash-dot g"></div>
+          <div class="dash-title-bar">HLYNK · Dashboard</div>
+        </div>
+        <div class="dash-layout">
+          <div class="dash-sidebar">
+            <div class="dash-brand">hlynk</div>
+            <div class="dash-nav-item active"><span class="dot"></span>Dashboard</div>
+            <div class="dash-nav-item"><span class="dot"></span>Inventory</div>
+            <div class="dash-nav-item"><span class="dot"></span>Sales</div>
+            <div class="dash-nav-item"><span class="dot"></span>Reports</div>
+            <div class="dash-nav-item"><span class="dot"></span>Requests</div>
+          </div>
+          <div class="dash-main">
+            <div class="dash-greeting">Good morning · Thursday, 24 Apr</div>
+            <div class="dash-metrics">
+              <div class="metric-card highlight">
+                <div class="metric-label">Today's Revenue</div>
+                <div class="metric-value">KES 24,500</div>
+                <div class="metric-badge">↑ 12% vs yesterday</div>
+              </div>
+              <div class="metric-card highlight">
+                <div class="metric-label">Net Profit</div>
+                <div class="metric-value">KES 8,200</div>
+                <div class="metric-badge">After expenses</div>
+              </div>
+              <div class="metric-card">
+                <div class="metric-label">Low Stock Items</div>
+                <div class="metric-value" style="color:var(--orange)">18</div>
+              </div>
+              <div class="metric-card">
+                <div class="metric-label">Expenses Today</div>
+                <div class="metric-value">KES 3,100</div>
+              </div>
+            </div>
+            <div class="dash-table-head">
+              <span>Item Sold</span><span>Qty</span><span>Status</span>
+            </div>
+            <div class="dash-row">
+              <span class="row-name">Haircut — Full</span>
+              <span class="row-qty">×4</span>
+              <span class="badge done">Done</span>
+            </div>
+            <div class="dash-row">
+              <span class="row-name">Phone Screen</span>
+              <span class="row-qty">×1</span>
+              <span class="badge pending">Pending</span>
+            </div>
+            <div class="dash-row">
+              <span class="row-name">Catering</span>
+              <span class="row-qty">×2</span>
+              <span class="badge done">Done</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- PILLARS -->
+<section style="padding:5rem 2rem;background:var(--bg)">
+  <div class="section-inner">
+    <div class="pillars">
+      <div class="pillar">
+        <div class="pillar-num">01 · SIMPLE</div>
+        <div class="pillar-word">Simple</div>
+        <p class="pillar-desc">No technical skills needed. If you can send a WhatsApp message, you can use hlynk.</p>
+      </div>
+      <div class="pillar">
+        <div class="pillar-num">02 · HONEST</div>
+        <div class="pillar-word">Honest</div>
+        <p class="pillar-desc">Real numbers. Real profit. No surprises. See exactly what your business makes — every day.</p>
+      </div>
+      <div class="pillar">
+        <div class="pillar-num">03 · RELIABLE</div>
+        <div class="pillar-word">Reliable</div>
+        <p class="pillar-desc">Built for Kenyan businesses. Works on any phone. Your data is secure and always accessible.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- WHY HLYNK -->
+<section id="features" style="background:var(--bg2)">
+  <div class="section-inner">
+    <div class="section-label">Why hlynk</div>
+    <h2 class="section-title">Run your business.<br><em>Know your numbers.</em></h2>
+    <p class="section-sub">Most Kenyan business owners work hard but never see real profit — because they have no system. hlynk gives you the tools to finally understand your business.</p>
+    <div class="why-grid">
+      <div class="why-card">
+        <div class="why-icon">💰</div>
+        <h3>Know Your Real Profit</h3>
+        <p>See how much money you actually make after expenses. No guessing. No confusion. Just a clear number at the end of each day.</p>
+      </div>
+      <div class="why-card">
+        <div class="why-icon">🧾</div>
+        <h3>Record Every Sale</h3>
+        <p>Every sale saved automatically. Find any transaction anytime. No more paper books or forgotten receipts.</p>
+      </div>
+      <div class="why-card">
+        <div class="why-icon">📦</div>
+        <h3>Stock That Updates Automatically</h3>
+        <p>Every time you record a sale, stock reduces instantly. Know when to restock — before you run out.</p>
+      </div>
+      <div class="why-card">
+        <div class="why-icon">📊</div>
+        <h3>Track Every Expense</h3>
+        <p>Record rent, supplies, transport, or wages in seconds. Stay in control of your cash and see where it actually goes.</p>
+      </div>
+      <div class="why-card">
+        <div class="why-icon">📅</div>
+        <h3>Daily & Monthly Summaries</h3>
+        <p>See your profit clearly at any time — daily or monthly. Built for business owners who need answers fast.</p>
+      </div>
+      <div class="why-card">
+        <div class="why-icon">☁️</div>
+        <h3>Secure Cloud Backup</h3>
+        <p>Your data is safe and accessible from any phone or laptop. No risk of losing records if your phone is lost or broken.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- HOW IT WORKS -->
+<section id="how" style="background:var(--bg)">
+  <div class="section-inner">
+    <div class="section-label">How It Works</div>
+    <h2 class="section-title">Up and running<br>in <em>3 minutes</em></h2>
+    <p class="section-sub">No setup fees. No tech skills. Just create your account and start tracking.</p>
+    <div class="how-steps">
+      <div class="step">
+        <div class="step-num">01</div>
+        <h3>Sign Up Free</h3>
+        <p>Create your account in under 3 minutes. Add your business name and category. No card required.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">02</div>
+        <h3>Add Services & Stock</h3>
+        <p>List your services and products with prices. Set stock levels and let hlynk track everything automatically as you sell.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">03</div>
+        <h3>Record Sales. See Profit.</h3>
+        <p>Record every sale and expense. Watch your real profit appear on your dashboard. Stay in control every day.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- WHO USES -->
+<section style="background:var(--bg2)">
+  <div class="section-inner">
+    <div class="section-label">Who Uses hlynk</div>
+    <h2 class="section-title">Built for every<br><em>service provider</em></h2>
+    <p class="section-sub">Whether you cut hair, fix cars, or feed people — if money moves through your hands, you need hlynk.</p>
+    <div class="who-wrap">
+      <div class="who-grid">
+        <span class="who-tag">✂️ Salons & Barbershops</span>
+        <span class="who-tag">🔧 Mechanics</span>
+        <span class="who-tag">📱 Phone Repair</span>
+        <span class="who-tag">🧹 Cleaning Services</span>
+        <span class="who-tag">⚡ Electricians & Plumbers</span>
+        <span class="who-tag">🍽️ Food & Catering</span>
+        <span class="who-tag">🧵 Tailors & Designers</span>
+        <span class="who-tag">📷 Photographers</span>
+        <span class="who-tag">💻 Freelancers</span>
+        <span class="who-tag">📚 Tutors</span>
+        <span class="who-tag">🔌 Electronics Repair</span>
+        <span class="who-tag more">And many more…</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- PRICING -->
+<section id="pricing" style="background:var(--bg)">
+  <div class="section-inner">
+    <div class="section-label">Pricing</div>
+    <h2 class="section-title">Simple, <em>honest</em> pricing</h2>
+    <p class="section-sub">Pay for what your business actually needs today. Start with a 14-day free trial — no card required.</p>
+    <div class="pricing-wrap">
+      <div class="pricing-grid">
+        <div class="plan-card">
+          <div class="plan-name">Starter</div>
+          <div class="plan-price">KES 1,000<span>/month</span></div>
+          <p class="plan-desc">Single-owner shops & service providers. Everything you need to finally know what your business makes.</p>
+          <ul class="plan-features">
+            <li>Record every sale</li>
+            <li>Track every expense</li>
+            <li>Basic stock tracking</li>
+            <li>See your daily profit</li>
+            <li>Secure cloud backup</li>
+            <li>Mobile-friendly dashboard</li>
+          </ul>
+          <a href="#" class="plan-btn">Start Free — Starter</a>
+        </div>
+        <div class="plan-card popular">
+          <div class="popular-badge">Most Popular</div>
+          <div class="plan-name">Growth</div>
+          <div class="plan-price">KES 2,000<span>/month</span></div>
+          <p class="plan-desc">Businesses with staff or growing stock. More control as your business gets busier.</p>
+          <ul class="plan-features">
+            <li>Everything in Starter</li>
+            <li>Full inventory management</li>
+            <li>Know when stock is running low</li>
+            <li>Multiple user accounts</li>
+            <li>See your monthly profit clearly</li>
+            <li>Sales & expense reports</li>
+          </ul>
+          <a href="#" class="plan-btn">Start Free — Growth</a>
+        </div>
+        <div class="plan-card">
+          <div class="plan-name">Business</div>
+          <div class="plan-price">KES 5,000<span>/month</span></div>
+          <p class="plan-desc">Busy shops & high-volume businesses. For businesses that need deeper insight and faster support.</p>
+          <ul class="plan-features">
+            <li>Everything in Growth</li>
+            <li>Advanced performance insights</li>
+            <li>Export data to Excel or PDF</li>
+            <li>Priority WhatsApp support</li>
+            <li>Understand your busiest periods</li>
+            <li>Built for high-volume operations</li>
+          </ul>
+          <a href="#" class="plan-btn">Start Free — Business</a>
+        </div>
+      </div>
+      <div class="all-plans">
+        <div class="all-plans-item">14-day free trial</div>
+        <div class="all-plans-item">M-Pesa payments</div>
+        <div class="all-plans-item">Cancel anytime</div>
+        <div class="all-plans-item">No setup fee</div>
+        <div class="all-plans-item">Secure cloud backup</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- REVIEWS -->
+<section id="reviews" style="background:var(--bg2)">
+  <div class="section-inner">
+    <div class="section-label">Reviews</div>
+    <h2 class="section-title">Business owners who finally<br><em>know their numbers</em></h2>
+    <div class="reviews-grid">
+      <div class="review-card">
+        <p class="review-text">"I used to count cash at the end of the day and wonder where it all went. Now I see every sale, every expense. My salon actually grew 40% once I started tracking properly."</p>
+        <div class="review-author">
+          <div class="review-avatar">MN</div>
+          <div>
+            <div class="review-name">Mama Njeri</div>
+            <div class="review-biz">Njeri Beauty Salon, Westlands</div>
+          </div>
+        </div>
+      </div>
+      <div class="review-card">
+        <p class="review-text">"The low stock alerts alone saved me. I used to order parts I already had and run out of ones I needed. Now my workshop runs like a proper business."</p>
+        <div class="review-author">
+          <div class="review-avatar">JK</div>
+          <div>
+            <div class="review-name">John Kamau</div>
+            <div class="review-biz">Kamau Electronics Repair, Thika</div>
+          </div>
+        </div>
+      </div>
+      <div class="review-card">
+        <p class="review-text">"I finally know my real profit. Not just what comes in — what stays after expenses. That changed everything about how I price my services."</p>
+        <div class="review-author">
+          <div class="review-avatar">AO</div>
+          <div>
+            <div class="review-name">Aisha Osman</div>
+            <div class="review-biz">Clean & Shine Services, Mombasa</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- CONTACT -->
+<section id="contact" style="background:var(--bg)">
+  <div class="section-inner">
+    <div class="section-label">Contact</div>
+    <h2 class="section-title">Need help?<br><em>We're here.</em></h2>
+    <div class="contact-grid">
+      <div class="contact-info">
+        <p>Have a question or need help setting up your business? Reach us anytime. No bots. Real people ready to help.</p>
+        <div class="contact-detail">
+          <div class="contact-icon">📞</div>
+          <div>
+            <div class="contact-detail-label">Phone & WhatsApp</div>
+            <div class="contact-detail-val">+254 XXX XXX XXX</div>
+          </div>
+        </div>
+        <div class="contact-detail">
+          <div class="contact-icon">✉️</div>
+          <div>
+            <div class="contact-detail-label">Email</div>
+            <div class="contact-detail-val">support@hlynk.co.ke</div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="form-group">
+          <label>Your Name</label>
+          <input type="text" placeholder="Jane Wanjiku"/>
+        </div>
+        <div class="form-group">
+          <label>Email or Phone</label>
+          <input type="text" placeholder="jane@example.com or 07XX XXX XXX"/>
+        </div>
+        <div class="form-group">
+          <label>Message</label>
+          <textarea placeholder="How can we help you?"></textarea>
+        </div>
+        <button class="form-submit">Send Message</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- CTA -->
+<section class="cta-section">
+  <div class="cta-inner">
+    <h2 class="cta-title">Ready to know what your<br>business <em>really makes?</em></h2>
+    <p class="cta-sub">Join Kenyan service providers using hlynk to record sales, track expenses, manage stock, and see real profit — every day.</p>
+    <a href="#" class="btn-big primary">Start Free 14-Day Trial</a>
+    <div class="cta-pills">No card needed <span>·</span> M-Pesa ready <span>·</span> Cancel anytime</div>
+    <p style="margin-top:1.5rem;font-family:var(--mono);font-size:0.8rem;color:var(--text-dim)">Run your business. Know your numbers.</p>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">hlynk</div>
+  <ul class="footer-links">
+    <li><a href="#features">Features</a></li>
+    <li><a href="#pricing">Pricing</a></li>
+    <li><a href="#how">How it Works</a></li>
+    <li><a href="#reviews">Reviews</a></li>
+    <li><a href="#contact">Contact</a></li>
+    <li><a href="#">Register</a></li>
+    <li><a href="#">Log In</a></li>
+  </ul>
+  <div class="footer-copy">© 2025 hlynk. All rights reserved.</div>
+</footer>
+
+<!-- CANVAS ANIMATION -->
+<script>
+(function(){
+  const canvas = document.getElementById('hero-canvas');
+  const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+  let W, H, raf, t = 0;
+
+  const rand = (a, b) => a + Math.random() * (b - a);
+  const C = { teal:'rgba(32,201,151,', blue:'rgba(74,144,226,', orange:'rgba(255,140,66,' };
+
+  let particles, streams, hexes, rings, floaters;
+
+  function init() {
+    W = canvas.width  = canvas.offsetWidth  * dpr;
+    H = canvas.height = canvas.offsetHeight * dpr;
+    canvas.style.width  = canvas.offsetWidth  + 'px';
+    canvas.style.height = canvas.offsetHeight + 'px';
+
+    particles = Array.from({length:90}, () => ({
+      x:rand(0,W), y:rand(0,H),
+      vx:rand(-0.25,0.25), vy:rand(-0.5,-0.1),
+      size:rand(1,3.5)*dpr,
+      alpha:rand(0.15,0.85),
+      color:[C.teal,C.blue,C.orange,'rgba(255,255,255,'][Math.floor(rand(0,4))],
+      twinkle:rand(0,Math.PI*2), twinkleSpeed:rand(0.015,0.05),
+    }));
+
+    streams = Array.from({length:22}, (_,i) => ({
+      x:rand(0,W), y:rand(-H,H),
+      len:rand(80,220)*dpr,
+      speed:rand(0.5,1.4),
+      alpha:rand(0.04,0.16),
+      width:rand(0.5,2)*dpr,
+      color:[C.teal,C.blue,C.orange][i%3],
+    }));
+
+    hexes = Array.from({length:12}, (_,i) => ({
+      cx: W*(0.08+(i%4)*0.28),
+      cy: H*(0.15+Math.floor(i/4)*0.38),
+      r: rand(24,60)*dpr,
+      rot:rand(0,Math.PI), rotSpeed:rand(-0.004,0.004),
+      alpha:rand(0.025,0.09),
+      color:[C.teal,C.blue,C.orange][i%3],
+      phase:rand(0,Math.PI*2),
+    }));
+
+    rings = [
+      {cx:W*0.12,cy:H*0.5,color:C.teal,maxR:160*dpr,t:0},
+      {cx:W*0.88,cy:H*0.3,color:C.blue,maxR:130*dpr,t:-70},
+      {cx:W*0.5,cy:H*0.85,color:C.orange,maxR:110*dpr,t:-140},
+      {cx:W*0.25,cy:H*0.12,color:C.teal,maxR:90*dpr,t:-210},
+      {cx:W*0.75,cy:H*0.7,color:C.blue,maxR:75*dpr,t:-280},
+    ].map(r=>({...r,r:0,speed:rand(0.7,1.3),alpha:0.5}));
+
+    const labels=['KES','+','✓','₊','→','%','↑'];
+    floaters = Array.from({length:22},(_,i)=>({
+      x:rand(0,W), y:rand(0,H),
+      vy:rand(-0.25,-0.75),
+      alpha:rand(0.08,0.45),
+      size:rand(9,17)*dpr,
+      text:labels[i%labels.length],
+      color:[C.teal,C.blue,C.orange][i%3]+'1)',
+      phase:rand(0,Math.PI*2),
+    }));
+  }
+
+  function hexPath(cx,cy,r,rot){
+    ctx.beginPath();
+    for(let i=0;i<6;i++){
+      const a=rot+(i/6)*Math.PI*2;
+      i===0?ctx.moveTo(cx+Math.cos(a)*r,cy+Math.sin(a)*r)
+           :ctx.lineTo(cx+Math.cos(a)*r,cy+Math.sin(a)*r);
+    }
+    ctx.closePath();
+  }
+
+  function meshLines(){
+    const n=particles.slice(0,32);
+    for(let i=0;i<n.length;i++){
+      for(let j=i+1;j<n.length;j++){
+        const dx=n[i].x-n[j].x, dy=n[i].y-n[j].y;
+        const d=Math.sqrt(dx*dx+dy*dy), maxD=130*dpr;
+        if(d<maxD){
+          ctx.beginPath();
+          ctx.moveTo(n[i].x,n[i].y);
+          ctx.lineTo(n[j].x,n[j].y);
+          ctx.strokeStyle=C.teal+(1-d/maxD)*0.1+')';
+          ctx.lineWidth=0.5*dpr;
+          ctx.stroke();
+        }
+      }
+    }
+  }
+
+  function draw(){
+    t++;
+    ctx.clearRect(0,0,W,H);
+
+    // atmosphere
+    let g=ctx.createRadialGradient(W/2,H*0.42,0,W/2,H*0.42,W*0.7);
+    g.addColorStop(0,'rgba(32,201,151,0.08)');
+    g.addColorStop(0.45,'rgba(74,144,226,0.04)');
+    g.addColorStop(1,'transparent');
+    ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+
+    g=ctx.createRadialGradient(W*0.08,H*0.82,0,W*0.08,H*0.82,W*0.5);
+    g.addColorStop(0,'rgba(255,140,66,0.06)');
+    g.addColorStop(1,'transparent');
+    ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+
+    g=ctx.createRadialGradient(W*0.92,H*0.15,0,W*0.92,H*0.15,W*0.4);
+    g.addColorStop(0,'rgba(74,144,226,0.05)');
+    g.addColorStop(1,'transparent');
+    ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+
+    // hexes
+    hexes.forEach(h=>{
+      h.rot+=h.rotSpeed;
+      const pulse=Math.sin(t*0.018+h.phase)*0.5+0.5;
+      const a=h.alpha*(0.5+pulse*0.5);
+      ctx.lineWidth=dpr;
+      ctx.strokeStyle=h.color+a+')';
+      hexPath(h.cx,h.cy,h.r,h.rot); ctx.stroke();
+      ctx.strokeStyle=h.color+(a*0.45)+')';
+      hexPath(h.cx,h.cy,h.r*0.58,h.rot+Math.PI/6); ctx.stroke();
+    });
+
+    // streams
+    streams.forEach(s=>{
+      s.y-=s.speed;
+      if(s.y+s.len<0){s.y=H+s.len;s.x=rand(0,W);}
+      const gr=ctx.createLinearGradient(s.x,s.y-s.len,s.x,s.y);
+      gr.addColorStop(0,s.color+'0)');
+      gr.addColorStop(0.5,s.color+s.alpha+')');
+      gr.addColorStop(1,s.color+'0)');
+      ctx.beginPath();ctx.moveTo(s.x,s.y-s.len);ctx.lineTo(s.x,s.y);
+      ctx.strokeStyle=gr;ctx.lineWidth=s.width;ctx.stroke();
+    });
+
+    meshLines();
+
+    // particles
+    particles.forEach(p=>{
+      p.x+=p.vx; p.y+=p.vy; p.twinkle+=p.twinkleSpeed;
+      if(p.y<-10){p.y=H+10;p.x=rand(0,W);}
+      if(p.x<-10)p.x=W+10;
+      if(p.x>W+10)p.x=-10;
+      const ta=p.alpha*(0.45+0.55*Math.sin(p.twinkle));
+      ctx.beginPath();ctx.arc(p.x,p.y,p.size,0,Math.PI*2);
+      ctx.fillStyle=p.color+ta+')';ctx.fill();
+      if(p.size>2.2*dpr){
+        const glow=ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,p.size*5);
+        glow.addColorStop(0,p.color+(ta*0.35)+')');
+        glow.addColorStop(1,'transparent');
+        ctx.beginPath();ctx.arc(p.x,p.y,p.size*5,0,Math.PI*2);
+        ctx.fillStyle=glow;ctx.fill();
+      }
+    });
+
+    // rings
+    rings.forEach(ring=>{
+      ring.t++;
+      if(ring.t<0)return;
+      ring.r+=ring.speed;
+      ring.alpha=(1-ring.r/ring.maxR)*0.45;
+      if(ring.r>ring.maxR){ring.r=0;ring.alpha=0.45;ring.t=0;}
+      ctx.beginPath();ctx.arc(ring.cx,ring.cy,ring.r,0,Math.PI*2);
+      ctx.strokeStyle=ring.color+ring.alpha+')';
+      ctx.lineWidth=1.5*dpr;ctx.stroke();
+    });
+
+    // floaters
+    floaters.forEach(f=>{
+      f.y+=f.vy; f.phase+=0.018;
+      if(f.y<-30){f.y=H+20;f.x=rand(0,W);}
+      ctx.globalAlpha=f.alpha*(0.55+0.45*Math.sin(f.phase));
+      ctx.fillStyle=f.color;
+      ctx.font=Math.round(f.size)+'px "DM Mono","SF Mono",monospace';
+      ctx.fillText(f.text,f.x,f.y);
+      ctx.globalAlpha=1;
+    });
+
+    // scan line
+    const sy=(t*0.35)%H;
+    const sg=ctx.createLinearGradient(0,sy-50*dpr,0,sy+50*dpr);
+    sg.addColorStop(0,'transparent');
+    sg.addColorStop(0.5,'rgba(32,201,151,0.035)');
+    sg.addColorStop(1,'transparent');
+    ctx.fillStyle=sg;ctx.fillRect(0,sy-50*dpr,W,100*dpr);
+
+    raf=requestAnimationFrame(draw);
+  }
+
+  function start(){ cancelAnimationFrame(raf); init(); draw(); }
+  start();
+  window.addEventListener('resize',start);
+})();
+</script>
+</body>
+</html>
