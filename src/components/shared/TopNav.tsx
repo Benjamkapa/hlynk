@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import { Bell, User, Settings, LogOut, ChevronDown, Sparkles, Package, AlertTriangle } from 'lucide-react'
+import { Bell, User, Settings, LogOut, ChevronDown, Sparkles, Package, AlertTriangle, Shield } from 'lucide-react'
 import { useAuth } from '../../lib/auth/AuthContext'
 import { Link, useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
@@ -116,6 +116,12 @@ export default function TopNav() {
                 <User size={16} />
                 <span>View Profile</span>
               </Link>
+              {user?.role === 'SUPER_ADMIN' && (
+                <Link to="/admin" className="dropdown-item text-primary font-black">
+                  <Shield size={16} />
+                  <span>Admin Panel</span>
+                </Link>
+              )}
               <Link to="/dashboard/settings" className="dropdown-item">
                 <Settings size={16} />
                 <span>Account Settings</span>

@@ -29,7 +29,7 @@ export const requestsApi = {
 
 export const adminApi = {
   getStats: () => api.get('/admin/stats').then(r => r.data),
-  getTenants: (params?: { page?: number; search?: string }) =>
+  getTenants: (params?: { page?: number; search?: string; limit?: number }) =>
     api.get('/admin/tenants', { params }).then(r => r.data),
   suspendTenant: (id: string) => api.put(`/admin/tenants/${id}/suspend`).then(r => r.data),
   activateTenant: (id: string) => api.put(`/admin/tenants/${id}/activate`).then(r => r.data),

@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { User, Phone, ArrowRight, Building2, MapPin, Tag, Lock, Mail, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { authApi } from "../../lib/api/auth";
+import { useAuth } from "../../lib/auth/AuthContext";
 
 const COUNTIES = [
   "Nairobi", "Mombasa", "Kwale", "Kilifi", "Tana River", "Lamu", "Taita/Taveta", "Garissa", "Wajir", "Mandera", "Marsabit", "Isiolo", "Meru", "Tharaka-Nithi", "Embu", "Kitui", "Machakos", "Makueni", "Nyandarua", "Nyeri", "Kirinyaga", "Murang'a", "Kiambu", "Turkana", "West Pokot", "Samburu", "Trans Nzoia", "Uasin Gishu", "Elgeyo/Marakwet", "Nandi", "Baringo", "Laikipia", "Nakuru", "Narok", "Kajiado", "Kericho", "Bomet", "Kakamega", "Vihiga", "Bungoma", "Busia", "Siaya", "Kisumu", "Homa Bay", "Migori", "Kisii", "Nyamira"
@@ -14,7 +15,14 @@ const CATEGORIES = [
 
 export default function RegisterPage() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [searchParams] = useSearchParams();
+
+  useEffect(() => {
+    if (user) {
+      navigate(user.role === 'SUPER_ADMIN' ? "/admin" : "/dashboard", { replace: true });
+    }
+  }, [user, navigate]);
   const planName = (searchParams.get('plan') || 'TRIAL').toUpperCase();
   
   const [loading, setLoading] = useState(false);

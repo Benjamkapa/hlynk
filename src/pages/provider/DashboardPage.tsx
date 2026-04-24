@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
-import { 
-  TrendingUp, TrendingDown, Package, DollarSign, PlusCircle, 
+import {
+  TrendingUp, TrendingDown, Package, DollarSign, PlusCircle,
   History, Wallet, ShoppingCart, Globe, FileText, Activity,
   AlertTriangle, ArrowUpRight, BarChart3, ChevronRight,
   ExternalLink, MousePointer2
@@ -8,7 +8,7 @@ import {
 import { Link } from 'react-router-dom'
 import { useAuth } from '../../lib/auth/AuthContext'
 import { providersApi } from '../../lib/api/providers'
-import { 
+import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   AreaChart, Area
 } from 'recharts'
@@ -18,7 +18,7 @@ const formatKES = (val: number) => new Intl.NumberFormat('en-KE', { style: 'curr
 export default function DashboardPage() {
   const { user } = useAuth()
   const { data: statsData, isLoading } = useQuery({ queryKey: ['provider-stats'], queryFn: providersApi.getStats })
-  
+
   const stats = statsData?.data || {
     snapshot: { salesToday: 0, expensesToday: 0, profitToday: 0, lowStockCount: 0, transactionsToday: 0 },
     trends: { sales7Days: [], profit6Months: [] },
@@ -78,36 +78,36 @@ export default function DashboardPage() {
         <div className="lg:col-span-2 space-y-8">
           {/* ── Section 3: Sales Performance ─────────────────────────── */}
           <div className="card p-8">
-             <div className="flex items-center justify-between mb-8">
-                <div>
-                  <h3 className="text-lg font-black text-foreground font-ubuntu">Sales Performance</h3>
-                  <p className="text-xs text-muted-foreground font-nunito">Weekly revenue tracking</p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="w-2.5 h-2.5 rounded-full bg-primary" />
-                  <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Gross Sales</span>
-                </div>
-             </div>
-             <div className="h-[280px] w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={stats.trends.sales7Days}>
-                    <defs>
-                      <linearGradient id="salesGrad" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#20C997" stopOpacity={0.15}/>
-                        <stop offset="95%" stopColor="#20C997" stopOpacity={0}/>
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E9EC" />
-                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#7A8896', fontWeight: 800 }} dy={10} />
-                    <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#7A8896', fontWeight: 800 }} />
-                    <Tooltip 
-                      contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1)' }}
-                      itemStyle={{ fontWeight: 800, fontSize: '12px' }}
-                    />
-                    <Area type="monotone" dataKey="value" stroke="#20C997" strokeWidth={4} fill="url(#salesGrad)" />
-                  </AreaChart>
-                </ResponsiveContainer>
-             </div>
+            <div className="flex items-center justify-between mb-8">
+              <div>
+                <h3 className="text-lg font-black text-foreground font-ubuntu">Sales Performance</h3>
+                <p className="text-xs text-muted-foreground font-nunito">Weekly revenue tracking</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-primary" />
+                <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Gross Sales</span>
+              </div>
+            </div>
+            <div className="h-[280px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={stats.trends.sales7Days}>
+                  <defs>
+                    <linearGradient id="salesGrad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#20C997" stopOpacity={0.15} />
+                      <stop offset="95%" stopColor="#20C997" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E9EC" />
+                  <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#7A8896', fontWeight: 800 }} dy={10} />
+                  <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#7A8896', fontWeight: 800 }} />
+                  <Tooltip
+                    contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1)' }}
+                    itemStyle={{ fontWeight: 800, fontSize: '12px' }}
+                  />
+                  <Area type="monotone" dataKey="value" stroke="#20C997" strokeWidth={4} fill="url(#salesGrad)" />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -118,13 +118,13 @@ export default function DashboardPage() {
                 {stats.topProducts.map((p: any, i: number) => (
                   <div key={i} className="flex items-center justify-between p-4 rounded-2xl border border-border hover:bg-muted/30 transition-all group cursor-pointer">
                     <div className="flex items-center gap-3">
-                       <div className="h-9 w-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center text-xs font-black">
-                         {i + 1}
-                       </div>
-                       <div>
-                         <p className="text-sm font-bold text-foreground font-ubuntu truncate max-w-[120px]">{p.name}</p>
-                         <p className="text-[10px] text-muted-foreground font-bold uppercase">{p._sum.quantity} units sold</p>
-                       </div>
+                      <div className="h-9 w-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center text-xs font-black">
+                        {i + 1}
+                      </div>
+                      <div>
+                        <p className="text-sm font-bold text-foreground font-ubuntu truncate max-w-[120px]">{p.name}</p>
+                        <p className="text-[10px] text-muted-foreground font-bold uppercase">{p._sum.quantity} units sold</p>
+                      </div>
                     </div>
                     <ArrowUpRight size={16} className="text-muted-foreground group-hover:text-primary transition-colors" />
                   </div>
@@ -170,13 +170,13 @@ export default function DashboardPage() {
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
-                     <div className="flex items-center gap-2">
-                       <span className="text-xs font-black text-foreground">{item.stockLevel}</span>
-                       <div className="h-1.5 w-24 bg-muted rounded-full overflow-hidden">
-                         <div className="h-full bg-amber-500 rounded-full" style={{ width: `${(item.stockLevel / item.minLevel) * 100}%` }} />
-                       </div>
-                     </div>
-                     <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">Min: {item.minLevel}</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-black text-foreground">{item.stockLevel}</span>
+                      <div className="h-1.5 w-24 bg-muted rounded-full overflow-hidden">
+                        <div className="h-full bg-amber-500 rounded-full" style={{ width: `${(item.stockLevel / item.minLevel) * 100}%` }} />
+                      </div>
+                    </div>
+                    <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">Min: {item.minLevel}</span>
                   </div>
                   <div className="flex gap-2 mt-4">
                     <button className="flex-1 py-2 bg-white border border-amber-200 rounded-lg text-[10px] font-black uppercase tracking-widest text-amber-600 hover:bg-amber-50">Restock</button>

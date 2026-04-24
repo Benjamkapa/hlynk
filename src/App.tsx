@@ -21,6 +21,14 @@ import SubscriptionPage from './pages/provider/SubscriptionPage'
 import AdminLayout from './components/shared/AdminLayout'
 import AdminDashboardPage from './pages/admin/AdminDashboardPage'
 import AdminTenantsPage from './pages/admin/AdminTenantsPage'
+import AdminAddProviderPage from './pages/admin/AdminAddProviderPage'
+import AdminSubscriptionsPage from './pages/admin/AdminSubscriptionsPage'
+import AdminRevenuePage from './pages/admin/AdminRevenuePage'
+import AdminUsersPage from './pages/admin/AdminUsersPage'
+import AdminAnnouncementsPage from './pages/admin/AdminAnnouncementsPage'
+import AdminReportsPage from './pages/admin/AdminReportsPage'
+import AdminSettingsPage from './pages/admin/AdminSettingsPage'
+import AdminSupportPage from './pages/admin/AdminSupportPage'
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, isLoading } = useAuth()
@@ -59,7 +67,28 @@ export default function App() {
       {/* Admin Portal */}
       <Route path="/admin" element={<AdminRoute><AdminLayout /></AdminRoute>}>
         <Route index element={<AdminDashboardPage />} />
-        <Route path="tenants" element={<AdminTenantsPage />} />
+        {/* Businesses */}
+        <Route path="businesses" element={<AdminTenantsPage />} />
+        <Route path="businesses/new" element={<AdminAddProviderPage />} />
+        <Route path="businesses/activity" element={<AdminTenantsPage />} />
+        
+        {/* Subscriptions */}
+        <Route path="subscriptions" element={<AdminSubscriptionsPage />} />
+        <Route path="subscriptions/active" element={<AdminSubscriptionsPage />} />
+        <Route path="subscriptions/trials" element={<AdminSubscriptionsPage />} />
+        <Route path="subscriptions/expired" element={<AdminSubscriptionsPage />} />
+        
+        {/* Revenue */}
+        <Route path="revenue" element={<AdminRevenuePage />} />
+        <Route path="revenue/payments" element={<AdminRevenuePage />} />
+        <Route path="revenue/report" element={<AdminRevenuePage />} />
+        
+        {/* Others */}
+        <Route path="users" element={<AdminUsersPage />} />
+        <Route path="announcements" element={<AdminAnnouncementsPage />} />
+        <Route path="reports" element={<AdminReportsPage />} />
+        <Route path="settings" element={<AdminSettingsPage />} />
+        <Route path="support" element={<AdminSupportPage />} />
       </Route>
 
       {/* Fallback */}

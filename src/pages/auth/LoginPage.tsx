@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Lock, Phone, ArrowRight, Loader2 } from "lucide-react";
 import { toast } from "sonner";
@@ -7,12 +7,18 @@ import { useAuth } from "../../lib/auth/AuthContext";
 
 export default function LoginPage() {
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { login, user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     phone: "",
     password: "",
   });
+
+  useEffect(() => {
+    if (user) {
+      navigate(user.role === 'SUPER_ADMIN' ? "/admin" : "/dashboard", { replace: true });
+    }
+  }, [user, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,7 +31,13 @@ export default function LoginPage() {
         res.data.user
       );
       toast.success("Welcome back!");
-      navigate("/dashboard");
+      
+      // Role-based redirection
+      if (res.data.user.role === 'SUPER_ADMIN') {
+        navigate("/admin");
+      } else {
+        navigate("/dashboard");
+      }
     } catch (err: any) {
       toast.error(err.response?.data?.message || "Invalid credentials. Please try again.");
     } finally {
