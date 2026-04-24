@@ -11,6 +11,45 @@ export const providersApi = {
       headers: { 'Content-Type': 'multipart/form-data' },
     }).then(r => r.data)
   },
+  // Inventory aliases
+  getProducts: (params?: any) => inventoryApi.list(params),
+  updateProduct: (id: string, data: any) => inventoryApi.update(id, data),
+  deleteProduct: (id: string) => inventoryApi.delete(id),
+  getRestockHistory: (params?: any) => api.get('/inventory/restock/history', { params }).then(r => r.data),
+  // Expense aliases
+  getExpenses: (params?: any) => expensesApi.list(params),
+  createExpense: (data: any) => expensesApi.create(data),
+  deleteExpense: (id: string) => expensesApi.delete(id),
+  getSales: (params?: any) => salesApi.list(params),
+  getCustomers: (params?: any) => customersApi.list(params),
+  getServices: () => servicesApi.list(),
+  getRequests: (params?: any) => requestsApi.list(params),
+}
+
+export const salesApi = {
+  list: (params?: { page?: number; search?: string }) => api.get('/sales', { params }).then(r => r.data),
+  create: (data: any) => api.post('/sales', data).then(r => r.data),
+  getDetails: (id: string) => api.get(`/sales/${id}`).then(r => r.data),
+}
+
+export const inventoryApi = {
+  list: (params?: { page?: number; search?: string; category?: string }) => api.get('/inventory', { params }).then(r => r.data),
+  create: (data: any) => api.post('/inventory', data).then(r => r.data),
+  update: (id: string, data: any) => api.put(`/inventory/${id}`, data).then(r => r.data),
+  adjustStock: (id: string, quantity: number, reason: string) => api.post(`/inventory/${id}/adjust`, { quantity, reason }).then(r => r.data),
+  delete: (id: string) => api.delete(`/inventory/${id}`).then(r => r.data),
+}
+
+export const expensesApi = {
+  list: (params?: { page?: number; search?: string; category?: string }) => api.get('/expenses', { params }).then(r => r.data),
+  create: (data: any) => api.post('/expenses', data).then(r => r.data),
+  delete: (id: string) => api.delete(`/expenses/${id}`).then(r => r.data),
+}
+
+export const customersApi = {
+  list: (params?: { page?: number; search?: string }) => api.get('/customers', { params }).then(r => r.data),
+  create: (data: any) => api.post('/customers', data).then(r => r.data),
+  update: (id: string, data: any) => api.put(`/customers/${id}`, data).then(r => r.data),
 }
 
 export const servicesApi = {
@@ -35,4 +74,5 @@ export const adminApi = {
   activateTenant: (id: string) => api.put(`/admin/tenants/${id}/activate`).then(r => r.data),
   upgradePlan: (id: string, planName: string) =>
     api.put(`/admin/tenants/${id}/upgrade`, { planName }).then(r => r.data),
+  createTenant: (data: any) => api.post('/admin/tenants', data).then(r => r.data),
 }

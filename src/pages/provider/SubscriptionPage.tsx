@@ -1,20 +1,25 @@
 import { useAuth } from '../../lib/auth/AuthContext'
-import { CheckCircle2, AlertCircle, ArrowRight, CreditCard } from 'lucide-react'
+import { CheckCircle2, AlertCircle, ArrowRight, CreditCard, ShieldCheck, Zap, Layers } from 'lucide-react'
+import { PROVIDER_CSS, fmtDate } from '../admin/hl-design-system'
 
 const PLANS = [
   {
-    name: 'Trial',
-    price: 'Free',
-    period: '14 days',
-    features: ['Full dashboard access', 'Unlimited services', 'Receive requests', 'Public profile page'],
+    name: 'TRIAL',
+    price: 'FREE',
+    period: '14 DAYS',
+    features: ['Standard Dashboard access', 'Service listing limit (10)', 'General customer leads', 'Public brand page'],
     isCurrent: true,
+    accent: 'var(--ink3)',
+    icon: Zap,
   },
   {
-    name: 'Basic',
+    name: 'PREMIUM',
     price: 'KES 500',
-    period: 'per month',
-    features: ['Everything in Trial', 'Priority listing', 'Unlimited requests', 'SMS notifications', 'Verified badge'],
+    period: 'MONTHLY',
+    features: ['Priority search ranking', 'Unlimited service entries', 'Direct WhatsApp leads', 'Verified Partner badge', 'Financial forecasting tools'],
     highlight: true,
+    accent: 'var(--mint)',
+    icon: ShieldCheck,
   },
 ]
 
@@ -26,92 +31,122 @@ export default function SubscriptionPage() {
     ? Math.max(0, Math.ceil((new Date(sub.trialEndDate).getTime() - Date.now()) / 86400000))
     : null
 
-  const statusColor: Record<string, string> = {
-    TRIAL: 'badge-trial', ACTIVE: 'badge-active', EXPIRED: 'badge-expired', SUSPENDED: 'badge-suspended',
+  const statusMeta: Record<string, { cls: string; label: string }> = {
+    TRIAL:     { cls: 'hl-badge-trial',   label: 'EVALUATION' },
+    ACTIVE:    { cls: 'hl-badge-active',  label: 'PREMIUM ACTIVE' },
+    EXPIRED:   { cls: 'hl-badge-expired', label: 'EXPIRED' },
+    SUSPENDED: { cls: 'hl-badge-expired', label: 'SUSPENDED' },
   }
 
+  const currentStatus = statusMeta[sub?.status || 'TRIAL'] || statusMeta.TRIAL
+
   return (
-    <div>
-      <div className="page-header">
-        <h1 className="page-title">Subscription</h1>
-        <p className="page-subtitle">Manage your plan and billing</p>
-      </div>
-
-      <div className="page-body space-y-6 max-w-3xl">
-        {/* Current status card */}
-        <div className="card p-5">
-          <h2 className="font-semibold text-foreground mb-4">Current Plan</h2>
-          <div className="flex items-center gap-4 flex-wrap">
-            <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center">
-              <CreditCard size={22} className="text-primary" />
-            </div>
-            <div className="flex-1">
-              <div className="flex items-center gap-2 flex-wrap">
-                <p className="font-bold text-lg text-foreground">{sub?.planName || 'Trial'}</p>
-                <span className={`badge ${statusColor[sub?.status || 'TRIAL'] || 'badge-trial'}`}>{sub?.status}</span>
-              </div>
-              {sub?.status === 'TRIAL' && trialDays !== null && (
-                <p className="text-sm text-muted-foreground mt-0.5">
-                  {trialDays > 0 ? `${trialDays} day${trialDays !== 1 ? 's' : ''} remaining` : 'Trial expired'}
-                  {' · '}{new Date(sub.trialEndDate).toLocaleDateString('en-KE')}
-                </p>
-              )}
-              {sub?.status === 'ACTIVE' && sub.endDate && (
-                <p className="text-sm text-muted-foreground mt-0.5">
-                  Renews {new Date(sub.endDate).toLocaleDateString('en-KE')}
-                </p>
-              )}
-            </div>
+    <>
+      <style>{PROVIDER_CSS}</style>
+      <div className="hl-dash" style={{ padding: '28px 32px 60px' }}>
+        
+        <div className="hl-page-header">
+          <div>
+            <h1 className="hl-page-title">Service Tier</h1>
+            <p className="hl-page-subtitle">Configure your operational limits and professional visibility</p>
           </div>
-
-          {(sub?.status === 'TRIAL' && trialDays !== null && trialDays <= 5) && (
-            <div className="flex items-start gap-3 mt-4 p-3.5 rounded-lg bg-amber-50 border border-amber-200">
-              <AlertCircle size={18} className="text-amber-600 shrink-0 mt-0.5" />
-              <div>
-                <p className="text-sm font-semibold text-amber-800">Your trial expires in {trialDays} day{trialDays !== 1 ? 's' : ''}</p>
-                <p className="text-xs text-amber-700 mt-0.5">After expiry, new service requests will be paused. Upgrade now to avoid interruption.</p>
-              </div>
-            </div>
-          )}
         </div>
 
-        {/* Plan cards */}
-        <div>
-          <h2 className="font-semibold text-foreground mb-4">Available Plans</h2>
-          <div className="grid sm:grid-cols-2 gap-4">
-            {PLANS.map(plan => (
-              <div key={plan.name} className={`card p-5 ${plan.highlight ? 'ring-2 ring-primary' : ''}`}>
-                {plan.highlight && (
-                  <span className="inline-block px-2.5 py-0.5 rounded-full bg-primary text-white text-xs font-semibold mb-3">Most Popular</span>
-                )}
-                <h3 className="font-bold text-foreground text-lg">{plan.name}</h3>
-                <div className="mt-1 mb-4">
-                  <span className="text-3xl font-extrabold text-foreground">{plan.price}</span>
-                  <span className="text-muted-foreground text-sm ml-1">/ {plan.period}</span>
+        <div style={{ maxWidth: 900, display: 'flex', flexDirection: 'column', gap: 32 }}>
+          
+          {/* Active Subscription Overview */}
+          <div className="hl-card" style={{ padding: '28px', animation: 'hl-up .4s ease both', position: 'relative', overflow: 'hidden' }}>
+            <div style={{ position: 'absolute', top: 0, right: 0, width: 120, height: 120, background: 'radial-gradient(circle, var(--mint) 0%, transparent 70%)', opacity: 0.05 }} />
+            <div style={{ display: 'flex', alignItems: 'center', gap: 20, flexWrap: 'wrap' }}>
+              <div style={{ width: 56, height: 56, borderRadius: 14, background: 'var(--surface2)', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--mint)' }}>
+                <Layers size={24} />
+              </div>
+              <div style={{ flex: 1 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 4 }}>
+                   <p style={{ fontFamily: "'Nunito',sans-serif", fontWeight: 900, fontSize: '1.2rem', color: 'var(--ink)' }}>{sub?.planName || 'TRIAL EVALUATION'}</p>
+                   <span className={`hl-badge ${currentStatus.cls}`} style={{ padding: '4px 12px', fontSize: '.6rem' }}>{currentStatus.label}</span>
                 </div>
-                <ul className="space-y-2 mb-5">
-                  {plan.features.map(f => (
-                    <li key={f} className="flex items-center gap-2 text-sm text-foreground">
-                      <CheckCircle2 size={15} className="text-primary shrink-0" />
-                      {f}
-                    </li>
-                  ))}
-                </ul>
-                {plan.highlight ? (
-                  <button className="btn-primary w-full justify-center">
-                    <CreditCard size={15} /> Upgrade via M-Pesa <ArrowRight size={14} />
-                  </button>
-                ) : (
-                  <div className="flex items-center justify-center h-10 rounded-lg bg-muted text-sm text-muted-foreground font-medium">
-                    {sub?.status === 'TRIAL' ? 'Current Plan' : 'Downgrade'}
-                  </div>
+                {sub?.status === 'TRIAL' && trialDays !== null && (
+                  <p style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: '.7rem', color: 'var(--ink3)', fontWeight: 600 }}>
+                    {trialDays > 0 ? `${trialDays} BUSINESS DAYS REMAINING` : 'EVALUATION CYCLE COMPLETE'}
+                    {' · TERMINATES: '}{fmtDate(sub.trialEndDate)}
+                  </p>
+                )}
+                {sub?.status === 'ACTIVE' && sub.endDate && (
+                  <p style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: '.7rem', color: 'var(--ink3)', fontWeight: 600 }}>
+                    NEXT BILLING CYCLE: {fmtDate(sub.endDate)}
+                  </p>
                 )}
               </div>
-            ))}
+            </div>
+
+            {(sub?.status === 'TRIAL' && trialDays !== null && trialDays <= 5) && (
+              <div style={{ marginTop: 24, padding: '16px 20px', borderRadius: 12, background: 'rgba(245,166,35,.1)', border: '1px solid rgba(245,166,35,.2)', display: 'flex', gap: 14, alignItems: 'center' }}>
+                <AlertCircle size={20} color="#F5A623" />
+                <div>
+                  <p style={{ fontSize: '.82rem', fontWeight: 800, color: '#92400E' }}>Evaluation Period Ending</p>
+                  <p style={{ fontSize: '.75rem', color: '#B45309', opacity: 0.8 }}>Your access will be restricted in {trialDays} days. Secure your leads by upgrading to Premium.</p>
+                </div>
+              </div>
+            )}
           </div>
-          <p className="text-xs text-muted-foreground mt-3">* M-Pesa STK Push payment will be triggered on your phone upon upgrade. Payments are processed securely via Intasend.</p>
+
+          {/* Tier Selection */}
+          <div>
+            <h2 style={{ fontFamily: "'Nunito',sans-serif", fontWeight: 900, fontSize: '.9rem', textTransform: 'uppercase', letterSpacing: '.08em', color: 'var(--ink)', marginBottom: 20 }}>Operational Tiers</h2>
+            <div className="hl-grid-2">
+              {PLANS.map((plan, i) => {
+                const isCurrent = (sub?.planName?.toUpperCase() === plan.name) || (plan.name === 'TRIAL' && !sub?.planName)
+                return (
+                  <div key={plan.name} className="hl-card" style={{ 
+                    padding: '32px', animation: `hl-up .5s ease ${0.1 + i * 0.1}s both`,
+                    border: plan.highlight ? '2px solid var(--mint)' : '1px solid var(--border)',
+                    boxShadow: plan.highlight ? '0 12px 32px rgba(29,186,135,.12)' : 'none',
+                    position: 'relative'
+                  }}>
+                    {plan.highlight && (
+                      <div style={{ position: 'absolute', top: 16, right: 16, background: 'var(--mint)', color: '#fff', fontSize: '.55rem', fontWeight: 900, padding: '4px 10px', borderRadius: 100, fontFamily: "'JetBrains Mono',monospace" }}>RECOMMENDED</div>
+                    )}
+                    <div style={{ width: 44, height: 44, borderRadius: 12, background: 'var(--surface2)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: plan.accent, marginBottom: 20 }}>
+                       <plan.icon size={22} />
+                    </div>
+                    <h3 style={{ fontFamily: "'Nunito',sans-serif", fontWeight: 900, fontSize: '1.25rem', color: 'var(--ink)', marginBottom: 8 }}>{plan.name}</h3>
+                    <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 24 }}>
+                       <span style={{ fontSize: '1.8rem', fontWeight: 900, color: 'var(--ink)', fontFamily: "'Saira',sans-serif" }}>{plan.price}</span>
+                       <span style={{ fontSize: '.7rem', fontWeight: 700, color: 'var(--ink3)', textTransform: 'uppercase' }}>/ {plan.period}</span>
+                    </div>
+                    <ul style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 32 }}>
+                      {plan.features.map(f => (
+                        <li key={f} style={{ display: 'flex', gap: 10, alignItems: 'flex-start', fontSize: '.82rem', color: 'var(--ink2)', fontWeight: 500 }}>
+                          <CheckCircle2 size={15} color="var(--mint)" style={{ marginTop: 2, flexShrink: 0 }} />
+                          {f}
+                        </li>
+                      ))}
+                    </ul>
+                    {isCurrent ? (
+                      <div style={{ height: 48, borderRadius: 12, background: 'var(--surface2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '.75rem', fontWeight: 800, color: 'var(--ink3)', border: '1px solid var(--border)' }}>
+                        CURRENT ACTIVE TIER
+                      </div>
+                    ) : (
+                      <button className={plan.highlight ? 'hl-btn-primary' : 'hl-btn-outline'} style={{ width: '100%', height: 48, justifyContent: 'center', borderRadius: 12 }}>
+                        {plan.highlight && <CreditCard size={16} />}
+                        {plan.highlight ? 'SECURE PREMIUM ACCESS' : 'DOWNSCALE TIER'}
+                        <ArrowRight size={14} />
+                      </button>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+            <div style={{ marginTop: 24, padding: '16px', borderRadius: 12, background: 'var(--surface2)', border: '1px dashed var(--border)' }}>
+               <p style={{ fontSize: '.68rem', color: 'var(--ink3)', fontWeight: 500, lineHeight: 1.5, textAlign: 'center' }}>
+                 * Payments are settled via <strong>M-Pesa Business</strong> STK Push. A request will be dispatched to your primary device upon tier selection. 
+                 Automated verification via Intasend secure gateway.
+               </p>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
+    </>
   )
 }

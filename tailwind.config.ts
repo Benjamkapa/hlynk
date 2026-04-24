@@ -65,6 +65,9 @@ const config: Config = {
         ubuntu: ['Ubuntu', 'sans-serif'],
         nunito: ['Nunito', 'sans-serif'],
         mulish: ['Mulish', 'sans-serif'],
+        'red-rose': ['"Red Rose"', 'serif'],
+        archivo: ['Archivo', 'sans-serif'],
+        saira: ['Saira', 'sans-serif'],
       },
       keyframes: {
         'accordion-down': {

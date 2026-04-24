@@ -1,12 +1,12 @@
 /**
- * HudumaLynk Admin Design System
+ * HLynk Admin Design System
  * Shared tokens, CSS, and helper components used across all admin pages.
  * Import this in every admin page to keep styles consistent with AdminDashboardPage.
  */
 
 /* ─── GLOBAL CSS (inject once via <style>{ADMIN_CSS}</style>) ─── */
 export const ADMIN_CSS = `
-@import url('https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,200..1000;1,200..1000&family=Saira:ital,wght@0,100..900;1,100..900&family=Ubuntu:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,500;1,700&family=Figtree:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&family=Syne:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,200..1000;1,200..1000&family=Saira:ital,wght@0,100..900;1,100..900&family=Ubuntu:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,500;1,700&family=Figtree:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap');
 
 .hl-dash {
   --ink:      #0D1B12;
@@ -21,9 +21,12 @@ export const ADMIN_CSS = `
   --bg:       #F0F2EE;
   --surface:  #FFFFFF;
   --surface2: #F7F8F6;
-  --border:   rgba(13,36,25,0.09);
-  --shadow:   0 1px 3px rgba(13,36,25,0.06), 0 4px 16px rgba(13,36,25,0.05);
-  --shadow-lg: 0 8px 32px rgba(13,36,25,0.10), 0 1px 3px rgba(13,36,25,0.06);
+  --border:   rgba(13,36,25,0.08);
+  --shadow:   0 2px 4px rgba(13,36,25,0.04), 0 8px 24px rgba(13,36,25,0.06);
+  --shadow-lg: 0 12px 48px rgba(13,36,25,0.12), 0 2px 4px rgba(13,36,25,0.04);
+  --radius-lg: 16px;
+  --radius-md: 12px;
+  --radius-sm: 8px;
 
   font-family: 'Figtree', 'Nunito', sans-serif;
   background: var(--bg);
@@ -34,9 +37,9 @@ export const ADMIN_CSS = `
 .hl-dash * { box-sizing: border-box; margin: 0; padding: 0; }
 
 /* ── Animations ── */
-@keyframes hl-up    { from { opacity:0; transform:translateY(18px); } to { opacity:1; transform:translateY(0); } }
+@keyframes hl-up    { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
 @keyframes hl-blink { 0%,100%{opacity:1} 50%{opacity:.35} }
-@keyframes hl-count { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+@keyframes hl-count { from { opacity:0; transform:translateY(4px); } to { opacity:1; transform:translateY(0); } }
 @keyframes hl-spin  { to { transform: rotate(360deg); } }
 @keyframes hl-fade  { from { opacity:0; } to { opacity:1; } }
 
@@ -44,7 +47,7 @@ export const ADMIN_CSS = `
 .hl-card {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: var(--radius-lg);
   box-shadow: var(--shadow);
   transition: box-shadow 0.25s, transform 0.25s;
   position: relative;
@@ -53,10 +56,18 @@ export const ADMIN_CSS = `
 .hl-card-dark {
   background: var(--forest);
   border: none;
-  border-radius: 8px;
-  box-shadow: 0 8px 32px rgba(13,36,25,0.25);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 12px 48px rgba(13,36,25,0.25);
   position: relative;
   overflow: hidden;
+}
+.hl-card-glass {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
 }
 .hl-card-header {
   padding: 16px 22px;
@@ -88,9 +99,9 @@ export const ADMIN_CSS = `
   margin-bottom: 6px;
 }
 .hl-kpi-value {
-  font-family: 'Syne', sans-serif;
+  font-family: 'Saira', sans-serif;
   font-weight: 800;
-  font-size: 1.75rem;
+  font-size: 2.1rem;
   color: var(--ink);
   line-height: 1;
   letter-spacing: -.02em;
@@ -99,7 +110,7 @@ export const ADMIN_CSS = `
 /* ── Buttons ── */
 .hl-btn-primary {
   display: inline-flex; align-items: center; gap: 8px;
-  padding: 11px 22px; border-radius: 6px;
+  padding: 11px 22px; border-radius: var(--radius-md);
   background: var(--forest); color: #fff;
   font-family: 'Figtree',sans-serif; font-size: .83rem; font-weight: 700;
   border: none; cursor: pointer; transition: all .2s; white-space: nowrap;
@@ -109,7 +120,7 @@ export const ADMIN_CSS = `
 
 .hl-btn-outline {
   display: inline-flex; align-items: center; gap: 7px;
-  padding: 10px 18px; border-radius: 6px;
+  padding: 10px 18px; border-radius: var(--radius-md);
   background: var(--surface); color: var(--ink2);
   font-family: 'Figtree',sans-serif; font-size: .83rem; font-weight: 600;
   border: 1.5px solid var(--border); cursor: pointer; transition: all .2s; white-space: nowrap;
@@ -118,7 +129,7 @@ export const ADMIN_CSS = `
 
 .hl-btn-ghost {
   display: inline-flex; align-items: center; justify-content: center;
-  width: 32px; height: 32px; border-radius: 4px;
+  width: 32px; height: 32px; border-radius: var(--radius-sm);
   background: var(--surface2); border: 1px solid var(--border);
   cursor: pointer; transition: all .2s; color: var(--ink2);
 }
@@ -138,11 +149,11 @@ export const ADMIN_CSS = `
 .hl-page-title {
   font-family: 'Nunito', sans-serif;
   font-weight: 900;
-  font-size: clamp(1.4rem, 2.4vw, 1.85rem);
-  letter-spacing: -0.02em;
-  text-transform: uppercase;
+  font-size: clamp(1.4rem, 2.8vw, 2.1rem);
   color: var(--ink);
-  margin-bottom: 4px;
+  letter-spacing: -.03em;
+  line-height: 1.1;
+  text-transform: uppercase;
 }
 .hl-page-subtitle {
   font-family: 'JetBrains Mono', monospace;
@@ -185,7 +196,7 @@ export const ADMIN_CSS = `
   width: 100%;
   padding: 10px 14px;
   border: 1.5px solid var(--border);
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   font-family: 'Figtree', sans-serif;
   font-size: .85rem;
   color: var(--ink);
@@ -352,6 +363,16 @@ export const ADMIN_CSS = `
                               .hl-grid-4 { grid-template-columns: 1fr 1fr !important; }
                               .hl-dash   { padding: 18px 14px 48px !important; } }
 `
+
+/* ─── Export alias for provider pages ─── */
+export const PROVIDER_CSS = ADMIN_CSS
+
+/* ─── Shared formatting helpers ─── */
+export const fmt = (v: number) => 
+  new Intl.NumberFormat('en-KE', { style: 'currency', currency: 'KES', maximumFractionDigits: 0 }).format(v)
+
+export const fmtDate = (d: string | Date) => 
+  new Date(d).toLocaleDateString('en-KE', { day: '2-digit', month: 'short', year: 'numeric' })
 
 /* ─── Colour helper for avatar initials ─── */
 export function avatarHue(index: number) {

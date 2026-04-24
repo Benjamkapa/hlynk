@@ -43,7 +43,7 @@
   * { @apply border-border box-border; }
   html { scroll-behavior: smooth; -webkit-tap-highlight-color: transparent; }
   body { @apply bg-background text-foreground font-nunito antialiased; line-height: 1.5; }
-  h1, h2, h3, h4, h5, h6 { font-family: 'Nunito', sans-serif; font-weight: 800; @apply uppercase tracking-tight; }
+  h1, h2, h3, h4, h5, h6 { font-weight: 800; @apply tracking-tight; }
   ::-webkit-scrollbar { width: 5px; height: 5px; }
   ::-webkit-scrollbar-track { @apply bg-transparent; }
   ::-webkit-scrollbar-thumb { background: hsl(215 14% 75%); border-radius: 9999px; }
@@ -111,7 +111,7 @@
   }
   .page-title {
     @apply text-xl font-extrabold text-foreground uppercase tracking-tighter;
-    font-family: 'Saira', sans-serif;
+    font-family: 'Nunito', sans-serif;
   }
   .page-subtitle {
     @apply text-sm text-muted-foreground mt-0.5;

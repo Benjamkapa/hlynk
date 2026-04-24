@@ -17,10 +17,27 @@ import RequestsPage from './pages/provider/RequestsPage'
 import SettingsPage from './pages/provider/SettingsPage'
 import SubscriptionPage from './pages/provider/SubscriptionPage'
 
+// New Management Pages
+import SalesHistoryPage from './pages/provider/SalesHistoryPage'
+import RecordSalePage from './pages/provider/RecordSalePage'
+import ProductsPage from './pages/provider/ProductsPage'
+import StockLevelsPage from './pages/provider/StockLevelsPage'
+import {
+  ExpenseHistoryPage,
+  RecordExpensePage,
+  RestockHistoryPage
+} from './pages/provider/ExpenseAndRestockPages'
+
+import CustomersPage from './pages/provider/CustomersPage'
+import ReportsPage from './pages/provider/ReportsPage'
+import PublicPage from './pages/provider/PublicPage'
+import HelpPage from './pages/provider/HelpPage'
+
 // Admin portal
 import AdminLayout from './components/shared/AdminLayout'
 import AdminDashboardPage from './pages/admin/AdminDashboardPage'
 import AdminTenantsPage from './pages/admin/AdminTenantsPage'
+import AdminActivityPage from './pages/admin/AdminActivityPage'
 import AdminAddProviderPage from './pages/admin/AdminAddProviderPage'
 import AdminSubscriptionsPage from './pages/admin/AdminSubscriptionsPage'
 import AdminRevenuePage from './pages/admin/AdminRevenuePage'
@@ -62,6 +79,21 @@ export default function App() {
         <Route path="requests" element={<RequestsPage />} />
         <Route path="settings" element={<SettingsPage />} />
         <Route path="subscription" element={<SubscriptionPage />} />
+
+        {/* Management */}
+        <Route path="sales" element={<SalesHistoryPage />} />
+        <Route path="sales/new" element={<RecordSalePage />} />
+        <Route path="inventory" element={<ProductsPage />} />
+        <Route path="inventory/stock" element={<StockLevelsPage />} />
+        <Route path="inventory/history" element={<RestockHistoryPage />} />
+        <Route path="expenses" element={<ExpenseHistoryPage />} />
+        <Route path="expenses/new" element={<RecordExpensePage />} />
+        <Route path="customers" element={<CustomersPage />} />
+
+        {/* Insights & System */}
+        <Route path="reports" element={<ReportsPage />} />
+        <Route path="public" element={<PublicPage />} />
+        <Route path="help" element={<HelpPage />} />
       </Route>
 
       {/* Admin Portal */}
@@ -70,19 +102,19 @@ export default function App() {
         {/* Businesses */}
         <Route path="businesses" element={<AdminTenantsPage />} />
         <Route path="businesses/new" element={<AdminAddProviderPage />} />
-        <Route path="businesses/activity" element={<AdminTenantsPage />} />
-        
+        <Route path="businesses/activity" element={<AdminActivityPage />} />
+
         {/* Subscriptions */}
         <Route path="subscriptions" element={<AdminSubscriptionsPage />} />
         <Route path="subscriptions/active" element={<AdminSubscriptionsPage />} />
         <Route path="subscriptions/trials" element={<AdminSubscriptionsPage />} />
         <Route path="subscriptions/expired" element={<AdminSubscriptionsPage />} />
-        
+
         {/* Revenue */}
         <Route path="revenue" element={<AdminRevenuePage />} />
         <Route path="revenue/payments" element={<AdminRevenuePage />} />
         <Route path="revenue/report" element={<AdminRevenuePage />} />
-        
+
         {/* Others */}
         <Route path="users" element={<AdminUsersPage />} />
         <Route path="announcements" element={<AdminAnnouncementsPage />} />

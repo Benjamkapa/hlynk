@@ -1,8 +1,9 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
-import { Loader2, Save, Upload, MapPin, Phone, Clock, Briefcase } from 'lucide-react'
+import { Loader2, Save, Upload, MapPin, Phone, Clock, Briefcase, Info, ExternalLink, Globe, Layout } from 'lucide-react'
 import { providersApi } from '../../lib/api/providers'
+import { PROVIDER_CSS } from '../admin/hl-design-system'
 
 const KENYA_COUNTIES = [
   'Baringo','Bomet','Bungoma','Busia','Elgeyo-Marakwet','Embu','Garissa',
@@ -22,7 +23,7 @@ const CATEGORIES = [
 
 export default function SettingsPage() {
   const qc = useQueryClient()
-  const [tab, setTab] = useState<'profile' | 'hours'>('profile')
+  const [tab, setTab] = useState<'profile' | 'hours' | 'appearance'>('profile')
   const [photoFile, setPhotoFile] = useState<File | null>(null)
   const [photoPreview, setPhotoPreview] = useState<string | null>(null)
   const [form, setForm] = useState<any>(null)
@@ -35,14 +36,14 @@ export default function SettingsPage() {
 
   const updateMut = useMutation({
     mutationFn: providersApi.updateProfile,
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['provider-profile'] }); toast.success('Profile updated!') },
-    onError: () => toast.error('Failed to save changes'),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['provider-profile'] }); toast.success('Profile preferences updated') },
+    onError: () => toast.error('Synchronization failed'),
   })
 
   const photoMut = useMutation({
     mutationFn: (file: File) => providersApi.uploadPhoto(file),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['provider-profile'] }); toast.success('Photo updated!'); setPhotoFile(null) },
-    onError: () => toast.error('Failed to upload photo'),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['provider-profile'] }); toast.success('Brand asset updated'); setPhotoFile(null) },
+    onError: () => toast.error('Upload failed'),
   })
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -55,148 +56,195 @@ export default function SettingsPage() {
   const set = (k: string, v: string) => setForm((p: any) => ({ ...p, [k]: v }))
 
   if (isLoading || !form) return (
-    <div className="flex items-center justify-center h-64"><Loader2 size={24} className="animate-spin text-muted-foreground" /></div>
+    <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--surface)' }}>
+       <Loader2 size={32} style={{ animation: 'hl-spin .7s linear infinite', color: 'var(--mint)' }} />
+    </div>
   )
 
   const tabs = [
-    { id: 'profile', label: 'General Information' },
-    { id: 'hours', label: 'Working Hours' },
+    { id: 'profile', label: 'BUSINESS IDENTITY', icon: Briefcase },
+    { id: 'hours', label: 'OPERATIONAL WINDOWS', icon: Clock },
+    { id: 'appearance', label: 'PUBLIC PRESENCE', icon: Layout },
   ]
 
   return (
-    <div>
-      <div className="page-header flex items-center justify-between">
-        <div>
-          <h1 className="page-title">Settings</h1>
-          <p className="page-subtitle">Manage your business profile and preferences</p>
+    <>
+      <style>{PROVIDER_CSS}</style>
+      <div className="hl-dash" style={{ padding: '28px 32px 60px' }}>
+        
+        <div className="hl-page-header">
+          <div>
+            <h1 className="hl-page-title">Profile Configuration</h1>
+            <p className="hl-page-subtitle">Standardize your brand identity across the HudumaLynk network</p>
+          </div>
+          <button onClick={() => updateMut.mutate(form)} disabled={updateMut.isPending} className="hl-btn-primary" style={{ minWidth: 160, justifyContent: 'center' }}>
+            {updateMut.isPending ? <Loader2 size={16} style={{ animation: 'hl-spin .7s linear infinite' }} /> : <Save size={16} />}
+            {updateMut.isPending ? 'SYNCHRONIZING' : 'SAVE CONFIGURATION'}
+          </button>
         </div>
-        <button onClick={() => updateMut.mutate(form)} disabled={updateMut.isPending} className="btn-primary">
-          {updateMut.isPending ? <Loader2 size={15} className="animate-spin" /> : <Save size={15} />}
-          {updateMut.isPending ? 'Saving…' : 'Save Changes'}
-        </button>
-      </div>
 
-      <div className="page-body space-y-6">
-        {/* Tab bar */}
-        <div className="flex gap-1 border-b border-border">
+        {/* Navigation Tabs */}
+        <div style={{ display: 'flex', gap: 12, marginBottom: 28, background: 'var(--surface2)', padding: '6px', borderRadius: 14, border: '1px solid var(--border)', width: 'fit-content' }}>
           {tabs.map(t => (
             <button key={t.id} onClick={() => setTab(t.id as any)}
-              className={`px-5 py-2.5 text-sm font-medium border-b-2 transition-all -mb-px ${tab === t.id ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'}`}>
+              style={{ 
+                padding: '10px 18px', borderRadius: 10, fontSize: '.68rem', fontWeight: 900, transition: 'all .25s', border: 'none', cursor: 'pointer',
+                display: 'flex', alignItems: 'center', gap: 8,
+                background: tab === t.id ? 'var(--mint)' : 'transparent',
+                color: tab === t.id ? '#fff' : 'var(--ink3)',
+                boxShadow: tab === t.id ? '0 4px 12px rgba(29,186,135,.15)' : 'none'
+              }}>
+              <t.icon size={14} />
               {t.label}
             </button>
           ))}
         </div>
 
-        {tab === 'profile' && (
-          <div className="space-y-5">
-            {/* Photo + branding */}
-            <div className="card p-5">
-              <h2 className="font-semibold text-foreground mb-4">Business Branding</h2>
-              <div className="flex items-start gap-6 flex-wrap">
-                <div>
-                  <p className="form-label">Business Logo / Photo</p>
-                  <div className="relative h-24 w-24 rounded-xl border-2 border-dashed border-border bg-muted flex items-center justify-center overflow-hidden group cursor-pointer hover:border-primary transition-colors"
-                    onClick={() => document.getElementById('photo-upload')?.click()}>
-                    {photoPreview || form.photoUrl ? (
-                      <img src={photoPreview || form.photoUrl} alt="Logo" className="h-full w-full object-cover" />
-                    ) : (
-                      <div className="text-center p-2">
-                        <Upload size={20} className="text-muted-foreground mx-auto mb-1" />
-                        <p className="text-[10px] text-muted-foreground">Click to upload</p>
-                      </div>
-                    )}
-                    <input id="photo-upload" type="file" accept="image/*" className="hidden" onChange={handlePhotoChange} />
-                  </div>
-                  {photoFile && (
-                    <button onClick={() => photoMut.mutate(photoFile)} disabled={photoMut.isPending}
-                      className="btn-primary text-xs py-1.5 mt-2 w-24 justify-center">
-                      {photoMut.isPending ? <Loader2 size={12} className="animate-spin" /> : 'Upload'}
-                    </button>
-                  )}
+        <div style={{ maxWidth: 880 }}>
+          {tab === 'profile' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 24, animation: 'hl-up .4s ease both' }}>
+              
+              {/* Branding Section */}
+              <div className="hl-card">
+                <div className="hl-card-header" style={{ background: 'var(--surface2)' }}>
+                   <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                      <Briefcase size={16} color="var(--mint)" />
+                      <h3>Core Brand Identity</h3>
+                   </div>
                 </div>
-                <div className="flex-1 min-w-[200px] grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="form-label">Business Name</label>
-                    <div className="relative">
-                      <Briefcase size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                      <input value={form.businessName || ''} onChange={e => set('businessName', e.target.value)} className="form-input pl-9" />
+                <div className="hl-card-body" style={{ padding: '28px' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: '120px 1fr', gap: 32 }}>
+                    <div>
+                      <p className="hl-form-label" style={{ marginBottom: 12 }}>Brand Asset</p>
+                      <div className="hl-input-wrap" style={{ position: 'relative', width: 120, height: 120, borderRadius: 16, overflow: 'hidden', border: '2px dashed var(--border)', background: 'var(--surface2)', cursor: 'pointer' }}
+                        onClick={() => document.getElementById('photo-upload')?.click()}>
+                        {photoPreview || form.photoUrl ? (
+                          <img src={photoPreview || form.photoUrl} alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        ) : (
+                          <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'var(--ink3)' }}>
+                            <Upload size={24} />
+                            <span style={{ fontSize: '.5rem', fontWeight: 900, marginTop: 4 }}>UPLOAD LOGO</span>
+                          </div>
+                        )}
+                        <input id="photo-upload" type="file" accept="image/*" style={{ display: 'none' }} onChange={handlePhotoChange} />
+                      </div>
+                      {photoFile && (
+                        <button onClick={(e) => { e.stopPropagation(); photoMut.mutate(photoFile) }} disabled={photoMut.isPending}
+                          className="hl-btn-primary" style={{ width: 120, height: 32, padding: 0, justifyContent: 'center', fontSize: '.6rem', marginTop: 12, borderRadius: 8 }}>
+                          {photoMut.isPending ? <Loader2 size={12} style={{ animation: 'hl-spin .7s linear infinite' }} /> : 'COMMIT UPLOAD'}
+                        </button>
+                      )}
                     </div>
-                  </div>
-                  <div>
-                    <label className="form-label">Category</label>
-                    <select value={form.category || ''} onChange={e => set('category', e.target.value)} className="form-input">
-                      {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
-                    </select>
-                  </div>
-                  <div className="sm:col-span-2">
-                    <label className="form-label">Description</label>
-                    <textarea value={form.description || ''} onChange={e => set('description', e.target.value)} rows={3} placeholder="Tell customers about your business…" className="form-input resize-none" />
+
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
+                      <div style={{ gridColumn: '1 / -1' }}>
+                        <label className="hl-form-label">Commercial Entity Name</label>
+                        <input value={form.businessName || ''} onChange={e => set('businessName', e.target.value)} className="hl-form-input" style={{ borderRadius: 12 }} />
+                      </div>
+                      <div>
+                        <label className="hl-form-label">Primary Industry Category</label>
+                        <select value={form.category || ''} onChange={e => set('category', e.target.value)} className="hl-form-input" style={{ borderRadius: 12 }}>
+                          {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+                        </select>
+                      </div>
+                      <div>
+                        <label className="hl-form-label">Official Phone Terminal</label>
+                        <div className="hl-input-wrap">
+                           <span className="hl-input-icon"><Phone size={14} /></span>
+                           <input value={form.phone || ''} onChange={e => set('phone', e.target.value)} className="hl-form-input icon-left" style={{ borderRadius: 12 }} />
+                        </div>
+                      </div>
+                      <div style={{ gridColumn: '1 / -1' }}>
+                        <label className="hl-form-label">Business Narrative</label>
+                        <textarea value={form.description || ''} onChange={e => set('description', e.target.value)} rows={4} placeholder="Describe your unique value proposition…" className="hl-form-input" style={{ borderRadius: 12, resize: 'none' }} />
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
 
-            {/* Contact + Location */}
-            <div className="card p-5">
-              <h2 className="font-semibold text-foreground mb-4">Contact &amp; Location</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="form-label">Phone Number</label>
-                  <div className="relative">
-                    <Phone size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                    <input value={form.phone || ''} onChange={e => set('phone', e.target.value)} className="form-input pl-9" placeholder="0712 345 678" />
-                  </div>
+              {/* Geographic Data */}
+              <div className="hl-card">
+                <div className="hl-card-header" style={{ background: 'var(--surface2)' }}>
+                   <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                      <MapPin size={16} color="var(--mint)" />
+                      <h3>Geographic Presence</h3>
+                   </div>
                 </div>
-                <div>
-                  <label className="form-label">WhatsApp Number</label>
-                  <div className="relative">
-                    <Phone size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                    <input value={form.whatsapp || ''} onChange={e => set('whatsapp', e.target.value)} className="form-input pl-9" placeholder="0712 345 678" />
-                  </div>
-                </div>
-                <div>
-                  <label className="form-label">County</label>
-                  <div className="relative">
-                    <MapPin size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                    <select value={form.county || ''} onChange={e => set('county', e.target.value)} className="form-input pl-9">
+                <div className="hl-card-body" style={{ padding: '28px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
+                  <div>
+                    <label className="hl-form-label">County Jurisdiction</label>
+                    <select value={form.county || ''} onChange={e => set('county', e.target.value)} className="hl-form-input" style={{ borderRadius: 12 }}>
                       {KENYA_COUNTIES.map(c => <option key={c} value={c}>{c}</option>)}
                     </select>
                   </div>
-                </div>
-                <div>
-                  <label className="form-label">Location / Estate</label>
-                  <div className="relative">
-                    <MapPin size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                    <input value={form.location || ''} onChange={e => set('location', e.target.value)} className="form-input pl-9" placeholder="e.g. Westlands, Nairobi" />
+                  <div>
+                    <label className="hl-form-label">Precise Estate / Building</label>
+                    <div className="hl-input-wrap">
+                      <span className="hl-input-icon"><MapPin size={14} /></span>
+                      <input value={form.location || ''} onChange={e => set('location', e.target.value)} className="hl-form-input icon-left" style={{ borderRadius: 12 }} placeholder="e.g. Westlands Commercial Center" />
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {tab === 'hours' && (
-          <div className="card p-5">
-            <h2 className="font-semibold text-foreground mb-4 flex items-center gap-2">
-              <Clock size={18} className="text-primary" /> Working Hours
-            </h2>
-            <div className="space-y-3">
-              {['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'].map(day => (
-                <div key={day} className="flex items-center gap-4 py-2 border-b border-border last:border-0">
-                  <span className="w-24 text-sm font-medium text-foreground">{day}</span>
-                  <input placeholder="8:00 AM" className="form-input w-32 text-sm" />
-                  <span className="text-muted-foreground text-sm">to</span>
-                  <input placeholder="6:00 PM" className="form-input w-32 text-sm" />
-                  <label className="flex items-center gap-2 text-sm text-muted-foreground cursor-pointer ml-auto">
-                    <input type="checkbox" className="rounded" />
-                    Closed
-                  </label>
+          {tab === 'hours' && (
+            <div className="hl-card" style={{ animation: 'hl-up .4s ease both' }}>
+              <div className="hl-card-header" style={{ background: 'var(--surface2)' }}>
+                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <Clock size={16} color="var(--mint)" />
+                    <h3>Service Availability Windows</h3>
+                 </div>
+              </div>
+              <div className="hl-card-body" style={{ padding: '28px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                  {['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'].map(day => (
+                    <div key={day} style={{ display: 'flex', alignItems: 'center', gap: 24, padding: '14px 20px', borderRadius: 12, background: 'var(--surface2)', border: '1px solid var(--border)' }}>
+                      <span style={{ width: 100, fontSize: '.75rem', fontWeight: 900, color: 'var(--ink)' }}>{day.toUpperCase()}</span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 12, flex: 1 }}>
+                        <input placeholder="08:00 AM" className="hl-form-input" style={{ width: 120, height: 36, fontSize: '.75rem', borderRadius: 8, textAlign: 'center' }} />
+                        <span style={{ fontSize: '.6rem', fontWeight: 900, color: 'var(--ink3)' }}>TO</span>
+                        <input placeholder="06:00 PM" className="hl-form-input" style={{ width: 120, height: 36, fontSize: '.75rem', borderRadius: 8, textAlign: 'center' }} />
+                      </div>
+                      <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
+                        <input type="checkbox" style={{ width: 16, height: 16, accentColor: 'var(--mint)' }} />
+                        <span style={{ fontSize: '.72rem', fontWeight: 700, color: 'var(--ink3)' }}>CLOSED</span>
+                      </label>
+                    </div>
+                  ))}
                 </div>
-              ))}
+              </div>
             </div>
-          </div>
-        )}
+          )}
+
+          {tab === 'appearance' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 24, animation: 'hl-up .4s ease both' }}>
+               <div className="hl-card" style={{ padding: '32px', textAlign: 'center' }}>
+                  <div style={{ width: 64, height: 64, borderRadius: '50%', background: 'var(--surface2)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px' }}>
+                     <Globe size={32} color="var(--mint)" />
+                  </div>
+                  <h3 style={{ fontFamily: "'Nunito',sans-serif", fontWeight: 900, fontSize: '1.2rem', color: 'var(--ink)', marginBottom: 12 }}>Public Profile Visuals</h3>
+                  <p style={{ color: 'var(--ink3)', fontSize: '.88rem', maxWidth: 440, margin: '0 auto 28px', lineHeight: 1.6 }}>
+                    This section allows you to customize how your business appears to potential customers on the public directory. Changes here impact your brand conversion rate.
+                  </p>
+                  <button className="hl-btn-outline" style={{ margin: '0 auto' }}>
+                     <ExternalLink size={14} /> VIEW PUBLIC PROFILE
+                  </button>
+               </div>
+
+               <div style={{ padding: '20px', borderRadius: 16, border: '1px dashed var(--border)', background: 'var(--surface2)', display: 'flex', gap: 14 }}>
+                  <Info size={20} color="var(--ink3)" style={{ flexShrink: 0 }} />
+                  <p style={{ fontSize: '.72rem', color: 'var(--ink3)', fontWeight: 500, lineHeight: 1.5 }}>
+                    <strong>Privacy Note:</strong> Your contact information is only visible to registered customers who initiate a service request. 
+                    Standard public viewers see only your business narrative and general location.
+                  </p>
+               </div>
+            </div>
+          )}
+        </div>
       </div>
-    </div>
+    </>
   )
 }

@@ -1,10 +1,12 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useMutation } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import {
   Building2, User, Phone, Mail, MapPin, Tag,
   ArrowLeft, Loader2, ChevronRight
 } from 'lucide-react'
+import { adminApi } from '../../lib/api/providers'
 import { ADMIN_CSS } from './hl-design-system'
 
 const COUNTIES = [
@@ -61,22 +63,28 @@ function IconSelect({ icon: Icon, children, ...props }: any) {
 
 export default function AdminAddProviderPage() {
   const navigate = useNavigate()
-  const [loading, setLoading] = useState(false)
   const [form, setForm] = useState({
     businessName: '', category: '', county: '', location: '',
-    name: '', phone: '', email: '', plan: '',
+    name: '', phone: '', email: '', plan: 'trial-14',
+  })
+
+  const { mutate, isPending: loading } = useMutation({
+    mutationFn: adminApi.createTenant,
+    onSuccess: () => {
+      toast.success('Business registered successfully!')
+      navigate('/admin/businesses')
+    },
+    onError: (err: any) => {
+      toast.error(err.response?.data?.message || 'Registration failed')
+    }
   })
 
   const set = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
     setForm(prev => ({ ...prev, [k]: e.target.value }))
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    setLoading(true)
-    await new Promise(r => setTimeout(r, 1500))
-    toast.success('Business registered successfully!')
-    navigate('/admin/businesses')
-    setLoading(false)
+    mutate(form)
   }
 
   return (

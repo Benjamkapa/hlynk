@@ -53,14 +53,14 @@ export default function LoginPage() {
             <img src="/logo.png" alt="hlynk logo" className="h-12 w-auto transition-transform group-hover:scale-105" />
           </Link>
           
-          <h1 className="text-3xl font-bold text-[#161E2A] mb-2 font-ubuntu">Welcome back</h1>
+          <h1 className="text-3xl font-bold text-[#161E2A] mb-2 ">Welcome back</h1>
           <p className="text-[#7A8896] text-sm font-nunito">Access your business dashboard</p>
         </div>
 
         <div className="bg-white rounded-3xl p-8 border border-[#E5E9EC] shadow-xl">
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
-              <label className="text-xs font-bold uppercase tracking-widest text-[#7A8896] ml-1 font-mulish">Phone Number</label>
+              <label className="text-xs font-bold uppercase tracking-widest text-[#7A8896] ml-1">Phone Number</label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-[#7A8896]">
                   <Phone size={18} />
@@ -78,7 +78,7 @@ export default function LoginPage() {
 
             <div className="space-y-2">
               <div className="flex justify-between items-center px-1">
-                <label className="text-xs font-bold uppercase tracking-widest text-[#7A8896] font-mulish">Password</label>
+                <label className="text-xs font-bold uppercase tracking-widest text-[#7A8896]">Password</label>
                 <Link to="/forgot-password" className="text-xs font-bold text-[#20C997] hover:underline">
                   Forgot?
                 </Link>
@@ -114,7 +114,7 @@ export default function LoginPage() {
           </form>
 
           <div className="mt-8 text-center border-t border-[#F5F7F8] pt-8">
-            <p className="text-sm text-[#7A8896]" style={{ fontFamily: "'Mulish', sans-serif" }}>
+            <p className="text-sm text-[#7A8896] font-ubuntu ">
               Don't have an account?{" "}
               <Link to="/register" className="text-[#20C997] font-bold hover:underline">
                 Create One

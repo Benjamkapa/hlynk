@@ -61,7 +61,7 @@ export default function RegisterPage() {
             <img src="/logo.png" alt="hlynk logo" className="h-12 w-auto transition-transform group-hover:scale-105" />
           </Link>
 
-          <h1 className="text-3xl font-bold text-[#161E2A] mb-2 font-ubuntu">Grow your business</h1>
+          <h1 className="text-3xl font-bold text-[#161E2A] mb-2">Grow your business</h1>
           <p className="text-[#7A8896] text-sm font-nunito">Join the network of professional service providers</p>
         </div>
 
@@ -69,7 +69,7 @@ export default function RegisterPage() {
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
-                <label className="text-xs font-bold uppercase tracking-widest text-[#7A8896] ml-1 font-mulish">Business Name</label>
+                <label className="text-xs font-bold uppercase tracking-widest text-[#7A8896] ml-1">Business Name</label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-[#7A8896]">
                     <Building2 size={18} />
@@ -86,7 +86,7 @@ export default function RegisterPage() {
               </div>
               
               <div className="space-y-2">
-                <label className="text-xs font-bold uppercase tracking-widest text-[#7A8896] ml-1 font-mulish">Owner Name</label>
+                <label className="text-xs font-bold uppercase tracking-widest text-[#7A8896] ml-1">Owner Name</label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-[#7A8896]">
                     <User size={18} />
@@ -223,7 +223,7 @@ export default function RegisterPage() {
           </form>
 
           <div className="mt-8 text-center border-t border-[#F5F7F8] pt-8">
-            <p className="text-sm text-[#7A8896]" style={{ fontFamily: "'Mulish', sans-serif" }}>
+            <p className="text-sm text-[#7A8896] font-ubuntu ">
               Already have an account?{" "}
               <Link to="/login" className="text-[#20C997] font-bold hover:underline">
                 Log In

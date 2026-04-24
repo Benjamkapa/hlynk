@@ -120,7 +120,7 @@ export default function AdminDashboardPage() {
         {/* ── HEADER ─────────────────────────────────────────── */}
         <div className="hl-header" style={{ display:'flex', alignItems:'center', justifyContent:'space-between', gap:16, marginBottom:32, animation:'hl-up .4s ease both' }}>
           <div>
-            <h1 style={{ fontFamily:"'Saira',sans-serif", fontWeight:800, fontSize:'clamp(1.5rem,2.5vw,2rem)', color:'var(--ink)', letterSpacing:'-.025em', lineHeight:1, marginBottom:6 }}>
+            <h1 style={{ fontFamily:"'Nunito',sans-serif", fontWeight:900, fontSize:'clamp(1.5rem,2.5vw,2rem)', color:'var(--ink)', letterSpacing:'-.025em', lineHeight:1, marginBottom:6, textTransform: 'uppercase' }}>
               Platform Operations
             </h1>
             <div style={{ display:'flex', alignItems:'center', gap:9 }}>
@@ -172,7 +172,7 @@ export default function AdminDashboardPage() {
                 <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:22 }}>
                   <div>
                     <p style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:'.6rem', letterSpacing:'.1em', textTransform:'uppercase', color:'var(--ink3)', marginBottom:4 }}>Weekly</p>
-                    <h3 style={{ fontFamily:"'Saira',sans-serif", fontWeight:800, fontSize:'1.05rem', color:'var(--ink)' }}>New Providers</h3>
+                    <h3 style={{ fontFamily:"'Nunito',sans-serif", fontWeight:800, fontSize:'1.05rem', color:'var(--ink)', textTransform: 'uppercase' }}>New Providers</h3>
                   </div>
                   <div style={{ display:'flex', alignItems:'center', gap:4, padding:'4px 10px', borderRadius:100, background:'rgba(29,186,135,.1)' }}>
                     <ArrowUpRight size={10} color="#1DBA87"/>
@@ -197,7 +197,7 @@ export default function AdminDashboardPage() {
                 <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:22 }}>
                   <div>
                     <p style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:'.6rem', letterSpacing:'.1em', textTransform:'uppercase', color:'var(--ink3)', marginBottom:4 }}>Monthly</p>
-                    <h3 style={{ fontFamily:"'Saira',sans-serif", fontWeight:800, fontSize:'1.05rem', color:'var(--ink)' }}>Revenue Trend</h3>
+                    <h3 style={{ fontFamily:"'Nunito',sans-serif", fontWeight:800, fontSize:'1.05rem', color:'var(--ink)', textTransform: 'uppercase' }}>Revenue Trend</h3>
                   </div>
                   <div style={{ display:'flex', alignItems:'center', gap:4, padding:'4px 10px', borderRadius:100, background:'rgba(29,186,135,.1)' }}>
                     <ArrowUpRight size={10} color="#1DBA87"/>
@@ -228,7 +228,7 @@ export default function AdminDashboardPage() {
             <div className="hl-card" style={{ overflow:'hidden', animation:'hl-up .5s ease .42s both' }}>
               <div style={{ padding:'20px 24px', borderBottom:'1px solid var(--border)', display:'flex', alignItems:'center', justifyContent:'space-between' }}>
                 <div>
-                  <h3 style={{ fontFamily:"'Saira',sans-serif", fontWeight:800, fontSize:'1.05rem', color:'var(--ink)' }}>Recent Registrations</h3>
+                  <h3 style={{ fontFamily:"'Nunito',sans-serif", fontWeight:800, fontSize:'1.05rem', color:'var(--ink)', textTransform: 'uppercase' }}>Recent Registrations</h3>
                   <p style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:'.58rem', color:'var(--ink3)', letterSpacing:'.06em', marginTop:3 }}>LATEST ONBOARDED BUSINESSES</p>
                 </div>
                 <button style={{ display:'flex', alignItems:'center', gap:6, fontFamily:"'Figtree',sans-serif", fontWeight:700, fontSize:'.78rem', color:'var(--forest)', background:'none', border:'none', cursor:'pointer' }}
@@ -290,7 +290,7 @@ export default function AdminDashboardPage() {
             <div className="hl-card" style={{ padding:'24px', animation:'hl-up .5s ease .34s both' }}>
               <div style={{ marginBottom:18 }}>
                 <p style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:'.6rem', letterSpacing:'.1em', textTransform:'uppercase', color:'var(--ink3)', marginBottom:4 }}>Monitor</p>
-                <h3 style={{ fontFamily:"'Saira',sans-serif", fontWeight:800, fontSize:'1.05rem', color:'var(--ink)' }}>Trial Conversions</h3>
+                <h3 style={{ fontFamily:"'Nunito',sans-serif", fontWeight:800, fontSize:'1.05rem', color:'var(--ink)', textTransform: 'uppercase' }}>Trial Conversions</h3>
               </div>
 
               <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:10, marginBottom:18 }}>
@@ -300,7 +300,7 @@ export default function AdminDashboardPage() {
                 ].map(b=>(
                   <div key={b.lbl} style={{ background:b.bg, border:`1px solid ${b.bd}`, borderRadius:8, padding:'14px' }}>
                     <p style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:'.56rem', letterSpacing:'.08em', textTransform:'uppercase', color:b.c, marginBottom:8 }}>{b.lbl}</p>
-                    <p style={{ fontFamily:"'Syne',sans-serif", fontWeight:800, fontSize:'1.7rem', color:'var(--ink)', lineHeight:1, letterSpacing:'-.02em' }}>{b.val}</p>
+                    <p style={{ fontFamily:"'Saira',sans-serif", fontWeight:800, fontSize:'1.7rem', color:'var(--ink)', lineHeight:1, letterSpacing:'-.02em' }}>{b.val}</p>
                   </div>
                 ))}
               </div>
@@ -314,7 +314,7 @@ export default function AdminDashboardPage() {
                       strokeDasharray={`${2*Math.PI*22*Math.min(stats.trials.conversionRate,100)/100} 999`}
                       strokeLinecap="round" transform="rotate(-90 28 28)"/>
                   </svg>
-                  <span style={{ position:'absolute', inset:0, display:'flex', alignItems:'center', justifyContent:'center', fontFamily:"'Syne',sans-serif", fontWeight:800, fontSize:'.66rem', color:'var(--ink)' }}>
+                  <span style={{ position:'absolute', inset:0, display:'flex', alignItems:'center', justifyContent:'center', fontFamily:"'Saira',sans-serif", fontWeight:800, fontSize:'.66rem', color:'var(--ink)' }}>
                     {stats.trials.conversionRate.toFixed(0)}%
                   </span>
                 </div>
@@ -330,7 +330,7 @@ export default function AdminDashboardPage() {
               <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:16 }}>
                 <div>
                   <p style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:'.6rem', letterSpacing:'.1em', textTransform:'uppercase', color:'var(--ink3)', marginBottom:4 }}>Attention</p>
-                  <h3 style={{ fontFamily:"'Syne',sans-serif", fontWeight:800, fontSize:'1.05rem', color:'var(--ink)' }}>At-Risk Accounts</h3>
+                  <h3 style={{ fontFamily:"'Nunito',sans-serif", fontWeight:800, fontSize:'1.05rem', color:'var(--ink)', textTransform: 'uppercase' }}>At-Risk Accounts</h3>
                 </div>
                 <div style={{ width:30, height:30, borderRadius:'50%', background:'rgba(239,68,68,.08)', border:'1px solid rgba(239,68,68,.18)', display:'flex', alignItems:'center', justifyContent:'center' }}>
                   <AlertCircle size={13} color="#EF4444"/>
@@ -392,7 +392,7 @@ export default function AdminDashboardPage() {
               <div style={{ marginTop:16, padding:'12px', background:'rgba(29,186,135,.07)', borderRadius:12, border:'1px solid rgba(29,186,135,.14)' }}>
                 <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:8 }}>
                   <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:'.56rem', color:'rgba(255,255,255,.28)', letterSpacing:'.08em' }}>PLATFORM UPTIME</span>
-                  <span style={{ fontFamily:"'Syne',sans-serif", fontSize:'.88rem', fontWeight:800, color:'#1DBA87' }}>99.98%</span>
+                  <span style={{ fontFamily:"'Saira',sans-serif", fontSize:'.88rem', fontWeight:800, color:'#1DBA87' }}>99.98%</span>
                 </div>
                 <div style={{ height:4, background:'rgba(255,255,255,.07)', borderRadius:100, overflow:'hidden' }}>
                   <div style={{ width:'99.98%', height:'100%', background:'linear-gradient(90deg,#1DBA87,#0d8a62)', borderRadius:100 }}/>
