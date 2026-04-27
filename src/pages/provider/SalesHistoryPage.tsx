@@ -1,176 +1,202 @@
 import { useState } from 'react'
+import { Search, Filter, Download, Calendar, Eye, Receipt, User, CreditCard, X, Printer } from 'lucide-react'
+import { ADMIN_CSS } from '../admin/hl-design-system'
 import { useQuery } from '@tanstack/react-query'
-import { Link } from 'react-router-dom'
-import {
-  PlusCircle, Search, Download, ArrowUpRight, ArrowDownRight, RefreshCw,
-  ChevronLeft, ChevronRight, Eye, Filter
-} from 'lucide-react'
-import { providersApi } from '../../lib/api/providers'
-import { PROVIDER_CSS, fmt, fmtDate } from '../admin/hl-design-system'
+import { salesApi } from '../../lib/api/providers'
+import { toast } from 'sonner'
+import { getErrorMessage } from '../../lib/utils/error'
+import { SlideOver } from '../../components/shared/SlideOver'
 
-const METHOD_BADGE: Record<string, string> = {
-  mpesa: 'hl-badge-active',
-  cash:  'hl-badge-neutral',
-  card:  'hl-badge-info',
-}
+import { useEffect } from 'react'
+import { PaginatedResponse } from '../../lib/types/api'
 
 export default function SalesHistoryPage() {
-  const [search,   setSearch]   = useState('')
-  const [method,   setMethod]   = useState('')
-  const [range,    setRange]    = useState('7d')
-  const [page,     setPage]     = useState(1)
-
-  const { data, isLoading } = useQuery({
-    queryKey: ['sales', search, method, range, page],
-    queryFn: () => providersApi.getSales?.({ search, method, range, page }) ?? Promise.resolve({ data: { sales: [], total: 0, pages: 1 } }),
+  const [search, setSearch] = useState('')
+  const [selectedSale, setSelectedSale] = useState<any>(null)
+  
+  const { data: salesData, isLoading, error } = useQuery<PaginatedResponse<any> & { stats: any }>({
+    queryKey: ['sales-history', search],
+    queryFn: () => salesApi.list({ search })
   })
 
-  const sales  = data?.data?.sales  || []
-  const total  = data?.data?.total  || 0
-  const pages  = data?.data?.pages  || 1
-  const totRev = data?.data?.totalRevenue || 0
-  const totTx  = data?.data?.totalTransactions || 0
+  useEffect(() => {
+    if (error) toast.error(getErrorMessage(error))
+  }, [error])
+
+  const sales = salesData?.items || []
+  const stats = salesData?.stats || { totalToday: 0, transactions: 0, avgSale: 0 }
 
   return (
-    <>
-      <style>{PROVIDER_CSS}</style>
-      <div className="hl-dash" style={{ padding: '28px 32px 60px' }}>
- 
-         <div className="hl-page-header">
-           <div>
-             <h1 className="hl-page-title">Ledger & Revenue</h1>
-             <p className="hl-page-subtitle">Comprehensive audit of all sales transactions · {total} entries</p>
-           </div>
-           <div style={{ display: 'flex', gap: 10 }}>
-             <button className="hl-btn-outline" style={{ borderRadius: 8 }}><Download size={14} /> Export CSV</button>
-             <Link to="/dashboard/sales/new" className="hl-btn-primary" style={{ textDecoration: 'none' }}>
-               <PlusCircle size={14} /> Log New Sale
-             </Link>
-           </div>
-         </div>
- 
-         {/* KPIs */}
-         <div className="hl-grid-4" style={{ marginBottom: 26 }}>
-           {[
-             { label: 'Cumulative Revenue', value: fmt(totRev),    trend: 12,  up: true,  accent: '#1DBA87' },
-             { label: 'Volume of Sales',   value: totTx,           trend: 8,   up: true,  accent: '#1DBA87' },
-             { label: 'Average Ticket',    value: fmt(totRev / (totTx || 1)), trend: 3, up: true, accent: '#3B82F6' },
-             { label: 'Payment Velocity',  value: 'High',          trend: undefined, accent: '#F5A623' },
-           ].map((k, i) => (
-             <div key={i} className="hl-card hl-kpi" style={{ padding: '24px', animation: `hl-up .45s ease ${i * .06}s both` }}>
-               <div style={{ width: 8, height: 8, borderRadius: '50%', background: k.accent || 'var(--forest)', marginBottom: 14 }} />
-               <p style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: '.58rem', letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--ink3)', marginBottom: 6 }}>{k.label}</p>
-               <p style={{ fontFamily: "'Saira',sans-serif", fontWeight: 800, fontSize: '1.75rem', color: 'var(--ink)', lineHeight: 1, marginBottom: k.trend !== undefined ? 12 : 0 }}>{k.value}</p>
-               {k.trend !== undefined && (
-                 <div style={{ display: 'flex', alignItems: 'center', gap: 6, borderTop: '1px solid var(--border)', paddingTop: 10 }}>
-                   <span className={`hl-trend ${k.up ? 'hl-trend-up' : 'hl-trend-dn'}`} style={{ fontSize: '.55rem', padding: '2px 6px' }}>
-                     {k.up ? <ArrowUpRight size={10} /> : <ArrowDownRight size={10} />}{k.trend}%
-                   </span>
-                   <span style={{ fontFamily: "'Figtree',sans-serif", fontSize: '.7rem', color: 'var(--ink3)', fontWeight: 600 }}>vs PREV PERIOD</span>
-                 </div>
-               )}
-             </div>
-           ))}
-         </div>
- 
-         {/* Table card */}
-         <div className="hl-card" style={{ overflow: 'hidden', animation: 'hl-up .5s ease .28s both' }}>
-           {/* Toolbar */}
-           <div style={{ padding: '16px 24px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap', background: 'var(--surface2)' }}>
-             <div style={{ position: 'relative', flex: 1, maxWidth: 320 }}>
-               <span style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: 'var(--ink3)' }}><Search size={15} /></span>
-               <input className="hl-form-input icon-left"
-                 style={{ paddingLeft: 40, fontSize: '.85rem', borderRadius: 'var(--radius-md)' }}
-                 placeholder="Search by client or note…" value={search} onChange={e => setSearch(e.target.value)} />
-             </div>
-             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-               <Filter size={14} color="var(--ink3)" />
-               <select className="hl-form-input" style={{ width: 'auto', minWidth: 140, fontSize: '.85rem', borderRadius: 'var(--radius-md)' }}
-                 value={method} onChange={e => setMethod(e.target.value)}>
-                 <option value="">All Payment Modes</option>
-                 <option value="mpesa">M-Pesa Express</option>
-                 <option value="cash">Direct Cash</option>
-                 <option value="card">Debit/Credit Card</option>
-               </select>
-               <select className="hl-form-input" style={{ width: 'auto', minWidth: 140, fontSize: '.85rem', borderRadius: 'var(--radius-md)' }}
-                 value={range} onChange={e => setRange(e.target.value)}>
-                 <option value="7d">Last 7 Cycles</option>
-                 <option value="30d">Last 30 Cycles</option>
-                 <option value="90d">Quarterly View</option>
-               </select>
-             </div>
-           </div>
- 
-           <div style={{ overflowX: 'auto' }}>
-             <table className="hl-table">
-               <thead>
-                 <tr>
-                   <th>Ref ID</th>
-                   <th>Client details</th>
-                   <th>Item count</th>
-                   <th>Method</th>
-                   <th>Settlement</th>
-                   <th>Timestamp</th>
-                   <th style={{ textAlign: 'right' }}>Actions</th>
-                 </tr>
-               </thead>
-               <tbody>
-                 {isLoading ? (
-                   <tr><td colSpan={7} style={{ textAlign: 'center', padding: '60px 0' }}>
-                     <RefreshCw size={24} style={{ animation: 'hl-spin .8s linear infinite', margin: '0 auto 12px', color: 'var(--ink3)' }} />
-                     <p style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: '.6rem', letterSpacing: '.1em', color: 'var(--ink3)' }}>AUDITING LEDGER…</p>
-                   </td></tr>
-                 ) : sales.length === 0 ? (
-                   <tr><td colSpan={7} style={{ textAlign: 'center', padding: '80px 24px', color: 'var(--ink3)' }}>
-                     <p style={{ fontFamily: "'Figtree',sans-serif", fontSize: '.9rem', fontWeight: 600 }}>No matching transactions found.</p>
-                     <Link to="/dashboard/sales/new" style={{ color: 'var(--forest)', fontWeight: 800, textDecoration: 'none', display: 'inline-block', marginTop: 10 }}>Record your first sale →</Link>
-                   </td></tr>
-                 ) : sales.map((s: any, i: number) => (
-                   <tr key={s.id} className="hl-tr" style={{ animation: `hl-fade .3s ease ${i * .03}s both` }}>
-                     <td style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: '.72rem', fontWeight: 800, color: 'var(--mint)' }}>
-                       #{s.id?.slice(0, 8).toUpperCase()}
-                     </td>
-                     <td style={{ fontWeight: 800, fontSize: '.88rem' }}>{s.customerName || 'Walk-in Client'}</td>
-                     <td><span className="hl-badge hl-badge-neutral">{s.itemCount ?? s.items?.length ?? 1} ITEM{(s.itemCount ?? 1) !== 1 ? 'S' : ''}</span></td>
-                     <td>
-                       <span className={`hl-badge ${METHOD_BADGE[s.paymentMethod] || 'hl-badge-neutral'}`} style={{ padding: '4px 10px' }}>
-                         {s.paymentMethod?.toUpperCase() || 'CASH'}
-                       </span>
-                     </td>
-                     <td>
-                       <span style={{ fontFamily: "'Saira',sans-serif", fontWeight: 900, fontSize: '1.05rem', color: 'var(--ink)' }}>
-                         {fmt(s.totalAmount || s.total || 0)}
-                       </span>
-                     </td>
-                     <td style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: '.7rem', color: 'var(--ink3)', fontWeight: 600 }}>
-                       {fmtDate(s.createdAt)}
-                     </td>
-                     <td style={{ textAlign: 'right' }}>
-                       <button className="hl-btn-ghost" style={{ borderRadius: 8 }}><Eye size={14} /></button>
-                     </td>
-                   </tr>
-                 ))}
-               </tbody>
-             </table>
-           </div>
- 
-           {pages > 1 && (
-             <div style={{ padding: '16px 24px', borderTop: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'var(--surface2)' }}>
-               <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: '.58rem', color: 'var(--ink3)', fontWeight: 600 }}>PAGE {page} OF {pages}</span>
-               <div style={{ display: 'flex', gap: 8 }}>
-                 <button className="hl-btn-outline" style={{ padding: '8px 16px', fontSize: '.78rem', borderRadius: 8 }}
-                   disabled={page === 1} onClick={() => setPage(p => p - 1)}>
-                   <ChevronLeft size={14} /> PREV
-                 </button>
-                 <button className="hl-btn-outline" style={{ padding: '8px 16px', fontSize: '.78rem', borderRadius: 8 }}
-                   disabled={page === pages} onClick={() => setPage(p => p + 1)}>
-                   NEXT <ChevronRight size={14} />
-                 </button>
-               </div>
-             </div>
-           )}
-         </div>
-       </div>
-    </>
+    <div className="space-y-8 animate-in fade-in duration-500 pt-6">
+      <style>{ADMIN_CSS}</style>
+      
+      <div className="flex justify-between items-end">
+        <div>
+          <h1 className="text-3xl font-black text-gray-900 tracking-tight">Sales History</h1>
+          <p className="text-gray-500 font-medium">Review and manage all recorded transactions</p>
+        </div>
+        <button className="bg-gray-100 text-gray-600 h-12 px-6 rounded-md font-bold text-sm hover:bg-gray-200 transition-all flex items-center gap-2">
+          <Download size={18} /> Export Daily Report
+        </button>
+      </div>
+
+      <SlideOver 
+        isOpen={!!selectedSale} 
+        onClose={() => setSelectedSale(null)} 
+        title="Transaction Receipt"
+      >
+        {selectedSale && <ReceiptDetail sale={selectedSale} />}
+      </SlideOver>
+
+      {/* Summary Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <StatCard title="Total Today" value={`KES ${stats.totalToday.toLocaleString()}`} sub="Gross Revenue" icon={Receipt} variant="emerald" />
+        <StatCard title="Transactions" value={stats.transactions.toString()} sub="Sales processed" icon={CreditCard} variant="blue" />
+        <StatCard title="Avg. Sale" value={`KES ${stats.avgSale.toLocaleString()}`} sub="Per customer" icon={User} variant="amber" />
+      </div>
+
+      <div className="bg-white rounded-lg border border-gray-100 shadow-sm overflow-hidden">
+        <div className="p-6 border-b border-gray-50 flex gap-4">
+          <div className="relative flex-1">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+            <input 
+              type="text" 
+              placeholder="Search by receipt # or customer..." 
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full bg-gray-50 border-none rounded-md py-3.5 pl-12 pr-4 outline-none focus:ring-2 focus:ring-emerald-500/10 transition-all text-sm font-medium" 
+            />
+          </div>
+          <button className="bg-gray-50 text-gray-500 h-12 px-4 rounded-md flex items-center gap-2 font-bold text-xs hover:bg-gray-100 transition-all border border-gray-100">
+            <Calendar size={16} />
+            Today
+          </button>
+        </div>
+
+        <div className="overflow-x-auto">
+          <table className="w-full text-left">
+            <thead>
+              <tr className="bg-gray-50/50">
+                <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest">Receipt #</th>
+                <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest">Time</th>
+                <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest">Customer</th>
+                <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Items</th>
+                <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Total</th>
+                <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Method</th>
+                <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Action</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-50">
+              {isLoading ? (
+                <tr>
+                  <td colSpan={7} className="py-20 text-center">
+                    <div className="h-8 w-8 animate-spin rounded-full border-4 border-emerald-500 border-t-transparent mx-auto" />
+                  </td>
+                </tr>
+              ) : sales.length > 0 ? sales.map((s: any, i: number) => (
+                <tr key={i} className="hover:bg-gray-50/50 transition-all group">
+                  <td className="px-8 py-5 text-sm font-black text-gray-900 hl-mono">#{s.id.slice(-5).toUpperCase()}</td>
+                  <td className="px-8 py-5 text-sm font-bold text-gray-400 hl-mono">{new Date(s.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</td>
+                  <td className="px-8 py-5 text-sm font-bold text-gray-600">{s.customerName || 'Walk-in'}</td>
+                  <td className="px-8 py-5 text-center text-sm font-black hl-mono">{s.items?.length || 0}</td>
+                  <td className="px-8 py-5 text-right font-black text-[#0D4A3E] text-sm hl-mono">KES {Number(s.totalAmount).toLocaleString()}</td>
+                  <td className="px-8 py-5 text-center">
+                    <span className={`text-[10px] font-black px-2 py-0.5 rounded uppercase tracking-widest ${
+                      s.paymentMethod === 'MPESA' ? 'text-emerald-600 bg-emerald-50' : 'text-blue-600 bg-blue-50'
+                    }`}>
+                      {s.paymentMethod}
+                    </span>
+                  </td>
+                  <td className="px-8 py-5 text-right">
+                    <button 
+                      onClick={() => setSelectedSale(s)}
+                      className="p-2 hover:bg-emerald-50 rounded-md transition-all text-gray-300 hover:text-emerald-600"
+                    >
+                      <Eye size={18} />
+                    </button>
+                  </td>
+                </tr>
+              )) : (
+                <tr>
+                  <td colSpan={7} className="py-20 text-center text-gray-400 font-bold text-xs uppercase tracking-widest">No transactions found</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function ReceiptDetail({ sale }: { sale: any }) {
+  return (
+    <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-500">
+      <div className="bg-slate-50 p-8 rounded-xl border border-slate-100 space-y-6">
+        <div className="flex justify-between items-start border-b border-slate-200 pb-6 border-dashed">
+          <div>
+            <h4 className="text-xl font-black text-slate-900 uppercase tracking-tighter">Receipt</h4>
+            <p className="text-[10px] font-black text-slate-400 hl-mono">#{sale.id.toUpperCase()}</p>
+          </div>
+          <div className="text-right">
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Date</p>
+            <p className="text-xs font-bold text-slate-900">{new Date(sale.createdAt).toLocaleString()}</p>
+          </div>
+        </div>
+
+        <div className="space-y-4">
+          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Items Sold</p>
+          <div className="space-y-3">
+            {sale.items?.map((item: any, idx: number) => (
+              <div key={idx} className="flex justify-between items-center text-sm">
+                <div className="flex gap-3 items-center">
+                  <span className="h-6 w-6 rounded bg-white border border-slate-200 flex items-center justify-center text-[10px] font-black hl-mono">{item.quantity}</span>
+                  <span className="font-bold text-slate-700">{item.name}</span>
+                </div>
+                <span className="font-black text-slate-900 hl-mono">KES {(Number(item.price) * item.quantity).toLocaleString()}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="pt-6 border-t border-slate-200 border-dashed space-y-3">
+          <div className="flex justify-between items-center">
+            <span className="text-xs font-bold text-slate-400">Payment Method</span>
+            <span className="text-xs font-black text-slate-900 uppercase tracking-widest">{sale.paymentMethod}</span>
+          </div>
+          <div className="flex justify-between items-center pt-2">
+            <span className="text-lg font-black text-slate-900">Total Paid</span>
+            <span className="text-2xl font-black text-[#0D4A3E] hl-mono">KES {Number(sale.totalAmount).toLocaleString()}</span>
+          </div>
+        </div>
+      </div>
+
+      <div className="flex gap-4">
+        <button className="flex-1 h-14 bg-[#0D4A3E] text-white rounded-xl font-black text-xs uppercase tracking-widest flex items-center justify-center gap-3 hover:bg-[#0A3D33] transition-all shadow-xl shadow-emerald-900/10">
+          <Printer size={18} /> Print Receipt
+        </button>
+      </div>
+    </div>
+  )
+}
+
+function StatCard({ title, value, sub, icon: Icon, variant }: any) {
+  const variants = {
+    emerald: 'bg-emerald-50 text-emerald-600',
+    blue: 'bg-blue-50 text-blue-600',
+    amber: 'bg-amber-50 text-amber-600',
+  }
+
+  return (
+    <div className="bg-white p-6 rounded-lg border border-gray-100 shadow-sm flex items-center gap-5 hover:shadow-md transition-all">
+      <div className={`h-12 w-12 rounded-md flex items-center justify-center shrink-0 ${variants[variant as keyof typeof variants]}`}>
+        <Icon size={24} />
+      </div>
+      <div>
+        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-0.5">{title}</p>
+        <h3 className="text-xl font-black text-gray-900 hl-mono">{value}</h3>
+        <p className="text-[10px] text-gray-500 font-bold">{sub}</p>
+      </div>
+    </div>
   )
 }

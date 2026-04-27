@@ -9,43 +9,38 @@ import VerifyOtpPage from './pages/auth/VerifyOtpPage'
 import ForgotPasswordPage from './pages/auth/ForgotPasswordPage'
 import ResetPasswordPage from './pages/auth/ResetPasswordPage'
 
-// Provider portal
+// Layouts
 import ProviderLayout from './components/shared/ProviderLayout'
-import DashboardPage from './pages/provider/DashboardPage'
-import ServicesPage from './pages/provider/ServicesPage'
-import RequestsPage from './pages/provider/RequestsPage'
-import SettingsPage from './pages/provider/SettingsPage'
-import SubscriptionPage from './pages/provider/SubscriptionPage'
-
-// New Management Pages
-import SalesHistoryPage from './pages/provider/SalesHistoryPage'
-import RecordSalePage from './pages/provider/RecordSalePage'
-import ProductsPage from './pages/provider/ProductsPage'
-import StockLevelsPage from './pages/provider/StockLevelsPage'
-import {
-  ExpenseHistoryPage,
-  RecordExpensePage,
-  RestockHistoryPage
-} from './pages/provider/ExpenseAndRestockPages'
-
-import CustomersPage from './pages/provider/CustomersPage'
-import ReportsPage from './pages/provider/ReportsPage'
-import PublicPage from './pages/provider/PublicPage'
-import HelpPage from './pages/provider/HelpPage'
-
-// Admin portal
 import AdminLayout from './components/shared/AdminLayout'
+
+// Dashboards
+import DashboardPage from './pages/provider/DashboardPage'
 import AdminDashboardPage from './pages/admin/AdminDashboardPage'
-import AdminTenantsPage from './pages/admin/AdminTenantsPage'
-import AdminActivityPage from './pages/admin/AdminActivityPage'
-import AdminAddProviderPage from './pages/admin/AdminAddProviderPage'
-import AdminSubscriptionsPage from './pages/admin/AdminSubscriptionsPage'
-import AdminRevenuePage from './pages/admin/AdminRevenuePage'
-import AdminUsersPage from './pages/admin/AdminUsersPage'
-import AdminAnnouncementsPage from './pages/admin/AdminAnnouncementsPage'
-import AdminReportsPage from './pages/admin/AdminReportsPage'
-import AdminSettingsPage from './pages/admin/AdminSettingsPage'
-import AdminSupportPage from './pages/admin/AdminSupportPage'
+
+// Admin Pages
+import SystemPerformancePage from './pages/admin/SystemPerformancePage'
+import FinancialsPage from './pages/admin/FinancialsPage'
+import UserOperationsPage from './pages/admin/UserOperationsPage'
+import AuditSecurityPage from './pages/admin/AuditSecurityPage'
+import ReportsPageAdmin from './pages/admin/ReportsPage'
+import ProvidersPage from './pages/admin/ProvidersPage'
+import SubscriptionsPageAdmin from './pages/admin/SubscriptionsPage'
+import PaymentsPageAdmin from './pages/admin/PaymentsPage'
+import SupportPageAdmin from './pages/admin/SupportPage'
+import SettingsPageAdmin from './pages/admin/SettingsPage'
+import HelpPageAdmin from './pages/admin/HelpPage'
+
+// Provider Pages
+import RecordSalePage from './pages/provider/RecordSalePage'
+import CustomersPage from './pages/provider/CustomersPage'
+import ReportsPageProvider from './pages/provider/ReportsPage'
+import SubscriptionPage from './pages/provider/SubscriptionPage'
+import ProductsPage from './pages/provider/ProductsPage'
+import ExpensesPage from './pages/provider/ExpensesPage'
+import SalesHistoryPage from './pages/provider/SalesHistoryPage'
+import SupportPageProvider from './pages/provider/SupportPage'
+import SettingsPageProvider from './pages/provider/SettingsPage'
+import HelpPageProvider from './pages/provider/HelpPage'
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, isLoading } = useAuth()
@@ -75,52 +70,32 @@ export default function App() {
       {/* Provider Portal */}
       <Route path="/dashboard" element={<ProtectedRoute><ProviderLayout /></ProtectedRoute>}>
         <Route index element={<DashboardPage />} />
-        <Route path="services" element={<ServicesPage />} />
-        <Route path="requests" element={<RequestsPage />} />
-        <Route path="settings" element={<SettingsPage />} />
-        <Route path="subscription" element={<SubscriptionPage />} />
-
-        {/* Management */}
-        <Route path="sales" element={<SalesHistoryPage />} />
         <Route path="sales/new" element={<RecordSalePage />} />
-        <Route path="inventory" element={<ProductsPage />} />
-        <Route path="inventory/stock" element={<StockLevelsPage />} />
-        <Route path="inventory/history" element={<RestockHistoryPage />} />
-        <Route path="expenses" element={<ExpenseHistoryPage />} />
-        <Route path="expenses/new" element={<RecordExpensePage />} />
+        <Route path="sales" element={<SalesHistoryPage />} />
+        <Route path="products" element={<ProductsPage />} />
+        <Route path="expenses" element={<ExpensesPage />} />
         <Route path="customers" element={<CustomersPage />} />
-
-        {/* Insights & System */}
-        <Route path="reports" element={<ReportsPage />} />
-        <Route path="public" element={<PublicPage />} />
-        <Route path="help" element={<HelpPage />} />
+        <Route path="reports" element={<ReportsPageProvider />} />
+        <Route path="subscription" element={<SubscriptionPage />} />
+        <Route path="support" element={<SupportPageProvider />} />
+        <Route path="settings" element={<SettingsPageProvider />} />
+        <Route path="help" element={<HelpPageProvider />} />
       </Route>
 
       {/* Admin Portal */}
       <Route path="/admin" element={<AdminRoute><AdminLayout /></AdminRoute>}>
         <Route index element={<AdminDashboardPage />} />
-        {/* Businesses */}
-        <Route path="businesses" element={<AdminTenantsPage />} />
-        <Route path="businesses/new" element={<AdminAddProviderPage />} />
-        <Route path="businesses/activity" element={<AdminActivityPage />} />
-
-        {/* Subscriptions */}
-        <Route path="subscriptions" element={<AdminSubscriptionsPage />} />
-        <Route path="subscriptions/active" element={<AdminSubscriptionsPage />} />
-        <Route path="subscriptions/trials" element={<AdminSubscriptionsPage />} />
-        <Route path="subscriptions/expired" element={<AdminSubscriptionsPage />} />
-
-        {/* Revenue */}
-        <Route path="revenue" element={<AdminRevenuePage />} />
-        <Route path="revenue/payments" element={<AdminRevenuePage />} />
-        <Route path="revenue/report" element={<AdminRevenuePage />} />
-
-        {/* Others */}
-        <Route path="users" element={<AdminUsersPage />} />
-        <Route path="announcements" element={<AdminAnnouncementsPage />} />
-        <Route path="reports" element={<AdminReportsPage />} />
-        <Route path="settings" element={<AdminSettingsPage />} />
-        <Route path="support" element={<AdminSupportPage />} />
+        <Route path="system-performance" element={<SystemPerformancePage />} />
+        <Route path="financials" element={<FinancialsPage />} />
+        <Route path="businesses" element={<ProvidersPage />} />
+        <Route path="user-operations" element={<UserOperationsPage />} />
+        <Route path="subscriptions" element={<SubscriptionsPageAdmin />} />
+        <Route path="payments" element={<PaymentsPageAdmin />} />
+        <Route path="support" element={<SupportPageAdmin />} />
+        <Route path="audit" element={<AuditSecurityPage />} />
+        <Route path="reports" element={<ReportsPageAdmin />} />
+        <Route path="settings" element={<SettingsPageAdmin />} />
+        <Route path="help" element={<HelpPageAdmin />} />
       </Route>
 
       {/* Fallback */}

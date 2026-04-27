@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,200..1000;1,200..1000&family=Saira:ital,wght@0,100..900;1,100..900&family=Ubuntu:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,500;1,700&family=Figtree:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,200..1000;1,200..1000&family=Ubuntu:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,500;1,700&family=Figtree:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -44,6 +44,13 @@
   html { scroll-behavior: smooth; -webkit-tap-highlight-color: transparent; }
   body { @apply bg-background text-foreground font-nunito antialiased; line-height: 1.5; }
   h1, h2, h3, h4, h5, h6 { font-weight: 800; @apply tracking-tight; }
+  
+  /* Enforce Mono for all numbers with the .hl-mono class or data-mono attribute */
+  .hl-mono, .font-mono, [data-mono="true"] { 
+    font-family: 'JetBrains Mono', monospace !important; 
+    font-variant-numeric: tabular-nums;
+  }
+  
   ::-webkit-scrollbar { width: 5px; height: 5px; }
   ::-webkit-scrollbar-track { @apply bg-transparent; }
   ::-webkit-scrollbar-thumb { background: hsl(215 14% 75%); border-radius: 9999px; }
@@ -100,7 +107,7 @@
   }
   .stat-box { @apply bg-white rounded-2xl p-6 border border-border shadow-sm transition-all hover:shadow-md; }
   .stat-box-label { @apply text-[10px] font-bold text-muted-foreground uppercase tracking-widest; font-family: 'JetBrains Mono', monospace; }
-  .stat-box-value { @apply text-2xl font-black text-foreground mt-2; font-family: 'Saira', sans-serif; font-weight: 800; }
+  .stat-box-value { @apply text-2xl font-black text-foreground mt-2; font-family: 'Nunito', sans-serif; font-weight: 900; }
   .stat-trend { @apply inline-flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-full mt-3; }
   .stat-trend-up { @apply bg-emerald-50 text-emerald-600; }
   .stat-trend-down { @apply bg-red-50 text-red-600; }

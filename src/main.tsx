@@ -16,7 +16,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
         <AuthProvider>
           <App />
           <Toaster
-            position="top-right"
+            position="top-center"
             toastOptions={{
               style: { fontFamily: 'Inter, sans-serif' },
               classNames: {

@@ -27,13 +27,13 @@ export const providersApi = {
 }
 
 export const salesApi = {
-  list: (params?: { page?: number; search?: string }) => api.get('/sales', { params }).then(r => r.data),
+  list: (params?: { page?: number; search?: string; limit?: number }) => api.get('/sales', { params }).then(r => r.data),
   create: (data: any) => api.post('/sales', data).then(r => r.data),
   getDetails: (id: string) => api.get(`/sales/${id}`).then(r => r.data),
 }
 
 export const inventoryApi = {
-  list: (params?: { page?: number; search?: string; category?: string }) => api.get('/inventory', { params }).then(r => r.data),
+  list: (params?: { page?: number; search?: string; category?: string; limit?: number }) => api.get('/inventory', { params }).then(r => r.data),
   create: (data: any) => api.post('/inventory', data).then(r => r.data),
   update: (id: string, data: any) => api.put(`/inventory/${id}`, data).then(r => r.data),
   adjustStock: (id: string, quantity: number, reason: string) => api.post(`/inventory/${id}/adjust`, { quantity, reason }).then(r => r.data),
@@ -41,7 +41,7 @@ export const inventoryApi = {
 }
 
 export const expensesApi = {
-  list: (params?: { page?: number; search?: string; category?: string }) => api.get('/expenses', { params }).then(r => r.data),
+  list: (params?: { page?: number; search?: string; category?: string; limit?: number }) => api.get('/expenses', { params }).then(r => r.data),
   create: (data: any) => api.post('/expenses', data).then(r => r.data),
   delete: (id: string) => api.delete(`/expenses/${id}`).then(r => r.data),
 }
@@ -66,6 +66,11 @@ export const requestsApi = {
     api.put(`/requests/${id}/status`, { status }).then(r => r.data),
 }
 
+export const paymentsApi = {
+  stkPush: (data: { phone: string; amount: number; reference: string }) => 
+    api.post('/payments/mpesa/stk-push', data).then(r => r.data),
+}
+
 export const adminApi = {
   getStats: () => api.get('/admin/stats').then(r => r.data),
   getTenants: (params?: { page?: number; search?: string; limit?: number }) =>
@@ -75,4 +80,5 @@ export const adminApi = {
   upgradePlan: (id: string, planName: string) =>
     api.put(`/admin/tenants/${id}/upgrade`, { planName }).then(r => r.data),
   createTenant: (data: any) => api.post('/admin/tenants', data).then(r => r.data),
+  getSystemHealth: () => api.get('/admin/system-health').then(r => r.data),
 }

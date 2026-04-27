@@ -1,9 +1,10 @@
 import { useRef, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { toast } from 'sonner'
-import { Loader2, CheckCircle2 } from 'lucide-react'
+import { Loader2, ShieldCheck, ArrowRight, ArrowLeft } from 'lucide-react'
 import { authApi } from '../../lib/api/auth'
 import { useAuth } from '../../lib/auth/AuthContext'
+import { getErrorMessage } from '../../lib/utils/error'
 
 export default function VerifyOtpPage() {
   const navigate = useNavigate()
@@ -39,34 +40,33 @@ export default function VerifyOtpPage() {
     try {
       const res = await authApi.verifyOtp({ phone, otp: code })
       login({ accessToken: res.data.accessToken, refreshToken: res.data.refreshToken }, res.data.user)
-      toast.success('Phone verified! Welcome to hlynk 🎉')
+      toast.success('Phone verified successfully!')
       navigate('/dashboard')
     } catch (err: any) {
-      toast.error(err.response?.data?.message || 'Invalid or expired OTP')
+      toast.error(getErrorMessage(err))
     } finally {
       setLoading(false)
     }
   }
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center px-4">
-      <div className="w-full max-w-sm">
-        <div className="text-center mb-8">
-          <Link to="/" className="inline-flex items-center gap-2 mb-6 group">
-            <img src="/logo.png" alt="hlynk logo" className="h-9 w-auto transition-transform group-hover:scale-105" />
+    <div className="min-h-screen bg-slate-50 flex items-center justify-center px-4 py-12">
+      <div className="w-full max-w-[440px] space-y-8 animate-in fade-in zoom-in duration-500">
+        {/* Branding */}
+        <div className="text-center space-y-2">
+          <Link to="/" className="inline-block transition-transform hover:scale-105 active:scale-95">
+            <img src="/logo.png" alt="HudumaLynk" className="h-14 w-auto mx-auto" />
           </Link>
-          <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
-            <CheckCircle2 size={32} className="text-primary" />
-          </div>
-          <h1 className="text-2xl font-bold text-foreground font-ubuntu">Verify your phone</h1>
-          <p className="text-muted-foreground text-sm mt-2">
-            We sent a 6-digit code to <span className="font-medium text-foreground">{phone}</span>
+          <h1 className="text-3xl font-black text-slate-900 tracking-tighter pt-4 font-ubuntu">Verify Phone</h1>
+          <p className="text-slate-500 font-medium text-sm">
+            Sent a 6-digit code to <span className="text-slate-900 font-bold hl-mono">{phone}</span>
           </p>
         </div>
 
-        <div className="bg-white rounded-2xl p-7 shadow-sm border border-border">
+        {/* Card */}
+        <div className="bg-white rounded-[24px] p-8 md:p-10 shadow-xl shadow-slate-200/50 border border-slate-100">
           <form onSubmit={handleSubmit}>
-            <div className="flex gap-2 justify-center mb-6" onPaste={handlePaste}>
+            <div className="flex gap-3 justify-center mb-10" onPaste={handlePaste}>
               {otp.map((digit, i) => (
                 <input
                   key={i}
@@ -76,24 +76,38 @@ export default function VerifyOtpPage() {
                   onKeyDown={e => handleKeyDown(i, e)}
                   maxLength={1}
                   inputMode="numeric"
-                  className="h-13 w-11 text-center text-xl font-bold rounded-xl border-2 border-input focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all bg-background"
-                  style={{ height: '52px' }}
+                  className="h-14 w-full text-center text-xl font-black rounded-xl border border-transparent bg-slate-50 focus:bg-white focus:border-emerald-200 focus:ring-4 focus:ring-emerald-500/5 outline-none transition-all shadow-sm"
                 />
               ))}
             </div>
 
-            <button type="submit" disabled={loading}
-              className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-primary text-white font-semibold text-sm hover:bg-primary/90 disabled:opacity-60 transition-all">
-              {loading ? <Loader2 size={16} className="animate-spin" /> : null}
-              {loading ? 'Verifying…' : 'Verify & Continue'}
+            <button 
+              type="submit" 
+              disabled={loading}
+              className="w-full py-5 bg-[#0D4A3E] text-white rounded-xl font-black text-xs uppercase tracking-widest hover:bg-[#064E3B] transition-all shadow-xl shadow-emerald-900/10 flex items-center justify-center gap-2 group disabled:opacity-50"
+            >
+              {loading ? <Loader2 size={16} className="animate-spin" /> : 'Verify & Join Network'}
+              {!loading && <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />}
             </button>
           </form>
 
-          <p className="text-center text-xs text-muted-foreground mt-4">
-            Didn't receive it? Check your SMS inbox or{' '}
-            <Link to="/register" className="text-primary hover:underline">go back</Link>
-          </p>
+          <div className="mt-8 text-center space-y-4">
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+              Didn't receive the code?
+            </p>
+            <Link 
+              to="/register" 
+              className="flex items-center justify-center gap-2 text-[10px] font-black text-emerald-600 uppercase tracking-widest hover:text-emerald-700 transition-colors"
+            >
+              <ArrowLeft size={14} /> Back to Register
+            </Link>
+          </div>
         </div>
+
+        {/* Footer */}
+        <p className="text-center text-[10px] font-black text-slate-400 uppercase tracking-widest">
+          Secure verification — &copy; {new Date().getFullYear()} hlynk
+        </p>
       </div>
     </div>
   )

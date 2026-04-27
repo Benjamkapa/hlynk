@@ -1,18 +1,27 @@
 import { useState, useRef, useEffect } from 'react'
-import { Bell, User, Settings, LogOut, ChevronDown, Shield, Menu, Search, Sparkles } from 'lucide-react'
+import { Bell, User, LogOut, ChevronDown, Menu, Search, Sparkles, CheckCircle2, AlertCircle, ShoppingBag, Mail } from 'lucide-react'
 import { useAuth } from '../../lib/auth/AuthContext'
 import { Link, useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 
 interface TopNavProps {
   onMobileMenuToggle?: () => void
+  extraActions?: React.ReactNode
+  showMail?: boolean
 }
 
-export default function TopNav({ onMobileMenuToggle }: TopNavProps) {
+const MOCK_NOTIFICATIONS = [
+  { id: 1, type: 'sale', title: 'New Sale Recorded', desc: 'KES 2,400 received via M-Pesa', time: '2 mins ago', icon: <ShoppingBag size={14} className="text-emerald-500" /> },
+  { id: 2, type: 'stock', title: 'Low Stock Alert', desc: 'Infinix Screen (×2 left)', time: '45 mins ago', icon: <AlertCircle size={14} className="text-amber-500" /> },
+  { id: 3, type: 'system', title: 'System Updated', desc: 'Version 2.4.0 is now live', time: '3h ago', icon: <CheckCircle2 size={14} className="text-blue-500" /> },
+]
+
+export default function TopNav({ onMobileMenuToggle, extraActions, showMail = false }: TopNavProps) {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
   const [showUserMenu, setShowUserMenu] = useState(false)
   const [showNotifications, setShowNotifications] = useState(false)
+  const [notifications, setNotifications] = useState(MOCK_NOTIFICATIONS)
   const userMenuRef = useRef<HTMLDivElement>(null)
   const notificationRef = useRef<HTMLDivElement>(null)
 
@@ -34,80 +43,140 @@ export default function TopNav({ onMobileMenuToggle }: TopNavProps) {
   }
 
   return (
-    <header style={{ height: 72, background: 'rgba(255,255,255,.02)', backdropFilter: 'blur(12px)', borderBottom: '1px solid rgba(0,0,0,.05)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 32px', zIndex: 100 }}>
-      
+    <header className="h-24 bg-transparent flex items-center justify-between z-[100] px-6 sm:px-8">
+
       {/* Search Console */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+      <div className="flex items-center gap-4 flex-1 max-w-xl">
         {onMobileMenuToggle && (
-          <button onClick={onMobileMenuToggle} style={{ display: 'none', background: 'none', border: 'none', color: 'var(--ink)' }} className="lg:block">
-             <Menu size={20} />
+          <button 
+            onClick={onMobileMenuToggle} 
+            className="lg:hidden h-12 w-12 rounded-xl bg-slate-50 flex items-center justify-center text-slate-500 hover:text-emerald-600 hover:bg-emerald-50 transition-all border border-slate-100"
+          >
+            <Menu size={22} />
           </button>
         )}
-        <div style={{ position: 'relative', width: 340 }} className="hidden sm:block">
-           <Search size={14} style={{ position: 'absolute', left: 16, top: '50%', transform: 'translateY(-50%)', color: 'var(--ink3)' }} />
-           <input placeholder="Search intelligence, clients, transactions…" style={{ width: '100%', height: 42, background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: 12, paddingLeft: 44, fontSize: '.78rem', fontFamily: "'Figtree',sans-serif", color: 'var(--ink)' }} />
+        <div className="relative w-full hidden sm:block group">
+          <Search size={18} className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-emerald-500 transition-colors" />
+          <input 
+            placeholder="Search intelligence, clients, transactions…" 
+            className="w-full h-14 bg-slate-50/50 border border-slate-100 rounded-2xl pl-14 pr-4 text-sm font-bold text-slate-900 focus:outline-none focus:ring-4 focus:ring-emerald-500/5 focus:border-emerald-500/20 focus:bg-white transition-all placeholder:text-slate-400" 
+          />
         </div>
       </div>
 
       {/* Terminal Actions */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
+      <div className="flex items-center gap-4 sm:gap-6">
         
-        {/* Alerts */}
-        <div style={{ position: 'relative' }} ref={notificationRef}>
-          <button onClick={() => setShowNotifications(!showNotifications)} style={{ width: 42, height: 42, borderRadius: 12, background: 'var(--surface2)', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--ink3)', cursor: 'pointer', position: 'relative' }}>
-             <Bell size={18} />
-             <div style={{ position: 'absolute', top: 10, right: 10, width: 8, height: 8, borderRadius: '50%', background: 'var(--mint)', border: '2px solid var(--surface2)' }} />
-          </button>
-          
-          {showNotifications && (
-            <div style={{ position: 'absolute', top: 54, right: 0, width: 320, background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 16, boxShadow: '0 12px 40px rgba(0,0,0,0.12)', overflow: 'hidden', zIndex: 200 }}>
-               <div style={{ padding: '16px 20px', background: 'var(--surface2)', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: '.6rem', fontWeight: 900, color: 'var(--ink3)', letterSpacing: '.12em' }}>NOTIFICATIONS</span>
-                  <button style={{ background: 'none', border: 'none', fontSize: '.6rem', fontWeight: 900, color: 'var(--mint)', cursor: 'pointer' }}>CLEAR ALL</button>
-               </div>
-               <div style={{ padding: '40px 20px', textAlign: 'center' }}>
-                  <p style={{ fontSize: '.75rem', color: 'var(--ink3)', fontWeight: 500 }}>No new alerts in the last 24h</p>
-               </div>
-            </div>
+        {extraActions && (
+          <div className="hidden lg:block">
+            {extraActions}
+          </div>
+        )}
+
+        <div className="flex items-center gap-3 pr-6 border-r border-slate-100">
+          {showMail && (
+            <button className="h-12 w-12 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-500 hover:text-emerald-600 hover:bg-emerald-50 transition-all relative">
+              <Mail size={20} />
+              <span className="absolute top-3.5 right-3.5 w-2 h-2 bg-emerald-500 rounded-full border-2 border-white" />
+            </button>
           )}
+
+          {/* Alerts */}
+          <div className="relative" ref={notificationRef}>
+            <button 
+              onClick={() => setShowNotifications(!showNotifications)} 
+              className={`w-12 h-12 rounded-xl border flex items-center justify-center transition-all relative ${showNotifications ? 'bg-white border-emerald-200 shadow-xl text-emerald-600' : 'bg-slate-50 border-slate-100 text-slate-400 hover:border-slate-200 hover:text-slate-600 hover:bg-emerald-50'}`}
+            >
+              <Bell size={20} />
+              {notifications.length > 0 && (
+                <span className="absolute top-3.5 right-3.5 w-2 h-2 bg-emerald-500 rounded-full border-2 border-white animate-pulse" />
+              )}
+            </button>
+
+            {showNotifications && (
+              <div className="absolute top-16 right-0 w-[340px] bg-white border border-slate-100 rounded-3xl shadow-2xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200 z-[200]">
+                <div className="p-5 bg-slate-50/50 border-b border-slate-100 flex justify-between items-center">
+                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Intelligence Stream</span>
+                  <button 
+                    onClick={() => { setNotifications([]); toast.success('All notifications cleared') }}
+                    className="text-[10px] font-black text-emerald-600 uppercase tracking-widest hover:text-emerald-700"
+                  >
+                    Clear All
+                  </button>
+                </div>
+                <div className="max-h-[400px] overflow-y-auto">
+                  {notifications.length === 0 ? (
+                    <div className="p-16 text-center">
+                      <p className="text-sm font-black text-slate-400 italic">No new intelligence found</p>
+                    </div>
+                  ) : (
+                    <div className="divide-y divide-slate-50">
+                      {notifications.map(n => (
+                        <div key={n.id} className="p-5 hover:bg-slate-50 transition-colors cursor-pointer group">
+                          <div className="flex gap-4">
+                            <div className="h-12 w-12 rounded-2xl bg-white border border-slate-100 flex items-center justify-center shrink-0 group-hover:scale-110 group-hover:shadow-lg transition-all">
+                              {n.icon}
+                            </div>
+                            <div className="space-y-1">
+                              <p className="text-sm font-black text-slate-900 tracking-tight">{n.title}</p>
+                              <p className="text-xs font-bold text-slate-500 leading-relaxed">{n.desc}</p>
+                              <p className="text-[9px] font-black text-slate-400 uppercase hl-mono">{n.time}</p>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                <div className="p-4 border-t border-slate-100 bg-slate-50/30 text-center">
+                  <Link to="/dashboard/reports" onClick={() => setShowNotifications(false)} className="text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-slate-900 transition-colors">
+                    View Full System Logs
+                  </Link>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* User Identity */}
-        <div style={{ position: 'relative' }} ref={userMenuRef}>
-          <button onClick={() => setShowUserMenu(!showUserMenu)} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '4px', borderRadius: 14, border: '1px solid transparent', cursor: 'pointer', transition: 'all .2s' }}>
-             <div style={{ width: 40, height: 40, borderRadius: 10, background: 'var(--mint)', overflow: 'hidden', border: '2px solid #fff', boxShadow: '0 4px 12px rgba(29,186,135,.2)' }}>
-                <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.name || 'User'}`} alt="Avatar" style={{ width: '100%', height: '100%' }} />
-             </div>
-             <div style={{ textAlign: 'left' }} className="hidden md:block">
-                <p style={{ fontSize: '.82rem', fontWeight: 800, color: 'var(--ink)', lineHeight: 1.2 }}>{user?.name}</p>
-                <p style={{ fontSize: '.6rem', fontWeight: 900, color: 'var(--mint)', letterSpacing: '.05em', marginTop: 2 }}>{user?.role?.toUpperCase()}</p>
-             </div>
-             <ChevronDown size={14} style={{ color: 'var(--ink3)', marginLeft: 4 }} className="hidden md:block" />
+        <div className="relative" ref={userMenuRef}>
+          <button 
+            onClick={() => setShowUserMenu(!showUserMenu)} 
+            className={`p-1.5 rounded-2xl border flex items-center gap-3 transition-all ${showUserMenu ? 'bg-white border-emerald-200 shadow-xl ring-4 ring-emerald-500/5' : 'bg-transparent border-transparent hover:bg-white hover:border-slate-100 hover:shadow-lg'}`}
+          >
+            <div className="w-10 h-10 rounded-xl bg-emerald-600 overflow-hidden shadow-2xl shadow-emerald-900/20 border border-white/20">
+              <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.name || 'User'}`} alt="Avatar" className="w-full h-full" />
+            </div>
+            <div className="text-left hidden xl:block pr-3">
+              <p className="text-sm font-black text-slate-900 tracking-tight leading-none mb-1.5">{user?.name}</p>
+              <p className="text-[9px] font-black text-emerald-600 uppercase tracking-widest leading-none">{user?.role?.replace('_', ' ')}</p>
+            </div>
+            <ChevronDown size={14} className={`text-slate-400 mr-1 transition-transform duration-300 ${showUserMenu ? 'rotate-180 text-emerald-500' : ''}`} />
           </button>
 
           {showUserMenu && (
-            <div style={{ position: 'absolute', top: 58, right: 0, width: 220, background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 16, boxShadow: '0 12px 40px rgba(0,0,0,0.12)', padding: '8px', zIndex: 200 }}>
-               <div style={{ padding: '12px 16px', marginBottom: 4, borderBottom: '1px solid var(--border)' }}>
-                  <p style={{ fontSize: '.6rem', fontWeight: 900, color: 'var(--ink3)', marginBottom: 2 }}>AUTHENTICATED AS</p>
-                  <p style={{ fontSize: '.72rem', fontWeight: 700, color: 'var(--ink)', overflow: 'hidden', textOverflow: 'ellipsis' }}>{user?.email}</p>
-               </div>
-               <Link to="/dashboard/settings" style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 16px', borderRadius: 10, color: 'var(--ink2)', textDecoration: 'none', fontSize: '.8rem', fontWeight: 600 }} className="hl-item-hover">
-                  <User size={16} /> Profile Settings
-               </Link>
-               <Link to="/dashboard/subscription" style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 16px', borderRadius: 10, color: 'var(--ink2)', textDecoration: 'none', fontSize: '.8rem', fontWeight: 600 }} className="hl-item-hover">
-                  <Sparkles size={16} /> Upgrade Tier
-               </Link>
-               <div style={{ margin: '6px 0', height: 1, background: 'var(--border)' }} />
-               <button onClick={handleLogout} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '10px 16px', borderRadius: 10, color: '#EF4444', background: 'none', border: 'none', cursor: 'pointer', fontSize: '.8rem', fontWeight: 700 }}>
-                  <LogOut size={16} /> Terminate Session
-               </button>
+            <div className="absolute top-16 right-0 w-64 bg-white border border-slate-100 rounded-[24px] shadow-2xl p-2 animate-in fade-in slide-in-from-top-2 duration-200 z-[200]">
+              <div className="px-5 py-4 mb-2 border-b border-slate-50">
+                <p className="text-[9px] font-black text-slate-300 uppercase tracking-widest mb-1.5">Authenticated ID</p>
+                <p className="text-xs font-black text-slate-900 tracking-tight truncate">{user?.email}</p>
+              </div>
+              <Link to="/dashboard/settings" onClick={() => setShowUserMenu(false)} className="flex items-center gap-3 px-4 py-3.5 rounded-xl text-xs font-black text-slate-500 uppercase tracking-widest hover:bg-emerald-50 hover:text-emerald-700 transition-all">
+                <User size={16} className="opacity-50" /> Profile Security
+              </Link>
+              <Link to="/dashboard/subscription" onClick={() => setShowUserMenu(false)} className="flex items-center gap-3 px-4 py-3.5 rounded-xl text-xs font-black text-slate-500 uppercase tracking-widest hover:bg-emerald-50 hover:text-emerald-700 transition-all">
+                <Sparkles size={16} className="text-emerald-500" /> Subscription
+              </Link>
+              <div className="h-px bg-slate-50 my-2 mx-2" />
+              <button 
+                onClick={handleLogout} 
+                className="w-full flex items-center gap-3 px-4 py-3.5 rounded-xl text-xs font-black text-red-500 uppercase tracking-widest hover:bg-red-50 transition-all"
+              >
+                <LogOut size={16} /> Terminate Session
+              </button>
             </div>
           )}
         </div>
       </div>
-      <style>{`
-        .hl-item-hover:hover { background: var(--surface2); color: var(--ink) !important; }
-      `}</style>
     </header>
   )
 }

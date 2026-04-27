@@ -1,91 +1,64 @@
-import { HelpCircle, MessageSquare, Book, Phone, ExternalLink, LifeBuoy, FileText, Headphones, Shield, Globe } from 'lucide-react'
-import { PROVIDER_CSS } from '../admin/hl-design-system'
+import { Search, Zap, Package, TrendingUp, Users, Shield, ChevronRight } from 'lucide-react'
+import { ADMIN_CSS } from '../admin/hl-design-system'
 
 export default function HelpPage() {
+  const guides = [
+    { title: 'Record your first sale', desc: 'Learn how to use the high-speed POS system.', icon: Zap, time: '2 min read' },
+    { title: 'Inventory Management', desc: 'Adding products and setting stock alerts.', icon: Package, time: '5 min read' },
+    { title: 'Understanding Reports', desc: 'How to read your profit and loss statements.', icon: TrendingUp, time: '4 min read' },
+    { title: 'Customer Loyalty', desc: 'Setting up discounts for frequent shoppers.', icon: Users, time: '3 min read' },
+  ]
+
   return (
-    <>
-      <style>{PROVIDER_CSS}</style>
-      <div className="hl-dash" style={{ padding: '28px 32px 60px' }}>
-        
-        <div className="hl-page-header">
-          <div>
-            <h1 className="hl-page-title">Operations Support</h1>
-            <p className="hl-page-subtitle">Access technical resources and dedicated assistance terminals</p>
+    <div className="space-y-8 animate-in fade-in duration-500 pt-6">
+      <style>{ADMIN_CSS}</style>
+      
+      <div className="bg-[#0D4A3E] rounded-[14px] p-12 text-white relative overflow-hidden">
+        <div className="relative z-10 max-w-2xl">
+          <h1 className="text-4xl font-black mb-4">How can we help your business?</h1>
+          <p className="text-emerald-200 font-medium text-lg leading-relaxed">Search for guides on using hlynk to manage your sales, stock, and customers.</p>
+          
+          <div className="relative mt-8">
+            <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-emerald-800" size={24} />
+            <input 
+              type="text" 
+              placeholder="Search help articles..." 
+              className="w-full bg-white border-none rounded-xl py-5 pl-16 pr-6 outline-none text-gray-900 font-bold placeholder:text-gray-400 shadow-2xl" 
+            />
           </div>
         </div>
+        <Shield size={240} className="absolute -right-10 -top-10 text-emerald-800 opacity-20 -rotate-12" />
+      </div>
 
-        <div style={{ maxWidth: 900 }}>
-          <div className="hl-grid-2" style={{ marginBottom: 32 }}>
-            {[
-              { title: 'KNOWLEDGE REPOSITORY', desc: 'Step-by-step operational guides and tutorials', icon: Book, color: '#3B82F6' },
-              { title: 'DIRECT CHAT TERMINAL', desc: 'Synchronize with our technical support team live', icon: MessageSquare, color: '#1DBA87' },
-              { title: 'TELEMETRY SUPPORT', desc: 'Available Mon-Fri, 08:00 - 17:00 EAT', icon: Phone, color: '#F5A623' },
-              { title: 'PARTNER FORUM', desc: 'Collaborate with the HudumaLynk provider network', icon: LifeBuoy, color: '#8B5CF6' },
-            ].map((item, i) => (
-              <button key={i} className="hl-card" style={{ 
-                padding: '24px', animation: `hl-up .4s ease ${i * .08}s both`,
-                textAlign: 'left', border: '1px solid var(--border)', cursor: 'pointer',
-                display: 'flex', gap: 20, alignItems: 'center', transition: 'all .3s cubic-bezier(0.4, 0, 0.2, 1)'
-              }}>
-                <div style={{ width: 48, height: 48, borderRadius: 12, background: `${item.color}12`, border: `1px solid ${item.color}20`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: item.color, flexShrink: 0 }}>
-                  <item.icon size={20} />
-                </div>
-                <div style={{ flex: 1 }}>
-                  <h3 style={{ fontFamily: "'Nunito',sans-serif", fontWeight: 900, fontSize: '.75rem', color: 'var(--ink)', display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
-                    {item.title}
-                    <ExternalLink size={12} style={{ opacity: 0.4 }} />
-                  </h3>
-                  <p style={{ fontFamily: "'Figtree',sans-serif", fontSize: '.8rem', color: 'var(--ink3)', fontWeight: 500 }}>{item.desc}</p>
-                </div>
-              </button>
-            ))}
-          </div>
-
-          {/* Urgent Assistance Section */}
-          <div className="hl-card" style={{ padding: '40px', background: 'var(--forest)', position: 'relative', overflow: 'hidden', animation: 'hl-up .6s ease .3s both' }}>
-            <div style={{ position: 'absolute', top: 0, right: 0, width: 240, height: 240, background: 'radial-gradient(circle, rgba(255,255,255,.1) 0%, transparent 70%)', opacity: 0.5 }} />
-            <div className="hl-stack-md" style={{ flex: 1 }}>
-              <div style={{ flex: 1, textAlign: 'left' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
-                   <div style={{ width: 40, height: 40, borderRadius: 10, background: 'rgba(255,255,255,.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <Headphones size={20} color="#fff" />
-                   </div>
-                   <h2 style={{ fontFamily: "'Nunito',sans-serif", fontWeight: 900, fontSize: '1.25rem', color: '#fff', textTransform: 'uppercase', letterSpacing: '.05em' }}>Urgent Escalation</h2>
-                </div>
-                <p style={{ fontFamily: "'Figtree',sans-serif", color: 'rgba(255,255,255,.7)', fontSize: '.9rem', lineHeight: 1.6, marginBottom: 32 }}>
-                  Encountering critical platform anomalies or account security breaches? Our emergency response unit is operational 24/7 to maintain system integrity.
-                </p>
-                <div style={{ display: 'flex', gap: 12 }}>
-                  <button className="hl-btn-primary" style={{ padding: '14px 28px', fontSize: '.8rem', boxShadow: '0 8px 24px rgba(0,0,0,0.2)' }}>
-                    INITIATE EMERGENCY CALL
-                  </button>
-                  <button className="hl-btn-outline" style={{ background: 'rgba(255,255,255,.05)', border: '1px solid rgba(255,255,255,.2)', color: '#fff', padding: '14px 24px', fontSize: '.8rem' }}>
-                    OPEN SERVICE TICKET
-                  </button>
-                </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {guides.map((guide, i) => (
+          <div key={i} className="bg-white p-8 rounded-[14px] border border-gray-100 shadow-sm hover:shadow-md transition-all group cursor-pointer flex gap-6">
+            <div className="h-16 w-16 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+              <guide.icon size={28} />
+            </div>
+            <div className="flex-1">
+              <div className="flex justify-between items-start mb-1">
+                <h3 className="text-xl font-black text-gray-900">{guide.title}</h3>
+                <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{guide.time}</span>
               </div>
-              <div style={{ width: 140, height: 140, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,.05)', borderRadius: '50%', flexShrink: 0 }}>
-                <HelpCircle size={80} color="var(--mint)" style={{ opacity: 0.15 }} />
+              <p className="text-gray-500 font-medium text-sm mb-4 leading-relaxed">{guide.desc}</p>
+              <div className="flex items-center gap-2 text-emerald-600 font-black text-xs uppercase tracking-widest">
+                Watch Tutorial <ChevronRight size={14} />
               </div>
             </div>
           </div>
-
-          <div style={{ marginTop: 40, display: 'flex', gap: 32, flexWrap: 'wrap' }}>
-             <div style={{ display: 'flex', alignItems: 'center', gap: 10, color: 'var(--ink3)' }}>
-                <FileText size={16} />
-                <span style={{ fontSize: '.68rem', fontWeight: 800 }}>TERMS OF SERVICE</span>
-             </div>
-             <div style={{ display: 'flex', alignItems: 'center', gap: 10, color: 'var(--ink3)' }}>
-                <Shield size={16} />
-                <span style={{ fontSize: '.68rem', fontWeight: 800 }}>PRIVACY PROTOCOL</span>
-             </div>
-             <div style={{ display: 'flex', alignItems: 'center', gap: 10, color: 'var(--ink3)' }}>
-                <Globe size={16} />
-                <span style={{ fontSize: '.68rem', fontWeight: 800 }}>SYSTEM STATUS</span>
-             </div>
-          </div>
-        </div>
+        ))}
       </div>
-    </>
+
+      <div className="bg-emerald-50 rounded-[14px] p-8 border border-emerald-100 flex items-center justify-between">
+        <div>
+          <h3 className="text-xl font-black text-[#0D4A3E] mb-1">Still stuck?</h3>
+          <p className="text-emerald-700 font-medium">Our support team is available 24/7 to help you out.</p>
+        </div>
+        <button className="bg-[#0D4A3E] text-white px-8 py-4 rounded-xl font-black text-sm hover:bg-[#0A3D33] transition-all">
+          Chat with us
+        </button>
+      </div>
+    </div>
   )
 }

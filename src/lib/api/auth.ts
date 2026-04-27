@@ -9,6 +9,7 @@ export interface AuthUser {
   tenantId: string
   tenantSlug: string
   businessName: string
+  avatar?: string
   phoneVerified: boolean
   subscription?: {
     planName: string

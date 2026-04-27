@@ -1,128 +1,126 @@
-import { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { Lock, Phone, ArrowRight, Loader2 } from "lucide-react";
-import { toast } from "sonner";
-import { authApi } from "../../lib/api/auth";
-import { useAuth } from "../../lib/auth/AuthContext";
+import { useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import { toast } from 'sonner'
+import { Loader2, Lock, Phone, ArrowRight } from 'lucide-react'
+import { authApi } from '../../lib/api/auth'
+import { useAuth } from '../../lib/auth/AuthContext'
+import { getErrorMessage } from '../../lib/utils/error'
 
 export default function LoginPage() {
-  const navigate = useNavigate();
-  const { login, user } = useAuth();
-  const [loading, setLoading] = useState(false);
-  const [formData, setFormData] = useState({
-    phone: "",
-    password: "",
-  });
-
-  useEffect(() => {
-    if (user) {
-      navigate(user.role === 'SUPER_ADMIN' ? "/admin" : "/dashboard", { replace: true });
-    }
-  }, [user, navigate]);
+  const navigate = useNavigate()
+  const { login } = useAuth()
+  const [form, setForm] = useState({ phone: '', password: '' })
+  const [loading, setLoading] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    
+    e.preventDefault()
+    if (!form.phone || !form.password) {
+      toast.error('Please fill in all fields')
+      return
+    }
+
+    setLoading(true)
     try {
-      const res = await authApi.login(formData);
-      login(
-        { accessToken: res.data.accessToken, refreshToken: res.data.refreshToken },
-        res.data.user
-      );
-      toast.success("Welcome back!");
+      const res = await authApi.login(form)
+      login({ 
+        accessToken: res.data.accessToken, 
+        refreshToken: res.data.refreshToken 
+      }, res.data.user)
       
-      // Role-based redirection
+      toast.success('Welcome back!')
+      
       if (res.data.user.role === 'SUPER_ADMIN') {
-        navigate("/admin");
+        navigate('/admin')
       } else {
-        navigate("/dashboard");
+        navigate('/dashboard')
       }
     } catch (err: any) {
-      toast.error(err.response?.data?.message || "Invalid credentials. Please try again.");
+      toast.error(getErrorMessage(err))
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   return (
-    <div className="min-h-screen bg-[#F5F7F8] flex items-center justify-center p-6 relative overflow-hidden">
-      <div className="w-full max-w-md relative z-10">
-        <div className="text-center mb-10">
-          <Link to="/" className="inline-flex items-center gap-3 mb-8 group">
-            <img src="/logo.png" alt="hlynk logo" className="h-12 w-auto transition-transform group-hover:scale-105" />
+    <div className="min-h-screen bg-slate-50 flex items-center justify-center px-4 py-12">
+      <div className="w-full max-w-[440px] space-y-8 animate-in fade-in zoom-in duration-500">
+        {/* Branding */}
+        <div className="text-center space-y-2">
+          <Link to="/" className="inline-block transition-transform hover:scale-105 active:scale-95">
+            <img src="/logo.png" alt="HudumaLynk" className="h-14 w-auto mx-auto" />
           </Link>
-          
-          <h1 className="text-3xl font-bold text-[#161E2A] mb-2 ">Welcome back</h1>
-          <p className="text-[#7A8896] text-sm font-nunito">Access your business dashboard</p>
+          <h1 className="text-3xl font-black text-slate-900 tracking-tighter pt-4 font-ubuntu">Welcome Back</h1>
+          <p className="text-slate-500 font-medium text-sm">Securely access your business dashboard</p>
         </div>
 
-        <div className="bg-white rounded-3xl p-8 border border-[#E5E9EC] shadow-xl">
-          <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Card */}
+        <div className="bg-white rounded-[24px] p-8 shadow-xl shadow-slate-200/50 border border-slate-100">
+          <form onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-2">
-              <label className="text-xs font-bold uppercase tracking-widest text-[#7A8896] ml-1">Phone Number</label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-[#7A8896]">
-                  <Phone size={18} />
-                </div>
-                <input
-                  type="tel"
-                  placeholder="0712 345 678"
-                  value={formData.phone}
-                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                  className="w-full bg-[#F5F7F8] border border-[#E5E9EC] rounded-2xl py-4 pl-12 pr-4 text-[#161E2A] focus:outline-none focus:ring-2 focus:ring-[#20C997]/20 focus:border-[#20C997] transition-all"
-                  required
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Phone Number</label>
+              <div className="relative group">
+                <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-emerald-500 transition-colors" size={18} />
+                <input 
+                  type="text" 
+                  placeholder="e.g. 0712 345 678" 
+                  value={form.phone}
+                  onChange={e => setForm({ ...form, phone: e.target.value })}
+                  className="w-full bg-slate-50 border border-transparent focus:bg-white focus:border-emerald-200 focus:ring-4 focus:ring-emerald-500/5 rounded-xl py-4 pl-12 pr-4 text-sm outline-none transition-all font-bold placeholder:text-slate-300 hl-mono" 
                 />
               </div>
             </div>
 
             <div className="space-y-2">
               <div className="flex justify-between items-center px-1">
-                <label className="text-xs font-bold uppercase tracking-widest text-[#7A8896]">Password</label>
-                <Link to="/forgot-password" className="text-xs font-bold text-[#20C997] hover:underline">
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Password</label>
+                <Link to="/forgot-password" title="Forgot Password" className="text-[10px] font-black text-emerald-600 uppercase tracking-widest hover:text-emerald-700 transition-colors">
                   Forgot?
                 </Link>
               </div>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-[#7A8896]">
-                  <Lock size={18} />
-                </div>
-                <input
-                  type="password"
-                  placeholder="••••••••"
-                  value={formData.password}
-                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                  className="w-full bg-[#F5F7F8] border border-[#E5E9EC] rounded-2xl py-4 pl-12 pr-4 text-[#161E2A] focus:outline-none focus:ring-2 focus:ring-[#20C997]/20 focus:border-[#20C997] transition-all"
-                  required
+              <div className="relative group">
+                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-emerald-500 transition-colors" size={18} />
+                <input 
+                  type="password" 
+                  placeholder="••••••••" 
+                  value={form.password}
+                  onChange={e => setForm({ ...form, password: e.target.value })}
+                  className="w-full bg-slate-50 border border-transparent focus:bg-white focus:border-emerald-200 focus:ring-4 focus:ring-emerald-500/5 rounded-xl py-4 pl-12 pr-4 text-sm outline-none transition-all font-bold placeholder:text-slate-300" 
                 />
               </div>
             </div>
 
-            <button
-              type="submit"
+            <button 
+              type="submit" 
               disabled={loading}
-              className="w-full py-4 rounded-2xl bg-[#20C997] text-white font-bold shadow-lg shadow-[#20C997]/20 hover:bg-[#1ab785] transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+              className="w-full py-5 bg-[#0D4A3E] text-white rounded-xl font-black text-xs uppercase tracking-widest hover:bg-[#064E3B] transition-all shadow-xl shadow-emerald-900/10 flex items-center justify-center gap-2 group disabled:opacity-50"
             >
-              {loading ? (
-                <Loader2 size={18} className="animate-spin" />
-              ) : (
-                <>
-                  Sign In <ArrowRight size={18} />
-                </>
-              )}
+              {loading ? <Loader2 size={16} className="animate-spin" /> : 'Sign In To Account'}
+              {!loading && <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />}
             </button>
           </form>
 
-          <div className="mt-8 text-center border-t border-[#F5F7F8] pt-8">
-            <p className="text-sm text-[#7A8896] font-ubuntu ">
-              Don't have an account?{" "}
-              <Link to="/register" className="text-[#20C997] font-bold hover:underline">
-                Create One
-              </Link>
-            </p>
+          <div className="relative my-8">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-slate-100"></div>
+            </div>
+            <div className="relative flex justify-center text-[10px] font-black uppercase tracking-widest">
+              <span className="bg-white px-4 text-slate-300">New to the platform?</span>
+            </div>
           </div>
+
+          <Link 
+            to="/register" 
+            className="w-full py-4 border-2 border-slate-50 text-slate-600 rounded-xl font-black text-xs uppercase tracking-widest hover:bg-slate-50 transition-all flex items-center justify-center gap-2"
+          >
+            Create Business Account
+          </Link>
         </div>
+
+        {/* Footer */}
+        <p className="text-center text-[10px] font-black text-slate-400 uppercase tracking-widest">
+          Secure encryption enabled — &copy; {new Date().getFullYear()} hlynk
+        </p>
       </div>
     </div>
-  );
+  )
 }

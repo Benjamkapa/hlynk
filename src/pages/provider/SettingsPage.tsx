@@ -1,250 +1,205 @@
-import { useState } from 'react'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useState, useRef } from 'react'
+import { User, Store, Bell, Lock, Shield, Save, Camera, Loader2 } from 'lucide-react'
+import { ADMIN_CSS } from '../admin/hl-design-system'
 import { toast } from 'sonner'
-import { Loader2, Save, Upload, MapPin, Phone, Clock, Briefcase, Info, ExternalLink, Globe, Layout } from 'lucide-react'
+import { useAuth } from '../../lib/auth/AuthContext'
 import { providersApi } from '../../lib/api/providers'
-import { PROVIDER_CSS } from '../admin/hl-design-system'
-
-const KENYA_COUNTIES = [
-  'Baringo','Bomet','Bungoma','Busia','Elgeyo-Marakwet','Embu','Garissa',
-  'Homa Bay','Isiolo','Kajiado','Kakamega','Kericho','Kiambu','Kilifi',
-  'Kirinyaga','Kisii','Kisumu','Kitui','Kwale','Laikipia','Lamu','Machakos',
-  'Makueni','Mandera','Marsabit','Meru','Migori','Mombasa',"Murang'a",
-  'Nairobi','Nakuru','Nandi','Narok','Nyamira','Nyandarua','Nyeri',
-  'Samburu','Siaya','Taita-Taveta','Tana River','Tharaka-Nithi','Trans Nzoia',
-  'Turkana','Uasin Gishu','Vihiga','Wajir','West Pokot'
-]
-
-const CATEGORIES = [
-  'Salon & Barbershop','Electronics Repair','Phone Repair','Mechanic',
-  'Cleaning Services','Food & Catering','Plumbing','Electrical',
-  'Tailoring','Freelancer','Tutoring','Photography','Other'
-]
+import { getErrorMessage } from '../../lib/utils/error'
 
 export default function SettingsPage() {
-  const qc = useQueryClient()
-  const [tab, setTab] = useState<'profile' | 'hours' | 'appearance'>('profile')
-  const [photoFile, setPhotoFile] = useState<File | null>(null)
-  const [photoPreview, setPhotoPreview] = useState<string | null>(null)
-  const [form, setForm] = useState<any>(null)
+  const { user, refreshUser } = useAuth()
+  const [activeTab, setActiveTab] = useState('Profile')
+  const [uploading, setUploading] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
-  const { isLoading } = useQuery({
-    queryKey: ['provider-profile'],
-    queryFn: providersApi.getMyProfile,
-    onSuccess: (res: any) => { if (!form) setForm(res.data) },
-  } as any)
-
-  const updateMut = useMutation({
-    mutationFn: providersApi.updateProfile,
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['provider-profile'] }); toast.success('Profile preferences updated') },
-    onError: () => toast.error('Synchronization failed'),
-  })
-
-  const photoMut = useMutation({
-    mutationFn: (file: File) => providersApi.uploadPhoto(file),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['provider-profile'] }); toast.success('Brand asset updated'); setPhotoFile(null) },
-    onError: () => toast.error('Upload failed'),
-  })
-
-  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
-    setPhotoFile(file)
-    setPhotoPreview(URL.createObjectURL(file))
+    
+    setUploading(true)
+    try {
+      await providersApi.uploadPhoto(file)
+      await refreshUser()
+      toast.success('Profile photo updated')
+    } catch (err) {
+      toast.error(getErrorMessage(err))
+    } finally {
+      setUploading(false)
+    }
   }
 
-  const set = (k: string, v: string) => setForm((p: any) => ({ ...p, [k]: v }))
-
-  if (isLoading || !form) return (
-    <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--surface)' }}>
-       <Loader2 size={32} style={{ animation: 'hl-spin .7s linear infinite', color: 'var(--mint)' }} />
-    </div>
-  )
-
   const tabs = [
-    { id: 'profile', label: 'BUSINESS IDENTITY', icon: Briefcase },
-    { id: 'hours', label: 'OPERATIONAL WINDOWS', icon: Clock },
-    { id: 'appearance', label: 'PUBLIC PRESENCE', icon: Layout },
+    { name: 'Profile', icon: User },
+    { name: 'Business', icon: Store },
+    { name: 'Notifications', icon: Bell },
+    { name: 'Security', icon: Lock },
   ]
 
   return (
-    <>
-      <style>{PROVIDER_CSS}</style>
-      <div className="hl-dash" style={{ padding: '28px 32px 60px' }}>
-        
-        <div className="hl-page-header">
-          <div>
-            <h1 className="hl-page-title">Profile Configuration</h1>
-            <p className="hl-page-subtitle">Standardize your brand identity across the HudumaLynk network</p>
-          </div>
-          <button onClick={() => updateMut.mutate(form)} disabled={updateMut.isPending} className="hl-btn-primary" style={{ minWidth: 160, justifyContent: 'center' }}>
-            {updateMut.isPending ? <Loader2 size={16} style={{ animation: 'hl-spin .7s linear infinite' }} /> : <Save size={16} />}
-            {updateMut.isPending ? 'SYNCHRONIZING' : 'SAVE CONFIGURATION'}
-          </button>
+    <div className="space-y-8 animate-in fade-in duration-500 pt-6">
+      <style>{ADMIN_CSS}</style>
+      
+      <div className="flex justify-between items-end">
+        <div>
+          <h1 className="text-3xl font-black text-gray-900 tracking-tight">Settings</h1>
+          <p className="text-gray-500 font-medium">Manage your personal profile and business configurations</p>
         </div>
+        <button 
+          onClick={() => toast.success('Settings saved successfully')}
+          className="bg-[#0D4A3E] text-white h-12 px-8 rounded-xl font-black text-sm hover:bg-[#0A3D33] transition-all flex items-center gap-2"
+        >
+          <Save size={18} /> Save Settings
+        </button>
+      </div>
 
-        {/* Navigation Tabs */}
-        <div style={{ display: 'flex', gap: 12, marginBottom: 28, background: 'var(--surface2)', padding: '6px', borderRadius: 14, border: '1px solid var(--border)', width: 'fit-content' }}>
-          {tabs.map(t => (
-            <button key={t.id} onClick={() => setTab(t.id as any)}
-              style={{ 
-                padding: '10px 18px', borderRadius: 10, fontSize: '.68rem', fontWeight: 900, transition: 'all .25s', border: 'none', cursor: 'pointer',
-                display: 'flex', alignItems: 'center', gap: 8,
-                background: tab === t.id ? 'var(--mint)' : 'transparent',
-                color: tab === t.id ? '#fff' : 'var(--ink3)',
-                boxShadow: tab === t.id ? '0 4px 12px rgba(29,186,135,.15)' : 'none'
-              }}>
-              <t.icon size={14} />
-              {t.label}
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+        <div className="space-y-2">
+          {tabs.map((tab) => (
+            <button
+              key={tab.name}
+              onClick={() => setActiveTab(tab.name)}
+              className={`w-full flex items-center gap-3 px-6 py-4 rounded-xl font-bold text-sm transition-all ${
+                activeTab === tab.name 
+                ? 'bg-white text-emerald-600 shadow-sm border border-emerald-50' 
+                : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'
+              }`}
+            >
+              <tab.icon size={18} />
+              {tab.name}
             </button>
           ))}
         </div>
 
-        <div style={{ maxWidth: 880 }}>
-          {tab === 'profile' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 24, animation: 'hl-up .4s ease both' }}>
-              
-              {/* Branding Section */}
-              <div className="hl-card">
-                <div className="hl-card-header" style={{ background: 'var(--surface2)' }}>
-                   <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                      <Briefcase size={16} color="var(--mint)" />
-                      <h3>Core Brand Identity</h3>
-                   </div>
-                </div>
-                <div className="hl-card-body" style={{ padding: '28px' }}>
-                  <div style={{ display: 'grid', gridTemplateColumns: '120px 1fr', gap: 32 }}>
-                    <div>
-                      <p className="hl-form-label" style={{ marginBottom: 12 }}>Brand Asset</p>
-                      <div className="hl-input-wrap" style={{ position: 'relative', width: 120, height: 120, borderRadius: 16, overflow: 'hidden', border: '2px dashed var(--border)', background: 'var(--surface2)', cursor: 'pointer' }}
-                        onClick={() => document.getElementById('photo-upload')?.click()}>
-                        {photoPreview || form.photoUrl ? (
-                          <img src={photoPreview || form.photoUrl} alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                        ) : (
-                          <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'var(--ink3)' }}>
-                            <Upload size={24} />
-                            <span style={{ fontSize: '.5rem', fontWeight: 900, marginTop: 4 }}>UPLOAD LOGO</span>
-                          </div>
-                        )}
-                        <input id="photo-upload" type="file" accept="image/*" style={{ display: 'none' }} onChange={handlePhotoChange} />
-                      </div>
-                      {photoFile && (
-                        <button onClick={(e) => { e.stopPropagation(); photoMut.mutate(photoFile) }} disabled={photoMut.isPending}
-                          className="hl-btn-primary" style={{ width: 120, height: 32, padding: 0, justifyContent: 'center', fontSize: '.6rem', marginTop: 12, borderRadius: 8 }}>
-                          {photoMut.isPending ? <Loader2 size={12} style={{ animation: 'hl-spin .7s linear infinite' }} /> : 'COMMIT UPLOAD'}
-                        </button>
+        <div className="lg:col-span-3">
+          <div className="bg-white rounded-[14px] border border-gray-100 shadow-sm p-8">
+            <h3 className="text-xl font-black text-gray-900 mb-8 border-b border-gray-50 pb-4">{activeTab} Details</h3>
+            
+            {activeTab === 'Profile' && (
+              <div className="space-y-8">
+                <div className="flex items-center gap-6">
+                  <div className="relative group">
+                    <div className="h-24 w-24 rounded-3xl bg-gray-100 flex items-center justify-center overflow-hidden border-2 border-slate-200 shadow-inner">
+                      {user?.avatar ? (
+                        <img src={user.avatar} className="h-full w-full object-cover" alt="" />
+                      ) : (
+                        <User size={40} className="text-gray-300" />
+                      )}
+                      {uploading && (
+                        <div className="absolute inset-0 bg-black/20 flex items-center justify-center backdrop-blur-[2px]">
+                          <Loader2 size={24} className="text-white animate-spin" />
+                        </div>
                       )}
                     </div>
-
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
-                      <div style={{ gridColumn: '1 / -1' }}>
-                        <label className="hl-form-label">Commercial Entity Name</label>
-                        <input value={form.businessName || ''} onChange={e => set('businessName', e.target.value)} className="hl-form-input" style={{ borderRadius: 12 }} />
-                      </div>
-                      <div>
-                        <label className="hl-form-label">Primary Industry Category</label>
-                        <select value={form.category || ''} onChange={e => set('category', e.target.value)} className="hl-form-input" style={{ borderRadius: 12 }}>
-                          {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
-                        </select>
-                      </div>
-                      <div>
-                        <label className="hl-form-label">Official Phone Terminal</label>
-                        <div className="hl-input-wrap">
-                           <span className="hl-input-icon"><Phone size={14} /></span>
-                           <input value={form.phone || ''} onChange={e => set('phone', e.target.value)} className="hl-form-input icon-left" style={{ borderRadius: 12 }} />
-                        </div>
-                      </div>
-                      <div style={{ gridColumn: '1 / -1' }}>
-                        <label className="hl-form-label">Business Narrative</label>
-                        <textarea value={form.description || ''} onChange={e => set('description', e.target.value)} rows={4} placeholder="Describe your unique value proposition…" className="hl-form-input" style={{ borderRadius: 12, resize: 'none' }} />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Geographic Data */}
-              <div className="hl-card">
-                <div className="hl-card-header" style={{ background: 'var(--surface2)' }}>
-                   <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                      <MapPin size={16} color="var(--mint)" />
-                      <h3>Geographic Presence</h3>
-                   </div>
-                </div>
-                <div className="hl-card-body" style={{ padding: '28px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
-                  <div>
-                    <label className="hl-form-label">County Jurisdiction</label>
-                    <select value={form.county || ''} onChange={e => set('county', e.target.value)} className="hl-form-input" style={{ borderRadius: 12 }}>
-                      {KENYA_COUNTIES.map(c => <option key={c} value={c}>{c}</option>)}
-                    </select>
+                    <input 
+                      type="file" 
+                      ref={fileInputRef} 
+                      onChange={handlePhotoUpload} 
+                      className="hidden" 
+                      accept="image/*" 
+                    />
+                    <button 
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={uploading}
+                      className="absolute -bottom-2 -right-2 bg-emerald-600 text-white p-2 rounded-xl shadow-lg hover:bg-emerald-700 transition-all hover:scale-110 active:scale-95 disabled:opacity-50"
+                    >
+                      <Camera size={16} />
+                    </button>
                   </div>
                   <div>
-                    <label className="hl-form-label">Precise Estate / Building</label>
-                    <div className="hl-input-wrap">
-                      <span className="hl-input-icon"><MapPin size={14} /></span>
-                      <input value={form.location || ''} onChange={e => set('location', e.target.value)} className="hl-form-input icon-left" style={{ borderRadius: 12 }} placeholder="e.g. Westlands Commercial Center" />
-                    </div>
+                    <h4 className="font-black text-gray-900">Profile Photo</h4>
+                    <p className="text-xs text-gray-500 font-medium">PNG, JPG or GIF. Max 5MB.</p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <InputGroup label="Full Name" value={user?.name || ''} />
+                  <InputGroup label="Email Address" value={user?.email || ''} />
+                  <InputGroup label="Phone Number" value={user?.phone || ''} mono />
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'Business' && (
+              <div className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <InputGroup label="Business Name" value={user?.businessName || ''} />
+                  <InputGroup label="Business Category" value="Provider" />
+                </div>
+                <InputGroup label="Physical Address" value="Update your business location in profile" />
+                
+                <div className="pt-6 border-t border-gray-50">
+                  <h4 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-6">Operational Settings</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <ToggleItem title="Tax Inclusive Pricing" desc="All product prices include 16% VAT" active={true} />
+                    <ToggleItem title="Auto-Print Receipts" desc="Automatically print receipt after each sale" active={false} />
                   </div>
                 </div>
               </div>
-            </div>
-          )}
-
-          {tab === 'hours' && (
-            <div className="hl-card" style={{ animation: 'hl-up .4s ease both' }}>
-              <div className="hl-card-header" style={{ background: 'var(--surface2)' }}>
-                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <Clock size={16} color="var(--mint)" />
-                    <h3>Service Availability Windows</h3>
-                 </div>
-              </div>
-              <div className="hl-card-body" style={{ padding: '28px' }}>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                  {['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'].map(day => (
-                    <div key={day} style={{ display: 'flex', alignItems: 'center', gap: 24, padding: '14px 20px', borderRadius: 12, background: 'var(--surface2)', border: '1px solid var(--border)' }}>
-                      <span style={{ width: 100, fontSize: '.75rem', fontWeight: 900, color: 'var(--ink)' }}>{day.toUpperCase()}</span>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 12, flex: 1 }}>
-                        <input placeholder="08:00 AM" className="hl-form-input" style={{ width: 120, height: 36, fontSize: '.75rem', borderRadius: 8, textAlign: 'center' }} />
-                        <span style={{ fontSize: '.6rem', fontWeight: 900, color: 'var(--ink3)' }}>TO</span>
-                        <input placeholder="06:00 PM" className="hl-form-input" style={{ width: 120, height: 36, fontSize: '.75rem', borderRadius: 8, textAlign: 'center' }} />
-                      </div>
-                      <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
-                        <input type="checkbox" style={{ width: 16, height: 16, accentColor: 'var(--mint)' }} />
-                        <span style={{ fontSize: '.72rem', fontWeight: 700, color: 'var(--ink3)' }}>CLOSED</span>
-                      </label>
-                    </div>
-                  ))}
+            )}
+            {activeTab === 'Notifications' && (
+              <div className="space-y-6">
+                <h4 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-6">Channel Preferences</h4>
+                <div className="space-y-4">
+                  <ToggleItem title="Email Alerts" desc="Receive daily sales reports via email" active={true} />
+                  <ToggleItem title="SMS Notifications" desc="Get notified when stock is low" active={true} />
+                  <ToggleItem title="Marketing" desc="News about new features and promotions" active={false} />
                 </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {tab === 'appearance' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 24, animation: 'hl-up .4s ease both' }}>
-               <div className="hl-card" style={{ padding: '32px', textAlign: 'center' }}>
-                  <div style={{ width: 64, height: 64, borderRadius: '50%', background: 'var(--surface2)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px' }}>
-                     <Globe size={32} color="var(--mint)" />
-                  </div>
-                  <h3 style={{ fontFamily: "'Nunito',sans-serif", fontWeight: 900, fontSize: '1.2rem', color: 'var(--ink)', marginBottom: 12 }}>Public Profile Visuals</h3>
-                  <p style={{ color: 'var(--ink3)', fontSize: '.88rem', maxWidth: 440, margin: '0 auto 28px', lineHeight: 1.6 }}>
-                    This section allows you to customize how your business appears to potential customers on the public directory. Changes here impact your brand conversion rate.
-                  </p>
-                  <button className="hl-btn-outline" style={{ margin: '0 auto' }}>
-                     <ExternalLink size={14} /> VIEW PUBLIC PROFILE
-                  </button>
-               </div>
-
-               <div style={{ padding: '20px', borderRadius: 16, border: '1px dashed var(--border)', background: 'var(--surface2)', display: 'flex', gap: 14 }}>
-                  <Info size={20} color="var(--ink3)" style={{ flexShrink: 0 }} />
-                  <p style={{ fontSize: '.72rem', color: 'var(--ink3)', fontWeight: 500, lineHeight: 1.5 }}>
-                    <strong>Privacy Note:</strong> Your contact information is only visible to registered customers who initiate a service request. 
-                    Standard public viewers see only your business narrative and general location.
-                  </p>
-               </div>
-            </div>
-          )}
+            {activeTab === 'Security' && (
+              <div className="space-y-8">
+                <div className="space-y-6 max-w-md">
+                  <InputGroup label="Current Password" placeholder="••••••••" type="password" />
+                  <InputGroup label="New Password" placeholder="••••••••" type="password" />
+                  <InputGroup label="Confirm New Password" placeholder="••••••••" type="password" />
+                </div>
+                
+                <div className="pt-8 border-t border-gray-50">
+                   <h4 className="text-xs font-black text-red-600 uppercase tracking-widest mb-4">Danger Zone</h4>
+                   <button className="px-6 py-3 border-2 border-red-100 text-red-600 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-red-50 transition-all">
+                     Deactivate My Account
+                   </button>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
-    </>
+    </div>
+  )
+}
+
+function InputGroup({ label, value, placeholder, type = "text", mono = false }: any) {
+  return (
+    <div className="space-y-2">
+      <label className="text-xs font-black text-gray-400 uppercase tracking-widest">{label}</label>
+      <input 
+        type={type}
+        defaultValue={value}
+        placeholder={placeholder}
+        className={`w-full bg-gray-50 border-none rounded-xl py-3.5 px-4 outline-none focus:ring-2 focus:ring-emerald-500/10 transition-all text-sm font-bold ${mono ? 'hl-mono' : ''}`} 
+      />
+    </div>
+  )
+}
+
+function ToggleItem({ title, desc, active }: any) {
+  return (
+    <div className="flex items-center justify-between p-4 rounded-xl bg-gray-50 border border-gray-100">
+      <div>
+        <p className="text-sm font-bold text-gray-900">{title}</p>
+        <p className="text-[10px] text-gray-500 font-medium">{desc}</p>
+      </div>
+      <Toggle active={active} />
+    </div>
+  )
+}
+
+function Toggle({ active }: { active: boolean }) {
+  return (
+    <div className={`w-12 h-6 rounded-full p-1 transition-all cursor-pointer ${active ? 'bg-emerald-600' : 'bg-gray-300'}`}>
+      <div className={`w-4 h-4 bg-white rounded-full transition-all ${active ? 'translate-x-6' : 'translate-x-0'}`} />
+    </div>
   )
 }

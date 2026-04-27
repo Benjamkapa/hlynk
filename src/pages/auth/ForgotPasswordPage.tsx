@@ -1,67 +1,103 @@
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
-import { Phone, Loader2, ArrowLeft } from 'lucide-react'
+import { Phone, Loader2, ArrowLeft, CheckCircle2, ArrowRight } from 'lucide-react'
 import { authApi } from '../../lib/api/auth'
+import { getErrorMessage } from '../../lib/utils/error'
 
 export default function ForgotPasswordPage() {
-  const { register, handleSubmit, formState: { errors, isSubmitting, isSubmitSuccessful } } = useForm<{ phone: string }>()
+  const [phone, setPhone] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [sent, setSent] = useState(false)
 
-  const onSubmit = async (data: { phone: string }) => {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!phone) return toast.error('Please enter your phone number')
+    
+    setLoading(true)
     try {
-      await authApi.forgotPassword(data)
-    } catch { /* always show success */ }
+      await authApi.forgotPassword({ phone })
+      setSent(true)
+      toast.success('Reset code sent!')
+    } catch (err: any) {
+      toast.error(getErrorMessage(err))
+    } finally {
+      setLoading(false)
+    }
   }
 
-  if (isSubmitSuccessful) return (
-    <div className="min-h-screen bg-background flex items-center justify-center px-4">
-      <div className="w-full max-w-sm text-center">
-        <div className="h-16 w-16 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-4">
-          <Phone size={28} className="text-green-600" />
+  if (sent) return (
+    <div className="min-h-screen bg-slate-50 flex items-center justify-center px-4 py-12">
+      <div className="w-full max-w-[440px] space-y-8 animate-in fade-in zoom-in duration-500 text-center">
+        <div className="h-20 w-20 bg-emerald-50 rounded-full flex items-center justify-center mx-auto text-emerald-600 shadow-xl shadow-emerald-900/5">
+          <CheckCircle2 size={40} />
         </div>
-        <h2 className="text-xl font-bold text-foreground mb-2">Check your SMS</h2>
-        <p className="text-muted-foreground text-sm mb-6">If that number is registered, a reset code has been sent.</p>
-        <Link to="/reset-password" className="block w-full py-3 rounded-xl bg-primary text-white font-semibold text-sm text-center hover:bg-primary/90 transition-all">
-          Enter Reset Code
-        </Link>
-        <Link to="/login" className="block mt-3 text-sm text-muted-foreground hover:text-foreground">Back to Login</Link>
+        <div className="space-y-2">
+          <h2 className="text-3xl font-black text-slate-900 tracking-tighter font-ubuntu">Check your SMS</h2>
+          <p className="text-slate-500 font-medium text-sm">We've sent a reset code to <span className="text-slate-900 font-bold hl-mono">{phone}</span></p>
+        </div>
+        
+        <div className="bg-white rounded-[24px] p-8 shadow-xl shadow-slate-200/50 border border-slate-100 space-y-4">
+          <Link 
+            to="/reset-password" 
+            className="w-full py-5 bg-[#0D4A3E] text-white rounded-xl font-black text-xs uppercase tracking-widest hover:bg-[#064E3B] transition-all shadow-xl shadow-emerald-900/10 flex items-center justify-center gap-2"
+          >
+            Enter Reset Code <ArrowRight size={16} />
+          </Link>
+          <Link to="/login" className="block text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-emerald-600 transition-colors">
+            Back to Sign In
+          </Link>
+        </div>
       </div>
     </div>
   )
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center px-4">
-      <div className="w-full max-w-sm">
-        <div className="text-center mb-8">
-          <Link to="/" className="inline-flex items-center gap-2 mb-6 group">
-            <img src="/logo.png" alt="hlynk logo" className="h-9 w-auto transition-transform group-hover:scale-105" />
+    <div className="min-h-screen bg-slate-50 flex items-center justify-center px-4 py-12">
+      <div className="w-full max-w-[440px] space-y-8 animate-in fade-in zoom-in duration-500">
+        {/* Branding */}
+        <div className="text-center space-y-2">
+          <Link to="/" className="inline-block transition-transform hover:scale-105 active:scale-95">
+            <img src="/logo.png" alt="HudumaLynk" className="h-14 w-auto mx-auto" />
           </Link>
-          <h1 className="text-2xl font-bold text-foreground">Forgot password?</h1>
-          <p className="text-muted-foreground text-sm mt-1">We'll send a reset code to your phone</p>
+          <h1 className="text-3xl font-black text-slate-900 tracking-tighter pt-4 font-ubuntu">Forgot Password?</h1>
+          <p className="text-slate-500 font-medium text-sm">We'll send a recovery code to your phone</p>
         </div>
 
-        <div className="bg-white rounded-2xl p-7 shadow-sm border border-border">
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-            <div>
-              <label className="text-sm font-medium text-foreground block mb-1.5">Phone Number</label>
-              <div className="relative">
-                <Phone size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                <input {...register('phone', { required: 'Phone is required' })} type="tel" placeholder="0712 345 678"
-                  className="w-full pl-9 pr-4 py-2.5 rounded-lg border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors" />
+        {/* Card */}
+        <div className="bg-white rounded-[24px] p-8 shadow-xl shadow-slate-200/50 border border-slate-100">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="space-y-2">
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Phone Number</label>
+              <div className="relative group">
+                <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-emerald-500 transition-colors" size={18} />
+                <input 
+                  type="text" 
+                  placeholder="e.g. 0712 345 678" 
+                  value={phone}
+                  onChange={e => setPhone(e.target.value)}
+                  className="w-full bg-slate-50 border border-transparent focus:bg-white focus:border-emerald-200 focus:ring-4 focus:ring-emerald-500/5 rounded-xl py-4 pl-12 pr-4 text-sm outline-none transition-all font-bold placeholder:text-slate-300 hl-mono" 
+                />
               </div>
-              {errors.phone && <p className="text-destructive text-xs mt-1">{errors.phone.message}</p>}
             </div>
-            <button type="submit" disabled={isSubmitting}
-              className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-primary text-white font-semibold text-sm hover:bg-primary/90 disabled:opacity-60 transition-all">
-              {isSubmitting ? <Loader2 size={16} className="animate-spin" /> : null}
-              {isSubmitting ? 'Sending…' : 'Send Reset Code'}
+
+            <button 
+              type="submit" 
+              disabled={loading}
+              className="w-full py-5 bg-[#0D4A3E] text-white rounded-xl font-black text-xs uppercase tracking-widest hover:bg-[#064E3B] transition-all shadow-xl shadow-emerald-900/10 flex items-center justify-center gap-2 group disabled:opacity-50"
+            >
+              {loading ? <Loader2 size={16} className="animate-spin" /> : 'Send Reset Code'}
+              {!loading && <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />}
             </button>
           </form>
-        </div>
 
-        <Link to="/login" className="flex items-center justify-center gap-1 mt-5 text-sm text-muted-foreground hover:text-foreground transition-colors">
-          <ArrowLeft size={14} /> Back to Login
-        </Link>
+          <Link 
+            to="/login" 
+            className="flex items-center justify-center gap-2 mt-8 text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-emerald-600 transition-colors"
+          >
+            <ArrowLeft size={14} /> Back to Sign In
+          </Link>
+        </div>
       </div>
     </div>
   )
