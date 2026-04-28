@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { LayoutDashboard, PackageSearch, Receipt, Users, TrendingUp, BarChart3, ArrowRight, ShieldCheck } from 'lucide-react'
+import { LayoutDashboard, PackageSearch, Receipt, Users, TrendingUp, ArrowRight } from 'lucide-react'
 import { FadeUp } from './Animations'
 import { motion, AnimatePresence } from 'framer-motion'
 
@@ -8,112 +8,141 @@ function MockCursorAnimation() {
   const [step, setStep] = useState(0)
 
   useEffect(() => {
-    const timer = setInterval(() => {
-      setStep(s => (s + 1) % 4)
-    }, 3000)
+    const timer = setInterval(() => setStep(s => (s + 1) % 4), 3000)
     return () => clearInterval(timer)
   }, [])
 
-  // Positions are relative to the content area (flex-1 div after the sidebar).
-  //
-  // Layout breakdown of the content area (MockCursorAnimation fills it):
-  //   p-8 (32px) padding all sides
-  //   Row 1  — top bar: KES amount left, "+ New Sale" button right     → y ≈ 14%
-  //   Row 2  — two cards side-by-side, each ~44% wide with a gap       → y ≈ 48–56%
-  //     Card 1 centre  → x ≈ 28%
-  //     Card 2 centre  → x ≈ 72%
-  //   Row 3  — bottom panel with the green "Sale Recorded" bar         → y ≈ 87%
-  //     Green bar is full-width inside the panel, centred              → x ≈ 50%
-  //   "+ New Sale" button sits right-aligned with ~32px right padding  → x ≈ 83%
-
-  const cursorPositions = [
-    { x: "83%", y: "14%" }, // Step 0 → clicks "+ New Sale" button (top-right)
-    { x: "28%", y: "52%" }, // Step 1 → clicks Product card 1 (left card, cube icon)
-    { x: "72%", y: "52%" }, // Step 2 → clicks Product card 2 (right card, chart icon)
-    { x: "50%", y: "87%" }, // Step 3 → clicks "SALE RECORDED" green bar (bottom centre)
+  // Positions relative to the content pane (flex-1 after sidebar).
+  // Row 1  y≈13%  header: KES left | "+ New Sale" right  → x≈84%
+  // Row 2  y≈50%  two equal cards: card1 x≈27% card2 x≈73%
+  // Row 3  y≈86%  bottom panel, full-width green bar     → x≈50%
+  const positions = [
+    { left: '84%', top: '13%' }, // → "+ New Sale" button
+    { left: '27%', top: '50%' }, // → Product card 1 (cube)
+    { left: '73%', top: '50%' }, // → Product card 2 (chart)
+    { left: '50%', top: '86%' }, // → "Sale Recorded" green bar
   ]
 
   return (
     <div className="absolute inset-0 pointer-events-none overflow-hidden font-ubuntu">
       {/* Moving Cursor */}
       <motion.div
-        animate={cursorPositions[step]}
-        transition={{ duration: 1.2, ease: "easeInOut" }}
         className="absolute z-50"
-        style={{ translateX: "-50%", translateY: "-50%" }}
+        animate={positions[step]}
+        transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
+        style={{ translateX: '-50%', translateY: '-50%' }}
       >
-        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" className="drop-shadow-lg">
-          <path d="M1 1L8.5 19L11.5 11.5L19 8.5L1 1Z" fill="black" stroke="white" strokeWidth="2" />
+        <svg width="18" height="18" viewBox="0 0 20 20" fill="none"
+          style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))' }}>
+          <path d="M1 1L8.5 19L11.5 11.5L19 8.5L1 1Z"
+            fill="#0f172a" stroke="white" strokeWidth="2" strokeLinejoin="round" />
         </svg>
         {step === 3 && (
-          <motion.div
-            initial={{ scale: 0.5, opacity: 0 }}
-            animate={{ scale: 2, opacity: 0 }}
-            className="absolute inset-0 bg-emerald-500/30 rounded-full"
+          <motion.span
+            style={{ position: 'absolute', inset: -6, borderRadius: '50%', background: 'rgba(16,185,129,0.35)' }}
+            initial={{ scale: 0.4, opacity: 1 }}
+            animate={{ scale: 3,   opacity: 0 }}
+            transition={{ duration: 0.6 }}
           />
         )}
       </motion.div>
 
       {/* Mock Content */}
-      <div className="p-8 space-y-8 relative h-full">
-        {/* Row 1 — header bar */}
-        <div className="flex justify-between items-center">
-          <div className="space-y-1">
-            <div className="h-2 w-12 bg-slate-200 rounded" />
-            <div className="text-xl font-black text-slate-900 hl-mono">KES 12,450</div>
+      <div style={{
+        padding: 'clamp(14px, 3vw, 32px)',
+        display: 'flex', flexDirection: 'column',
+        gap: 'clamp(8px, 1.5vw, 20px)',
+        height: '100%',
+      }}>
+
+        {/* Row 1 — header */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+            <div style={{ height: 6, width: 36, background: '#e2e8f0', borderRadius: 4 }} />
+            <p style={{
+              margin: 0,
+              fontSize: 'clamp(0.8rem, 2vw, 1.15rem)',
+              fontWeight: 900, color: '#0f172a',
+              fontFamily: 'monospace', letterSpacing: '-0.02em',
+            }}>
+              KES 12,450
+            </p>
           </div>
+
           <motion.div
             animate={{
-              scale: step === 0 ? 1.05 : 1,
-              backgroundColor: step === 0 ? "rgba(16,185,129,0.12)" : "rgba(255,255,255,0.6)",
-              borderColor: step === 0 ? "rgba(16,185,129,0.5)" : "rgba(16,185,129,0.2)",
+              scale:           step === 0 ? 1.06 : 1,
+              backgroundColor: step === 0 ? 'rgba(16,185,129,0.14)' : 'rgba(255,255,255,0.75)',
+              borderColor:     step === 0 ? 'rgba(16,185,129,0.55)' : 'rgba(16,185,129,0.25)',
             }}
-            className="px-4 py-2 rounded-lg border text-[10px] font-black uppercase tracking-widest text-emerald-600"
+            transition={{ duration: 0.3 }}
+            style={{
+              padding: '5px 10px', borderRadius: 7, border: '1px solid',
+              fontSize: 'clamp(0.48rem, 1vw, 0.62rem)',
+              fontWeight: 900, letterSpacing: '0.14em',
+              textTransform: 'uppercase', color: '#059669', whiteSpace: 'nowrap',
+            }}
           >
             + New Sale
           </motion.div>
         </div>
 
         {/* Row 2 — product cards */}
-        <div className="grid grid-cols-2 gap-4">
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'clamp(6px, 1vw, 14px)' }}>
           {[1, 2].map(i => (
             <motion.div
               key={i}
               animate={{
-                borderColor:
-                  (step === 1 && i === 1) || (step === 2 && i === 2)
-                    ? "rgba(16,185,129,0.5)"
-                    : "rgba(255,255,255,0.4)",
-                scale:
-                  (step === 1 && i === 1) || (step === 2 && i === 2) ? 1.02 : 1,
+                borderColor: (step === 1 && i === 1) || (step === 2 && i === 2)
+                  ? 'rgba(16,185,129,0.55)' : 'rgba(255,255,255,0.45)',
+                scale: (step === 1 && i === 1) || (step === 2 && i === 2) ? 1.02 : 1,
               }}
-              className="bg-white/60 p-6 rounded-xl border border-white/40 shadow-sm space-y-3"
+              transition={{ duration: 0.3 }}
+              style={{
+                background: 'rgba(255,255,255,0.65)',
+                borderRadius: 10, border: '1px solid',
+                padding: 'clamp(10px, 2vw, 22px)',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+                display: 'flex', flexDirection: 'column', gap: 8,
+              }}
             >
-              <div className="h-10 w-10 bg-slate-100 rounded-lg flex items-center justify-center text-slate-400">
-                {i === 1 ? <PackageSearch size={16} /> : <TrendingUp size={16} />}
+              <div style={{
+                width: 'clamp(24px, 3vw, 40px)', height: 'clamp(24px, 3vw, 40px)',
+                borderRadius: 8, background: '#f1f5f9',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94a3b8',
+              }}>
+                {i === 1 ? <PackageSearch size={14} /> : <TrendingUp size={14} />}
               </div>
-              <div className="space-y-1">
-                <div className="h-2 w-16 bg-slate-200 rounded" />
-                <div className="h-3 w-10 bg-slate-900/10 rounded" />
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+                <div style={{ height: 6, width: 50, background: '#e2e8f0', borderRadius: 3 }} />
+                <div style={{ height: 9, width: 34, background: 'rgba(15,23,42,0.08)', borderRadius: 3 }} />
               </div>
             </motion.div>
           ))}
         </div>
 
-        {/* Row 3 — bottom panel with sale confirmation */}
-        <div className="bg-white/60 p-6 rounded-xl border border-white/40 shadow-sm relative overflow-hidden">
-          <div className="flex justify-between items-center mb-6">
-            <div className="h-3 w-24 bg-slate-900/5 rounded" />
-            <div className="h-3 w-12 bg-emerald-500/20 rounded" />
+        {/* Row 3 — bottom panel */}
+        <div style={{
+          flex: 1,
+          background: 'rgba(255,255,255,0.65)', borderRadius: 10,
+          border: '1px solid rgba(255,255,255,0.45)',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+          padding: 'clamp(10px, 2vw, 18px)',
+          position: 'relative', overflow: 'hidden',
+          display: 'flex', flexDirection: 'column', gap: 8, minHeight: 0,
+        }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ height: 8, width: 68, background: 'rgba(15,23,42,0.05)', borderRadius: 3 }} />
+            <div style={{ height: 8, width: 38, background: 'rgba(16,185,129,0.18)', borderRadius: 3 }} />
           </div>
-          <div className="space-y-3">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {[1, 2].map(i => (
-              <div key={i} className="flex justify-between items-center opacity-40">
-                <div className="flex gap-3 items-center">
-                  <div className="h-6 w-6 bg-slate-100 rounded" />
-                  <div className="h-2 w-20 bg-slate-200 rounded" />
+              <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', opacity: 0.4 }}>
+                <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                  <div style={{ width: 20, height: 20, background: '#f1f5f9', borderRadius: 5 }} />
+                  <div style={{ width: 60, height: 6, background: '#e2e8f0', borderRadius: 3 }} />
                 </div>
-                <div className="h-2 w-8 bg-slate-900/10 rounded" />
+                <div style={{ width: 26, height: 6, background: 'rgba(15,23,42,0.08)', borderRadius: 3 }} />
               </div>
             ))}
           </div>
@@ -122,15 +151,25 @@ function MockCursorAnimation() {
             {step === 3 && (
               <motion.div
                 initial={{ y: 20, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                exit={{ y: -20, opacity: 0 }}
-                className="absolute inset-x-6 bottom-6 py-3 bg-emerald-600 text-white rounded-lg text-[10px] font-black uppercase tracking-widest text-center shadow-xl shadow-emerald-900/20"
+                animate={{ y: 0,  opacity: 1 }}
+                exit={{   y: -20, opacity: 0 }}
+                transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                style={{
+                  position: 'absolute', left: 8, right: 8, bottom: 8,
+                  padding: '11px 8px',
+                  background: '#059669', borderRadius: 8,
+                  fontSize: 'clamp(0.48rem, 1vw, 0.6rem)',
+                  fontWeight: 900, letterSpacing: '0.12em',
+                  textTransform: 'uppercase', textAlign: 'center',
+                  color: '#fff', boxShadow: '0 8px 24px rgba(5,150,105,0.35)',
+                }}
               >
                 Sale Recorded! + KES 450 Profit
               </motion.div>
             )}
           </AnimatePresence>
         </div>
+
       </div>
     </div>
   )
@@ -138,88 +177,197 @@ function MockCursorAnimation() {
 
 export default function Hero() {
   return (
-    <section className="relative min-h-screen flex items-center pt-32 pb-20 overflow-hidden bg-transparent">
+    <section style={{
+      position: 'relative', minHeight: '100svh',
+      display: 'flex', alignItems: 'center',
+      paddingTop: 'clamp(96px, 14vw, 160px)',
+      paddingBottom: 'clamp(60px, 8vw, 100px)',
+      overflow: 'hidden',
+    }}>
+
+      {/* Background image — darkened for better visibility */}
       <img
-        src="/img.png"
-        alt=""
-        className="fixed inset-0 w-full h-full object-cover blur-[3px] z-0 pointer-events-none"
+        src="/img.png" alt=""
+        style={{ position: 'fixed', inset: 0, width: '100%', height: '100%', objectFit: 'cover', filter: 'brightness(0.3)', zIndex: 0, pointerEvents: 'none' }}
       />
 
-      <div className="max-w-7xl mx-auto px-6 md:px-12 relative z-20 w-full">
-        <div className="flex flex-col lg:flex-row items-center gap-16 xl:gap-24 text-left">
+      <div style={{
+        maxWidth: 1280, margin: '0 auto',
+        padding: '0 clamp(20px, 5vw, 64px)',
+        position: 'relative', zIndex: 20, width: '100%',
+      }}>
+        <div
+          style={{ display: 'flex', alignItems: 'center', gap: 'clamp(40px, 6vw, 96px)' }}
+          className="flex-col lg:flex-row"
+        >
 
-          {/* Left — copy */}
-          <div className="flex-1 space-y-8 max-w-2xl">
+          {/* ── LEFT — copy ── */}
+          <div style={{
+            flex: 1, maxWidth: 580, width: '100%',
+            display: 'flex', flexDirection: 'column', gap: 'clamp(18px, 2.5vw, 32px)',
+          }}>
+
             <FadeUp delay={0.1}>
-              <h1 className="text-5xl md:text-6xl xl:text-8xl font-black text-slate-100 tracking-tighter leading-[0.95] font-ubuntu">
+              <h1 style={{
+                fontSize: 'clamp(2.4rem, 5.5vw, 4.5rem)',
+                fontWeight: 900, color: '#f8fafca8',
+                letterSpacing: '-0.03em', lineHeight: 0.95,
+                fontFamily: "'Ubuntu', sans-serif", margin: 0,
+                textShadow: '0 2px 20px rgba(0,0,0,0.2)',
+              }}>
                 Run your business.<br />
-                <span className="text-[#0D4A3E]">Know your profit.</span>
+                <span style={{ color: '#156f5dff' }}>Know your profit.</span>
               </h1>
             </FadeUp>
 
             <FadeUp delay={0.2}>
-              <p className="text-lg md:text-xl font-medium leading-relaxed bg-[#0D4A3E] max-w-xl text-slate-100 italic p-2">
+              {/* Dark green pill — matches the original aesthetic exactly */}
+              <p style={{
+                fontSize: 'clamp(0.9rem, 1.8vw, 1.05rem)',
+                fontWeight: 500, lineHeight: 1.7,
+                color: '#f1fdf9', fontStyle: 'italic',
+                background: '#0D4A3E',
+                padding: 'clamp(10px, 1.5vw, 14px) clamp(14px, 2vw, 18px)',
+                borderRadius: 8,
+                maxWidth: 480, margin: 0,
+                boxShadow: '0 4px 20px #0d4a3e66',
+              }}>
                 Stop guessing your numbers. hlynk is the simple, powerful management portal that helps you
                 track sales, inventory, and real-time profit in one place.
               </p>
             </FadeUp>
 
-            <FadeUp delay={0.3} className="flex flex-wrap items-center gap-4">
-              <Link
-                to="/register"
-                className="px-10 py-5 rounded-xl bg-[#0D4A3E] text-white text-sm font-black uppercase tracking-widest hover:bg-[#064E3B] transition-all shadow-xl shadow-emerald-900/10 flex items-center gap-2 group"
-              >
-                Start Free Trial
-                <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
-              </Link>
-              <a
-                href="#features"
-                className="px-10 py-5 rounded-xl bg-white border border-slate-200 text-slate-600 text-sm font-black uppercase tracking-widest hover:bg-slate-50 transition-all shadow-lg shadow-slate-200/20"
-              >
-                Learn More
-              </a>
+            <FadeUp delay={0.3}>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'center' }}>
+                <Link
+                  to="/register"
+                  style={{
+                    display: 'inline-flex', alignItems: 'center', gap: 8,
+                    padding: 'clamp(12px, 1.5vw, 16px) clamp(22px, 2.5vw, 36px)',
+                    borderRadius: 14, background: '#0D4A3E', color: '#fff',
+                    fontSize: 'clamp(0.65rem, 1.2vw, 0.8rem)',
+                    fontWeight: 900, letterSpacing: '0.1em', textTransform: 'uppercase',
+                    textDecoration: 'none',
+                    boxShadow: '0 8px 24px rgba(13,74,62,0.35)',
+                    whiteSpace: 'nowrap',
+                  }}
+                  className="hover:bg-[#064E3B] transition-all group"
+                >
+                  Start Free Trial
+                  <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+                </Link>
+
+                <a
+                  href="#features"
+                  style={{
+                    display: 'inline-flex', alignItems: 'center',
+                    padding: 'clamp(12px, 1.5vw, 16px) clamp(18px, 2vw, 28px)',
+                    borderRadius: 14,
+                    background: 'rgba(255,255,255,0.15)',
+                    backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)',
+                    border: '1px solid rgba(255,255,255,0.35)',
+                    color: '#fff',
+                    fontSize: 'clamp(0.65rem, 1.2vw, 0.8rem)',
+                    fontWeight: 900, letterSpacing: '0.1em', textTransform: 'uppercase',
+                    textDecoration: 'none', whiteSpace: 'nowrap',
+                  }}
+                  className="hover:bg-white/25 transition-all"
+                >
+                  Learn More
+                </a>
+              </div>
             </FadeUp>
+
+            {/* Trust badges */}
+            <FadeUp delay={0.4}>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px 18px' }}>
+                {['No credit card', 'M-Pesa payments', 'Cancel anytime'].map(t => (
+                  <span key={t} style={{
+                    display: 'flex', alignItems: 'center', gap: 5,
+                    fontSize: '0.72rem', color: 'rgba(255,255,255,0.75)', fontWeight: 600,
+                  }}>
+                    <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+                      <circle cx="6.5" cy="6.5" r="6.5" fill="rgba(16,185,129,0.25)" />
+                      <path d="M3.5 6.5l2 2 4-4" stroke="#34d399" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                    {t}
+                  </span>
+                ))}
+              </div>
+            </FadeUp>
+
           </div>
 
-          {/* Right — animated dashboard mockup */}
-          <FadeUp delay={0.5} className="flex-1 relative w-full lg:max-w-none max-w-3xl">
-            <div className="absolute -inset-10 bg-emerald-500/5 blur-[120px] rounded pointer-events-none" />
-            <div className="relative bg-white/40 backdrop-blur-sm rounded-2xl border border-white/40 shadow-2xl overflow-hidden ring-1 ring-black/5">
+          {/* ── RIGHT — dashboard mockup ── */}
+          <FadeUp delay={0.5} style={{ flex: 1, width: '100%', maxWidth: 540, position: 'relative' }}>
+            {/* Ambient glow behind card */}
+            <div style={{
+              position: 'absolute', inset: '-40px',
+              background: 'radial-gradient(ellipse at 50% 55%, rgba(16,185,129,0.1) 0%, transparent 70%)',
+              filter: 'blur(30px)', pointerEvents: 'none', zIndex: 0,
+            }} />
+
+            {/* The browser card */}
+            <div style={{
+              position: 'relative', zIndex: 1,
+              background: 'rgba(255,255,255,0.4)',
+              backdropFilter: 'blur(1px)', WebkitBackdropFilter: 'blur(1px)',
+              borderRadius: 20, border: '1px solid rgba(255,255,255,0.5)',
+              boxShadow: '0 32px 80px rgba(0,0,0,0.18), 0 2px 8px rgba(0,0,0,0.08)',
+              overflow: 'hidden',
+            }}>
 
               {/* Browser chrome */}
-              <div className="bg-white/60 px-6 py-4 flex items-center gap-3 border-b border-white/20">
-                <div className="flex gap-1.5">
-                  <div className="w-2.5 h-2.5 rounded-full bg-red-400/60" />
-                  <div className="w-2.5 h-2.5 rounded-full bg-amber-400/60" />
-                  <div className="w-2.5 h-2.5 rounded-full bg-emerald-400/60" />
+              <div style={{
+                background: 'rgba(255,255,255,0.65)',
+                padding: '10px 18px',
+                display: 'flex', alignItems: 'center', gap: 10,
+                borderBottom: '1px solid rgba(255,255,255,0.3)',
+              }}>
+                <div style={{ display: 'flex', gap: 5 }}>
+                  {['#fc5753', '#fdbc40', '#33c748'].map(c => (
+                    <div key={c} style={{ width: 9, height: 9, borderRadius: '50%', background: c, opacity: 0.8 }} />
+                  ))}
                 </div>
-                <div className="flex-1 text-center text-[9px] font-black tracking-[0.2em] text-slate-400 font-mono">
+                <div style={{ flex: 1, textAlign: 'center', fontSize: '0.58rem', fontWeight: 900, letterSpacing: '0.18em', color: '#94a3b8', fontFamily: 'monospace' }}>
                   portal.hlynk.co.ke
                 </div>
               </div>
 
-              <div className="flex h-[450px]">
-                {/* Mini sidebar */}
-                <div className="w-20 bg-white/40 border-r border-white/20 p-6 space-y-8 flex flex-col items-center flex-shrink-0">
-                  <img src="/fav.png" alt="" className="h-6 w-6 opacity-40" />
-                  <div className="space-y-4">
+              {/* App body */}
+              <div style={{ display: 'flex', height: 'clamp(300px, 40vw, 450px)' }}>
+
+                {/* Mini sidebar — all sizes scale via clamp */}
+                <div style={{
+                  width: 'clamp(40px, 5vw, 72px)',
+                  background: 'rgba(255,255,255,0.4)',
+                  borderRight: '1px solid rgba(255,255,255,0.3)',
+                  display: 'flex', flexDirection: 'column', alignItems: 'center',
+                  padding: 'clamp(10px, 1.5vw, 24px) 0',
+                  gap: 'clamp(10px, 1.5vw, 32px)',
+                  flexShrink: 0,
+                }}>
+                  <img src="/fav.png" alt="" style={{ width: 'clamp(14px, 2vw, 24px)', height: 'clamp(14px, 2vw, 24px)', opacity: 0.4 }} />
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(8px, 1vw, 16px)' }}>
                     {[LayoutDashboard, PackageSearch, Receipt, Users].map((Icon, i) => (
-                      <div
-                        key={i}
-                        className={`h-10 w-10 rounded-lg flex items-center justify-center ${
-                          i === 0 ? 'bg-emerald-600/10 text-emerald-600' : 'text-slate-400'
-                        }`}
-                      >
-                        <Icon size={18} />
+                      <div key={i} style={{
+                        width: 'clamp(28px, 3vw, 40px)', height: 'clamp(28px, 3vw, 40px)',
+                        borderRadius: 9,
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        background: i === 0 ? 'rgba(16,185,129,0.1)' : 'transparent',
+                        color: i === 0 ? '#059669' : '#94a3b8',
+                      }}>
+                        <Icon size={16} />
                       </div>
                     ))}
                   </div>
                 </div>
 
-                {/* Content area — cursor positions are relative to this div */}
-                <div className="flex-1 relative overflow-hidden">
+                {/* Content pane — cursor positions are relative to THIS div */}
+                <div style={{ flex: 1, position: 'relative', overflow: 'hidden', minWidth: 0 }}>
                   <MockCursorAnimation />
                 </div>
+
               </div>
             </div>
           </FadeUp>

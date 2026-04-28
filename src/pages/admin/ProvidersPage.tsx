@@ -5,7 +5,6 @@ import { SlideOver } from '../../components/shared/SlideOver'
 import { toast } from 'sonner'
 import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query'
 import { adminApi } from '../../lib/api/providers'
-import { PaginatedResponse } from '../../lib/types/api'
 
 export default function ProvidersPage() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
@@ -13,13 +12,13 @@ export default function ProvidersPage() {
   const [search, setSearch] = useState('')
   const queryClient = useQueryClient()
 
-  const { data: tenantsData, isLoading } = useQuery<PaginatedResponse<any>>({
+  const { data: tenantsData, isLoading } = useQuery<{ success: boolean; data: { tenants: any[] } }>({
     queryKey: ['admin-tenants', search],
     queryFn: () => adminApi.getTenants({ search }),
     placeholderData: keepPreviousData
   })
 
-  const providers = tenantsData?.items || []
+  const providers = tenantsData?.data?.tenants || []
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500 pt-6">
@@ -62,8 +61,8 @@ export default function ProvidersPage() {
               <tr className="bg-gray-50/50">
                 <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest">Business</th>
                 <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest">Plan</th>
-                <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Risk Score</th>
-                <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Sales Today</th>
+                <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Services</th>
+                <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Users</th>
                 <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Status</th>
                 <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Action</th>
               </tr>
@@ -80,31 +79,28 @@ export default function ProvidersPage() {
                   <td className="px-8 py-5">
                     <div className="flex items-center gap-4">
                       <div className="h-10 w-10 rounded-md bg-emerald-50 text-emerald-600 flex items-center justify-center font-black border border-emerald-100 group-hover:bg-emerald-600 group-hover:text-white transition-all">
-                        {p.name.charAt(0)}
+                        {p.businessName?.charAt(0) || '?'}
                       </div>
                       <div>
-                        <p className="font-black text-gray-900 text-sm">{p.name}</p>
-                        <p className="text-[10px] text-gray-400 font-bold hl-mono">{p.phone}</p>
+                        <p className="font-black text-gray-900 text-sm">{p.businessName}</p>
+                        <p className="text-[10px] text-gray-400 font-bold hl-mono">/{p.slug}</p>
                       </div>
                     </div>
                   </td>
                   <td className="px-8 py-5">
-                    <span className="text-[10px] font-black text-gray-600 bg-gray-100 px-2 py-0.5 rounded uppercase tracking-widest">{p.plan}</span>
+                    <span className="text-[10px] font-black text-gray-600 bg-gray-100 px-2 py-0.5 rounded uppercase tracking-widest">{p.subscription?.planName || 'TRIAL'}</span>
                   </td>
                   <td className="px-8 py-5 text-center">
-                    <span className={`px-2 py-1 rounded-md text-[9px] font-black uppercase tracking-widest ${
-                      p.risk === 'Low' ? 'bg-emerald-50 text-emerald-600' :
-                      p.risk === 'Medium' ? 'bg-amber-50 text-amber-600' : 'bg-red-50 text-red-600'
-                    }`}>
-                      {p.risk}
+                    <span className="text-[10px] font-black hl-mono text-gray-500">
+                      {p._count?.services || 0}
                     </span>
                   </td>
-                  <td className="px-8 py-5 text-right font-black text-gray-900 text-sm hl-mono">KES {p.salesToday?.toLocaleString()}</td>
+                  <td className="px-8 py-5 text-right font-black text-gray-900 text-sm hl-mono">{p._count?.users || 0}</td>
                   <td className="px-8 py-5 text-center">
                     <span className={`px-2 py-1 rounded-md text-[10px] font-black uppercase tracking-wider ${
-                      p.status === 'Active' ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'
+                      p.isActive ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'
                     }`}>
-                      {p.status}
+                      {p.isActive ? 'Active' : 'Suspended'}
                     </span>
                   </td>
                   <td className="px-8 py-5 text-right">
@@ -125,47 +121,104 @@ export default function ProvidersPage() {
 
       <SlideOver isOpen={!!selectedProvider} onClose={() => setSelectedProvider(null)} title="Business Details">
          {selectedProvider && (
-           <div className="space-y-8">
-             <div className="flex items-center gap-6 p-8 bg-gray-50 rounded-xl border border-gray-100">
-               <div className="w-16 h-16 rounded-xl bg-[#0D4A3E] text-white flex items-center justify-center text-2xl font-black shadow-lg">
-                 {selectedProvider.name.charAt(0)}
-               </div>
-               <div>
-                 <h3 className="text-xl font-black text-gray-900">{selectedProvider.name}</h3>
-                 <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Joined <span className="hl-mono">{selectedProvider.joined}</span></p>
-               </div>
-             </div>
-
-             <div className="grid grid-cols-2 gap-6">
-               <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
-                 <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Sales Today</p>
-                 <p className="text-lg font-black text-[#0D4A3E] hl-mono">{selectedProvider.salesToday}</p>
-               </div>
-               <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
-                 <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Risk Score</p>
-                 <p className="text-lg font-black text-gray-900 uppercase">{selectedProvider.risk}</p>
-               </div>
-             </div>
-
-             <div className="space-y-4">
-               <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-widest border-b border-gray-50 pb-2">Management Actions</h4>
-               <div className="grid grid-cols-2 gap-4">
-                 <button onClick={() => { toast.success('Provider Suspended'); setSelectedProvider(null); }} className="flex items-center justify-center gap-2 py-4 px-4 rounded-xl border border-red-100 text-red-600 text-xs font-black uppercase tracking-widest hover:bg-red-50 transition-all">
-                   <ShieldAlert size={18} /> Suspend
-                 </button>
-                 <button onClick={() => { toast.success('Account Verified'); setSelectedProvider(null); }} className="flex items-center justify-center gap-2 py-4 px-4 rounded-xl bg-[#0D4A3E] text-white text-xs font-black uppercase tracking-widest hover:bg-[#0A3D33] transition-all shadow-lg">
-                   <UserCheck size={18} /> Verify
-                 </button>
-               </div>
-               <button onClick={() => { toast.error('Account Deleted'); setSelectedProvider(null); }} className="w-full py-4 text-gray-300 hover:text-red-600 text-[10px] font-black uppercase tracking-widest transition-all">Delete Account Permanently</button>
-             </div>
-           </div>
+           <ProviderDetailsPanel provider={selectedProvider} onClose={() => setSelectedProvider(null)} />
          )}
       </SlideOver>
 
       <SlideOver isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} title="Onboard New Business">
          <AddBusinessForm onClose={() => setIsAddModalOpen(false)} />
       </SlideOver>
+    </div>
+  )
+}
+
+function ProviderDetailsPanel({ provider, onClose }: { provider: any, onClose: () => void }) {
+  const queryClient = useQueryClient()
+  const [isEditing, setIsEditing] = useState(false)
+  const [form, setForm] = useState({ businessName: provider.businessName, slug: provider.slug || '' })
+
+  const deleteMutation = useMutation({
+    mutationFn: () => adminApi.deleteTenant(provider.id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-tenants'] })
+      toast.success('Account permanently deleted')
+      onClose()
+    },
+    onError: () => toast.error('Failed to delete account')
+  })
+
+  const toggleStatusMutation = useMutation({
+    mutationFn: () => provider.isActive ? adminApi.suspendTenant(provider.id) : adminApi.activateTenant(provider.id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-tenants'] })
+      toast.success(provider.isActive ? 'Provider Suspended' : 'Provider Activated')
+      onClose()
+    },
+    onError: () => toast.error('Failed to update status')
+  })
+
+  const updateMutation = useMutation({
+    mutationFn: (data: any) => adminApi.updateTenant(provider.id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-tenants'] })
+      toast.success('Business details updated')
+      setIsEditing(false)
+      onClose()
+    },
+    onError: () => toast.error('Failed to update business details')
+  })
+
+  if (isEditing) {
+    return (
+      <div className="space-y-6">
+        <InputGroup label="Business Name" value={form.businessName} onChange={(v: string) => setForm({ ...form, businessName: v })} />
+        <InputGroup label="URL Slug" value={form.slug} onChange={(v: string) => setForm({ ...form, slug: v })} mono />
+        <div className="flex gap-4 mt-6">
+          <button onClick={() => setIsEditing(false)} className="flex-1 py-4 bg-gray-100 text-gray-500 rounded-md font-black text-xs uppercase tracking-widest hover:bg-gray-200 transition-all">Cancel</button>
+          <button onClick={() => updateMutation.mutate(form)} disabled={updateMutation.isPending} className="flex-1 py-4 bg-[#0D4A3E] text-white rounded-md font-black text-xs uppercase tracking-widest hover:bg-[#0A3D33] transition-all shadow-xl">Save</button>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="space-y-8">
+      <div className="flex items-center gap-6 p-8 bg-gray-50 rounded-xl border border-gray-100 relative">
+        <button onClick={() => setIsEditing(true)} className="absolute top-4 right-4 text-xs font-bold text-emerald-600 hover:text-emerald-700 bg-emerald-50 px-3 py-1 rounded-md">Edit</button>
+        <div className="w-16 h-16 rounded-xl bg-[#0D4A3E] text-white flex items-center justify-center text-2xl font-black shadow-lg">
+          {provider.businessName?.charAt(0) || '?'}
+        </div>
+        <div>
+          <h3 className="text-xl font-black text-gray-900">{provider.businessName}</h3>
+          <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Joined <span className="hl-mono">{new Date(provider.createdAt).toLocaleDateString()}</span></p>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-6">
+        <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
+          <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Users</p>
+          <p className="text-lg font-black text-[#0D4A3E] hl-mono">{provider._count?.users || 0}</p>
+        </div>
+        <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
+          <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Services</p>
+          <p className="text-lg font-black text-gray-900 hl-mono">{provider._count?.services || 0}</p>
+        </div>
+      </div>
+
+      <div className="space-y-4">
+        <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-widest border-b border-gray-50 pb-2">Management Actions</h4>
+        <div className="grid grid-cols-2 gap-4">
+          <button onClick={() => toggleStatusMutation.mutate()} disabled={toggleStatusMutation.isPending} className="flex items-center justify-center gap-2 py-4 px-4 rounded-xl border border-red-100 text-red-600 text-xs font-black uppercase tracking-widest hover:bg-red-50 transition-all">
+            <ShieldAlert size={18} /> {provider.isActive ? 'Suspend' : 'Activate'}
+          </button>
+          <button className="flex items-center justify-center gap-2 py-4 px-4 rounded-xl bg-[#0D4A3E] text-white text-xs font-black uppercase tracking-widest hover:bg-[#0A3D33] transition-all shadow-lg opacity-50 cursor-not-allowed">
+            <UserCheck size={18} /> Verify
+          </button>
+        </div>
+        <button onClick={() => { if(window.confirm('Are you sure you want to permanently delete this business and all its data?')) deleteMutation.mutate(); }} disabled={deleteMutation.isPending} className="w-full py-4 text-gray-300 hover:text-red-600 text-[10px] font-black uppercase tracking-widest transition-all">
+          {deleteMutation.isPending ? 'Deleting...' : 'Delete Account Permanently'}
+        </button>
+      </div>
     </div>
   )
 }

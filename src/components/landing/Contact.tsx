@@ -76,7 +76,7 @@ export default function Contact() {
                   </div>
                   <div className="space-y-1">
                     <div className="text-[10px] font-black text-white/30 uppercase tracking-widest">Call or WhatsApp</div>
-                    <div className="text-xl font-black text-white hl-mono tracking-tight">+254 790 590 653</div>
+                    <div className="text-xl font-black text-white hl-mono tracking-tight font-thin">+254 790 590 653</div>
                   </div>
                 </div>
 
@@ -86,7 +86,7 @@ export default function Contact() {
                   </div>
                   <div className="space-y-1">
                     <div className="text-[10px] font-black text-white/30 uppercase tracking-widest">Email Us</div>
-                    <div className="text-xl font-black text-white hl-mono tracking-tight">hello@hudumalynk.co.ke</div>
+                    <div className="text-xl font-black text-white hl-mono tracking-tight font-thin">hello@hudumalynk.co.ke</div>
                   </div>
                 </div>
               </div>
@@ -149,7 +149,7 @@ export default function Contact() {
                     <input 
                       type="text" 
                       required
-                      placeholder="Phone or Email"
+                      placeholder="Email"
                       value={form.contact}
                       onChange={e => setForm({ ...form, contact: e.target.value })}
                       className="w-full bg-white/5 border border-white/10 focus:bg-white/10 focus:border-emerald-500/50 focus:ring-4 focus:ring-emerald-500/5 rounded-xl py-4 px-6 text-white text-sm outline-none transition-all font-bold placeholder:text-white/20"

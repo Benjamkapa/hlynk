@@ -64,7 +64,7 @@ export default function SystemPerformancePage() {
             </div>
           </div>
           <div className="h-[350px]">
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="100%" height="100%" minWidth={0}>
               <AreaChart data={performanceData}>
                 <defs>
                   <linearGradient id="colorApi" x1="0" y1="0" x2="0" y2="1">
@@ -96,7 +96,7 @@ export default function SystemPerformancePage() {
             </div>
           </div>
           <div className="h-[350px]">
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="100%" height="100%" minWidth={0}>
               <LineChart data={performanceData}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F1F5F9" />
                 <XAxis dataKey="time" axisLine={false} tickLine={false} tick={{fontSize: 10, fill: '#94A3B8', fontFamily: 'JetBrains Mono'}} dy={15} />

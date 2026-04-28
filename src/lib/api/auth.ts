@@ -17,12 +17,38 @@ export interface AuthUser {
     trialEndDate: string
     endDate?: string
   }
+  hasGoogleAuth?: boolean
+  usesPasswordAuth?: boolean
+}
+
+export interface RegisterPayload {
+  businessName: string
+  ownerName: string
+  phone: string
+  email: string
+  password: string
+  category: string
+  county: string
+  location: string
+  planName: 'TRIAL' | 'BASIC'
+}
+
+export interface GoogleRegistrationPayload {
+  businessName: string
+  ownerName: string
+  phone: string
+  category: string
+  county: string
+  location: string
+  planName: 'TRIAL' | 'BASIC'
 }
 
 export const authApi = {
-  register: (data: any) => api.post('/auth/register', data).then(r => r.data),
+  register: (data: RegisterPayload) => api.post('/auth/register', data).then(r => r.data),
   verifyOtp: (data: { phone: string; otp: string }) => api.post('/auth/verify-otp', data).then(r => r.data),
   login: (data: { phone: string; password: string }) => api.post('/auth/login', data).then(r => r.data),
+  googleAuth: (data: { credential: string; registration?: GoogleRegistrationPayload }) =>
+    api.post('/auth/google', data).then(r => r.data),
   forgotPassword: (data: { phone: string }) => api.post('/auth/forgot-password', data).then(r => r.data),
   resetPassword: (data: { phone: string; otp: string; newPassword: string }) => api.post('/auth/reset-password', data).then(r => r.data),
   logout: () => api.post('/auth/logout').then(r => r.data),

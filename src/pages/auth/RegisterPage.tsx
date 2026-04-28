@@ -5,6 +5,8 @@ import { toast } from "sonner";
 import { authApi } from "../../lib/api/auth";
 import { useAuth } from "../../lib/auth/AuthContext";
 import { getErrorMessage } from "../../lib/utils/error";
+import GoogleAuthButton from "../../components/auth/GoogleAuthButton";
+import { decodeGoogleCredential, type DecodedGoogleCredential } from "../../lib/google/identity";
 
 const COUNTIES = [
   "Nairobi", "Mombasa", "Kwale", "Kilifi", "Tana River", "Lamu", "Taita/Taveta", "Garissa", "Wajir", "Mandera", "Marsabit", "Isiolo", "Meru", "Tharaka-Nithi", "Embu", "Kitui", "Machakos", "Makueni", "Nyandarua", "Nyeri", "Kirinyaga", "Murang'a", "Kiambu", "Turkana", "West Pokot", "Samburu", "Trans Nzoia", "Uasin Gishu", "Elgeyo/Marakwet", "Nandi", "Baringo", "Laikipia", "Nakuru", "Narok", "Kajiado", "Kericho", "Bomet", "Kakamega", "Vihiga", "Bungoma", "Busia", "Siaya", "Kisumu", "Homa Bay", "Migori", "Kisii", "Nyamira"
@@ -14,9 +16,21 @@ const CATEGORIES = [
   "Retail Store", "Barber & Salon", "Cleaning Services", "Plumbing", "Electrical", "Mechanic", "Consultancy", "Other"
 ];
 
+type RegisterFormState = {
+  businessName: string;
+  ownerName: string;
+  phone: string;
+  email: string;
+  password: string;
+  category: string;
+  county: string;
+  location: string;
+  planName: "TRIAL" | "BASIC";
+};
+
 export default function RegisterPage() {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, login } = useAuth();
   const [searchParams] = useSearchParams();
 
   useEffect(() => {
@@ -25,10 +39,13 @@ export default function RegisterPage() {
     }
   }, [user, navigate]);
 
-  const planName = (searchParams.get('plan') || 'TRIAL').toUpperCase();
+  const planName = (searchParams.get('plan') || 'TRIAL').toUpperCase() === 'BASIC' ? 'BASIC' : 'TRIAL';
   
   const [loading, setLoading] = useState(false);
-  const [formData, setFormData] = useState({
+  const [googleLoading, setGoogleLoading] = useState(false);
+  const [googleCredential, setGoogleCredential] = useState("");
+  const [googleProfile, setGoogleProfile] = useState<DecodedGoogleCredential | null>(null);
+  const [formData, setFormData] = useState<RegisterFormState>({
     businessName: "",
     ownerName: "",
     phone: "",
@@ -40,11 +57,65 @@ export default function RegisterPage() {
     planName: planName,
   });
 
+  const finishLogin = (data: { accessToken: string; refreshToken: string; user: any }) => {
+    login(
+      {
+        accessToken: data.accessToken,
+        refreshToken: data.refreshToken,
+      },
+      data.user,
+    );
+
+    navigate(data.user.role === 'SUPER_ADMIN' ? "/admin" : "/dashboard", { replace: true });
+  };
+
+  const handleGoogleCredential = async (credential: string) => {
+    setGoogleLoading(true);
+
+    try {
+      const decoded = decodeGoogleCredential(credential);
+      setGoogleCredential(credential);
+      setGoogleProfile(decoded);
+      setFormData((current) => ({
+        ...current,
+        ownerName: current.ownerName || decoded?.name || current.ownerName,
+        email: decoded?.email || current.email,
+      }));
+      toast.success("Google account connected. Finish the business details below.");
+    } finally {
+      setGoogleLoading(false);
+    }
+  };
+
+  const clearGoogleSelection = () => {
+    setGoogleCredential("");
+    setGoogleProfile(null);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     
     try {
+      if (googleCredential) {
+        const res = await authApi.googleAuth({
+          credential: googleCredential,
+          registration: {
+            businessName: formData.businessName,
+            ownerName: formData.ownerName,
+            phone: formData.phone,
+            category: formData.category,
+            county: formData.county,
+            location: formData.location,
+            planName: formData.planName as "TRIAL" | "BASIC",
+          },
+        });
+
+        toast.success("Account created with Google.");
+        finishLogin(res.data);
+        return;
+      }
+
       await authApi.register(formData);
       toast.success("Account created! Please verify your phone.");
       navigate(`/verify?phone=${encodeURIComponent(formData.phone)}`);
@@ -54,6 +125,8 @@ export default function RegisterPage() {
       setLoading(false);
     }
   };
+
+  const isBusy = loading || googleLoading;
 
   return (
     <div className="min-h-screen bg-slate-50 flex items-center justify-center px-4 py-12">
@@ -69,6 +142,41 @@ export default function RegisterPage() {
 
         {/* Card */}
         <div className="bg-white rounded-[24px] p-8 md:p-10 shadow-xl shadow-slate-200/50 border border-slate-100">
+          <div className="space-y-4 mb-6">
+            <GoogleAuthButton text="signup_with" disabled={isBusy} onCredential={handleGoogleCredential} />
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-slate-100"></div>
+              </div>
+              <div className="relative flex justify-center text-[10px] font-black uppercase tracking-widest">
+                <span className="bg-white px-4 text-slate-300">Or continue with OTP signup</span>
+              </div>
+            </div>
+          </div>
+
+          {googleCredential && (
+            <div className="mb-6 rounded-2xl border border-emerald-100 bg-emerald-50/70 p-4">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <p className="text-[11px] font-black uppercase tracking-[0.24em] text-emerald-700">Google Sign-Up Active</p>
+                  <p className="mt-2 text-sm font-semibold text-slate-700">
+                    {googleProfile?.email || "Google account connected"} will be used for sign-in.
+                  </p>
+                  <p className="mt-1 text-sm text-slate-500">
+                    Finish the business profile below and we&apos;ll skip password creation and phone OTP.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={clearGoogleSelection}
+                  className="shrink-0 rounded-full border border-emerald-200 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-emerald-700 transition-colors hover:bg-white"
+                >
+                  Use OTP Instead
+                </button>
+              </div>
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Business Name */}
@@ -164,8 +272,12 @@ export default function RegisterPage() {
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                     className="w-full bg-slate-50 border border-transparent focus:bg-white focus:border-emerald-200 focus:ring-4 focus:ring-emerald-500/5 rounded-xl py-4 pl-12 pr-4 text-sm outline-none transition-all font-bold placeholder:text-slate-300"
+                    disabled={Boolean(googleCredential)}
                   />
                 </div>
+                {googleCredential && (
+                  <p className="px-1 text-xs font-medium text-slate-400">Your verified Google email will be used for this account.</p>
+                )}
               </div>
 
               {/* Location */}
@@ -185,30 +297,39 @@ export default function RegisterPage() {
               </div>
 
               {/* Password */}
-              <div className="space-y-2 md:col-span-2">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Create Password</label>
-                <div className="relative group">
-                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-emerald-500 transition-colors" size={18} />
-                  <input
-                    type="password"
-                    placeholder="Min. 8 characters"
-                    value={formData.password}
-                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                    className="w-full bg-slate-50 border border-transparent focus:bg-white focus:border-emerald-200 focus:ring-4 focus:ring-emerald-500/5 rounded-xl py-4 pl-12 pr-4 text-sm outline-none transition-all font-bold placeholder:text-slate-300"
-                    required
-                    minLength={8}
-                  />
+              {!googleCredential ? (
+                <div className="space-y-2 md:col-span-2">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Create Password</label>
+                  <div className="relative group">
+                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-emerald-500 transition-colors" size={18} />
+                    <input
+                      type="password"
+                      placeholder="Min. 8 characters"
+                      value={formData.password}
+                      onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                      className="w-full bg-slate-50 border border-transparent focus:bg-white focus:border-emerald-200 focus:ring-4 focus:ring-emerald-500/5 rounded-xl py-4 pl-12 pr-4 text-sm outline-none transition-all font-bold placeholder:text-slate-300"
+                      required
+                      minLength={8}
+                    />
+                  </div>
                 </div>
-              </div>
+              ) : (
+                <div className="md:col-span-2 rounded-2xl border border-slate-100 bg-slate-50 px-4 py-4">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Password Skipped</p>
+                  <p className="mt-2 text-sm font-medium text-slate-600">
+                    This account will rely on Google sign-in instead of password creation and OTP verification.
+                  </p>
+                </div>
+              )}
             </div>
 
             <button
               type="submit"
-              disabled={loading}
+              disabled={isBusy}
               className="w-full py-5 bg-[#0D4A3E] text-white rounded-xl font-black text-xs uppercase tracking-widest hover:bg-[#064E3B] transition-all shadow-xl shadow-emerald-900/10 flex items-center justify-center gap-2 group disabled:opacity-50"
             >
-              {loading ? <Loader2 size={16} className="animate-spin" /> : 'Create Business Account'}
-              {!loading && <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />}
+              {isBusy ? <Loader2 size={16} className="animate-spin" /> : googleCredential ? 'Create With Google' : 'Create Business Account'}
+              {!isBusy && <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />}
             </button>
           </form>
 
@@ -237,4 +358,3 @@ export default function RegisterPage() {
     </div>
   );
 }
-

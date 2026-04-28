@@ -80,5 +80,10 @@ export const adminApi = {
   upgradePlan: (id: string, planName: string) =>
     api.put(`/admin/tenants/${id}/upgrade`, { planName }).then(r => r.data),
   createTenant: (data: any) => api.post('/admin/tenants', data).then(r => r.data),
+  getUsers: (params?: { page?: number; search?: string; limit?: number }) => api.get('/admin/users', { params }).then(r => r.data),
+  deleteUser: (id: string) => api.delete(`/admin/users/${id}`).then(r => r.data),
+  getSubscriptions: (params?: { page?: number; status?: string; limit?: number }) => api.get('/admin/subscriptions', { params }).then(r => r.data),
+  updateTenant: (id: string, data: any) => api.put(`/admin/tenants/${id}`, data).then(r => r.data),
+  deleteTenant: (id: string) => api.delete(`/admin/tenants/${id}`).then(r => r.data),
   getSystemHealth: () => api.get('/admin/system-health').then(r => r.data),
 }

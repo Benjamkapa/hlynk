@@ -5,12 +5,29 @@ import { Loader2, Lock, Phone, ArrowRight } from 'lucide-react'
 import { authApi } from '../../lib/api/auth'
 import { useAuth } from '../../lib/auth/AuthContext'
 import { getErrorMessage } from '../../lib/utils/error'
+import GoogleAuthButton from '../../components/auth/GoogleAuthButton'
+
 
 export default function LoginPage() {
   const navigate = useNavigate()
   const { login } = useAuth()
   const [form, setForm] = useState({ phone: '', password: '' })
   const [loading, setLoading] = useState(false)
+  const [googleLoading, setGoogleLoading] = useState(false)
+
+  const completeLogin = (data: { accessToken: string; refreshToken: string; user: any }) => {
+    login({
+      accessToken: data.accessToken,
+      refreshToken: data.refreshToken,
+    }, data.user)
+
+    if (data.user.role === 'SUPER_ADMIN') {
+      navigate('/admin')
+      return
+    }
+
+    navigate('/dashboard')
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -22,24 +39,29 @@ export default function LoginPage() {
     setLoading(true)
     try {
       const res = await authApi.login(form)
-      login({ 
-        accessToken: res.data.accessToken, 
-        refreshToken: res.data.refreshToken 
-      }, res.data.user)
-      
+      completeLogin(res.data)
       toast.success('Welcome back!')
-      
-      if (res.data.user.role === 'SUPER_ADMIN') {
-        navigate('/admin')
-      } else {
-        navigate('/dashboard')
-      }
     } catch (err: any) {
       toast.error(getErrorMessage(err))
     } finally {
       setLoading(false)
     }
   }
+
+  const handleGoogleAuth = async (credential: string) => {
+    setGoogleLoading(true)
+    try {
+      const res = await authApi.googleAuth({ credential })
+      completeLogin(res.data)
+      toast.success('Welcome back!')
+    } catch (err: any) {
+      toast.error(getErrorMessage(err))
+    } finally {
+      setGoogleLoading(false)
+    }
+  }
+
+  const isBusy = loading || googleLoading
 
   return (
     <div className="min-h-screen bg-slate-50 flex items-center justify-center px-4 py-12">
@@ -55,6 +77,18 @@ export default function LoginPage() {
 
         {/* Card */}
         <div className="bg-white rounded-[24px] p-8 shadow-xl shadow-slate-200/50 border border-slate-100">
+          <div className="space-y-4">
+            <GoogleAuthButton text="signin_with" disabled={isBusy} onCredential={handleGoogleAuth} />
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-slate-100"></div>
+              </div>
+              <div className="relative flex justify-center text-[10px] font-black uppercase tracking-widest">
+                <span className="bg-white px-4 text-slate-300">Or continue with phone</span>
+              </div>
+            </div>
+          </div>
+
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-2">
               <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Phone Number</label>
@@ -91,11 +125,11 @@ export default function LoginPage() {
 
             <button 
               type="submit" 
-              disabled={loading}
+              disabled={isBusy}
               className="w-full py-5 bg-[#0D4A3E] text-white rounded-xl font-black text-xs uppercase tracking-widest hover:bg-[#064E3B] transition-all shadow-xl shadow-emerald-900/10 flex items-center justify-center gap-2 group disabled:opacity-50"
             >
-              {loading ? <Loader2 size={16} className="animate-spin" /> : 'Sign In To Account'}
-              {!loading && <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />}
+              {isBusy ? <Loader2 size={16} className="animate-spin" /> : 'Sign In To Account'}
+              {!isBusy && <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />}
             </button>
           </form>
 

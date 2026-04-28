@@ -1,23 +1,40 @@
-import { useQuery } from '@tanstack/react-query'
+import { useState, useEffect } from 'react'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { adminApi } from '../../lib/api/providers'
 import { toast } from 'sonner'
-import { Plus, Search, Filter, CreditCard, CheckCircle2, XCircle, Clock } from 'lucide-react'
+import { Search, Filter, CreditCard, CheckCircle2, Clock, ArrowUpCircle } from 'lucide-react'
 import { ADMIN_CSS } from './hl-design-system'
-
-import { useEffect } from 'react'
 import { AdminStats } from '../../lib/types/api'
 
 export default function SubscriptionsPage() {
-  const { data: stats, isLoading, error } = useQuery<AdminStats>({
+  const [search, setSearch] = useState('')
+  const queryClient = useQueryClient()
+
+  const { data: stats, error: statsError } = useQuery<AdminStats>({
     queryKey: ['admin-stats'],
     queryFn: adminApi.getStats
   })
 
-  useEffect(() => {
-    if (error) toast.error('Failed to load subscription data')
-  }, [error])
+  const { data: subsData, isLoading, error: subsError } = useQuery<{ success: boolean; data: { subscriptions: any[] } }>({
+    queryKey: ['admin-subscriptions', search],
+    queryFn: () => adminApi.getSubscriptions({ status: search })
+  })
 
-  const subscriptions = stats?.recentSubscriptions || []
+  useEffect(() => {
+    if (statsError || subsError) toast.error('Failed to load subscription data')
+  }, [statsError, subsError])
+
+  const subscriptions = subsData?.data?.subscriptions || []
+
+  const upgradeMutation = useMutation({
+    mutationFn: ({ id, plan }: { id: string, plan: string }) => adminApi.upgradePlan(id, plan),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-subscriptions'] })
+      queryClient.invalidateQueries({ queryKey: ['admin-stats'] })
+      toast.success('Subscription plan updated')
+    },
+    onError: () => toast.error('Failed to update subscription')
+  })
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500 pt-6">
@@ -27,11 +44,6 @@ export default function SubscriptionsPage() {
         <div>
           <h1 className="text-3xl font-black text-gray-900 tracking-tight">Subscriptions</h1>
           <p className="text-gray-500 font-medium">Manage platform revenue plans and business tiers</p>
-        </div>
-        <div className="flex gap-3">
-          <button className="bg-white text-gray-600 h-12 px-6 rounded-md border border-gray-100 font-bold text-sm hover:bg-gray-50 transition-all flex items-center gap-2">
-            Plan Settings
-          </button>
         </div>
       </div>
 
@@ -48,7 +60,9 @@ export default function SubscriptionsPage() {
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
             <input 
               type="text" 
-              placeholder="Search by business or subscription ID..." 
+              placeholder="Filter by status (e.g. ACTIVE, TRIAL)..." 
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
               className="w-full bg-gray-50 border-none rounded-md py-3.5 pl-12 pr-4 outline-none focus:ring-2 focus:ring-emerald-500/10 transition-all text-sm" 
             />
           </div>
@@ -65,9 +79,9 @@ export default function SubscriptionsPage() {
                 <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest">Subscription ID</th>
                 <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest">Business</th>
                 <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest">Plan</th>
-                <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Price</th>
                 <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Status</th>
-                <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Next Billing</th>
+                <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Expiration</th>
+                <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Action</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
@@ -77,22 +91,40 @@ export default function SubscriptionsPage() {
                     <div className="h-8 w-8 animate-spin rounded-full border-4 border-emerald-500 border-t-transparent mx-auto" />
                   </td>
                 </tr>
-              ) : subscriptions.length > 0 ? subscriptions.map((s: any, i: number) => (
-                <tr key={i} className="hover:bg-gray-50/50 transition-all">
+              ) : subscriptions.length > 0 ? subscriptions.map((s: any) => (
+                <tr key={s.id} className="hover:bg-gray-50/50 transition-all">
                   <td className="px-8 py-5 text-sm font-black text-gray-900 hl-mono">{s.id.slice(-8).toUpperCase()}</td>
-                  <td className="px-8 py-5 text-sm font-bold text-gray-600">{s.businessName}</td>
-                  <td className="px-8 py-5">
-                    <span className="text-xs font-bold text-blue-600 bg-blue-50 px-2.5 py-1 rounded-md">{s.planName}</span>
+                  <td className="px-8 py-5 text-sm font-bold text-gray-600">
+                    {s.tenant?.businessName}
+                    <div className="text-[10px] text-gray-400 font-normal hl-mono">/{s.tenant?.slug}</div>
                   </td>
-                  <td className="px-8 py-5 text-right font-black text-gray-900 text-sm hl-mono">KES {s.amount.toLocaleString()}</td>
+                  <td className="px-8 py-5">
+                    <span className={`text-xs font-bold px-2.5 py-1 rounded-md ${s.planName === 'PRO' ? 'bg-purple-50 text-purple-600' : s.planName === 'BASIC' ? 'bg-blue-50 text-blue-600' : 'bg-gray-100 text-gray-600'}`}>
+                      {s.planName}
+                    </span>
+                  </td>
                   <td className="px-8 py-5 text-center">
                     <span className={`px-2 py-1 rounded-md text-[10px] font-black uppercase tracking-wider ${
-                      s.status === 'Active' ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'
+                      s.status === 'ACTIVE' ? 'bg-emerald-100 text-emerald-700' : s.status === 'TRIAL' ? 'bg-blue-100 text-blue-700' : 'bg-red-100 text-red-700'
                     }`}>
                       {s.status}
                     </span>
                   </td>
-                  <td className="px-8 py-5 text-right text-sm font-bold text-gray-400 hl-mono">{new Date(s.nextBillingAt).toLocaleDateString()}</td>
+                  <td className="px-8 py-5 text-right text-sm font-bold text-gray-400 hl-mono">
+                    {s.status === 'TRIAL' ? new Date(s.trialEndDate).toLocaleDateString() : (s.endDate ? new Date(s.endDate).toLocaleDateString() : 'Lifetime')}
+                  </td>
+                  <td className="px-8 py-5 text-right flex justify-end gap-2">
+                    {s.planName !== 'BASIC' && (
+                      <button onClick={() => { if(window.confirm('Change plan to BASIC?')) upgradeMutation.mutate({ id: s.tenantId, plan: 'BASIC' }) }} className="text-[10px] font-black uppercase tracking-widest text-blue-600 hover:bg-blue-50 px-3 py-1.5 rounded border border-blue-100 transition-all">
+                        BASIC
+                      </button>
+                    )}
+                    {s.planName !== 'PRO' && (
+                      <button onClick={() => { if(window.confirm('Upgrade plan to PRO?')) upgradeMutation.mutate({ id: s.tenantId, plan: 'PRO' }) }} className="text-[10px] font-black uppercase tracking-widest text-purple-600 hover:bg-purple-50 px-3 py-1.5 rounded border border-purple-100 transition-all flex items-center gap-1">
+                        <ArrowUpCircle size={14} /> PRO
+                      </button>
+                    )}
+                  </td>
                 </tr>
               )) : (
                 <tr>
