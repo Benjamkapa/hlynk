@@ -4,6 +4,29 @@ import { LayoutDashboard, PackageSearch, Receipt, Users, TrendingUp, ArrowRight 
 import { FadeUp } from './Animations'
 import { motion, AnimatePresence } from 'framer-motion'
 
+function GoogleG() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+      <path
+        fill="#4285F4"
+        d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.92c1.71-1.58 2.68-3.9 2.68-6.62Z"
+      />
+      <path
+        fill="#34A853"
+        d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.92-2.26c-.81.54-1.84.86-3.04.86-2.34 0-4.31-1.58-5.02-3.7H1.96v2.33A9 9 0 0 0 9 18Z"
+      />
+      <path
+        fill="#FBBC05"
+        d="M3.98 10.72A5.41 5.41 0 0 1 3.7 9c0-.6.1-1.18.28-1.72V4.95H1.96A9 9 0 0 0 1 9c0 1.45.35 2.82.96 4.05l2.02-2.33Z"
+      />
+      <path
+        fill="#EA4335"
+        d="M9 3.58c1.32 0 2.5.45 3.44 1.33l2.58-2.58C13.46.9 11.42 0 9 0A9 9 0 0 0 1.96 4.95l2.02 2.33c.71-2.12 2.68-3.7 5.02-3.7Z"
+      />
+    </svg>
+  )
+}
+
 function MockCursorAnimation() {
   const [step, setStep] = useState(0)
 
@@ -237,6 +260,44 @@ export default function Hero() {
               </p>
             </FadeUp>
 
+            <FadeUp delay={0.25}>
+              <div style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 10,
+                padding: '10px 14px',
+                borderRadius: 14,
+                background: 'rgba(255,255,255,0.12)',
+                backdropFilter: 'blur(10px)',
+                WebkitBackdropFilter: 'blur(10px)',
+                border: '1px solid rgba(255,255,255,0.2)',
+                color: '#ecfdf5',
+                maxWidth: 460,
+              }}>
+                <span style={{
+                  width: 34,
+                  height: 34,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  borderRadius: 9999,
+                  background: 'rgba(255,255,255,0.95)',
+                  boxShadow: '0 8px 20px rgba(15,23,42,0.12)',
+                  flexShrink: 0,
+                }}>
+                  <GoogleG />
+                </span>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                  <span style={{ fontSize: '0.66rem', fontWeight: 900, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.66)' }}>
+                    Fast Access
+                  </span>
+                  <span style={{ fontSize: '0.92rem', fontWeight: 700, lineHeight: 1.4 }}>
+                    Sign in with Google in seconds, or continue with phone if you prefer.
+                  </span>
+                </div>
+              </div>
+            </FadeUp>
+
             <FadeUp delay={0.3}>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'center' }}>
                 <Link
@@ -257,10 +318,10 @@ export default function Hero() {
                   <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
                 </Link>
 
-                <a
-                  href="#features"
+                <Link
+                  to="/login"
                   style={{
-                    display: 'inline-flex', alignItems: 'center',
+                    display: 'inline-flex', alignItems: 'center', gap: 8,
                     padding: 'clamp(12px, 1.5vw, 16px) clamp(18px, 2vw, 28px)',
                     borderRadius: 14,
                     background: 'rgba(255,255,255,0.15)',
@@ -273,15 +334,32 @@ export default function Hero() {
                   }}
                   className="hover:bg-white/25 transition-all"
                 >
-                  Learn More
-                </a>
+                  <GoogleG />
+                  Sign In With Google
+                </Link>
+
+                {/* <a
+                  href="#how"
+                  style={{
+                    display: 'inline-flex', alignItems: 'center',
+                    padding: 'clamp(12px, 1.5vw, 16px) clamp(18px, 2vw, 28px)',
+                    borderRadius: 14,
+                    color: '#d1fae5',
+                    fontSize: 'clamp(0.65rem, 1.2vw, 0.8rem)',
+                    fontWeight: 900, letterSpacing: '0.1em', textTransform: 'uppercase',
+                    textDecoration: 'none', whiteSpace: 'nowrap',
+                  }}
+                  className="hover:text-white transition-all"
+                >
+                  See The Journey
+                </a> */}
               </div>
             </FadeUp>
 
             {/* Trust badges */}
             <FadeUp delay={0.4}>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px 18px' }}>
-                {['No credit card', 'M-Pesa payments', 'Cancel anytime'].map(t => (
+                {['Google sign-in ready', 'No credit card', 'Cancel anytime'].map(t => (
                   <span key={t} style={{
                     display: 'flex', alignItems: 'center', gap: 5,
                     fontSize: '0.72rem', color: 'rgba(255,255,255,0.75)', fontWeight: 600,

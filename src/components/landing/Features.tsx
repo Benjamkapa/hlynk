@@ -1,4 +1,4 @@
-import { TrendingUp, Receipt, PackageSearch, BarChart3, LayoutDashboard, ShieldCheck } from 'lucide-react'
+import { TrendingUp, Receipt, PackageSearch, BarChart3, LayoutDashboard, Sparkles } from 'lucide-react'
 import { FadeUp } from './Animations'
 
 const features = [
@@ -28,9 +28,9 @@ const features = [
     desc: "Get a clear summary of your business health every morning and evening. Simple, easy to read."
   },
   {
-    icon: <ShieldCheck size={24} />,
-    title: "Cloud Security",
-    desc: "Your data is always encrypted and backed up. Access it safely from any device, anywhere."
+    icon: <Sparkles size={24} />,
+    title: "Google Sign-In",
+    desc: "Skip friction at login with secure Google access, so providers can get into hlynk faster and get back to work."
   },
 ]
 
@@ -45,7 +45,7 @@ export default function Features() {
               Stop guessing. Start <span className="text-emerald-600 ">growing.</span>
             </h2>
             <p className="text-lg text-slate-500 font-medium">
-              We built hlynk to solve the real problems Kenyan business owners face every day.
+              We built hlynk to solve the real problems Kenyan business owners face every day, starting with easier access.
             </p>
           </FadeUp>
         </div>

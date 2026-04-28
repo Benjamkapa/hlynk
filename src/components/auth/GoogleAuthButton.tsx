@@ -104,14 +104,10 @@ export default function GoogleAuthButton({
       <div
         ref={shellRef}
         className={`rounded-xl border border-slate-100 bg-slate-50/90 p-4 shadow-sm shadow-slate-200/40 transition-all ${
-          disabled ? 'pointer-events-none opacity-60' : 'hover:-translate-y-0.5 hover:border-emerald-100 hover:bg-white hover:shadow-lg hover:shadow-emerald-900/5'
+          disabled ? 'pointer-events-none opacity-60 ' : ' hover:bg-white hover:shadow-emerald-900/5'
         }`}
       >
-        <div className="mb-3 flex items-center justify-between gap-3 px-1">
-          <div className="min-w-0">
-            <p className="text-[10px] font-black uppercase tracking-[0.24em] text-slate-400">Continue Securely</p>
-            <p className="mt-1 text-sm font-black text-slate-700">{LABEL[text]}</p>
-          </div>
+        <div className="mb-1 flex items-center justify-between gap-3 px-1 ">
           {isLoading && <Loader2 size={16} className="animate-spin text-emerald-600" />}
         </div>
 

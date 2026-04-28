@@ -136,7 +136,7 @@ export default function RegisterPage() {
           <Link to="/" className="inline-block transition-transform hover:scale-105 active:scale-95">
             <img src="/logo.png" alt="HudumaLynk" className="h-14 w-auto mx-auto" />
           </Link>
-          <h1 className="text-3xl font-black text-slate-900 tracking-tighter pt-4 font-ubuntu">Create Account</h1>
+          <h1 className="text-3xl font-black text-slate-900 tracking-tighter pt-1 font-ubuntu">Create Account</h1>
           <p className="text-slate-500 font-medium text-sm">Join the network of professional service providers</p>
         </div>
 
@@ -333,7 +333,7 @@ export default function RegisterPage() {
             </button>
           </form>
 
-          <div className="relative my-8">
+          <div className="relative my-4">
             <div className="absolute inset-0 flex items-center">
               <div className="w-full border-t border-slate-100"></div>
             </div>
@@ -344,14 +344,14 @@ export default function RegisterPage() {
 
           <Link 
             to="/login" 
-            className="w-full py-4 border-2 border-slate-50 text-slate-600 rounded-xl font-black text-xs uppercase tracking-widest hover:bg-slate-50 transition-all flex items-center justify-center gap-2"
+            className="w-full py-1 border-2 border-slate-50 text-slate-600 rounded-xl font-black text-xs uppercase tracking-widest hover:bg-slate-50 transition-all flex items-center justify-center gap-2"
           >
             Log In To Portal
           </Link>
         </div>
 
         {/* Footer */}
-        <p className="text-center text-[10px] font-black text-slate-400 uppercase tracking-widest">
+        <p className="text-center text-[13px] font-thin text-slate-900 tracking-widest">
           Secure encryption enabled — &copy; {new Date().getFullYear()} hlynk
         </p>
       </div>

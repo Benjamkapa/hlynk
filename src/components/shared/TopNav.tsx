@@ -22,8 +22,12 @@ export default function TopNav({ onMobileMenuToggle, extraActions, showMail = fa
   const [showUserMenu, setShowUserMenu] = useState(false)
   const [showNotifications, setShowNotifications] = useState(false)
   const [notifications, setNotifications] = useState(MOCK_NOTIFICATIONS)
+  const [avatarFailed, setAvatarFailed] = useState(false)
   const userMenuRef = useRef<HTMLDivElement>(null)
   const notificationRef = useRef<HTMLDivElement>(null)
+  const profileImageSrc = !avatarFailed && user?.avatar
+    ? user.avatar
+    : `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.name || 'User'}`
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -35,6 +39,10 @@ export default function TopNav({ onMobileMenuToggle, extraActions, showMail = fa
     document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
+
+  useEffect(() => {
+    setAvatarFailed(false)
+  }, [user?.avatar])
 
   const handleLogout = async () => {
     await logout()
@@ -145,7 +153,12 @@ export default function TopNav({ onMobileMenuToggle, extraActions, showMail = fa
             className={`p-1.5 rounded-2xl border flex items-center gap-3 transition-all ${showUserMenu ? 'bg-white border-emerald-200 shadow-xl ring-4 ring-emerald-500/5' : 'bg-transparent border-transparent hover:bg-white hover:border-slate-100 hover:shadow-lg'}`}
           >
             <div className="w-10 h-10 rounded-xl bg-emerald-600 overflow-hidden shadow-2xl shadow-emerald-900/20 border border-white/20">
-              <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.name || 'User'}`} alt="Avatar" className="w-full h-full" />
+              <img
+                src={profileImageSrc}
+                alt={user?.name ? `${user.name} profile` : 'Profile'}
+                className="w-full h-full object-cover"
+                onError={() => setAvatarFailed(true)}
+              />
             </div>
             <div className="text-left hidden xl:block pr-3">
               <p className="text-sm font-black text-slate-900 tracking-tight leading-none mb-1.5">{user?.name}</p>

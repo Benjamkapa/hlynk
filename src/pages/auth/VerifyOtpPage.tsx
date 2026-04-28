@@ -105,8 +105,8 @@ export default function VerifyOtpPage() {
         </div>
 
         {/* Footer */}
-        <p className="text-center text-[10px] font-black text-slate-400 uppercase tracking-widest">
-          Secure verification — &copy; {new Date().getFullYear()} hlynk
+        <p className="text-center text-[13px] font-thin text-slate-900 tracking-widest">
+          Secure encryption enabled — &copy; {new Date().getFullYear()} hlynk
         </p>
       </div>
     </div>

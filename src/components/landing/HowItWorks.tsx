@@ -3,13 +3,13 @@ import { FadeUp } from './Animations'
 const steps = [
   { 
     n: "01", 
-    t: "Sign up free", 
-    d: "Create your account in seconds. Add your business name and details. No credit card needed to start your 14-day trial." 
+    t: "Choose your sign-in", 
+    d: "Start with Google for the fastest setup, or use phone login if that fits your workflow better. Both paths get you into your dashboard quickly." 
   },
   { 
     n: "02", 
-    t: "Add products", 
-    d: "List your services or inventory items. Set your prices and stock levels once, and you're ready to sell." 
+    t: "Set up your business", 
+    d: "Add your business details, services, products, and pricing once. hlynk keeps everything organized from day one." 
   },
   { 
     n: "03", 
@@ -29,10 +29,10 @@ export default function HowItWorks() {
           <FadeUp delay={0.1}>
             <span className="text-[10px] font-black text-emerald-400 uppercase tracking-[0.2em] mb-4 block">Easy Start</span>
             <h2 className="text-4xl md:text-5xl font-black font-thin text-white tracking-tighter mb-6 font-ubuntu">
-              Up and running in <span className="text-emerald-400 italic">3 minutes.</span>
+              From Google sign-in to your first sale in <span className="text-emerald-400 italic">3 minutes.</span>
             </h2>
             <p className="text-lg text-emerald-100/50 font-medium">
-              We've simplified business management so you can focus on what you do best.
+              We've made the journey lighter from the very first click, including faster access with Google.
             </p>
           </FadeUp>
         </div>
