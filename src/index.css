@@ -42,8 +42,9 @@
 
   * { @apply border-border box-border; }
   html { scroll-behavior: smooth; -webkit-tap-highlight-color: transparent; }
-  body { @apply bg-background text-foreground font-nunito antialiased; line-height: 1.5; }
-  h1, h2, h3, h4, h5, h6 { font-weight: 800; @apply tracking-tight; }
+  body { @apply bg-background text-foreground antialiased; line-height: 1.5; font-family: 'Nunito', sans-serif; }
+  h1, h2, h3, h4, h5, h6 { font-weight: 800; @apply tracking-tight; font-family: 'Ubuntu', sans-serif; }
+  button, .btn-primary, .btn-secondary, .btn-ghost { font-family: 'Ubuntu', sans-serif; }
   
   /* Enforce Mono for all numbers with the .hl-mono class or data-mono attribute */
   .hl-mono, .font-mono, [data-mono="true"] { 

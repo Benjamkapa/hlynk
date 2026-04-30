@@ -1,28 +1,40 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Settings, Shield, Bell, Globe, Database, Cpu, Lock, Save, Key, UserCheck, ShieldAlert, ShieldCheck } from 'lucide-react'
 import { ADMIN_CSS } from './hl-design-system'
 import { toast } from 'sonner'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { adminApi } from '../../lib/api/providers'
 
-import { useEffect } from 'react'
-import { AdminStats } from '../../lib/types/api'
-
 export default function SettingsPage() {
   const queryClient = useQueryClient()
   const [activeTab, setActiveTab] = useState('General')
+  const [formState, setFormState] = useState<Record<string, string>>({})
   
-  const { data: settings, error } = useQuery<AdminStats>({
+  const { data: res, error } = useQuery<any>({
     queryKey: ['admin-settings'],
-    queryFn: adminApi.getStats // Reusing stats for demo/scaffold settings
+    queryFn: adminApi.getSettings
   })
 
   useEffect(() => {
+    if (res?.data && Array.isArray(res.data)) {
+      const stateObj: Record<string, string> = {}
+      res.data.forEach((s: any) => {
+        stateObj[s.key] = s.value
+      })
+      setFormState(stateObj)
+    }
     if (error) toast.error('Failed to load system settings')
-  }, [error])
+  }, [res, error])
+
+  const setField = (key: string, value: string) => {
+    setFormState(prev => ({ ...prev, [key]: value }))
+  }
 
   const updateMutation = useMutation({
-    mutationFn: (newSettings: any) => Promise.resolve(newSettings), // Mock update for now
+    mutationFn: () => {
+      const payload = Object.keys(formState).map(k => ({ key: k, value: String(formState[k]) }))
+      return adminApi.updateSettings({ settings: payload })
+    },
     onSuccess: () => {
       toast.success('System configurations synchronized')
       queryClient.invalidateQueries({ queryKey: ['admin-settings'] })
@@ -48,7 +60,7 @@ export default function SettingsPage() {
           <p className="text-slate-500 font-medium text-lg">System-wide configuration and administrative controls</p>
         </div>
         <button 
-          onClick={() => updateMutation.mutate({})}
+          onClick={() => updateMutation.mutate()}
           disabled={updateMutation.isPending}
           className="hl-btn-primary shadow-xl shadow-emerald-900/10 rounded-md"
         >
@@ -109,54 +121,77 @@ export default function SettingsPage() {
             </div>
             
             <div className="p-10 space-y-12">
-              <section className="space-y-6">
-                <div className="flex items-center gap-2 text-slate-400 mb-2">
-                  <Settings size={16} />
-                  <span className="text-xs font-black uppercase tracking-[0.2em]">Primary Details</span>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  <InputGroup label="Application Identity" value="hlynk Pro" placeholder="Platform name" />
-                  <InputGroup label="Ops Support Channel" value="ops@hlynk.com" placeholder="Email address" />
-                </div>
-              </section>
-              
-              <section className="space-y-6">
-                <div className="flex items-center gap-2 text-slate-400 mb-2">
-                  <Globe size={16} />
-                  <span className="text-xs font-black uppercase tracking-[0.2em]">Localization</span>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  <SelectGroup label="Default Currency" options={['KES - Kenya Shilling', 'USD - US Dollar', 'UGX - Uganda Shilling']} />
-                  <SelectGroup label="System Timezone" options={['Africa/Nairobi (UTC+3)', 'UTC (Coordinated Universal Time)']} />
-                </div>
-              </section>
+              {activeTab === 'General' && (
+                <>
+                  <section className="space-y-6">
+                    <div className="flex items-center gap-2 text-slate-400 mb-2">
+                      <Settings size={16} />
+                      <span className="text-xs font-black uppercase tracking-[0.2em]">Primary Details</span>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                      <InputGroup 
+                        label="Application Identity" 
+                        value={formState['APP_NAME'] || ''} 
+                        onChange={(v: string) => setField('APP_NAME', v)} 
+                        placeholder="Platform name" 
+                      />
+                      <InputGroup 
+                        label="Ops Support Channel" 
+                        value={formState['SUPPORT_EMAIL'] || ''} 
+                        onChange={(v: string) => setField('SUPPORT_EMAIL', v)} 
+                        placeholder="Email address" 
+                      />
+                    </div>
+                  </section>
+                  
+                  <section className="space-y-6">
+                    <div className="flex items-center gap-2 text-slate-400 mb-2">
+                      <Globe size={16} />
+                      <span className="text-xs font-black uppercase tracking-[0.2em]">Localization</span>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                      <SelectGroup 
+                        label="Default Currency" 
+                        options={['KES - Kenya Shilling', 'USD - US Dollar', 'UGX - Uganda Shilling']} 
+                        value={formState['DEFAULT_CURRENCY'] || ''}
+                        onChange={(v: string) => setField('DEFAULT_CURRENCY', v)}
+                      />
+                      <SelectGroup 
+                        label="System Timezone" 
+                        options={['Africa/Nairobi (UTC+3)', 'UTC (Coordinated Universal Time)']} 
+                        value={formState['TIMEZONE'] || ''}
+                        onChange={(v: string) => setField('TIMEZONE', v)}
+                      />
+                    </div>
+                  </section>
+                </>
+              )}
 
-              <section className="pt-10 border-t border-slate-100">
-                <div className="flex items-center gap-2 text-slate-400 mb-8">
-                  <Shield size={16} />
-                  <span className="text-xs font-black uppercase tracking-[0.2em]">Security Controls</span>
-                </div>
-                <div className="space-y-4">
+              {activeTab === 'Security' && (
+                <section className="space-y-4">
                   <SecuritySwitch 
                     title="Enforce Admin 2FA" 
                     desc="Mandatory hardware or app-based 2FA for all SuperAdmins" 
                     icon={Key} 
-                    active={true} 
+                    active={formState['ENFORCE_2FA'] === 'true'} 
+                    onChange={(v: boolean) => setField('ENFORCE_2FA', String(v))}
                   />
                   <SecuritySwitch 
                     title="Intrusion Detection" 
                     desc="Automatically block IPs with more than 5 failed attempts in 1 min" 
                     icon={ShieldAlert} 
-                    active={true} 
+                    active={formState['INTRUSION_DETECT'] === 'true'} 
+                    onChange={(v: boolean) => setField('INTRUSION_DETECT', String(v))}
                   />
                   <SecuritySwitch 
                     title="Session Persistence" 
                     desc="Keep administrative sessions alive for 24 hours" 
                     icon={UserCheck} 
-                    active={false} 
+                    active={formState['SESSION_PERSISTENCE'] === 'true'} 
+                    onChange={(v: boolean) => setField('SESSION_PERSISTENCE', String(v))}
                   />
-                </div>
-              </section>
+                </section>
+              )}
             </div>
           </div>
           
@@ -178,13 +213,14 @@ export default function SettingsPage() {
   )
 }
 
-function InputGroup({ label, value, placeholder }: any) {
+function InputGroup({ label, value, onChange, placeholder }: any) {
   return (
     <div className="space-y-3">
       <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest pl-1">{label}</label>
       <input 
         type="text" 
-        defaultValue={value}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         className="hl-input w-full rounded-md" 
       />
@@ -192,13 +228,13 @@ function InputGroup({ label, value, placeholder }: any) {
   )
 }
 
-function SelectGroup({ label, options }: any) {
+function SelectGroup({ label, options, value, onChange }: any) {
   return (
     <div className="space-y-3">
       <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest pl-1">{label}</label>
       <div className="relative">
-        <select className="hl-input w-full appearance-none rounded-md">
-          {options.map((opt: any) => <option key={opt}>{opt}</option>)}
+        <select value={value} onChange={e => onChange(e.target.value)} className="hl-input w-full appearance-none rounded-md">
+          {options.map((opt: any) => <option key={opt} value={opt}>{opt}</option>)}
         </select>
         <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 font-black">↓</div>
       </div>
@@ -206,9 +242,9 @@ function SelectGroup({ label, options }: any) {
   )
 }
 
-function SecuritySwitch({ title, desc, icon: Icon, active }: any) {
+function SecuritySwitch({ title, desc, icon: Icon, active, onChange }: any) {
   return (
-    <div className="flex items-center justify-between p-6 rounded-md bg-slate-50/50 border border-slate-100 hover:bg-white hover:border-emerald-200 hover:shadow-sm transition-all group cursor-pointer">
+    <div onClick={() => onChange(!active)} className="flex items-center justify-between p-6 rounded-md bg-slate-50/50 border border-slate-100 hover:bg-white hover:border-emerald-200 hover:shadow-sm transition-all group cursor-pointer">
       <div className="flex items-center gap-5">
         <div className={`h-12 w-12 rounded-md flex items-center justify-center transition-colors ${
           active ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-200 text-slate-400'

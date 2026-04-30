@@ -19,18 +19,27 @@ import { useEffect } from 'react'
 import { AdminStats } from '../../lib/types/api'
 
 export default function AdminDashboardPage() {
-  const { data: stats, isLoading, error } = useQuery<AdminStats>({
-    queryKey: ['admin-stats'],
-    queryFn: adminApi.getStats
+  const [timeframe, setTimeframe] = useState<'HOURLY' | 'DAILY'>('HOURLY')
+  const { data: rawStats, isLoading, error } = useQuery<any>({
+    queryKey: ['admin-stats-', timeframe],
+    queryFn: () => adminApi.getStats(timeframe)
   })
+  
+  const stats = rawStats?.data || rawStats;
 
   useEffect(() => {
     if (error) toast.error('Failed to load system stats')
   }, [error])
 
   // Use API data or fallback to empty state for chart
-  const revenueData = stats?.revenueChart || []
-  const recentEvents = stats?.recentEvents || []
+  const revenueData = stats?.trends?.revenueTrend || []
+  const recentEvents = stats?.recentRegistrations?.map((r: any) => ({
+    id: `REG-${r.id.substring(0,6)}`,
+    event: `New Registration: ${r.name}`,
+    entity: r.owner,
+    time: new Date(r.date).toLocaleDateString(),
+    severity: 'Medium'
+  })) || []
 
   if (isLoading) return (
     <div className="flex h-96 items-center justify-center">
@@ -53,7 +62,7 @@ export default function AdminDashboardPage() {
               {[1, 2, 3].map(i => (
                 <img key={i} src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${i + 20}`} className="h-8 w-8 rounded-full border-2 border-white bg-slate-100" alt="" />
               ))}
-              <div className="h-8 w-8 rounded-full border-2 border-white bg-emerald-500 text-white flex items-center justify-center text-[10px] font-black">+{stats?.activeAdmins || 0}</div>
+              <div className="h-8 w-8 rounded-full border-2 border-white bg-emerald-500 text-white flex items-center justify-center text-[10px] font-black">+{stats?.overview?.activeToday || 0}</div>
            </div>
            <div className="h-8 w-[1px] bg-slate-200" />
            <div className="flex items-center gap-2 px-3 py-1 bg-emerald-50 text-emerald-700 rounded-md border border-emerald-100">
@@ -65,10 +74,10 @@ export default function AdminDashboardPage() {
 
       {/* KPI Section */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-8">
-        <KpiCard title="Active Tenancy" value={stats?.tenantsCount?.toLocaleString() || '0'} sub="+12.4% vs last mo" icon={Landmark} trend="up" color="emerald" />
-        <KpiCard title="Gross Transaction Vol" value={stats?.gtv || '0'} sub={`KES ${stats?.todayVolume?.toLocaleString() || '0'} Today`} icon={Zap} trend="up" color="blue" />
-        <KpiCard title="Platform Revenue" value={stats?.revenue || '0'} sub="Subscription & Fees" icon={DollarSign} trend="up" color="purple" />
-        <KpiCard title="System Alerts" value={stats?.alertsCount || '0'} sub="Requires immediate review" icon={AlertTriangle} trend="down" color="red" />
+        <KpiCard title="Active Tenancy" value={stats?.overview?.totalProviders?.toLocaleString() || '0'} sub={`${stats?.overview?.payingProviders || 0} Paying`} icon={Landmark} trend="up" color="emerald" />
+        <KpiCard title="Platform Revenue" value={`KES ${stats?.overview?.revenueThisMonth?.toLocaleString() || '0'}`} sub="This Month" icon={DollarSign} trend="up" color="purple" />
+        <KpiCard title="Trials Expiring Soon" value={stats?.trials?.expiringSoon || '0'} sub={`${stats?.trials?.conversionRate?.toFixed(1) || 0}% Conv Rate`} icon={Zap} trend="up" color="blue" />
+        <KpiCard title="Active Today" value={stats?.overview?.activeToday || '0'} sub="Requires immediate review" icon={Users} trend="down" color="red" />
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-10">
@@ -80,8 +89,18 @@ export default function AdminDashboardPage() {
               <p className="text-sm text-slate-400 font-bold uppercase tracking-widest mt-1">Global platform income over 24h</p>
             </div>
             <div className="flex items-center gap-2 bg-slate-50 p-1.5 rounded-md border border-slate-100">
-              <button className="px-4 py-2 rounded text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-slate-900 transition-all">Hourly</button>
-              <button className="px-4 py-2 rounded bg-white shadow-sm text-[10px] font-black uppercase tracking-widest text-slate-900">Daily View</button>
+              <button 
+                onClick={() => setTimeframe('HOURLY')} 
+                className={`px-4 py-2 rounded text-[10px] font-black uppercase tracking-widest transition-all ${timeframe === 'HOURLY' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-400 hover:text-slate-900'}`}
+              >
+                Hourly
+              </button>
+              <button 
+                onClick={() => setTimeframe('DAILY')} 
+                className={`px-4 py-2 rounded text-[10px] font-black uppercase tracking-widest transition-all ${timeframe === 'DAILY' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-400 hover:text-slate-900'}`}
+              >
+                Daily View
+              </button>
             </div>
           </div>
           
@@ -178,7 +197,7 @@ export default function AdminDashboardPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50">
-              {recentEvents.map((ev, i) => (
+              {recentEvents.map((ev: any, i: number) => (
                 <tr key={i} className="group hover:bg-slate-50/30 transition-all cursor-pointer">
                   <td className="px-10 py-6 text-xs font-black text-slate-900 hl-mono">{ev.id}</td>
                   <td className="px-10 py-6">

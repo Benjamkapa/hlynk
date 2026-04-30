@@ -260,7 +260,7 @@ export default function Hero() {
               </p>
             </FadeUp>
 
-            <FadeUp delay={0.25}>
+            {/* <FadeUp delay={0.25}>
               <div style={{
                 display: 'inline-flex',
                 alignItems: 'center',
@@ -296,7 +296,7 @@ export default function Hero() {
                   </span>
                 </div>
               </div>
-            </FadeUp>
+            </FadeUp> */}
 
             <FadeUp delay={0.3}>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'center' }}>

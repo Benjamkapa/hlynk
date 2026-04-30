@@ -77,18 +77,6 @@ export default function LoginPage() {
 
         {/* Card */}
         <div className="bg-white rounded-[24px] p-8 shadow-xl shadow-slate-200/50 border border-slate-100">
-          <div className="space-y-4">
-            <GoogleAuthButton text="signin_with" disabled={isBusy} onCredential={handleGoogleAuth} />
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-slate-100"></div>
-              </div>
-              <div className="relative flex justify-center text-[10px] font-black uppercase tracking-widest">
-                <span className="bg-white px-4 text-slate-300">Or continue with phone</span>
-              </div>
-            </div>
-          </div>
-
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-2">
               <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Phone Number</label>
@@ -132,6 +120,17 @@ export default function LoginPage() {
               {!isBusy && <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />}
             </button>
           </form>
+
+          <div className="relative my-8">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-slate-100"></div>
+            </div>
+            <div className="relative flex justify-center text-[10px] font-black uppercase tracking-widest">
+              <span className="bg-white px-4 text-slate-300">Or continue with</span>
+            </div>
+          </div>
+
+          <GoogleAuthButton text="signin_with" disabled={isBusy} onCredential={handleGoogleAuth} />
 
           <div className="relative my-8">
             <div className="absolute inset-0 flex items-center">

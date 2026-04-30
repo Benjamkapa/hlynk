@@ -142,17 +142,6 @@ export default function RegisterPage() {
 
         {/* Card */}
         <div className="bg-white rounded-[24px] p-8 md:p-10 shadow-xl shadow-slate-200/50 border border-slate-100">
-          <div className="space-y-4 mb-6">
-            <GoogleAuthButton text="signup_with" disabled={isBusy} onCredential={handleGoogleCredential} />
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-slate-100"></div>
-              </div>
-              <div className="relative flex justify-center text-[10px] font-black uppercase tracking-widest">
-                <span className="bg-white px-4 text-slate-300">Or continue with OTP signup</span>
-              </div>
-            </div>
-          </div>
 
           {googleCredential && (
             <div className="mb-6 rounded-2xl border border-emerald-100 bg-emerald-50/70 p-4">
@@ -332,6 +321,20 @@ export default function RegisterPage() {
               {!isBusy && <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />}
             </button>
           </form>
+
+          {!googleCredential && (
+            <>
+              <div className="relative my-8">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-slate-100"></div>
+                </div>
+                <div className="relative flex justify-center text-[10px] font-black uppercase tracking-widest">
+                  <span className="bg-white px-4 text-slate-300">Or continue with</span>
+                </div>
+              </div>
+              <GoogleAuthButton text="signup_with" disabled={isBusy} onCredential={handleGoogleCredential} />
+            </>
+          )}
 
           <div className="relative my-4">
             <div className="absolute inset-0 flex items-center">

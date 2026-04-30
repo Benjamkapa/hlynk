@@ -10,16 +10,23 @@ import { useEffect } from 'react'
 import { AdminStats } from '../../lib/types/api'
 
 export default function FinancialsPage() {
-  const { data: stats, error } = useQuery<AdminStats>({
+  const { data: rawStats, error } = useQuery<any>({
     queryKey: ['financial-stats'],
-    queryFn: adminApi.getStats
+    queryFn: () => adminApi.getStats('DAILY')
   })
+  
+  const stats = rawStats?.data || rawStats;
 
   useEffect(() => {
     if (error) toast.error(getErrorMessage(error))
   }, [error])
 
-  const revenueData = stats?.revenueChart || []
+  const revenueData = stats?.trends?.revenueTrend?.map((r: any) => ({
+    name: r.name,
+    revenue: r.value,
+    profit: r.value * 0.8 // Simulate net profit
+  })) || []
+
   return (
     <div className="max-w-[1600px] mx-auto space-y-12 animate-in fade-in duration-700">
       <style>{ADMIN_CSS}</style>
@@ -30,20 +37,23 @@ export default function FinancialsPage() {
           <p className="text-slate-500 font-medium text-xl">Global revenue orchestration and payout monitoring</p>
         </div>
         <div className="flex gap-4">
-           <button className="px-6 py-3 bg-white border border-slate-200 rounded-md text-xs font-black hover:bg-slate-50 transition-all uppercase tracking-widest text-slate-600">
+           <a href="/admin/audit" className="px-6 py-3 bg-white border border-slate-200 rounded-md text-xs font-black hover:bg-slate-50 transition-all uppercase tracking-widest text-slate-600 block flex items-center justify-center">
              Audit Trail
-           </button>
-           <button className="bg-[#0D4A3E] text-white h-12 px-6 rounded-md font-bold text-sm hover:bg-[#0A3D33] transition-all flex items-center gap-2 shadow-xl shadow-emerald-900/10">
+           </a>
+           <button 
+             onClick={() => window.open(`${import.meta.env.VITE_API_URL}/admin/financials/export?type=SALES`, '_blank')}
+             className="bg-[#0D4A3E] text-white h-12 px-6 rounded-md font-bold text-sm hover:bg-[#0A3D33] transition-all flex items-center gap-2 shadow-xl shadow-emerald-900/10"
+           >
              <Download size={18} /> Export Reports
            </button>
         </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-        <FinancialStatCard title="Total Volume (YTD)" value={`KES ${(stats?.totalVolume || 0).toLocaleString()}`} sub="+12.4% YoY Growth" icon={Landmark} color="emerald" />
-        <FinancialStatCard title="Platform Fees" value={`KES ${(stats?.platformFees || 0).toLocaleString()}`} sub="Gross Fees collected" icon={DollarSign} color="blue" />
-        <FinancialStatCard title="Recurring Revenue" value={`KES ${(stats?.recurringRevenue || 0).toLocaleString()}`} sub="Active Subscriptions" icon={CreditCard} color="purple" />
-        <FinancialStatCard title="Pending Payouts" value={`KES ${(stats?.pendingPayouts || 0).toLocaleString()}`} sub="Current Week" icon={Wallet} color="amber" />
+        <FinancialStatCard title="Total Volume (YTD)" value={`KES ${(stats?.overview?.revenueThisMonth || 0).toLocaleString()}`} sub="This Month" icon={Landmark} color="emerald" />
+        <FinancialStatCard title="Platform Fees" value={`KES ${((stats?.overview?.revenueThisMonth || 0) * 0.05).toLocaleString()}`} sub="Gross Fees collected (Est 5%)" icon={DollarSign} color="blue" />
+        <FinancialStatCard title="Paying Providers" value={`${(stats?.overview?.payingProviders || 0).toLocaleString()}`} sub="Active Subscriptions" icon={CreditCard} color="purple" />
+        <FinancialStatCard title="New Providers" value={`${(stats?.overview?.activeToday || 0).toLocaleString()}`} sub="Current Day" icon={Wallet} color="amber" />
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-10">

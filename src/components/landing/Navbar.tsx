@@ -215,7 +215,7 @@ export default function Navbar() {
 
           {/* Desktop CTAs */}
           <div className="hl-desktop-ctas" style={{ alignItems: 'center', gap: 10 }}>
-            <Link to="/login" className={`hl-btn-ghost${scrolled ? ' scrolled' : ''}`}>
+            {/* <Link to="/login" className={`hl-btn-ghost${scrolled ? ' scrolled' : ''}`}>
               <span style={{
                 width: 18,
                 height: 18,
@@ -235,7 +235,7 @@ export default function Navbar() {
                 </svg>
               </span>
               Google Sign-In
-            </Link>
+            </Link> */}
             <Link to="/register" className="hl-btn-primary">
               Get Started
             </Link>

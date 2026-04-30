@@ -25,8 +25,8 @@ export default function TopNav({ onMobileMenuToggle, extraActions, showMail = fa
   const [avatarFailed, setAvatarFailed] = useState(false)
   const userMenuRef = useRef<HTMLDivElement>(null)
   const notificationRef = useRef<HTMLDivElement>(null)
-  const profileImageSrc = !avatarFailed && user?.avatar
-    ? user.avatar
+  const profileImageSrc = !avatarFailed && (user?.photoUrl || user?.avatar)
+    ? (user.photoUrl || user.avatar)
     : `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.name || 'User'}`
 
   useEffect(() => {
@@ -53,7 +53,7 @@ export default function TopNav({ onMobileMenuToggle, extraActions, showMail = fa
   return (
     <header className="h-24 bg-transparent flex items-center justify-between z-[100] px-6 sm:px-8">
 
-      {/* Search Console */}
+      {/* Search Console Removed */}
       <div className="flex items-center gap-4 flex-1 max-w-xl">
         {onMobileMenuToggle && (
           <button 
@@ -63,13 +63,6 @@ export default function TopNav({ onMobileMenuToggle, extraActions, showMail = fa
             <Menu size={22} />
           </button>
         )}
-        <div className="relative w-full hidden sm:block group">
-          <Search size={18} className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-emerald-500 transition-colors" />
-          <input 
-            placeholder="Search intelligence, clients, transactions…" 
-            className="w-full h-14 bg-slate-50/50 border border-slate-100 rounded-2xl pl-14 pr-4 text-sm font-bold text-slate-900 focus:outline-none focus:ring-4 focus:ring-emerald-500/5 focus:border-emerald-500/20 focus:bg-white transition-all placeholder:text-slate-400" 
-          />
-        </div>
       </div>
 
       {/* Terminal Actions */}

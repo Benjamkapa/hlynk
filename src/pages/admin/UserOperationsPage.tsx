@@ -78,9 +78,13 @@ export default function UserOperationsPage() {
                     <tr key={u.id} className="hover:bg-gray-50/50 transition-all group">
                       <td className="px-8 py-5">
                         <div className="flex items-center gap-4">
-                          <div className="h-10 w-10 rounded-md bg-emerald-50 text-emerald-600 flex items-center justify-center font-black border border-emerald-100 group-hover:bg-emerald-600 group-hover:text-white transition-all">
-                            {u.name?.charAt(0) || 'U'}
-                          </div>
+                          {u.photoUrl ? (
+                            <img src={u.photoUrl} alt="Avatar" className="h-10 w-10 rounded-md object-cover border border-emerald-100" />
+                          ) : (
+                            <div className="h-10 w-10 rounded-md bg-emerald-50 text-emerald-600 flex items-center justify-center font-black border border-emerald-100 group-hover:bg-emerald-600 group-hover:text-white transition-all">
+                              {u.name?.charAt(0) || 'U'}
+                            </div>
+                          )}
                           <div>
                             <p className="font-bold text-gray-900 text-sm">{u.name}</p>
                             <p className="text-[10px] text-gray-400 font-bold hl-mono">{u.phone}</p>

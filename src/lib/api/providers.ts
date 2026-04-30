@@ -72,7 +72,7 @@ export const paymentsApi = {
 }
 
 export const adminApi = {
-  getStats: () => api.get('/admin/stats').then(r => r.data),
+  getStats: (timeframe?: string) => api.get('/admin/stats', { params: { timeframe } }).then(r => r.data),
   getTenants: (params?: { page?: number; search?: string; limit?: number }) =>
     api.get('/admin/tenants', { params }).then(r => r.data),
   suspendTenant: (id: string) => api.put(`/admin/tenants/${id}/suspend`).then(r => r.data),
@@ -86,4 +86,8 @@ export const adminApi = {
   updateTenant: (id: string, data: any) => api.put(`/admin/tenants/${id}`, data).then(r => r.data),
   deleteTenant: (id: string) => api.delete(`/admin/tenants/${id}`).then(r => r.data),
   getSystemHealth: () => api.get('/admin/system-health').then(r => r.data),
+  runReportQuery: (data: any) => api.post('/admin/reports/query', data).then(r => r.data),
+  getSchedules: () => api.get('/admin/schedules').then(r => r.data),
+  getSettings: () => api.get('/admin/settings').then(r => r.data),
+  updateSettings: (data: any) => api.put('/admin/settings', data).then(r => r.data),
 }
