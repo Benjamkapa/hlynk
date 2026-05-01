@@ -1,23 +1,34 @@
 import { useQuery } from '@tanstack/react-query'
 import { adminApi } from '../../lib/api/providers'
 import { toast } from 'sonner'
-import { ShieldCheck, UserX, Key, Search, Filter, AlertTriangle, ShieldAlert } from 'lucide-react'
+import { ShieldCheck, UserX, Key, Search, Filter, AlertTriangle, ShieldAlert, ChevronLeft, ChevronRight, RefreshCcw, FileText } from 'lucide-react'
 import { ADMIN_CSS } from './hl-design-system'
-
-import { useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { AdminStats } from '../../lib/types/api'
+import { exportToCSV } from '../../lib/utils/export'
 
 export default function AuditSecurityPage() {
-  const { data: stats, isLoading, error } = useQuery<AdminStats>({
+  const [logPage, setLogPage] = useState(1)
+
+  const { data: stats, isLoading: statsLoading, error: statsError } = useQuery<AdminStats>({
     queryKey: ['admin-stats'],
     queryFn: adminApi.getStats
   })
 
-  useEffect(() => {
-    if (error) toast.error('Failed to load security data')
-  }, [error])
+  const { data: logsData, isLoading: logsLoading, refetch: refetchLogs } = useQuery({
+    queryKey: ['admin-activity-logs', logPage],
+    queryFn: () => adminApi.getActivityLogs({ page: logPage, limit: 15 })
+  })
 
-  const securityEvents = (stats as any)?.securityLogs || []
+  useEffect(() => {
+    if (statsError) toast.error('Failed to load security data')
+  }, [statsError])
+
+  const handleLogExport = () => {
+    if (!logsData?.items) return
+    exportToCSV(logsData.items, 'global_activity_logs')
+    toast.success('Global logs exported to CSV')
+  }
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500 pt-6">
@@ -26,10 +37,10 @@ export default function AuditSecurityPage() {
       <div className="flex justify-between items-end">
         <div>
           <h1 className="text-3xl font-black text-gray-900 tracking-tight">Audit & Security</h1>
-          <p className="text-gray-500 font-medium">Security monitoring, compliance tracking and threat mitigation</p>
+          <p className="text-gray-500 font-medium">Global security monitoring, compliance tracking and threat mitigation</p>
         </div>
         <div className="flex gap-3">
-          <button className="bg-red-600 text-white h-12 px-6 rounded-md font-bold text-sm hover:bg-red-700 transition-all flex items-center gap-2">
+          <button className="bg-red-600 text-white h-12 px-6 rounded-xl font-bold text-sm hover:bg-red-700 transition-all flex items-center gap-2 shadow-lg shadow-red-900/20">
             <ShieldAlert size={18} /> Incident Report
           </button>
         </div>
@@ -41,64 +52,113 @@ export default function AuditSecurityPage() {
         <SecurityCard title="Active Protocols" value={stats?.activeProtocolsCount || '0'} sub="Encryption Active" icon={Key} status="safe" />
       </div>
 
-      <div className="bg-white rounded-lg border border-gray-100 shadow-sm overflow-hidden">
-        <div className="p-6 border-b border-gray-50 flex justify-between items-center">
-          <h3 className="text-xl font-black text-gray-900">Security Audit Logs</h3>
-          <div className="flex gap-4">
-             <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
-                <input type="text" placeholder="Search events..." className="bg-gray-50 border-none rounded-lg py-2 pl-10 pr-4 outline-none text-xs font-bold" />
-             </div>
-             <button className="bg-gray-50 text-gray-500 px-3 py-2 rounded-lg flex items-center gap-2 font-bold text-[10px] hover:bg-gray-100 transition-all uppercase tracking-widest border border-gray-100">
-               <Filter size={14} /> Filter
+      <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
+        <div className="p-8 border-b border-gray-50 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+          <div>
+             <h3 className="text-xl font-black text-gray-900 mb-1">Global System Logs</h3>
+             <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">{logsData?.pagination?.total || 0} total actions tracked</p>
+          </div>
+          <div className="flex items-center gap-3">
+             <button onClick={() => refetchLogs()} className="h-10 px-4 bg-gray-50 text-gray-600 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 hover:bg-gray-100 transition-all border border-gray-100">
+                <RefreshCcw size={14} /> Refresh
+             </button>
+             <button onClick={handleLogExport} className="h-10 px-4 bg-gray-50 text-gray-600 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 hover:bg-gray-100 transition-all border border-gray-100">
+                <FileText size={14} /> Export CSV
              </button>
           </div>
         </div>
         
+        <div className="px-8 py-4 bg-slate-50/30 border-b border-gray-50 flex gap-4">
+           <div className="flex-1 relative">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+              <input type="text" placeholder="Search by user, tenant or action..." className="w-full bg-white border border-gray-100 rounded-xl py-2.5 pl-12 pr-4 outline-none focus:ring-2 focus:ring-emerald-500/10 text-sm font-medium" />
+           </div>
+           <button className="h-10 px-6 bg-[#0D4A3E] text-white rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
+              <Filter size={14} /> Filter Logs
+           </button>
+        </div>
+
         <div className="overflow-x-auto">
-          <table className="w-full text-left">
+          <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-gray-50/50">
-                <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest">ID</th>
-                <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest">Time</th>
-                <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest">Event Description</th>
-                <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Severity</th>
-                <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Origin IP</th>
+                <th className="p-6 text-[10px] font-black text-gray-400 uppercase tracking-widest">Time & Date</th>
+                <th className="p-6 text-[10px] font-black text-gray-400 uppercase tracking-widest">User / Identity</th>
+                <th className="p-6 text-[10px] font-black text-gray-400 uppercase tracking-widest">Business / Tenant</th>
+                <th className="p-6 text-[10px] font-black text-gray-400 uppercase tracking-widest">Event Description</th>
+                <th className="p-6 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">IP Origin</th>
+                <th className="p-6 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Action ID</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
-              {isLoading ? (
-                <tr>
-                  <td colSpan={5} className="py-20 text-center">
-                    <div className="h-8 w-8 animate-spin rounded-full border-4 border-emerald-500 border-t-transparent mx-auto" />
+              {logsLoading ? (
+                <tr><td colSpan={6} className="py-24 text-center"><Loader2 size={32} className="animate-spin text-emerald-600 mx-auto" /></td></tr>
+              ) : logsData?.items?.length === 0 ? (
+                <tr><td colSpan={6} className="py-24 text-center text-gray-400 italic">No activity logs found</td></tr>
+              ) : logsData?.items.map((log: any) => (
+                <tr key={log.id} className="hover:bg-gray-50/50 transition-all group cursor-pointer">
+                  <td className="p-6">
+                    <p className="text-sm font-black text-gray-900 leading-none mb-1">{new Date(log.createdAt).toLocaleDateString()}</p>
+                    <p className="text-[10px] font-bold text-gray-400 hl-mono">{new Date(log.createdAt).toLocaleTimeString()}</p>
                   </td>
-                </tr>
-              ) : securityEvents.length > 0 ? securityEvents.map((ev: any, i: number) => (
-                <tr key={i} className="hover:bg-gray-50/50 transition-all group cursor-pointer">
-                  <td className="px-8 py-5 text-xs font-black text-gray-900 hl-mono">{ev.id?.slice(-8).toUpperCase() || `SEC-${100+i}`}</td>
-                  <td className="px-8 py-5 text-xs font-bold text-gray-400 hl-mono">{new Date(ev.time || ev.createdAt).toLocaleTimeString()}</td>
-                  <td className="px-8 py-5">
-                    <p className="text-sm font-bold text-gray-700">{ev.event || ev.description}</p>
-                    <p className="text-[10px] text-gray-400 font-medium uppercase tracking-widest">User: {ev.userName || ev.user || 'System'}</p>
+                  <td className="p-6">
+                    <div className="flex items-center gap-3">
+                      <div className="h-10 w-10 rounded-xl bg-slate-100 flex items-center justify-center overflow-hidden border border-slate-200">
+                         {log.user?.photoUrl ? (
+                           <img src={log.user.photoUrl} alt="" className="h-full w-full object-cover" />
+                         ) : (
+                           <span className="text-[10px] font-black text-slate-400">{log.user?.name?.substring(0,2).toUpperCase()}</span>
+                         )}
+                      </div>
+                      <div>
+                        <p className="text-xs font-black text-gray-900 leading-none mb-1">{log.user?.name || 'System'}</p>
+                        <p className="text-[10px] font-medium text-gray-400">{log.user?.email || 'automated@system'}</p>
+                      </div>
+                    </div>
                   </td>
-                  <td className="px-8 py-5 text-center">
-                    <span className={`px-2 py-1 rounded-md text-[10px] font-black uppercase tracking-widest ${
-                      ev.severity === 'High' ? 'bg-red-100 text-red-600' :
-                      ev.severity === 'Medium' ? 'bg-amber-100 text-amber-600' :
-                      ev.severity === 'Info' ? 'bg-blue-100 text-blue-600' : 'bg-emerald-100 text-emerald-600'
-                    }`}>
-                      {ev.severity || 'Info'}
+                  <td className="p-6">
+                    <p className="text-xs font-black text-emerald-700 uppercase tracking-wider">{log.tenant?.businessName || 'GLOBAL'}</p>
+                  </td>
+                  <td className="p-6">
+                    <span className="px-3 py-1 bg-gray-100 text-gray-700 rounded-lg text-[10px] font-black uppercase tracking-widest border border-gray-200 mb-2 inline-block">
+                      {log.logName || log.action}
                     </span>
+                    <p className="text-[10px] font-bold text-gray-500 max-w-[200px] truncate">{log.details}</p>
                   </td>
-                  <td className="px-8 py-5 text-right text-xs font-bold text-gray-400 hl-mono">{ev.ip || '127.0.0.1'}</td>
+                  <td className="p-6 text-center text-[10px] font-black text-gray-400 hl-mono">{log.ipAddress || '127.0.0.1'}</td>
+                  <td className="p-6 text-right">
+                    <p className="text-[10px] font-black text-emerald-600/30 hl-mono group-hover:text-emerald-600 transition-colors uppercase">{log.actionId || '#GLOBAL-LOG'}</p>
+                  </td>
                 </tr>
-              )) : (
-                <tr>
-                  <td colSpan={5} className="py-20 text-center text-gray-400 font-bold text-xs uppercase tracking-widest">No security events found</td>
-                </tr>
-              )}
+              ))}
             </tbody>
           </table>
+        </div>
+
+        {/* Pagination */}
+        <div className="p-8 border-t border-gray-50 flex items-center justify-between bg-slate-50/20">
+           <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
+              Showing {logsData?.items?.length || 0} of {logsData?.pagination?.total || 0} global records
+           </p>
+           <div className="flex items-center gap-2">
+              <button 
+                onClick={() => setLogPage(p => Math.max(1, p - 1))}
+                disabled={logPage === 1}
+                className="h-12 w-12 flex items-center justify-center rounded-2xl border border-gray-100 bg-white text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 transition-all disabled:opacity-50"
+              >
+                <ChevronLeft size={18} />
+              </button>
+              <div className="px-6 h-12 flex items-center justify-center rounded-2xl bg-white border border-gray-100 text-xs font-black hl-mono">
+                 {logPage} / {logsData?.pagination?.pages || 1}
+              </div>
+              <button 
+                onClick={() => setLogPage(p => Math.min(logsData?.pagination?.pages || 1, p + 1))}
+                disabled={logPage === (logsData?.pagination?.pages || 1)}
+                className="h-12 w-12 flex items-center justify-center rounded-2xl border border-gray-100 bg-white text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 transition-all disabled:opacity-50"
+              >
+                <ChevronRight size={18} />
+              </button>
+           </div>
         </div>
       </div>
     </div>
@@ -113,13 +173,13 @@ function SecurityCard({ title, value, sub, icon: Icon, status }: any) {
   }
 
   return (
-    <div className="bg-white p-6 rounded-lg border border-gray-100 shadow-sm hover:shadow-md transition-all group">
-      <div className={`h-12 w-12 rounded-md flex items-center justify-center mb-4 transition-transform group-hover:scale-110 ${statusColors[status as keyof typeof statusColors]}`}>
-        <Icon size={24} />
+    <div className="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm hover:shadow-xl transition-all group hover:-translate-y-1">
+      <div className={`h-14 w-14 rounded-2xl flex items-center justify-center mb-6 transition-all group-hover:scale-110 shadow-sm ${statusColors[status as keyof typeof statusColors]}`}>
+        <Icon size={28} />
       </div>
-      <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">{title}</p>
-      <h2 className="text-2xl font-black text-gray-900 mb-1 hl-mono">{value}</h2>
-      <p className="text-[10px] text-gray-500 font-bold hl-mono">{sub}</p>
+      <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5">{title}</p>
+      <h2 className="text-3xl font-black text-gray-900 mb-1 hl-mono">{value}</h2>
+      <p className="text-[10px] text-gray-500 font-bold hl-mono uppercase tracking-widest">{sub}</p>
     </div>
   )
 }

@@ -68,24 +68,20 @@ export default function DashboardPage() {
 
       {/* KPI Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-        <StoreKpi title="Daily Sales" value={`KES ${stats?.dailySales?.toLocaleString() || '0'}`} sub={`${stats?.dailyTransactions || 0} transactions`} icon={Zap} color="emerald" trend="+14%" />
-        <StoreKpi title="New Customers" value={stats?.newCustomers || '0'} sub="First time visits" icon={Users} color="blue" trend="+2" />
-        <StoreKpi title="Out of Stock" value={stats?.outOfStockCount || '0'} sub="Requires attention" icon={Package} color="red" trend="Alert" />
-        <StoreKpi title="Store Profit" value={`KES ${stats?.profit?.toLocaleString() || '0'}`} sub="After expenses" icon={TrendingUp} color="purple" trend="+5%" />
+        <StoreKpi title="Daily Sales" value={`KES ${stats?.dailySales?.toLocaleString() || '0'}`} sub={`${stats?.dailyTransactions || 0} transactions`} icon={Zap} color="emerald" trend="" />
+        <StoreKpi title="New Customers" value={stats?.newCustomers || '0'} sub="Total registered" icon={Users} color="blue" trend="" />
+        <StoreKpi title="Out of Stock" value={stats?.outOfStockCount || '0'} sub="Items below 5 qty" icon={Package} color="red" trend="" />
+        <StoreKpi title="Daily Profit" value={`KES ${stats?.profit?.toLocaleString() || '0'}`} sub="Sales minus expenses" icon={TrendingUp} color="purple" trend="" />
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-10">
         {/* Sales Chart */}
-        <div className="xl:col-span-2 bg-white p-10 rounded-lg border border-slate-100 shadow-sm">
+        <div className="xl:col-span-2 bg-white p-10 rounded-2xl border border-slate-100 shadow-xl shadow-slate-900/5">
           <div className="flex justify-between items-center mb-10">
             <div>
-              <h3 className="text-2xl font-black text-slate-900">Weekly Revenue</h3>
-              <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mt-1">Transaction volume per day</p>
+              <h3 className="text-2xl font-black text-slate-900">Revenue Trajectory</h3>
+              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">Daily transaction volume (Last 7 Days)</p>
             </div>
-            <select className="bg-slate-50 border-none rounded-md text-xs font-black px-4 py-2 outline-none">
-               <option>Last 7 Days</option>
-               <option>Last 30 Days</option>
-            </select>
           </div>
           
           <div className="h-[350px] w-full">
@@ -93,43 +89,48 @@ export default function DashboardPage() {
               <AreaChart data={salesData}>
                 <defs>
                   <linearGradient id="colorSales" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#0D4A3E" stopOpacity={0.1}/>
-                    <stop offset="95%" stopColor="#0D4A3E" stopOpacity={0}/>
+                    <stop offset="5%" stopColor="#10B981" stopOpacity={0.1}/>
+                    <stop offset="95%" stopColor="#10B981" stopOpacity={0}/>
+                  </linearGradient>
+                  <linearGradient id="colorProfit" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.1}/>
+                    <stop offset="95%" stopColor="#3B82F6" stopOpacity={0}/>
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F1F5F9" />
                 <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fontSize: 10, fill: '#94A3B8', fontWeight: 700, fontFamily: 'JetBrains Mono'}} dy={15} />
-                <YAxis axisLine={false} tickLine={false} tick={{fontSize: 10, fill: '#94A3B8', fontWeight: 700, fontFamily: 'JetBrains Mono'}} />
+                <YAxis axisLine={false} tickLine={false} tick={{fontSize: 10, fill: '#94A3B8', fontWeight: 700, fontFamily: 'JetBrains Mono'}} tickFormatter={(v) => `KES ${v}`} />
                 <Tooltip 
-                  contentStyle={{ borderRadius: '24px', border: 'none', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)', padding: '20px' }}
-                  itemStyle={{ fontWeight: 800, color: '#0D4A3E', fontFamily: 'JetBrains Mono' }}
+                  contentStyle={{ borderRadius: '24px', border: 'none', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.1)', padding: '20px' }}
+                  itemStyle={{ fontWeight: 800, fontFamily: 'JetBrains Mono' }}
                 />
-                <Area type="monotone" dataKey="sales" stroke="#0D4A3E" strokeWidth={4} fillOpacity={1} fill="url(#colorSales)" />
+                <Area type="monotone" dataKey="sales" stroke="#10B981" strokeWidth={4} fillOpacity={1} fill="url(#colorSales)" />
+                <Area type="monotone" dataKey="profit" stroke="#3B82F6" strokeWidth={4} fillOpacity={1} fill="url(#colorProfit)" />
               </AreaChart>
             </ResponsiveContainer>
           </div>
         </div>
 
         {/* Recent Activity */}
-        <div className="bg-white p-8 rounded-lg border border-slate-100 shadow-sm flex flex-col">
+        <div className="bg-white p-8 rounded-2xl border border-slate-100 shadow-xl shadow-slate-900/5 flex flex-col">
           <h3 className="text-xl font-black text-slate-900 mb-8 flex items-center justify-between">
              Recent Sales
              <Receipt size={20} className="text-slate-300" />
           </h3>
           <div className="space-y-6 flex-1">
              {recentSales?.length > 0 ? recentSales.map((sale: any, i: number) => (
-               <div key={i} className="flex items-center justify-between group cursor-pointer">
+               <div key={i} className="flex items-center justify-between group cursor-pointer hover:bg-slate-50 p-2 rounded-xl transition-all">
                   <div className="flex items-center gap-4">
-                     <div className="h-10 w-10 rounded-md bg-slate-50 flex items-center justify-center text-slate-400 group-hover:bg-[#0D4A3E] group-hover:text-white transition-all">
+                     <div className="h-10 w-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-400 group-hover:bg-[#0D4A3E] group-hover:text-white transition-all">
                         <DollarSign size={18} />
                      </div>
                      <div>
                         <p className="text-sm font-black text-slate-900">{sale.customerName || 'Walk-in'}</p>
-                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">#{sale.id.slice(-4)} • {sale.paymentMethod}</p>
+                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest hl-mono">#{sale.id.slice(-8).toUpperCase()}</p>
                      </div>
                   </div>
                   <div className="text-right">
-                     <p className="text-sm font-black text-[#0D4A3E] hl-mono">KES {sale.totalAmount?.toLocaleString()}</p>
+                     <p className="text-sm font-black text-[#0D4A3E] hl-mono">KES {Number(sale.totalAmount).toLocaleString()}</p>
                      <p className="text-[10px] text-slate-400 font-bold hl-mono">{new Date(sale.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
                   </div>
                </div>
@@ -137,7 +138,7 @@ export default function DashboardPage() {
                <p className="text-xs text-slate-400 font-bold text-center py-4">No recent sales</p>
              )}
           </div>
-          <Link to="/dashboard/sales" className="mt-8 w-full py-4 bg-slate-50 text-slate-600 rounded-md text-center text-xs font-black uppercase tracking-widest hover:bg-slate-100 transition-all border border-slate-100">
+          <Link to="/dashboard/sales" className="mt-8 w-full py-4 bg-slate-900 text-white rounded-xl text-center text-xs font-black uppercase tracking-widest hover:bg-slate-800 transition-all shadow-lg shadow-slate-900/10">
              View Full History
           </Link>
         </div>

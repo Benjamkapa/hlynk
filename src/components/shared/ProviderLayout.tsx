@@ -46,6 +46,10 @@ export default function ProviderLayout() {
     },
   ];
 
+  const daysRemaining = user?.subscription?.endDate 
+    ? Math.max(0, Math.ceil((new Date(user.subscription.endDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)))
+    : 0;
+
   const SidebarContent = ({ collapsed }: { collapsed: boolean }) => (
     <div className="flex flex-col h-full bg-white">
       <div className={`pt-10 pb-12 flex items-center ${collapsed ? 'justify-center' : 'px-8'}`}>
@@ -89,13 +93,16 @@ export default function ProviderLayout() {
       {/* Profile Summary */}
       <div className="p-4 mt-auto border-t border-slate-50">
          {!collapsed && (
-           <div className="bg-emerald-50 rounded-lg p-4 border border-emerald-100 flex items-center gap-3 mb-4">
-              <div className="h-10 w-10 rounded-md bg-white flex items-center justify-center text-emerald-600 shadow-sm border border-emerald-100 shrink-0">
+           <div className="bg-emerald-50 rounded-2xl p-4 border border-emerald-100 flex items-center gap-3 mb-4">
+              <div className="h-10 w-10 rounded-xl bg-white flex items-center justify-center text-emerald-600 shadow-sm border border-emerald-100 shrink-0">
                 <Tag size={20} />
               </div>
               <div className="flex-1 min-w-0">
-                 <p className="text-[10px] text-emerald-700 font-black uppercase tracking-[0.15em]">{user?.subscription?.planName || 'TRIAL'} PLAN</p>
-                 <p className="text-[9px] text-emerald-600/60 font-bold uppercase tracking-widest truncate">Verified Partner</p>
+                 <div className="flex justify-between items-center mb-0.5">
+                    <p className="text-[10px] text-emerald-700 font-black uppercase tracking-[0.15em]">{user?.subscription?.planName || 'TRIAL'}</p>
+                    <span className="text-[9px] font-black bg-emerald-600 text-white px-1.5 py-0.5 rounded-full">{daysRemaining}D</span>
+                 </div>
+                 <p className="text-[9px] text-emerald-600/60 font-bold uppercase tracking-widest truncate">{daysRemaining} days remaining</p>
               </div>
            </div>
          )}

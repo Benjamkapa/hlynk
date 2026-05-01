@@ -146,35 +146,42 @@ export default function ProductsPage() {
                   </td>
                 </tr>
               ) : products.length > 0 ? products.map((p: any, i: number) => (
-                <tr key={i} className="hover:bg-gray-50/50 transition-all group">
+                <tr key={p.id ?? i} className="hover:bg-emerald-50/30 transition-all group cursor-pointer">
                   <td className="px-8 py-5">
                     <div className="flex items-center gap-4">
-                      <div className="h-10 w-10 rounded-md bg-emerald-50 text-emerald-600 flex items-center justify-center font-black border border-emerald-100 group-hover:bg-emerald-600 group-hover:text-white transition-all">
-                        {p.name.charAt(0)}
+                      {p.imageUrl ? (
+                        <img src={p.imageUrl} alt={p.name} className="h-12 w-12 rounded-xl object-cover border border-slate-100 shadow-sm transition-transform group-hover:scale-110" />
+                      ) : (
+                        <div className="h-12 w-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-black border border-emerald-100 group-hover:bg-emerald-600 group-hover:text-white transition-all text-[10px]">
+                          {p.name.charAt(0).toUpperCase()}
+                        </div>
+                      )}
+                      <div>
+                        <span className="font-black text-slate-900 text-sm block">{p.name}</span>
+                        <span className="text-[9px] font-bold text-slate-400 hl-mono tracking-tighter uppercase">SKU: {p.sku || 'N/A'}</span>
                       </div>
-                      <span className="font-black text-gray-900 text-sm">{p.name}</span>
                     </div>
                   </td>
                   <td className="px-8 py-5">
-                    <span className="text-[10px] font-black text-gray-500 bg-gray-100 px-2 py-0.5 rounded uppercase tracking-widest">{p.category}</span>
+                    <span className="text-[10px] font-black text-slate-500 bg-slate-100 px-2.5 py-1 rounded-md uppercase tracking-widest">{p.category}</span>
                   </td>
                   <td className="px-8 py-5 text-center">
-                    <span className={`text-sm font-black hl-mono ${p.stockLevel < 10 ? 'text-red-600' : 'text-gray-900'}`}>{p.stockLevel}</span>
+                    <span className={`text-sm font-black hl-mono ${p.stockLevel < 10 ? 'text-red-600' : 'text-slate-900'}`}>{p.stockLevel}</span>
                   </td>
-                  <td className="px-8 py-5 text-right font-bold text-gray-400 text-xs hl-mono">KES {p.buyingPrice?.toLocaleString()}</td>
-                  <td className="px-8 py-5 text-right font-black text-[#0D4A3E] text-sm hl-mono">KES {p.price?.toLocaleString()}</td>
+                  <td className="px-8 py-5 text-right font-bold text-slate-400 text-xs hl-mono">KES {Number(p.buyingPrice || 0).toLocaleString()}</td>
+                  <td className="px-8 py-5 text-right font-black text-[#0D4A3E] text-sm hl-mono">KES {Number(p.price).toLocaleString()}</td>
                   <td className="px-8 py-5 text-right">
                     <div className="flex justify-end gap-2">
                       <button 
-                        onClick={() => setEditingProduct(p)}
-                        className="p-2 hover:bg-emerald-50 rounded-md transition-all text-gray-300 hover:text-emerald-600"
+                        onClick={(e) => { e.stopPropagation(); setEditingProduct(p) }}
+                        className="p-2 hover:bg-white hover:shadow-lg rounded-lg transition-all text-slate-300 hover:text-emerald-600"
                       >
                         <Edit size={16} />
                       </button>
                       <button 
-                        onClick={() => confirmDelete(p.id)}
+                        onClick={(e) => { e.stopPropagation(); confirmDelete(p.id) }}
                         disabled={deleteMutation.isPending}
-                        className="p-2 hover:bg-red-50 rounded-md transition-all text-gray-300 hover:text-red-600 disabled:opacity-50"
+                        className="p-2 hover:bg-white hover:shadow-lg rounded-lg transition-all text-slate-300 hover:text-red-600 disabled:opacity-50"
                       >
                         <Trash2 size={16} />
                       </button>
@@ -197,7 +204,7 @@ export default function ProductsPage() {
 
 function AddProductForm({ onClose }: { onClose: () => void }) {
   const queryClient = useQueryClient()
-  const [form, setForm] = useState({ name: '', category: 'Groceries', buyingPrice: '', price: '', stock: '' })
+  const [form, setForm] = useState({ name: '', category: 'Groceries', buyingPrice: '', price: '', stock: '', imageUrl: '' })
 
   const mutation = useMutation({
     mutationFn: inventoryApi.create,
@@ -212,18 +219,63 @@ function AddProductForm({ onClose }: { onClose: () => void }) {
 
   return (
     <div className="space-y-6">
+      <div className="flex flex-col items-center gap-4">
+        <div 
+          onClick={() => document.getElementById('image-upload')?.click()}
+          className="h-32 w-32 rounded-3xl bg-slate-50 border-4 border-dashed border-slate-200 flex items-center justify-center overflow-hidden cursor-pointer hover:border-emerald-500 hover:bg-emerald-50 transition-all group relative"
+        >
+          {form.imageUrl ? (
+            <>
+              <img src={form.imageUrl} alt="Preview" className="h-full w-full object-cover transition-transform group-hover:scale-110" />
+              <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all">
+                <Plus className="text-white" size={32} />
+              </div>
+            </>
+          ) : (
+            <div className="flex flex-col items-center gap-2 text-slate-300 group-hover:text-emerald-500 transition-all">
+              <Plus size={32} />
+              <span className="text-[10px] font-black uppercase tracking-widest">Upload Image</span>
+            </div>
+          )}
+          <input 
+            id="image-upload" 
+            type="file" 
+            accept="image/*" 
+            className="hidden" 
+            onChange={(e) => {
+              const file = e.target.files?.[0]
+              if (file) {
+                const reader = new FileReader()
+                reader.onloadend = () => setForm({ ...form, imageUrl: reader.result as string })
+                reader.readAsDataURL(file)
+              }
+            }}
+          />
+        </div>
+        {form.imageUrl && (
+          <button 
+            type="button"
+            onClick={() => setForm({ ...form, imageUrl: '' })}
+            className="text-[9px] font-black text-red-500 uppercase tracking-widest hover:underline"
+          >
+            Remove Image
+          </button>
+        )}
+      </div>
+
       <InputGroup label="Product Name" placeholder="e.g. Fresh Milk" value={form.name} onChange={(v: string) => setForm({ ...form, name: v })} />
+
+      
       <div className="space-y-2">
-        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Category</label>
+        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Category</label>
         <select 
           value={form.category}
           onChange={(e) => setForm({ ...form, category: e.target.value })}
-          className="w-full bg-gray-50 border-none rounded-md py-4 px-4 outline-none focus:ring-2 focus:ring-emerald-500/10 transition-all font-bold appearance-none text-sm"
+          className="w-full bg-slate-50 border-none rounded-xl py-4 px-4 outline-none focus:ring-4 focus:ring-emerald-500/5 transition-all font-bold appearance-none text-sm"
         >
-           <option>Groceries</option>
-           <option>Bakery</option>
-           <option>Dairy</option>
-           <option>Hardware</option>
+           {['Groceries', 'Bakery', 'Dairy', 'Hardware', 'Electronics', 'Clothing', 'Services', 'Other'].map(c => (
+             <option key={c}>{c}</option>
+           ))}
         </select>
       </div>
       <div className="grid grid-cols-2 gap-4">
@@ -243,7 +295,7 @@ function AddProductForm({ onClose }: { onClose: () => void }) {
          })
        }}
        disabled={mutation.isPending}
-       className="w-full py-5 mt-6 bg-[#0D4A3E] text-white rounded-md font-black text-xs uppercase tracking-widest hover:bg-[#0A3D33] transition-all shadow-xl flex items-center justify-center"
+       className="w-full py-5 mt-6 bg-[#0D4A3E] text-white rounded-xl font-black text-xs uppercase tracking-widest hover:bg-[#0A3D33] transition-all shadow-2xl shadow-emerald-900/20 flex items-center justify-center"
       >
         {mutation.isPending ? 'Saving...' : 'Save Inventory Item'}
       </button>
@@ -259,7 +311,8 @@ function EditProductForm({ product, onClose }: { product: any; onClose: () => vo
     category: product.category, 
     buyingPrice: product.buyingPrice?.toString() || '', 
     price: product.price?.toString() || '', 
-    stock: product.stockLevel?.toString() || '' 
+    stock: product.stockLevel?.toString() || '',
+    imageUrl: product.imageUrl || ''
   })
 
   const mutation = useMutation({
@@ -275,18 +328,63 @@ function EditProductForm({ product, onClose }: { product: any; onClose: () => vo
 
   return (
     <div className="space-y-6">
+      <div className="flex flex-col items-center gap-4">
+        <div 
+          onClick={() => document.getElementById('image-edit-upload')?.click()}
+          className="h-32 w-32 rounded-3xl bg-slate-50 border-4 border-dashed border-slate-200 flex items-center justify-center overflow-hidden cursor-pointer hover:border-emerald-500 hover:bg-emerald-50 transition-all group relative"
+        >
+          {form.imageUrl ? (
+            <>
+              <img src={form.imageUrl} alt="Preview" className="h-full w-full object-cover transition-transform group-hover:scale-110" />
+              <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all">
+                <Plus className="text-white" size={32} />
+              </div>
+            </>
+          ) : (
+            <div className="flex flex-col items-center gap-2 text-slate-300 group-hover:text-emerald-500 transition-all">
+              <Plus size={32} />
+              <span className="text-[10px] font-black uppercase tracking-widest">Upload Image</span>
+            </div>
+          )}
+          <input 
+            id="image-edit-upload" 
+            type="file" 
+            accept="image/*" 
+            className="hidden" 
+            onChange={(e) => {
+              const file = e.target.files?.[0]
+              if (file) {
+                const reader = new FileReader()
+                reader.onloadend = () => setForm({ ...form, imageUrl: reader.result as string })
+                reader.readAsDataURL(file)
+              }
+            }}
+          />
+        </div>
+        {form.imageUrl && (
+          <button 
+            type="button"
+            onClick={() => setForm({ ...form, imageUrl: '' })}
+            className="text-[9px] font-black text-red-500 uppercase tracking-widest hover:underline"
+          >
+            Remove Image
+          </button>
+        )}
+      </div>
+
       <InputGroup label="Product Name" placeholder="e.g. Fresh Milk" value={form.name} onChange={(v: string) => setForm({ ...form, name: v })} />
+
+      
       <div className="space-y-2">
-        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Category</label>
+        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Category</label>
         <select 
           value={form.category}
           onChange={(e) => setForm({ ...form, category: e.target.value })}
-          className="w-full bg-gray-50 border-none rounded-md py-4 px-4 outline-none focus:ring-2 focus:ring-emerald-500/10 transition-all font-bold appearance-none text-sm"
+          className="w-full bg-slate-50 border-none rounded-xl py-4 px-4 outline-none focus:ring-4 focus:ring-emerald-500/5 transition-all font-bold appearance-none text-sm"
         >
-           <option>Groceries</option>
-           <option>Bakery</option>
-           <option>Dairy</option>
-           <option>Hardware</option>
+           {['Groceries', 'Bakery', 'Dairy', 'Hardware', 'Electronics', 'Clothing', 'Services', 'Other'].map(c => (
+             <option key={c}>{c}</option>
+           ))}
         </select>
       </div>
       <div className="grid grid-cols-2 gap-4">
@@ -305,7 +403,7 @@ function EditProductForm({ product, onClose }: { product: any; onClose: () => vo
          })
        }}
        disabled={mutation.isPending}
-       className="w-full py-5 mt-6 bg-[#0D4A3E] text-white rounded-md font-black text-xs uppercase tracking-widest hover:bg-[#0A3D33] transition-all shadow-xl flex items-center justify-center"
+       className="w-full py-5 mt-6 bg-[#0D4A3E] text-white rounded-xl font-black text-xs uppercase tracking-widest hover:bg-[#0A3D33] transition-all shadow-2xl shadow-emerald-900/20 flex items-center justify-center"
       >
         {mutation.isPending ? 'Updating...' : 'Update Product Details'}
       </button>

@@ -3,6 +3,10 @@ import { api } from './client'
 export const providersApi = {
   getMyProfile: () => api.get('/providers/me').then(r => r.data),
   updateProfile: (data: any) => api.put('/providers/me', data).then(r => r.data),
+  updateSettings: (data: any) => api.put('/providers/me/settings', data).then(r => r.data),
+  changePassword: (data: any) => api.post('/providers/me/security/password', data).then(r => r.data),
+  deactivateAccount: () => api.post('/providers/me/security/deactivate').then(r => r.data),
+  getActivityLogs: (params?: { page?: number; limit?: number }) => api.get('/providers/me/activity', { params }).then(r => r.data),
   getStats: () => api.get('/providers/stats').then(r => r.data),
   uploadPhoto: (file: File) => {
     const form = new FormData()
@@ -27,9 +31,16 @@ export const providersApi = {
 }
 
 export const salesApi = {
-  list: (params?: { page?: number; search?: string; limit?: number }) => api.get('/sales', { params }).then(r => r.data),
+  list: (params?: { page?: number; search?: string; date?: string; limit?: number }) => api.get('/sales', { params }).then(r => r.data),
   create: (data: any) => api.post('/sales', data).then(r => r.data),
   getDetails: (id: string) => api.get(`/sales/${id}`).then(r => r.data),
+}
+
+export const subscriptionsApi = {
+  getMe: () => api.get('/subscriptions/me').then(r => r.data),
+  getHistory: () => api.get('/subscriptions/history').then(r => r.data),
+  renew: (phone: string) => api.post('/subscriptions/renew', { phone }).then(r => r.data),
+  changePlan: (planName: string, phone: string) => api.post('/subscriptions/change-plan', { planName, phone }).then(r => r.data),
 }
 
 export const inventoryApi = {
@@ -37,6 +48,13 @@ export const inventoryApi = {
   create: (data: any) => api.post('/inventory', data).then(r => r.data),
   update: (id: string, data: any) => api.put(`/inventory/${id}`, data).then(r => r.data),
   adjustStock: (id: string, quantity: number, reason: string) => api.post(`/inventory/${id}/adjust`, { quantity, reason }).then(r => r.data),
+  uploadImage: (id: string, file: File) => {
+    const form = new FormData()
+    form.append('file', file)
+    return api.post(`/inventory/${id}/image`, form, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    }).then(r => r.data)
+  },
   delete: (id: string) => api.delete(`/inventory/${id}`).then(r => r.data),
 }
 
@@ -47,9 +65,10 @@ export const expensesApi = {
 }
 
 export const customersApi = {
-  list: (params?: { page?: number; search?: string }) => api.get('/customers', { params }).then(r => r.data),
+  list: (params?: { page?: number; search?: string; limit?: number }) => api.get('/customers', { params }).then(r => r.data),
   create: (data: any) => api.post('/customers', data).then(r => r.data),
   update: (id: string, data: any) => api.put(`/customers/${id}`, data).then(r => r.data),
+  delete: (id: string) => api.delete(`/customers/${id}`).then(r => r.data),
 }
 
 export const servicesApi = {
@@ -90,4 +109,5 @@ export const adminApi = {
   getSchedules: () => api.get('/admin/schedules').then(r => r.data),
   getSettings: () => api.get('/admin/settings').then(r => r.data),
   updateSettings: (data: any) => api.put('/admin/settings', data).then(r => r.data),
+  getActivityLogs: (params?: { page?: number; limit?: number }) => api.get('/admin/activity', { params }).then(r => r.data),
 }

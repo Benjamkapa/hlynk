@@ -5,7 +5,7 @@ import { FadeUp } from './Animations'
 
 const pricingPlans = [
   {
-    name: "Solo Shop",
+    name: "Basic Plan",
     monthlyPrice: "1,000",
     yearlyPrice: "10,800",
     monthlyEquivalent: "900",
@@ -21,36 +21,20 @@ const pricingPlans = [
     buttonText: "Start Free Trial"
   },
   {
-    name: "Busy Shop",
+    name: "Professional Plan",
     monthlyPrice: "2,500",
     yearlyPrice: "27,000",
     monthlyEquivalent: "2,250",
     desc: "For shops with many products or staff who need better stock and daily control.",
     color: "bg-[#2DD4BF]",
     features: [
-      "Everything in Solo Shop",
+      "Everything in Basic Plan",
       "Full inventory management",
       "Low stock alerts",
       "Multiple staff accounts",
       "Monthly business reports"
     ],
     buttonText: "Upgrade My Shop"
-  },
-  {
-    name: "Multi-Shop",
-    monthlyPrice: "5,000",
-    yearlyPrice: "54,000",
-    monthlyEquivalent: "4,500",
-    desc: "Manage multiple branches and monitor performance from one dashboard.",
-    color: "bg-[#FBBF24]",
-    features: [
-      "Everything in Busy Shop",
-      "Multiple shop locations",
-      "Central performance dashboard",
-      "Data export to Excel / PDF",
-      "Priority support"
-    ],
-    buttonText: "Talk to Us"
   }
 ]
 
@@ -98,7 +82,7 @@ export default function Pricing() {
           </FadeUp>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start max-w-4xl mx-auto">
           {pricingPlans.map((p, i) => (
             <FadeUp key={p.name} delay={i * 0.1}>
               <div className={`${p.color} p-10 md:p-14 rounded-2xl flex flex-col min-h-[700px] transition-all hover:scale-[1.02] duration-500 shadow-2xl`}>
