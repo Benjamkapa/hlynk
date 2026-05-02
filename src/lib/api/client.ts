@@ -45,6 +45,14 @@ api.interceptors.response.use(
       }
     }
 
+    // Handle Subscription Expiry
+    if (error.response?.status === 403 && error.response.data?.code === 'SUBSCRIPTION_EXPIRED') {
+      const isSubscriptionPage = window.location.pathname.includes('/dashboard/subscription')
+      if (!isSubscriptionPage) {
+        window.location.href = '/dashboard/subscription?expired=true'
+      }
+    }
+
     return Promise.reject(error)
   },
 )
