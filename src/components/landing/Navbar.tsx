@@ -3,9 +3,9 @@ import { Link } from 'react-router-dom'
 import { AlignRight, X } from 'lucide-react'
 
 const navItems = [
+  { label: "About",    href: "#about"    },
   { label: "Features", href: "#features" },
   { label: "Pricing",  href: "#pricing"  },
-  { label: "Reviews",  href: "#reviews"  },
   { label: "Contact",  href: "#contact"  },
 ]
 
@@ -158,36 +158,27 @@ export default function Navbar() {
       {/* ── Header ── */}
       <header style={{
         position:   'fixed',
-        top:         scrolled ? '10px' : '0px',
-        left:        '50%',
-        transform:  `translateX(-50%) translateY(${navVisible ? '0' : '-130%'})`,
-        width:       scrolled ? 'min(800px, 92vw)' : '100%',
+        top:         0,
+        left:        0,
+        width:       '100%',
         zIndex:      100,
-        background:     scrolled ? 'rgba(255,255,255,0.9)' : 'transparent',
+        transform:  `translateY(${navVisible ? '0' : '-100%'})`,
+        background:     scrolled ? 'rgba(255,255,255,0.85)' : 'transparent',
         backdropFilter: scrolled ? 'blur(20px) saturate(180%)' : 'none',
         WebkitBackdropFilter: scrolled ? 'blur(20px) saturate(180%)' : 'none',
-        borderRadius:   scrolled ? '9999px' : '0',
-        border:         scrolled ? '1px solid rgba(255,255,255,0.6)' : '1px solid transparent',
-        boxShadow:      scrolled ? '0 8px 32px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04)' : 'none',
-        transition: [
-          'top 0.45s cubic-bezier(0.16,1,0.3,1)',
-          'width 0.45s cubic-bezier(0.16,1,0.3,1)',
-          'border-radius 0.45s cubic-bezier(0.16,1,0.3,1)',
-          'background 0.3s ease',
-          'box-shadow 0.3s ease',
-          'transform 0.4s cubic-bezier(0.16,1,0.3,1)',
-          'border-color 0.3s ease',
-        ].join(', '),
+        borderBottom:   scrolled ? '1px solid rgba(0,0,0,0.05)' : '1px solid transparent',
+        boxShadow:      scrolled ? '0 4px 20px rgba(0,0,0,0.03)' : 'none',
+        transition:     'background 0.3s ease, border-color 0.3s ease, transform 0.4s cubic-bezier(0.16,1,0.3,1), height 0.4s ease',
       }}>
         <div style={{
           display:        'flex',
           alignItems:     'center',
           justifyContent: 'space-between',
-          height:          scrolled ? '58px' : '76px',
-          padding:         scrolled ? '0 22px' : '0 clamp(20px, 4vw, 48px)',
-          maxWidth:        scrolled ? 'none' : '1280px',
+          height:          '96px',
+          padding:         '0 clamp(20px, 5vw, 64px)',
+          maxWidth:        '1280px',
           margin:          '0 auto',
-          transition:      'height 0.45s cubic-bezier(0.16,1,0.3,1), padding 0.45s cubic-bezier(0.16,1,0.3,1)',
+          transition:      'all 0.3s ease',
         }}>
 
           {/* Logo */}
@@ -196,9 +187,9 @@ export default function Navbar() {
               src="/logo.png"
               alt="hlynk"
               style={{
-                height:     scrolled ? '30px' : '34px',
+                height:     '40px',
                 width:      'auto',
-                transition: 'height 0.3s ease, filter 0.3s ease',
+                transition: 'all 0.3s ease',
                 filter:     scrolled ? 'none' : 'brightness(0) invert(1)',
               }}
             />
@@ -207,9 +198,15 @@ export default function Navbar() {
           {/* Desktop nav links */}
           <nav className="hl-desktop-nav" style={{ alignItems: 'center', gap: 36 }}>
             {navItems.map(n => (
-              <a key={n.label} href={n.href} className={`hl-nav-link${scrolled ? ' scrolled' : ''}`}>
-                {n.label}
-              </a>
+              n.href.startsWith('/#') || n.href.startsWith('#') ? (
+                <a key={n.label} href={n.href} className={`hl-nav-link${scrolled ? ' scrolled' : ''}`}>
+                  {n.label}
+                </a>
+              ) : (
+                <Link key={n.label} to={n.href} className={`hl-nav-link${scrolled ? ' scrolled' : ''}`}>
+                  {n.label}
+                </Link>
+              )
             ))}
           </nav>
 
@@ -286,14 +283,25 @@ export default function Navbar() {
         {/* Nav links — centred vertically */}
         <nav style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '0 32px' }}>
           {navItems.map(n => (
-            <a
-              key={n.label}
-              href={n.href}
-              className="hl-mobile-link"
-              onClick={() => setMenuOpen(false)}
-            >
-              {n.label}
-            </a>
+            n.href.startsWith('/#') || n.href.startsWith('#') ? (
+              <a
+                key={n.label}
+                href={n.href}
+                className="hl-mobile-link"
+                onClick={() => setMenuOpen(false)}
+              >
+                {n.label}
+              </a>
+            ) : (
+              <Link
+                key={n.label}
+                to={n.href}
+                className="hl-mobile-link"
+                onClick={() => setMenuOpen(false)}
+              >
+                {n.label}
+              </Link>
+            )
           ))}
         </nav>
 

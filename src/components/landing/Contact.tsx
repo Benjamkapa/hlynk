@@ -11,15 +11,15 @@ export default function Contact() {
   const [error, setError] = useState<string | null>(null)
 
   // NOTE: Configure these from your EmailJS Dashboard (https://dashboard.emailjs.com/)
-  const EMAILJS_SERVICE_ID = "service_clo9cr9" 
-  const EMAILJS_TEMPLATE_ID = "template_ml6oqfd" 
-  const EMAILJS_PUBLIC_KEY = "cdOVwZZzAEa5Lfeq9" 
+  const EMAILJS_SERVICE_ID = "service_clo9cr9"
+  const EMAILJS_TEMPLATE_ID = "template_ml6oqfd"
+  const EMAILJS_PUBLIC_KEY = "cdOVwZZzAEa5Lfeq9"
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
     setError(null)
-    
+
     try {
       const templateParams = {
         user_name: form.name,
@@ -55,7 +55,7 @@ export default function Contact() {
 
       <div className="max-w-7xl mx-auto px-6 md:px-12 relative z-10">
         <div className="grid lg:grid-cols-2 gap-24 items-center">
-          
+
           <FadeUp>
             <div className="space-y-8">
               <div className="space-y-4">
@@ -97,7 +97,7 @@ export default function Contact() {
             <div className="bg-white/5 backdrop-blur-2xl p-10 md:p-12 rounded-2xl border border-white/10 shadow-2xl">
               <AnimatePresence>
                 {error && (
-                  <motion.div 
+                  <motion.div
                     initial={{ opacity: 0, y: -20, scale: 0.95 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.95 }}
@@ -123,7 +123,7 @@ export default function Contact() {
                     <h3 className="text-2xl font-black text-white tracking-tight font-ubuntu">Message Sent!</h3>
                     <p className="text-emerald-100/50 font-medium">We'll get back to you within 24 hours.</p>
                   </div>
-                  <button 
+                  <button
                     onClick={() => setSent(false)}
                     className="text-emerald-500 text-xs font-black uppercase tracking-widest hover:text-emerald-400 transition-colors"
                   >
@@ -134,8 +134,8 @@ export default function Contact() {
                 <form onSubmit={handleSubmit} className="space-y-6">
                   <div className="space-y-2">
                     <label className="text-[10px] font-black text-white/30 uppercase tracking-widest px-1">Full Name</label>
-                    <input 
-                      type="text" 
+                    <input
+                      type="text"
                       required
                       placeholder="Jane Wanjiku"
                       value={form.name}
@@ -146,8 +146,8 @@ export default function Contact() {
 
                   <div className="space-y-2">
                     <label className="text-[10px] font-black text-white/30 uppercase tracking-widest px-1">Contact Info</label>
-                    <input 
-                      type="text" 
+                    <input
+                      type="text"
                       required
                       placeholder="Email"
                       value={form.contact}
@@ -158,7 +158,7 @@ export default function Contact() {
 
                   <div className="space-y-2">
                     <label className="text-[10px] font-black text-white/30 uppercase tracking-widest px-1">How can we help?</label>
-                    <textarea 
+                    <textarea
                       required
                       rows={4}
                       placeholder="Tell us about your business..."
@@ -168,8 +168,8 @@ export default function Contact() {
                     />
                   </div>
 
-                  <button 
-                    type="submit" 
+                  <button
+                    type="submit"
                     disabled={loading}
                     className="w-full py-5 bg-emerald-600 text-white rounded-xl font-black text-xs uppercase tracking-widest hover:bg-emerald-500 transition-all shadow-xl shadow-emerald-900/20 flex items-center justify-center gap-2 group disabled:opacity-50"
                   >

@@ -23,7 +23,7 @@ export default function WhoUses() {
         <FadeUp className="mb-20">
           <span className="text-[10px] font-black text-emerald-400 uppercase tracking-[0.2em] mb-4 block">Tailored Solutions</span>
           <h2 className="text-4xl md:text-5xl font-black font-thin text-white tracking-tighter font-ubuntu leading-tight">
-            Built for every <br className="hidden md:block" /> 
+            Built for every <br className="hidden md:block" />
             <span className="text-emerald-500 font-ubuntu">business owner.</span>
           </h2>
         </FadeUp>
