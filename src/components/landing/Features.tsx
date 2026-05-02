@@ -45,7 +45,7 @@ export default function Features() {
               Stop guessing. Start <span className="text-emerald-600 ">growing.</span>
             </h2>
             <p className="text-lg text-slate-500 font-medium">
-              We built hlynk to solve the real problems Kenyan business owners face every day, starting with easier access.
+              We built hlynk to solve the real problems Kenyan business owners face each and every day, starting with easier access.
             </p>
           </FadeUp>
         </div>
