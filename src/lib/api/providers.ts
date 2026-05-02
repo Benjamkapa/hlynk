@@ -113,6 +113,8 @@ export const adminApi = {
   terminateSession: (id: string) => api.put(`/admin/sessions/${id}/terminate`).then(r => r.data),
   getUserActivity: (userId: string) => api.get(`/admin/users/${userId}/activity`).then(r => r.data),
   deleteTenant: (id: string) => api.delete(`/admin/tenants/${id}`).then(r => r.data),
+  getSystemEvents: (params?: any) => api.get('/admin/system-events', { params }).then(r => r.data),
+  pruneSystemEvents: (days: number) => api.post('/admin/system-events/prune', { days }).then(r => r.data),
   runReportQuery: (data: any) => api.post('/admin/reports/query', data).then(r => r.data),
   getSchedules: () => api.get('/admin/schedules').then(r => r.data),
   getSettings: () => api.get('/admin/settings').then(r => r.data),

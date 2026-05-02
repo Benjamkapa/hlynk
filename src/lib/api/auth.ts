@@ -5,7 +5,7 @@ export interface AuthUser {
   name: string
   phone: string
   email?: string
-  role: 'CUSTOMER' | 'PROVIDER' | 'SUPER_ADMIN'
+  role: 'CUSTOMER' | 'PROVIDER' | 'SUPER_ADMIN' | 'STAFF'
   tenantId: string
   tenantSlug: string
   businessName: string

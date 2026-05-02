@@ -10,6 +10,20 @@ import {Tag} from "lucide-react";
 import { ADMIN_CSS } from "../../pages/admin/hl-design-system";
 import TopNav from "./TopNav";
 
+interface NavItem {
+  to: string;
+  label: string;
+  icon: any;
+  permission?: string;
+  role?: 'PROVIDER' | 'SUPER_ADMIN' | 'STAFF' | 'CUSTOMER';
+  end?: boolean;
+}
+
+interface NavGroup {
+  label: string;
+  items: NavItem[];
+}
+
 export default function ProviderLayout() {
   const { user, logout } = useAuth();
   const location = useLocation();
@@ -20,7 +34,7 @@ export default function ProviderLayout() {
     setIsMobileOpen(false);
   }, [location.pathname]);
 
-  const navGroups = [
+  const navGroups: NavGroup[] = [
     {
       label: 'Storefront',
       items: [

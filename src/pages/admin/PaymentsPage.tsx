@@ -8,15 +8,16 @@ import { useEffect } from 'react'
 import { AdminStats } from '../../lib/types/api'
 
 export default function PaymentsPage() {
-  const { data: stats, isLoading, error } = useQuery<AdminStats>({
+  const { data: rawStats, isLoading, error } = useQuery<any>({
     queryKey: ['admin-stats'],
-    queryFn: adminApi.getStats
+    queryFn: () => adminApi.getStats()
   })
 
   useEffect(() => {
     if (error) toast.error('Failed to load transaction data')
   }, [error])
 
+  const stats: AdminStats = rawStats?.data || rawStats
   const transactions = stats?.recentTransactions || []
 
   return (
