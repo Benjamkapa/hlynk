@@ -13,6 +13,7 @@ import { useQuery } from '@tanstack/react-query'
 import { adminApi } from '../../lib/api/providers'
 import { ADMIN_CSS } from './hl-design-system'
 import { toast } from 'sonner'
+import { Link } from 'react-router-dom'
 
 
 import { useEffect } from 'react'
@@ -220,7 +221,9 @@ export default function AdminDashboardPage() {
             <h3 className="text-2xl font-black text-slate-900">Financial Ledger</h3>
             <p className="text-sm text-slate-400 font-medium">Real-time platform-wide transaction flow</p>
           </div>
-          <button className="px-6 py-3 bg-slate-50 text-slate-600 rounded-md text-xs font-black hover:bg-slate-100 transition-all uppercase tracking-widest">Global Audit</button>
+          <Link to="/admin/audit" className="px-6 py-3 bg-slate-50 text-slate-600 rounded-md text-xs font-black hover:bg-slate-100 transition-all uppercase tracking-widest flex items-center gap-2">
+            Global Audit
+          </Link>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left">

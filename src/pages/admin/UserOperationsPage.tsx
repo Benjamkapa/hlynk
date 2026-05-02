@@ -61,16 +61,14 @@ export default function UserOperationsPage() {
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
         <div className="lg:col-span-3 space-y-6">
           <div className="bg-white rounded-lg border border-gray-100 shadow-sm overflow-hidden">
-            <div className="p-6 border-b border-gray-50 flex gap-4">
-              <div className="relative flex-1">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-                <input 
-                  type="text" 
-                  placeholder="Search by name, phone, or email..." 
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  className="w-full bg-gray-50 border-none rounded-md py-3.5 pl-12 pr-4 outline-none focus:ring-2 focus:ring-emerald-500/10 transition-all text-sm" 
-                />
+            <div className="p-10 border-b border-gray-50 flex justify-between items-center bg-slate-900 text-white">
+              <div>
+                <h3 className="text-2xl font-black">On-Cloud Identites</h3>
+                <p className="text-slate-400 text-sm font-medium uppercase tracking-widest mt-1">Real-time platform-wide active sessions</p>
+              </div>
+              <div className="flex items-center gap-2 px-3 py-1 bg-emerald-500/10 text-emerald-400 rounded-md border border-emerald-500/20">
+                <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                <span className="text-[10px] font-black uppercase tracking-widest">{sessions.length} Live</span>
               </div>
             </div>
 
@@ -78,49 +76,61 @@ export default function UserOperationsPage() {
               <table className="w-full text-left">
                 <thead>
                   <tr className="bg-gray-50/50">
-                    <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest">User Details</th>
-                    <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest">Business / Tenant</th>
+                    <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest">Active User</th>
+                    <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest">Network Access (IP)</th>
                     <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Status</th>
                     <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Action</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
                   {isLoading ? (
-                    <tr><td colSpan={4} className="py-20 text-center animate-pulse">Loading users...</td></tr>
-                  ) : users.map((u: any) => (
+                    <tr><td colSpan={4} className="py-20 text-center animate-pulse">Scanning Cloud...</td></tr>
+                  ) : sessions.length > 0 ? sessions.map((s: any) => (
                     <tr 
-                      key={u.id} 
-                      onClick={() => setSelectedUser(u)}
-                      className={`hover:bg-gray-50/50 transition-all group cursor-pointer ${selectedUser?.id === u.id ? 'bg-emerald-50/50' : ''}`}
+                      key={s.id} 
+                      onClick={() => setSelectedUser(s.user)}
+                      className={`hover:bg-gray-50/50 transition-all group cursor-pointer ${selectedUser?.id === s.user?.id ? 'bg-emerald-50/50' : ''}`}
                     >
                       <td className="px-8 py-5">
                         <div className="flex items-center gap-4">
                           <img 
-                            src={u.photoUrl || `https://api.dicebear.com/7.x/initials/svg?seed=${u.name}`} 
+                            src={s.user?.photoUrl || `https://api.dicebear.com/7.x/initials/svg?seed=${s.user?.name}`} 
                             className="h-12 w-12 rounded-xl object-cover border border-slate-100 shadow-sm" 
                             alt="" 
                           />
                           <div>
-                            <p className="font-black text-gray-900 text-sm">{u.name}</p>
-                            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">{u.email || u.phone}</p>
+                            <p className="font-black text-gray-900 text-sm">{s.user?.name}</p>
+                            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">{s.user?.email || s.user?.phone}</p>
                           </div>
                         </div>
                       </td>
                       <td className="px-8 py-5">
-                        <p className="text-[10px] font-black text-emerald-700 uppercase tracking-widest bg-emerald-50 px-2 py-1 rounded inline-block">
-                          {u.tenant?.businessName || 'GLOBAL / SYSTEM'}
-                        </p>
+                        <div className="space-y-0.5">
+                          <p className="text-xs font-black text-slate-700 hl-mono">{s.ipAddress || '192.168.1.1'}</p>
+                          <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Global Entry Point</p>
+                        </div>
                       </td>
                       <td className="px-8 py-5 text-center">
-                        <span className={`px-2 py-1 rounded-md text-[9px] font-black uppercase tracking-wider ${u.isActive ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`}>
-                          {u.isActive ? 'Active' : 'Banned'}
+                        <span className="px-3 py-1 rounded-md text-[9px] font-black uppercase tracking-wider bg-emerald-100 text-emerald-700 animate-pulse">
+                          LIVE NOW
                         </span>
                       </td>
                       <td className="px-8 py-5 text-right">
-                        <button className="text-gray-400 hover:text-red-600 transition-all p-2"><Trash2 size={16} /></button>
+                        <button 
+                          onClick={(e) => { e.stopPropagation(); terminateMutation.mutate(s.id); }}
+                          className="text-gray-400 hover:text-red-600 transition-all p-2"
+                        >
+                          <LogOut size={18} />
+                        </button>
                       </td>
                     </tr>
-                  ))}
+                  )) : (
+                    <tr>
+                      <td colSpan={4} className="py-20 text-center text-slate-400 font-bold text-xs uppercase tracking-widest italic">
+                        No active platform sessions detected
+                      </td>
+                    </tr>
+                  )}
                 </tbody>
               </table>
             </div>

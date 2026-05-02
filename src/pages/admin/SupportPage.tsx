@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { adminApi } from '../../lib/api/providers'
 import { toast } from 'sonner'
 import { MessageSquare, Search, Filter, Clock, CheckCircle2, AlertCircle, ArrowRight, LifeBuoy, Users, Zap, User, TrendingUp } from 'lucide-react'
@@ -8,10 +8,20 @@ import { useState, useEffect } from 'react'
 import { AdminStats } from '../../lib/types/api'
 
 export default function SupportPage() {
+  const queryClient = useQueryClient()
   const [search, setSearch] = useState('')
   const { data: rawStats, isLoading, error } = useQuery<any>({
     queryKey: ['admin-stats'],
     queryFn: () => adminApi.getStats()
+  })
+
+  const resolveMutation = useMutation({
+    mutationFn: adminApi.resolveAllTickets,
+    onSuccess: () => {
+      toast.success('All open tickets have been flagged as resolved')
+      queryClient.invalidateQueries({ queryKey: ['admin-stats'] })
+    },
+    onError: () => toast.error('Failed to batch resolve tickets')
   })
 
   useEffect(() => {
@@ -38,9 +48,13 @@ export default function SupportPage() {
           <p className="text-gray-500 font-medium">Manage vendor inquiries and platform incidents</p>
         </div>
         <div className="flex gap-3">
-          <button className="bg-[#0D4A3E] text-white h-12 px-6 rounded-md font-bold text-sm hover:bg-[#0A3D33] transition-all flex items-center gap-2">
+          <button 
+            onClick={() => resolveMutation.mutate()}
+            disabled={resolveMutation.isPending}
+            className="bg-[#0D4A3E] text-white h-12 px-6 rounded-md font-bold text-sm hover:bg-[#0A3D33] transition-all flex items-center gap-2 disabled:opacity-50"
+          >
             <Zap size={16} />
-            Auto-Resolve All
+            {resolveMutation.isPending ? 'Resolving...' : 'Auto-Resolve All'}
           </button>
         </div>
       </div>

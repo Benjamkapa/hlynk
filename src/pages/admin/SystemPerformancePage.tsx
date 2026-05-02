@@ -2,7 +2,7 @@ import {
   ResponsiveContainer, AreaChart, Area, XAxis, YAxis, 
   CartesianGrid, Tooltip, LineChart, Line 
 } from 'recharts'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { adminApi } from '../../lib/api/providers'
 import { ADMIN_CSS } from './hl-design-system'
 import { toast } from 'sonner'
@@ -13,10 +13,20 @@ import { useEffect } from 'react'
 import { SystemHealth } from '../../lib/types/api'
 
 export default function SystemPerformancePage() {
+  const queryClient = useQueryClient()
   const { data: rawHealth, isLoading, error } = useQuery<any>({
     queryKey: ['system-health'],
     queryFn: adminApi.getSystemHealth,
     refetchInterval: 10000
+  })
+
+  const restartMutation = useMutation({
+    mutationFn: adminApi.restartCluster,
+    onSuccess: () => {
+      toast.success('Global cluster restart sequence initiated')
+      queryClient.invalidateQueries({ queryKey: ['system-health'] })
+    },
+    onError: (err: any) => toast.error(`Restart Failed: ${getErrorMessage(err)}`)
   })
 
   const health = rawHealth?.data || rawHealth
@@ -117,7 +127,13 @@ export default function SystemPerformancePage() {
                   <h3 className="text-2xl font-black">Cluster Availability</h3>
                   <p className="text-slate-400 text-sm font-medium mt-1">Real-time status of global server nodes</p>
                </div>
-               <button className="px-6 py-3 bg-white/5 border border-white/10 rounded-md text-[10px] font-black uppercase tracking-widest hover:bg-white/10 transition-all">Restart Cluster</button>
+               <button 
+                 onClick={() => restartMutation.mutate()}
+                 disabled={restartMutation.isPending}
+                 className="px-6 py-3 bg-white/5 border border-white/10 rounded-md text-[10px] font-black uppercase tracking-widest hover:bg-white/10 transition-all disabled:opacity-50"
+               >
+                 {restartMutation.isPending ? 'Restarting...' : 'Restart Cluster'}
+               </button>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                {isLoading ? (
