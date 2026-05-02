@@ -1,10 +1,11 @@
 import { useState } from 'react'
-import { Plus, Search, Eye, ShieldAlert, UserCheck, Filter } from 'lucide-react'
+import { Plus, Search, Eye, ShieldAlert, UserCheck, Filter, TrendingUp, Bell, Users, Landmark, Zap } from 'lucide-react'
 import { ADMIN_CSS } from './hl-design-system'
 import { SlideOver } from '../../components/shared/SlideOver'
 import { toast } from 'sonner'
 import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query'
 import { adminApi } from '../../lib/api/providers'
+import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts'
 
 export default function ProvidersPage() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
@@ -12,13 +13,20 @@ export default function ProvidersPage() {
   const [search, setSearch] = useState('')
   const queryClient = useQueryClient()
 
+  const { data: statsData } = useQuery({
+    queryKey: ['admin-stats'],
+    queryFn: () => adminApi.getStats()
+  })
+
   const { data: tenantsData, isLoading } = useQuery<{ success: boolean; data: { tenants: any[] } }>({
     queryKey: ['admin-tenants', search],
     queryFn: () => adminApi.getTenants({ search }),
     placeholderData: keepPreviousData
   })
 
+  const stats = statsData?.data || statsData;
   const providers = tenantsData?.data?.tenants || []
+  const weeklyGrowth = stats?.trends?.weeklyGrowth || []
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500 pt-6">
@@ -26,15 +34,74 @@ export default function ProvidersPage() {
       
       <div className="flex justify-between items-end">
         <div>
-          <h1 className="text-3xl font-black text-gray-900 tracking-tight">Businesses</h1>
-          <p className="text-gray-500 font-medium">Control vendor accounts and monitor platform tenants</p>
+          <h1 className="text-3xl font-black text-gray-900 tracking-tight">Business Intelligence</h1>
+          <p className="text-gray-500 font-medium">Platform growth trajectory and vendor account management</p>
         </div>
-        <button 
-          onClick={() => setIsAddModalOpen(true)} 
-          className="bg-[#0D4A3E] text-white h-12 px-6 rounded-md font-bold text-sm hover:bg-[#0A3D33] transition-all flex items-center gap-2"
-        >
-          <Plus size={18} /> Add Business
-        </button>
+        <div className="flex gap-4">
+           <div className="hidden lg:flex items-center gap-2 bg-emerald-50 text-emerald-700 px-4 py-2 rounded-lg border border-emerald-100 animate-pulse">
+              <Bell size={14} />
+              <span className="text-[10px] font-black uppercase tracking-widest">Live Registration Stream</span>
+           </div>
+           <button 
+             onClick={() => setIsAddModalOpen(true)} 
+             className="bg-[#0D4A3E] text-white h-12 px-6 rounded-md font-bold text-sm hover:bg-[#0A3D33] transition-all flex items-center gap-2 shadow-xl shadow-emerald-950/20"
+           >
+             <Plus size={18} /> Add Business
+           </button>
+        </div>
+      </div>
+
+      {/* NEW: Stats & Trajectory Section */}
+      <div className="grid grid-cols-1 xl:grid-cols-4 gap-8">
+         <div className="xl:col-span-3 bg-white p-8 rounded-2xl border border-gray-100 shadow-sm">
+            <div className="flex justify-between items-center mb-8">
+               <div>
+                  <h3 className="text-xl font-black text-gray-900">New Users Trajectory</h3>
+                  <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">Global platform registration flow (8 Weeks)</p>
+               </div>
+               <div className="h-10 w-10 rounded-xl bg-slate-50 flex items-center justify-center text-emerald-600">
+                  <TrendingUp size={20} />
+               </div>
+            </div>
+            <div className="h-[250px] w-full">
+               <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={weeklyGrowth}>
+                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F1F5F9" />
+                     <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fontSize: 10, fill: '#94A3B8', fontWeight: 700, fontFamily: 'JetBrains Mono'}} dy={15} />
+                     <YAxis axisLine={false} tickLine={false} tick={{fontSize: 10, fill: '#94A3B8', fontWeight: 700, fontFamily: 'JetBrains Mono'}} />
+                     <Tooltip 
+                       contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)', padding: '16px' }}
+                       itemStyle={{ fontWeight: 800, color: '#0D4A3E', fontFamily: 'JetBrains Mono' }}
+                     />
+                     <Line 
+                       type="monotone" 
+                       dataKey="value" 
+                       stroke="#0D4A3E" 
+                       strokeWidth={4} 
+                       dot={{ r: 4, fill: '#0D4A3E', strokeWidth: 2, stroke: '#fff' }}
+                       activeDot={{ r: 6, strokeWidth: 0 }}
+                     />
+                  </LineChart>
+               </ResponsiveContainer>
+            </div>
+         </div>
+         
+         <div className="space-y-6">
+            <StatsCard title="Total Businesses" value={stats?.overview?.totalProviders || 0} sub="Platform Tenants" icon={Landmark} color="emerald" />
+            <StatsCard title="Active Today" value={stats?.overview?.activeToday || 0} sub="On-Cloud Now" icon={Users} color="blue" />
+            <div className="bg-[#0D4A3E] p-6 rounded-2xl text-white relative overflow-hidden">
+               <div className="relative z-10">
+                  <p className="text-[9px] font-black text-emerald-400 uppercase tracking-widest mb-1">New Registration</p>
+                  <h4 className="text-sm font-black mb-4">Awaiting Verification</h4>
+                  <div className="p-3 bg-white/10 rounded-xl border border-white/10 mb-4 backdrop-blur-md">
+                     <p className="text-xs font-black">{stats?.recentRegistrations?.[0]?.name || 'No new entries'}</p>
+                     <p className="text-[9px] text-emerald-300 font-bold uppercase mt-1 hl-mono">{stats?.recentRegistrations?.[0]?.plan || 'STARTER'} Plan</p>
+                  </div>
+                  <button className="w-full py-3 bg-emerald-500 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-emerald-400 transition-all">Review Application</button>
+               </div>
+               <Zap size={100} className="absolute -right-8 -bottom-8 opacity-5 -rotate-12" />
+            </div>
+         </div>
       </div>
 
       <div className="bg-white rounded-lg border border-gray-100 shadow-sm overflow-hidden">
@@ -265,6 +332,23 @@ function InputGroup({ label, placeholder, mono = false, value, onChange }: any) 
         placeholder={placeholder}
         className={`w-full bg-gray-50 border-none rounded-md py-4 px-4 outline-none focus:ring-2 focus:ring-emerald-500/10 transition-all text-sm font-bold ${mono ? 'hl-mono' : ''}`} 
       />
+    </div>
+  )
+}
+
+function StatsCard({ title, value, sub, icon: Icon, color }: any) {
+  const colors: any = {
+    emerald: 'bg-emerald-50 text-emerald-600 border-emerald-100',
+    blue: 'bg-blue-50 text-blue-600 border-blue-100',
+  }
+  return (
+    <div className={`p-6 rounded-2xl border shadow-sm ${colors[color] || 'bg-gray-50 border-gray-100 text-gray-600'}`}>
+      <div className="flex justify-between items-start mb-4">
+        <p className="text-[10px] font-black uppercase tracking-widest opacity-70">{title}</p>
+        <Icon size={18} className="opacity-50" />
+      </div>
+      <h4 className="text-2xl font-black hl-mono leading-none mb-1">{value}</h4>
+      <p className="text-[10px] font-bold opacity-60 uppercase tracking-widest">{sub}</p>
     </div>
   )
 }

@@ -29,8 +29,8 @@ export default function TopNav({ onMobileMenuToggle, extraActions, showMail = fa
 
   const notifications = logResponse?.items || []
 
-  const profileImageSrc = !avatarFailed && (user?.photoUrl || user?.avatar)
-    ? (user.photoUrl || user.avatar)
+  const profileImageSrc = !avatarFailed && user?.photoUrl
+    ? user.photoUrl
     : `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.name || 'User'}`
 
   useEffect(() => {

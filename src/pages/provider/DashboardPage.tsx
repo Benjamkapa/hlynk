@@ -107,8 +107,26 @@ export default function DashboardPage() {
                   contentStyle={{ borderRadius: '24px', border: 'none', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.1)', padding: '20px' }}
                   itemStyle={{ fontWeight: 800, fontFamily: 'JetBrains Mono' }}
                 />
-                <Area type="monotone" dataKey="sales" stroke="#10B981" strokeWidth={4} fillOpacity={1} fill="url(#colorSales)" />
-                <Area type="monotone" dataKey="profit" stroke="#3B82F6" strokeWidth={4} fillOpacity={1} fill="url(#colorProfit)" />
+                <Area 
+                  type="monotone" 
+                  dataKey="sales" 
+                  stroke="#10B981" 
+                  strokeWidth={4} 
+                  fillOpacity={1} 
+                  fill="url(#colorSales)" 
+                  dot={{ r: 4, fill: '#10B981', strokeWidth: 2, stroke: '#fff' }}
+                  activeDot={{ r: 6, strokeWidth: 0 }}
+                />
+                <Area 
+                  type="monotone" 
+                  dataKey="profit" 
+                  stroke="#3B82F6" 
+                  strokeWidth={4} 
+                  fillOpacity={1} 
+                  fill="url(#colorProfit)" 
+                  dot={{ r: 4, fill: '#3B82F6', strokeWidth: 2, stroke: '#fff' }}
+                  activeDot={{ r: 6, strokeWidth: 0 }}
+                />
               </AreaChart>
             </ResponsiveContainer>
           </div>

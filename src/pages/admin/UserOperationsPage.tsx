@@ -61,30 +61,41 @@ export default function UserOperationsPage() {
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
         <div className="lg:col-span-3 space-y-6">
           <div className="bg-white rounded-lg border border-gray-100 shadow-sm overflow-hidden">
-            <div className="p-10 border-b border-gray-50 flex justify-between items-center bg-slate-900 text-white">
-              <div>
-                <h3 className="text-2xl font-black">On-Cloud Identites</h3>
-                <p className="text-slate-400 text-sm font-medium uppercase tracking-widest mt-1">Real-time platform-wide active sessions</p>
+            <div className="p-10 border-b border-gray-50 flex justify-between items-center bg-slate-900 text-white relative overflow-hidden">
+              <div className="relative z-10">
+                <h3 className="text-2xl font-black">On-Cloud Operations</h3>
+                <p className="text-slate-400 text-sm font-medium uppercase tracking-widest mt-1">Global platform telemetry & session management</p>
               </div>
-              <div className="flex items-center gap-2 px-3 py-1 bg-emerald-500/10 text-emerald-400 rounded-md border border-emerald-500/20">
-                <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                <span className="text-[10px] font-black uppercase tracking-widest">{sessions.length} Live</span>
+              <div className="flex items-center gap-6 relative z-10">
+                <div className="flex flex-col items-end">
+                   <div className="flex items-center gap-2">
+                      <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                      <span className="text-[10px] font-black uppercase tracking-widest text-emerald-400">Database Linked</span>
+                   </div>
+                   <p className="text-[9px] text-slate-500 font-bold uppercase mt-1">Live Connection: Active</p>
+                </div>
+                <div className="h-12 w-px bg-white/10" />
+                <div className="flex items-center gap-2 px-4 py-2 bg-white/5 text-white rounded-xl border border-white/10">
+                  <span className="text-xl font-black hl-mono">{sessions.length}</span>
+                  <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">Live<br/>Sessions</span>
+                </div>
               </div>
+              <Monitor size={150} className="absolute -right-10 -bottom-10 opacity-5 -rotate-12" />
             </div>
 
             <div className="overflow-x-auto">
               <table className="w-full text-left">
                 <thead>
                   <tr className="bg-gray-50/50">
-                    <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest">Active User</th>
-                    <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest">Network Access (IP)</th>
+                    <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest">Active Identity</th>
+                    <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest">Global Entry Point (IP)</th>
                     <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Status</th>
                     <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Action</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
                   {isLoading ? (
-                    <tr><td colSpan={4} className="py-20 text-center animate-pulse">Scanning Cloud...</td></tr>
+                    <tr><td colSpan={4} className="py-20 text-center text-slate-400 font-black text-xs uppercase tracking-widest animate-pulse">Syncing with Cloud Infrastructure...</td></tr>
                   ) : sessions.length > 0 ? sessions.map((s: any) => (
                     <tr 
                       key={s.id} 
@@ -95,30 +106,31 @@ export default function UserOperationsPage() {
                         <div className="flex items-center gap-4">
                           <img 
                             src={s.user?.photoUrl || `https://api.dicebear.com/7.x/initials/svg?seed=${s.user?.name}`} 
-                            className="h-12 w-12 rounded-xl object-cover border border-slate-100 shadow-sm" 
+                            className="h-12 w-12 rounded-xl object-cover border border-slate-100 shadow-sm group-hover:scale-110 transition-transform" 
                             alt="" 
                           />
                           <div>
-                            <p className="font-black text-gray-900 text-sm">{s.user?.name}</p>
-                            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">{s.user?.email || s.user?.phone}</p>
+                            <p className="font-black text-gray-900 text-sm tracking-tight">{s.user?.name}</p>
+                            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest leading-none mt-1">{s.user?.role || 'User'}</p>
                           </div>
                         </div>
                       </td>
                       <td className="px-8 py-5">
                         <div className="space-y-0.5">
-                          <p className="text-xs font-black text-slate-700 hl-mono">{s.ipAddress || '192.168.1.1'}</p>
-                          <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Global Entry Point</p>
+                          <p className="text-xs font-black text-slate-700 hl-mono">{s.ipAddress || 'Cloud Internal'}</p>
+                          <p className="text-[9px] text-slate-400 font-black uppercase tracking-widest">Access Protocol: HTTPS/WSS</p>
                         </div>
                       </td>
                       <td className="px-8 py-5 text-center">
-                        <span className="px-3 py-1 rounded-md text-[9px] font-black uppercase tracking-wider bg-emerald-100 text-emerald-700 animate-pulse">
-                          LIVE NOW
-                        </span>
+                        <div className="flex items-center justify-center gap-2 text-[9px] font-black text-emerald-600 bg-emerald-50 px-2 py-1 rounded-md uppercase tracking-widest">
+                           <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                           Session Active
+                        </div>
                       </td>
                       <td className="px-8 py-5 text-right">
                         <button 
-                          onClick={(e) => { e.stopPropagation(); terminateMutation.mutate(s.id); }}
-                          className="text-gray-400 hover:text-red-600 transition-all p-2"
+                          onClick={(e) => { e.stopPropagation(); if(window.confirm('Terminate this session immediately?')) terminateMutation.mutate(s.id); }}
+                          className="text-gray-400 hover:text-red-600 transition-all p-2 hover:bg-red-50 rounded-lg"
                         >
                           <LogOut size={18} />
                         </button>
@@ -126,8 +138,8 @@ export default function UserOperationsPage() {
                     </tr>
                   )) : (
                     <tr>
-                      <td colSpan={4} className="py-20 text-center text-slate-400 font-bold text-xs uppercase tracking-widest italic">
-                        No active platform sessions detected
+                      <td colSpan={4} className="py-20 text-center text-slate-300 font-bold text-[10px] uppercase tracking-[0.2em] italic">
+                        No platform-wide active sessions detected
                       </td>
                     </tr>
                   )}
@@ -137,74 +149,93 @@ export default function UserOperationsPage() {
           </div>
 
           {selectedUser && (
-            <div className="bg-slate-900 rounded-2xl p-8 text-white animate-in slide-in-from-bottom duration-500">
-               <div className="flex justify-between items-center mb-8">
-                  <div>
-                    <h3 className="text-xl font-black">Audit Trail: {selectedUser.name}</h3>
-                    <p className="text-slate-400 text-xs font-medium uppercase tracking-widest mt-1">Deep Activity Analysis</p>
-                  </div>
-                  <button onClick={() => setSelectedUser(null)} className="text-slate-500 hover:text-white transition-all text-xs font-black uppercase">Close Audit</button>
+            <div className="bg-slate-900 rounded-2xl p-10 text-white animate-in slide-in-from-bottom duration-700 border border-white/5 relative overflow-hidden">
+               <div className="absolute top-0 right-0 p-8 opacity-10">
+                  <Users size={120} className="text-white" />
                </div>
-                <div className="space-y-4 max-h-[400px] overflow-y-auto pr-4 scrollbar-hide">
-                  {activityLogs.length > 0 ? activityLogs.map((log: any, i: number) => (
-                    <div key={i} className="flex items-start gap-4 p-4 bg-white/5 rounded-xl border border-white/10">
-                       <div className="h-8 w-8 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center shrink-0">
-                          <Users size={14} />
-                       </div>
-                       <div className="flex-1">
-                          <div className="flex justify-between items-start mb-1">
-                             <p className="text-xs font-black text-white">{log.action}</p>
-                             <span className="text-[10px] font-bold text-slate-500 hl-mono">{new Date(log.createdAt).toLocaleString()}</span>
+               <div className="relative z-10">
+                  <div className="flex justify-between items-center mb-10">
+                     <div>
+                       <h3 className="text-2xl font-black tracking-tight">Audit Trail: {selectedUser.name}</h3>
+                       <p className="text-slate-500 text-xs font-black uppercase tracking-widest mt-2">Deep Infrastructure Activity Analysis</p>
+                     </div>
+                     <button onClick={() => setSelectedUser(null)} className="h-10 px-4 rounded-xl bg-white/5 text-slate-400 hover:text-white hover:bg-white/10 transition-all text-[10px] font-black uppercase tracking-widest border border-white/10">Close Analysis</button>
+                  </div>
+                   <div className="space-y-4 max-h-[500px] overflow-y-auto pr-6 custom-scrollbar">
+                     {activityLogs.length > 0 ? activityLogs.map((log: any, i: number) => (
+                       <div key={i} className="flex items-start gap-5 p-6 bg-white/5 rounded-2xl border border-white/5 hover:bg-white/10 transition-all group">
+                          <div className="h-10 w-10 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center shrink-0 border border-emerald-500/20 group-hover:scale-110 transition-transform">
+                             <Users size={16} />
                           </div>
-                          <p className="text-[10px] text-slate-400 font-medium leading-relaxed">{log.details}</p>
+                          <div className="flex-1 space-y-2">
+                             <div className="flex justify-between items-center">
+                                <p className="text-sm font-black text-white tracking-tight">{log.action}</p>
+                                <span className="text-[10px] font-black text-slate-500 hl-mono bg-white/5 px-2 py-1 rounded-md">{new Date(log.createdAt).toLocaleString()}</span>
+                             </div>
+                             <p className="text-xs text-slate-400 font-medium leading-relaxed">{log.details}</p>
+                             <div className="flex items-center gap-2 pt-2">
+                                <div className="h-1 w-1 rounded-full bg-slate-700" />
+                                <p className="text-[9px] text-slate-600 font-black uppercase tracking-widest">Event ID: {log.id.slice(-8).toUpperCase()}</p>
+                             </div>
+                          </div>
                        </div>
-                    </div>
-                  )) : (
-                    <p className="text-center text-slate-500 py-10 italic text-sm">No activity logs found for this user.</p>
-                  )}
-                </div>
+                     )) : (
+                       <div className="py-20 text-center space-y-4">
+                          <div className="h-16 w-16 rounded-full bg-white/5 flex items-center justify-center mx-auto text-slate-700">
+                             <Search size={32} />
+                          </div>
+                          <p className="text-slate-500 font-black text-xs uppercase tracking-widest italic">No activity logs indexed for this identity</p>
+                       </div>
+                     )}
+                   </div>
+               </div>
             </div>
           )}
         </div>
 
         <div className="space-y-6">
-          <div className="bg-white p-8 rounded-lg border border-gray-100 shadow-sm sticky top-6">
-            <h3 className="text-lg font-black text-gray-900 mb-8 flex items-center gap-2">
-              <Monitor size={20} className="text-emerald-600" />
-              Live Sessions
+          <div className="bg-white p-8 rounded-2xl border border-gray-100 shadow-sm sticky top-6">
+            <h3 className="text-lg font-black text-gray-900 mb-8 flex items-center gap-3">
+              <div className="h-8 w-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
+                 <Monitor size={18} />
+              </div>
+              Traffic Intelligence
             </h3>
-            <div className="space-y-4">
-              {sessions.length > 0 ? sessions.map((s: any) => (
-                <div key={s.id} className="p-5 rounded-xl bg-gray-50 border border-gray-100 hover:shadow-md transition-all">
-                  <div className="flex items-center gap-4 mb-4">
-                    <img 
-                      src={s.user?.photoUrl || `https://api.dicebear.com/7.x/initials/svg?seed=${s.user?.name}`} 
-                      className="h-10 w-10 rounded-lg object-cover" 
-                      alt="" 
-                    />
-                    <div>
-                      <p className="text-xs font-black text-gray-900 truncate max-w-[120px]">{s.user?.name}</p>
-                      <p className="text-[9px] text-gray-400 font-bold hl-mono uppercase">{s.ipAddress || 'Unknown IP'}</p>
-                    </div>
+            <div className="space-y-6">
+               <div className="p-6 bg-slate-50 rounded-2xl border border-slate-100">
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Platform Load</p>
+                  <h4 className="text-2xl font-black text-slate-900 hl-mono">{sessions.length} <span className="text-xs text-slate-400 font-bold uppercase">Active</span></h4>
+                  <div className="h-1.5 w-full bg-slate-200 rounded-full mt-4 overflow-hidden">
+                     <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${Math.min(100, (sessions.length / 100) * 100)}%` }} />
                   </div>
-                  <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-                    <span className="text-[9px] font-black text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded uppercase tracking-widest">Active Now</span>
-                    <button 
-                      onClick={() => terminateMutation.mutate(s.id)}
-                      disabled={terminateMutation.isPending}
-                      className="text-red-500 hover:bg-red-50 p-2 rounded-lg transition-all"
-                    >
-                      <LogOut size={16} />
-                    </button>
-                  </div>
-                </div>
-              )) : (
-                <div className="py-10 text-center text-gray-400 text-xs font-bold uppercase tracking-widest">No active sessions</div>
-              )}
+               </div>
+               <div className="space-y-3">
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2">Access Distribution</p>
+                  <TrafficItem label="Staff Operations" count={sessions.filter((s: any) => s.user?.role === 'STAFF').length} color="blue" />
+                  <TrafficItem label="Vendor Portals" count={sessions.filter((s: any) => s.user?.role === 'PROVIDER').length} color="emerald" />
+                  <TrafficItem label="Customer Access" count={sessions.filter((s: any) => s.user?.role === 'CUSTOMER').length} color="purple" />
+               </div>
             </div>
           </div>
         </div>
       </div>
+    </div>
+  )
+}
+
+function TrafficItem({ label, count, color }: any) {
+  const colors: any = {
+    blue: 'bg-blue-500',
+    emerald: 'bg-emerald-500',
+    purple: 'bg-purple-500',
+  }
+  return (
+    <div className="flex items-center justify-between p-3 bg-white border border-slate-50 rounded-xl hover:bg-slate-50 transition-all">
+       <div className="flex items-center gap-2">
+          <div className={`h-2 w-2 rounded-full ${colors[color]}`} />
+          <span className="text-[10px] font-black text-slate-600 uppercase tracking-widest">{label}</span>
+       </div>
+       <span className="text-xs font-black text-slate-900 hl-mono">{count}</span>
     </div>
   )
 }

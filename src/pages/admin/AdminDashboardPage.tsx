@@ -141,7 +141,16 @@ export default function AdminDashboardPage() {
                   contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)', padding: '20px' }}
                   itemStyle={{ fontWeight: 800, color: '#0F172A', fontFamily: 'JetBrains Mono' }}
                 />
-                <Area type="monotone" dataKey="value" stroke="#10B981" strokeWidth={4} fillOpacity={1} fill="url(#colorValue)" />
+                <Area 
+                  type="monotone" 
+                  dataKey="value" 
+                  stroke="#10B981" 
+                  strokeWidth={4} 
+                  fillOpacity={1} 
+                  fill="url(#colorValue)" 
+                  dot={{ r: 4, fill: '#10B981', strokeWidth: 2, stroke: '#fff' }}
+                  activeDot={{ r: 6, strokeWidth: 0 }}
+                />
               </AreaChart>
             </ResponsiveContainer>
           </div>
