@@ -25,9 +25,9 @@ export default function Footer() {
             <div className="text-[13px] font-black font-thin tracking-[0.2em] text-white">
               © {new Date().getFullYear()} HudumaLynk Portal
             </div>
-              {/* <div className="text-[9px] font-bold text-white uppercase tracking-widest">
-                Built for the Kenyan Digital Economy
-              </div> */}
+            <div className="text-[9px] font-bold text-white uppercase tracking-widest">
+              Built By <a href="https://github.com/benjamkapa9823">Benjamkapa</a>
+            </div>
           </div>
         </div>
       </div>
