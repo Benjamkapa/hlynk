@@ -9,9 +9,19 @@ export const getErrorMessage = (err: any): string => {
     return err.message || "A network error occurred. Please try again."
   }
 
-  // Server-side error with message
-  if (err.response.data?.message) {
-    return err.response.data.message
+  // Server-side error with data (handle arrays of validation errors)
+  const data = err.response.data
+  if (Array.isArray(data)) {
+    return data.map(e => e.message || "Invalid input").join(". ")
+  }
+  if (typeof data === 'object' && data !== null) {
+    if (data.message) {
+      if (Array.isArray(data.message)) {
+        return data.message.map((e: any) => e.message || e).join(". ")
+      }
+      return data.message
+    }
+    if (data.error) return data.error
   }
 
   // Fallback based on status code
@@ -19,7 +29,7 @@ export const getErrorMessage = (err: any): string => {
   if (status === 401) return "Session expired. Please log in again."
   if (status === 403) return "You do not have permission to perform this action."
   if (status === 404) return "The requested resource was not found."
-  if (status >= 500) return "Server error. Our team has been notified."
+  if (status >= 500) return "The server encountered an error. Please try again later."
 
   return "Something went wrong. Please try again."
 }

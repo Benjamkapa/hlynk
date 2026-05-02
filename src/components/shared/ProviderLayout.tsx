@@ -3,7 +3,7 @@ import { useAuth } from "../../lib/auth/AuthContext";
 import {
   LayoutDashboard, Calendar, BarChart2, Users,
   Settings, LogOut, Package, ShoppingCart,
-  Zap, PanelLeftClose, PanelLeftOpen
+  Zap, PanelLeftClose, PanelLeftOpen, Clock, AlertTriangle
 } from "lucide-react";
 import { useLocation, Outlet, NavLink, Link } from "react-router-dom";
 import {Tag} from "lucide-react";
@@ -24,31 +24,54 @@ export default function ProviderLayout() {
     {
       label: 'Storefront',
       items: [
-        { to: '/dashboard/sales/new', label: 'Record Sale', icon: Zap },
-        { to: '/dashboard/sales', label: 'Sales History', icon: Package, end: true },
-        { to: '/dashboard/expenses', label: 'Expenses', icon: ShoppingCart },
+        { to: '/dashboard/sales/new', label: 'Record Sale', icon: Zap, permission: 'sales' },
+        { to: '/dashboard/sales', label: 'Sales History', icon: Package, end: true, permission: 'sales' },
+        { to: '/dashboard/expenses', label: 'Expenses', icon: ShoppingCart, permission: 'sales' },
       ],
     },
     {
       label: 'Inventory',
       items: [
-        { to: '/dashboard', label: 'Overview', icon: LayoutDashboard, end: true },
-        { to: '/dashboard/products', label: 'Products & Stock', icon: Package },
-        { to: '/dashboard/customers', label: 'Customers', icon: Users },
+        { to: '/dashboard', label: 'Overview', icon: LayoutDashboard, end: true, permission: 'overview' },
+        { to: '/dashboard/products', label: 'Products & Stock', icon: Package, permission: 'products' },
+        { to: '/dashboard/customers', label: 'Customers', icon: Users, permission: 'customers' },
       ],
     },
     {
       label: 'Insights',
       items: [
-        { to: '/dashboard/reports', label: 'Business Reports', icon: BarChart2 },
-        { to: '/dashboard/subscription', label: 'Billing Plan', icon: Calendar },
+        { to: '/dashboard/reports', label: 'Business Reports', icon: BarChart2, permission: 'reports' },
+        { to: '/dashboard/subscription', label: 'Billing Plan', icon: Calendar, role: 'PROVIDER' },
       ],
     },
   ];
 
-  const daysRemaining = user?.subscription?.endDate 
-    ? Math.max(0, Math.ceil((new Date(user.subscription.endDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)))
+  const filteredGroups = navGroups.map(group => ({
+    ...group,
+    items: group.items.filter(item => {
+      // Super admin sees everything
+      if (user?.role === 'SUPER_ADMIN') return true
+      
+      // If item is role-restricted (e.g. Billing for PROVIDER only)
+      if ((item as any).role && user?.role !== (item as any).role) return false
+
+      // If user is STAFF, check permissions
+      if (user?.role === 'STAFF') {
+        if ((item as any).permission && !user.permissions?.includes((item as any).permission)) {
+          return false
+        }
+      }
+      
+      return true
+    })
+  })).filter(group => group.items.length > 0);
+
+  const timeRemainingMs = user?.subscription?.endDate 
+    ? new Date(user.subscription.endDate).getTime() - new Date().getTime()
     : 0;
+
+  const daysRemaining = Math.max(0, Math.floor(timeRemainingMs / (1000 * 60 * 60 * 24)));
+  const isCritical = daysRemaining < 3 && timeRemainingMs > 0;
 
   const SidebarContent = ({ collapsed }: { collapsed: boolean }) => (
     <div className="flex flex-col h-full bg-white">
@@ -64,7 +87,7 @@ export default function ProviderLayout() {
 
       {/* Nav */}
       <nav className="flex-1 px-4 space-y-8 overflow-y-auto pt-4 custom-scrollbar">
-        {navGroups.map((group) => (
+        {filteredGroups.map((group) => (
           <div key={group.label}>
             {!collapsed && (
               <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 px-4 mb-4">
@@ -93,16 +116,17 @@ export default function ProviderLayout() {
       {/* Profile Summary */}
       <div className="p-4 mt-auto border-t border-slate-50">
          {!collapsed && (
-           <div className="bg-emerald-50 rounded-2xl p-4 border border-emerald-100 flex items-center gap-3 mb-4">
-              <div className="h-10 w-10 rounded-xl bg-white flex items-center justify-center text-emerald-600 shadow-sm border border-emerald-100 shrink-0">
-                <Tag size={20} />
+           <div className="bg-emerald-900 rounded-[24px] p-4 border border-emerald-800 shadow-2xl shadow-emerald-950/20 mb-4 relative overflow-hidden group">
+              <div className="absolute top-0 right-0 p-2 opacity-10 group-hover:opacity-20 transition-opacity">
+                <Clock size={48} className="text-white" />
               </div>
-              <div className="flex-1 min-w-0">
-                 <div className="flex justify-between items-center mb-0.5">
-                    <p className="text-[10px] text-emerald-700 font-black uppercase tracking-[0.15em]">{user?.subscription?.planName || 'TRIAL'}</p>
-                    <span className="text-[9px] font-black bg-emerald-600 text-white px-1.5 py-0.5 rounded-full">{daysRemaining}D</span>
+              <div className="relative z-10">
+                 <div className="flex justify-between items-center mb-3">
+                    <p className="text-[10px] text-emerald-400 font-black uppercase tracking-[0.2em]">{user?.subscription?.planName || 'TRIAL'} STATUS</p>
+                    {isCritical && <AlertTriangle size={12} className="text-amber-400 animate-pulse" />}
                  </div>
-                 <p className="text-[9px] text-emerald-600/60 font-bold uppercase tracking-widest truncate">{daysRemaining} days remaining</p>
+                 <CountdownTimer expiryDate={user?.subscription?.endDate} />
+                 <p className="text-[8px] text-emerald-500/60 font-black uppercase tracking-[0.1em] mt-3 text-center">Remaining Intelligence Access</p>
               </div>
            </div>
          )}
@@ -154,6 +178,22 @@ export default function ProviderLayout() {
 
       {/* ── MAIN CONTENT ── */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
+        {isCritical && user?.role === 'PROVIDER' && (
+          <div className="bg-red-600 text-white px-8 py-3 flex items-center justify-between animate-in slide-in-from-top duration-700 z-[100] shadow-2xl">
+             <div className="flex items-center gap-4">
+               <div className="h-8 w-8 rounded-full bg-white/20 flex items-center justify-center">
+                <AlertTriangle size={18} className="animate-bounce" />
+               </div>
+               <div>
+                <p className="text-[11px] font-black uppercase tracking-widest leading-none mb-1">Critical: Subscription Expiry Imminent</p>
+                <p className="text-[9px] font-medium opacity-80 uppercase tracking-widest leading-none">Your access expires in {daysRemaining} days. Renew now to avoid business disruption.</p>
+               </div>
+             </div>
+             <Link to="/dashboard/subscription" className="px-6 py-2 bg-white text-red-600 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-red-50 transition-all shadow-lg active:scale-95">
+               Top Up Now
+             </Link>
+          </div>
+        )}
         <TopNav 
           onMobileMenuToggle={() => setIsMobileOpen(true)}
           showMail={true}
@@ -168,6 +208,59 @@ export default function ProviderLayout() {
           <Outlet />
         </main>
       </div>
+    </div>
+  );
+}
+
+function CountdownTimer({ expiryDate }: { expiryDate: string | undefined }) {
+  const [timeLeft, setTimeLeft] = useState<{ d: number, h: number, m: number, s: number } | null>(null);
+
+  useEffect(() => {
+    if (!expiryDate) return;
+
+    const calculate = () => {
+      const distance = new Date(expiryDate).getTime() - new Date().getTime();
+      
+      if (distance < 0) {
+        setTimeLeft({ d: 0, h: 0, m: 0, s: 0 });
+        return;
+      }
+
+      setTimeLeft({
+        d: Math.floor(distance / (1000 * 60 * 60 * 24)),
+        h: Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
+        m: Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60)),
+        s: Math.floor((distance % (1000 * 60)) / 1000)
+      });
+    };
+
+    calculate();
+    const timer = setInterval(calculate, 1000);
+
+    return () => clearInterval(timer);
+  }, [expiryDate]);
+
+  if (!timeLeft) return (
+    <div className="h-8 flex items-center justify-center gap-1">
+      <div className="w-1 h-4 bg-emerald-800 animate-pulse rounded-full" />
+      <div className="w-1 h-6 bg-emerald-800 animate-pulse rounded-full delay-75" />
+      <div className="w-1 h-4 bg-emerald-800 animate-pulse rounded-full delay-150" />
+    </div>
+  );
+
+  return (
+    <div className="grid grid-cols-4 gap-1.5">
+      {[
+        { v: timeLeft.d, l: 'Days' },
+        { v: timeLeft.h, l: 'Hrs' },
+        { v: timeLeft.m, l: 'Min' },
+        { v: timeLeft.s, l: 'Sec' }
+      ].map((t, i) => (
+        <div key={i} className="flex flex-col items-center bg-emerald-950/40 rounded-xl py-2 border border-white/5 backdrop-blur-md">
+          <span className="text-[12px] font-black text-white hl-mono leading-none mb-1">{t.v.toString().padStart(2, '0')}</span>
+          <span className="text-[7px] font-black text-emerald-400 uppercase tracking-tighter opacity-70">{t.l}</span>
+        </div>
+      ))}
     </div>
   );
 }

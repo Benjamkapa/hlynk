@@ -13,16 +13,13 @@ import { useEffect } from 'react'
 import { SystemHealth } from '../../lib/types/api'
 
 export default function SystemPerformancePage() {
-  const { data: health, isLoading, error } = useQuery<SystemHealth>({
+  const { data: rawHealth, isLoading, error } = useQuery<any>({
     queryKey: ['system-health'],
     queryFn: adminApi.getSystemHealth,
     refetchInterval: 10000
   })
 
-  useEffect(() => {
-    if (error) toast.error(getErrorMessage(error))
-  }, [error])
-
+  const health = rawHealth?.data || rawHealth
   const performanceData = health?.performanceData || []
   const clusterNodes = health?.nodes || []
   return (

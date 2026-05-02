@@ -3,6 +3,8 @@ import { Bell, User, LogOut, ChevronDown, Menu, Search, Sparkles, CheckCircle2, 
 import { useAuth } from '../../lib/auth/AuthContext'
 import { Link, useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
+import { useQuery } from '@tanstack/react-query'
+import { providersApi } from '../../lib/api/providers'
 
 interface TopNavProps {
   onMobileMenuToggle?: () => void
@@ -10,21 +12,23 @@ interface TopNavProps {
   showMail?: boolean
 }
 
-const MOCK_NOTIFICATIONS = [
-  { id: 1, type: 'sale', title: 'New Sale Recorded', desc: 'KES 2,400 received via M-Pesa', time: '2 mins ago', icon: <ShoppingBag size={14} className="text-emerald-500" /> },
-  { id: 2, type: 'stock', title: 'Low Stock Alert', desc: 'Infinix Screen (×2 left)', time: '45 mins ago', icon: <AlertCircle size={14} className="text-amber-500" /> },
-  { id: 3, type: 'system', title: 'System Updated', desc: 'Version 2.4.0 is now live', time: '3h ago', icon: <CheckCircle2 size={14} className="text-blue-500" /> },
-]
-
 export default function TopNav({ onMobileMenuToggle, extraActions, showMail = false }: TopNavProps) {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
   const [showUserMenu, setShowUserMenu] = useState(false)
   const [showNotifications, setShowNotifications] = useState(false)
-  const [notifications, setNotifications] = useState(MOCK_NOTIFICATIONS)
   const [avatarFailed, setAvatarFailed] = useState(false)
   const userMenuRef = useRef<HTMLDivElement>(null)
   const notificationRef = useRef<HTMLDivElement>(null)
+
+  const { data: logResponse, isLoading: logsLoading } = useQuery({
+    queryKey: ['recent-logs'],
+    queryFn: () => providersApi.getActivityLogs({ limit: 5 }),
+    enabled: !!user
+  })
+
+  const notifications = logResponse?.items || []
+
   const profileImageSrc = !avatarFailed && (user?.photoUrl || user?.avatar)
     ? (user.photoUrl || user.avatar)
     : `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.name || 'User'}`
@@ -99,29 +103,31 @@ export default function TopNav({ onMobileMenuToggle, extraActions, showMail = fa
                 <div className="p-5 bg-slate-50/50 border-b border-slate-100 flex justify-between items-center">
                   <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Intelligence Stream</span>
                   <button 
-                    onClick={() => { setNotifications([]); toast.success('All notifications cleared') }}
+                    onClick={() => toast.info('System logs are persistent and cannot be manually cleared.')}
                     className="text-[10px] font-black text-emerald-600 uppercase tracking-widest hover:text-emerald-700"
                   >
-                    Clear All
+                    Manage History
                   </button>
                 </div>
                 <div className="max-h-[400px] overflow-y-auto">
-                  {notifications.length === 0 ? (
+                  {logsLoading ? (
+                     <div className="p-12 text-center animate-pulse text-slate-400 font-black text-[9px] uppercase tracking-widest">Fetching stream...</div>
+                  ) : notifications.length === 0 ? (
                     <div className="p-16 text-center">
-                      <p className="text-sm font-black text-slate-400 italic">No new intelligence found</p>
+                      <p className="text-sm font-black text-slate-400 italic">No recent activity found</p>
                     </div>
                   ) : (
                     <div className="divide-y divide-slate-50">
-                      {notifications.map(n => (
+                      {notifications.map((n: any) => (
                         <div key={n.id} className="p-5 hover:bg-slate-50 transition-colors cursor-pointer group">
                           <div className="flex gap-4">
-                            <div className="h-12 w-12 rounded-2xl bg-white border border-slate-100 flex items-center justify-center shrink-0 group-hover:scale-110 group-hover:shadow-lg transition-all">
-                              {n.icon}
+                            <div className="h-10 w-10 rounded-2xl bg-white border border-slate-100 flex items-center justify-center shrink-0 group-hover:scale-110 group-hover:shadow-lg transition-all text-emerald-600">
+                              <Sparkles size={14} />
                             </div>
                             <div className="space-y-1">
-                              <p className="text-sm font-black text-slate-900 tracking-tight">{n.title}</p>
-                              <p className="text-xs font-bold text-slate-500 leading-relaxed">{n.desc}</p>
-                              <p className="text-[9px] font-black text-slate-400 uppercase hl-mono">{n.time}</p>
+                              <p className="text-sm font-black text-slate-900 tracking-tight">{n.action.replace('_', ' ')}</p>
+                              <p className="text-[11px] font-bold text-slate-500 leading-tight">{n.details || n.logName}</p>
+                              <p className="text-[9px] font-black text-slate-400 uppercase hl-mono">{new Date(n.createdAt).toLocaleTimeString()}</p>
                             </div>
                           </div>
                         </div>
@@ -130,7 +136,7 @@ export default function TopNav({ onMobileMenuToggle, extraActions, showMail = fa
                   )}
                 </div>
                 <div className="p-4 border-t border-slate-100 bg-slate-50/30 text-center">
-                  <Link to="/dashboard/reports" onClick={() => setShowNotifications(false)} className="text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-slate-900 transition-colors">
+                  <Link to={user?.role === 'SUPER_ADMIN' ? "/admin/audit" : "/dashboard/reports"} onClick={() => setShowNotifications(false)} className="text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-slate-900 transition-colors">
                     View Full System Logs
                   </Link>
                 </div>
@@ -166,12 +172,14 @@ export default function TopNav({ onMobileMenuToggle, extraActions, showMail = fa
                 <p className="text-[9px] font-black text-slate-300 uppercase tracking-widest mb-1.5">Authenticated ID</p>
                 <p className="text-xs font-black text-slate-900 tracking-tight truncate">{user?.email}</p>
               </div>
-              <Link to="/dashboard/settings" onClick={() => setShowUserMenu(false)} className="flex items-center gap-3 px-4 py-3.5 rounded-xl text-xs font-black text-slate-500 uppercase tracking-widest hover:bg-emerald-50 hover:text-emerald-700 transition-all">
+              <Link to={user?.role === 'SUPER_ADMIN' ? "/admin/settings" : "/dashboard/settings"} onClick={() => setShowUserMenu(false)} className="flex items-center gap-3 px-4 py-3.5 rounded-xl text-xs font-black text-slate-500 uppercase tracking-widest hover:bg-emerald-50 hover:text-emerald-700 transition-all">
                 <User size={16} className="opacity-50" /> Profile Security
               </Link>
-              <Link to="/dashboard/subscription" onClick={() => setShowUserMenu(false)} className="flex items-center gap-3 px-4 py-3.5 rounded-xl text-xs font-black text-slate-500 uppercase tracking-widest hover:bg-emerald-50 hover:text-emerald-700 transition-all">
-                <Sparkles size={16} className="text-emerald-500" /> Subscription
-              </Link>
+              {user?.role !== 'SUPER_ADMIN' && (
+                <Link to="/dashboard/subscription" onClick={() => setShowUserMenu(false)} className="flex items-center gap-3 px-4 py-3.5 rounded-xl text-xs font-black text-slate-500 uppercase tracking-widest hover:bg-emerald-50 hover:text-emerald-700 transition-all">
+                  <Sparkles size={16} className="text-emerald-500" /> Subscription
+                </Link>
+              )}
               <div className="h-px bg-slate-50 my-2 mx-2" />
               <button 
                 onClick={handleLogout} 

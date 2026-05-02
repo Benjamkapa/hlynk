@@ -24,8 +24,15 @@ export default function AdminDashboardPage() {
     queryKey: ['admin-stats-', timeframe],
     queryFn: () => adminApi.getStats(timeframe)
   })
+
+  const { data: healthData } = useQuery({
+    queryKey: ['system-health'],
+    queryFn: () => adminApi.getHealth(),
+    refetchInterval: 10000 // Refetch every 10s
+  })
   
   const stats = rawStats?.data || rawStats;
+  const health = healthData?.data || healthData;
 
   useEffect(() => {
     if (error) toast.error('Failed to load system stats')
@@ -33,12 +40,14 @@ export default function AdminDashboardPage() {
 
   // Use API data or fallback to empty state for chart
   const revenueData = stats?.trends?.revenueTrend || []
-  const recentEvents = stats?.recentRegistrations?.map((r: any) => ({
-    id: `REG-${r.id.substring(0,6)}`,
-    event: `New Registration: ${r.name}`,
-    entity: r.owner,
-    time: new Date(r.date).toLocaleDateString(),
-    severity: 'Medium'
+  const recentEvents = stats?.recentActivity?.map((a: any) => ({
+    id: `LOG-${a.id.substring(0,6)}`,
+    event: a.event,
+    entity: a.entity,
+    user: a.user,
+    time: new Date(a.time).toLocaleTimeString(),
+    date: new Date(a.time).toLocaleDateString(),
+    severity: a.event.toLowerCase().includes('delete') || a.event.toLowerCase().includes('error') ? 'High' : 'Medium'
   })) || []
 
   if (isLoading) return (
@@ -58,12 +67,23 @@ export default function AdminDashboardPage() {
           <p className="text-slate-500 font-medium text-xl">Operational intelligence for hlynk platform</p>
         </div>
         <div className="flex items-center gap-4 bg-white p-2 rounded-lg border border-slate-100 shadow-sm">
-           <div className="flex -space-x-3 pr-2">
-              {[1, 2, 3].map(i => (
-                <img key={i} src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${i + 20}`} className="h-8 w-8 rounded-full border-2 border-white bg-slate-100" alt="" />
-              ))}
+            <div className="flex -space-x-3 pr-2">
+              {stats?.overview?.activeAvatars?.length > 0 ? (
+                stats.overview.activeAvatars.map((u: any, i: number) => (
+                  <div key={i} className="relative group">
+                    <img src={u.photoUrl} className="h-8 w-8 rounded-full border-2 border-white bg-slate-100 object-cover" title={u.name} alt="" />
+                    <div className="absolute -bottom-1 -right-1 h-2.5 w-2.5 bg-emerald-500 border-2 border-white rounded-full" />
+                  </div>
+                ))
+              ) : (
+                <div className="flex items-center gap-2 px-3 py-1 bg-slate-100 text-slate-400 rounded-md text-[9px] font-black uppercase tracking-widest border border-slate-200">
+                  Awaiting Identities...
+                </div>
+              )}
+            </div>
+            {stats?.overview?.activeToday > 0 && (
               <div className="h-8 w-8 rounded-full border-2 border-white bg-emerald-500 text-white flex items-center justify-center text-[10px] font-black">+{stats?.overview?.activeToday || 0}</div>
-           </div>
+            )}
            <div className="h-8 w-[1px] bg-slate-200" />
            <div className="flex items-center gap-2 px-3 py-1 bg-emerald-50 text-emerald-700 rounded-md border border-emerald-100">
               <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
@@ -133,15 +153,31 @@ export default function AdminDashboardPage() {
           <div className="bg-slate-900 rounded-lg p-10 text-white relative overflow-hidden shadow-2xl shadow-slate-900/20">
              <div className="relative z-10">
                <h4 className="text-xl font-black mb-2">Live Intelligence</h4>
-               <p className="text-slate-400 text-sm font-medium leading-relaxed">Platform health is optimized. No pending security patches found.</p>
+               <p className="text-slate-400 text-sm font-medium leading-relaxed">
+                 {health?.database === 'up' 
+                   ? 'Systems are operational. Cloud infrastructure is performing at peak efficiency.' 
+                   : 'Attention: Database connectivity is experiencing high latency.'}
+               </p>
                <div className="mt-8 space-y-4">
                   <div className="flex items-center justify-between p-4 bg-white/5 rounded-md border border-white/10">
-                     <span className="text-xs font-bold text-slate-400">Node Cluster</span>
-                     <span className="text-xs font-black text-emerald-400">99.98% Healthy</span>
+                     <span className="text-xs font-bold text-slate-400">Database Status</span>
+                     <span className={`text-xs font-black uppercase ${health?.database === 'up' ? 'text-emerald-400' : 'text-red-400'}`}>
+                        {health?.database === 'up' ? 'Online' : 'Degraded'}
+                     </span>
                   </div>
                   <div className="flex items-center justify-between p-4 bg-white/5 rounded-md border border-white/10">
-                     <span className="text-xs font-bold text-slate-400">Active Connections</span>
-                     <span className="text-xs font-black text-blue-400 hl-mono">1,842 / sec</span>
+                     <span className="text-xs font-bold text-slate-400">Memory Cluster</span>
+                     <span className="text-xs font-black text-blue-400 hl-mono">{health?.memoryUsage || 'Calculating...'}</span>
+                  </div>
+                  <div className="flex items-center justify-between p-4 bg-white/5 rounded-md border border-white/10">
+                     <span className="text-xs font-bold text-slate-400">DB Intelligence</span>
+                     <span className="text-xs font-black text-emerald-400 hl-mono">{health?.dbLatency || '0ms'} Pulse</span>
+                  </div>
+                  <div className="flex items-center justify-between p-4 bg-white/5 rounded-md border border-white/10">
+                     <span className="text-xs font-bold text-slate-400">Errors (24h)</span>
+                     <span className={`text-xs font-black hl-mono ${health?.errorsLast24h > 0 ? 'text-amber-400' : 'text-slate-400'}`}>
+                        {health?.errorsLast24h || 0} Events
+                     </span>
                   </div>
                </div>
              </div>
@@ -181,44 +217,56 @@ export default function AdminDashboardPage() {
       <div className="bg-white rounded-lg border border-slate-100 shadow-sm overflow-hidden">
         <div className="p-10 border-b border-slate-50 flex justify-between items-center">
           <div>
-            <h3 className="text-2xl font-black text-slate-900">Recent Transactions</h3>
-            <p className="text-sm text-slate-400 font-medium">Global cross-business transaction flow</p>
+            <h3 className="text-2xl font-black text-slate-900">Financial Ledger</h3>
+            <p className="text-sm text-slate-400 font-medium">Real-time platform-wide transaction flow</p>
           </div>
-          <button className="px-6 py-3 bg-slate-50 text-slate-600 rounded-md text-xs font-black hover:bg-slate-100 transition-all uppercase tracking-widest">View Ledger</button>
+          <button className="px-6 py-3 bg-slate-50 text-slate-600 rounded-md text-xs font-black hover:bg-slate-100 transition-all uppercase tracking-widest">Global Audit</button>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left">
             <thead>
               <tr className="bg-slate-50/50">
-                <th className="px-10 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Event ID</th>
-                <th className="px-10 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Transaction / Entity</th>
-                <th className="px-10 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Status</th>
+                <th className="px-10 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Transaction ID</th>
+                <th className="px-10 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Entity / Business</th>
+                <th className="px-10 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Type</th>
                 <th className="px-10 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Volume</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50">
-              {recentEvents.map((ev: any, i: number) => (
+              {stats?.recentTransactions?.length > 0 ? stats.recentTransactions.map((tx: any, i: number) => (
                 <tr key={i} className="group hover:bg-slate-50/30 transition-all cursor-pointer">
-                  <td className="px-10 py-6 text-xs font-black text-slate-900 hl-mono">{ev.id}</td>
+                  <td className="px-10 py-6 text-xs font-black text-slate-900 hl-mono">{tx.id}</td>
                   <td className="px-10 py-6">
-                    <p className="font-black text-slate-900 text-sm">{ev.event}</p>
-                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">{ev.entity}</p>
+                    <p className="font-black text-slate-900 text-sm">{tx.entity}</p>
+                    <div className="flex items-center gap-2 mt-0.5">
+                       <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">{tx.user}</p>
+                       <div className="h-1 w-1 rounded-full bg-slate-300" />
+                       <p className="text-[10px] text-emerald-600 font-bold uppercase tracking-widest">{tx.status}</p>
+                    </div>
                   </td>
-                  <td className="px-10 py-6 text-center">
+                  <td className="px-10 py-6">
                     <span className={`px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest ${
-                      ev.severity === 'High' ? 'bg-red-50 text-red-600' :
-                      ev.severity === 'Medium' ? 'bg-amber-50 text-amber-600' : 'bg-emerald-50 text-emerald-600'
+                      tx.type === 'SALE' ? 'bg-emerald-50 text-emerald-600' : 'bg-blue-50 text-blue-600'
                     }`}>
-                      {ev.severity} Severity
+                      {tx.type}
                     </span>
                   </td>
                   <td className="px-10 py-6 text-right">
-                    <button className="h-10 w-10 rounded-md bg-slate-50 flex items-center justify-center text-slate-400 group-hover:bg-slate-900 group-hover:text-white transition-all ml-auto">
-                      <ArrowUpRight size={18} />
-                    </button>
+                    <div className="flex flex-col items-end">
+                       <p className="text-sm font-black text-slate-900 hl-mono">
+                         {tx.amount > 0 ? `KES ${tx.amount.toLocaleString()}` : '--'}
+                       </p>
+                       <p className="text-[9px] font-bold text-slate-400 hl-mono">{new Date(tx.time).toLocaleTimeString()}</p>
+                    </div>
                   </td>
                 </tr>
-              ))}
+              )) : (
+                <tr>
+                  <td colSpan={4} className="px-10 py-20 text-center text-slate-400 font-bold text-xs uppercase tracking-widest italic">
+                    No transactions recorded in the current window
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>

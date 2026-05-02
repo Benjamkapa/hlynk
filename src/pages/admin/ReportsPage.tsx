@@ -15,13 +15,26 @@ export default function ReportsPage() {
     queryFn: () => adminApi.getSchedules().then(res => res.data)
   })
 
+  const presets = {
+    'Sales Audit': { table: 'Sale', columns: 'id,totalAmount,paymentMethod,createdAt' },
+    'Business Growth': { table: 'Tenant', columns: 'id,businessName,category,createdAt' },
+    'User Registry': { table: 'User', columns: 'id,name,email,role,isActive' },
+    'Subscription Health': { table: 'Subscription', columns: 'id,planName,status,startDate,endDate' }
+  }
+
+  const applyPreset = (p: keyof typeof presets) => {
+    setTable(presets[p].table)
+    setColumns(presets[p].columns)
+    toast.success(`Applied ${p} template`)
+  }
+
   const runQuery = useMutation({
     mutationFn: () => adminApi.runReportQuery({
       table,
       columns: columns.split(',').map(s => s.trim()).filter(Boolean)
     }),
     onSuccess: (res) => {
-      setQueryResult(res.data)
+      setQueryResult(res?.data || res)
       toast.success('Query executed successfully')
     },
     onError: () => toast.error('Failed to execute query')
@@ -38,9 +51,32 @@ export default function ReportsPage() {
         </div>
       </div>
 
-      <div className="bg-white rounded-lg border border-slate-100 shadow-sm overflow-hidden p-6">
-        <h3 className="text-xl font-black text-slate-900 mb-4">Query Builder</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-4">
+      <div className="space-y-4">
+        <h3 className="text-sm font-black text-slate-400 uppercase tracking-[0.2em]">Quick Templates</h3>
+        <div className="flex flex-wrap gap-3">
+          {Object.keys(presets).map((p) => (
+            <button
+              key={p}
+              onClick={() => applyPreset(p as keyof typeof presets)}
+              className="px-5 py-3 bg-white border border-slate-100 rounded-xl text-xs font-black text-slate-600 hover:border-emerald-500 hover:text-emerald-600 hover:shadow-lg hover:shadow-emerald-900/5 transition-all"
+            >
+              {p}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="bg-white rounded-lg border border-slate-100 shadow-sm overflow-hidden p-8">
+        <div className="flex items-center gap-3 mb-8">
+          <div className="h-10 w-10 rounded-lg bg-emerald-500/10 text-emerald-600 flex items-center justify-center">
+            <FileText size={20} />
+          </div>
+          <div>
+            <h3 className="text-xl font-black text-slate-900">Custom Query Builder</h3>
+            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Deep data extraction tool</p>
+          </div>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
           <div>
             <label className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1 block">Table</label>
             <select className="w-full h-11 px-4 bg-slate-50 border-none rounded-md" value={table} onChange={e => setTable(e.target.value)}>

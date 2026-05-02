@@ -7,9 +7,49 @@ import { toast } from 'sonner'
 import { getErrorMessage } from '../../lib/utils/error'
 
 const PLANS = [
-  { id: 'BASIC', name: 'Basic Plan', price: 1000, desc: 'Ideal for small businesses starting out with basic sales tracking.', color: 'emerald' },
-  { id: 'PRO', name: 'Professional Plan', price: 2500, desc: 'Advanced inventory management and detailed business reports.', color: 'blue' },
+  { 
+    id: 'STARTER', 
+    name: 'Starter Plan', 
+    price: 1500, 
+    desc: 'Perfect for small vendors who want to track their money and expenses clearly.', 
+    color: 'emerald',
+    features: ['Record Sales', 'Expense Tracking', 'Profit Tracking', 'Basic Dashboard'],
+    notIncluded: ['Inventory Auto-Update', 'Low Stock Alerts', 'M-Pesa STK Push', 'Multi-User']
+  },
+  { 
+    id: 'GROWTH', 
+    name: 'Growth Plan', 
+    price: 2500, 
+    desc: 'The complete toolkit for scaling businesses with full inventory and automated payments.', 
+    color: 'blue',
+    features: ['Everything in Starter', 'Auto Stock Deduction', 'Low Stock Alerts', 'M-Pesa STK Push', 'Customer Tracking'],
+    notIncluded: ['Multi-User Support', 'Advanced Analytics']
+  },
+  { 
+    id: 'PRO', 
+    name: 'Professional Plan', 
+    price: 5000, 
+    desc: 'Advanced business intelligence and staff management for professional operations.', 
+    color: 'purple',
+    features: ['Everything in Growth', 'Multi-User (Staff Accounts)', 'Audit Logs', 'Advanced Business Insights', 'Priority Support'],
+    notIncluded: []
+  },
 ]
+
+const FEATURE_COMPARISON = [
+  { name: 'Record Sales', starter: true, growth: true, pro: true },
+  { name: 'Expense Tracking', starter: true, growth: true, pro: true },
+  { name: 'Profit Tracking', starter: true, growth: true, pro: true },
+  { name: 'Inventory Auto-Update', starter: false, growth: true, pro: true },
+  { name: 'Low Stock Alerts', starter: false, growth: true, pro: true },
+  { name: 'M-Pesa STK Push', starter: false, growth: true, pro: true },
+  { name: 'Customer Tracking', starter: false, growth: true, pro: true },
+  { name: 'Multi-User (Staff)', starter: false, growth: false, pro: true },
+  { name: 'Advanced Reports', starter: false, growth: false, pro: true },
+  { name: 'Audit Logs', starter: false, growth: false, pro: true },
+]
+
+import { SubscriptionExpiredBanner } from '../../components/shared/SubscriptionGuard'
 
 export default function SubscriptionPage() {
   const queryClient = useQueryClient()
@@ -32,6 +72,9 @@ export default function SubscriptionPage() {
 
   const subscription = subResponse?.data
   const history = historyResponse?.data || []
+
+  const isTrial = subscription?.status === 'TRIAL'
+  const isExpired = subscription?.status === 'EXPIRED' || (subscription?.endDate && new Date(subscription.endDate) < new Date())
 
   const renewMutation = useMutation({
     mutationFn: (phone: string) => subscriptionsApi.renew(phone),
@@ -57,10 +100,12 @@ export default function SubscriptionPage() {
     <div className="space-y-8 animate-in fade-in duration-500 pt-6">
       <style>{ADMIN_CSS}</style>
       
+      <SubscriptionExpiredBanner expired={isExpired} />
+
       <div className="flex justify-between items-end">
         <div>
           <h1 className="text-3xl font-black text-gray-900 tracking-tight">Subscription</h1>
-          <p className="text-gray-500 font-medium">Manage your business plan, billing cycle and features</p>
+          <p className="text-gray-500 font-medium italic">"Know your real profit. Not just what came in — what stayed."</p>
         </div>
         
         <div className="flex bg-gray-100 p-1 rounded-xl">
@@ -68,7 +113,7 @@ export default function SubscriptionPage() {
             onClick={() => setActiveTab('current')}
             className={`px-6 py-2 rounded-lg text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'current' ? 'bg-white text-emerald-600 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
           >
-            Current Plan
+            Manage Plan
           </button>
           <button 
             onClick={() => setActiveTab('history')}
@@ -81,105 +126,144 @@ export default function SubscriptionPage() {
 
       {activeTab === 'current' ? (
         <>
-          <div className="bg-white p-10 rounded-[14px] border border-gray-100 shadow-sm overflow-hidden relative">
-            <div className="absolute top-0 right-0 p-10">
-              <div className="h-20 w-20 rounded-2xl bg-emerald-50 flex items-center justify-center text-emerald-600 border border-emerald-100">
-                <Zap size={40} />
+          {isTrial && !isExpired && (
+            <div className="bg-emerald-900 text-white p-8 rounded-3xl shadow-2xl shadow-emerald-900/20 flex flex-col md:flex-row justify-between items-center gap-6">
+              <div>
+                <h3 className="text-xl font-black tracking-tight">You're exploring hlynk on a 14-Day Free Trial</h3>
+                <p className="text-emerald-200 text-sm font-medium">No payment required. See your real profit before you pay.</p>
+              </div>
+              <div className="bg-emerald-800 px-6 py-3 rounded-xl border border-emerald-700/50 flex flex-col items-center">
+                 <p className="text-[10px] font-black uppercase tracking-widest opacity-60 mb-1">Trial Ends In</p>
+                 <p className="text-2xl font-black hl-mono">
+                    {subscription?.endDate ? Math.ceil((new Date(subscription.endDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)) : 0} Days
+                 </p>
               </div>
             </div>
+          )}
 
-            <div className="max-w-xl">
-              <span className={`px-3 py-1 rounded-md text-[10px] font-black uppercase tracking-widest ${subscription?.status === 'ACTIVE' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
-                {subscription?.status || 'TRIAL'} Status
+          <div className="bg-white p-10 rounded-[28px] border border-gray-100 shadow-sm overflow-hidden relative">
+            <div className="absolute top-0 right-0 p-10 opacity-10">
+              <Zap size={160} className="text-emerald-900" />
+            </div>
+
+            <div className="max-w-xl relative z-10">
+              <span className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${isExpired ? 'bg-red-100 text-red-700' : 'bg-emerald-100 text-emerald-700'}`}>
+                {isExpired ? 'EXPIRED' : (isTrial ? 'FREE TRIAL' : 'ACTIVE SUBSCRIPTION')}
               </span>
-              <h2 className="text-4xl font-black text-gray-900 mt-6 mb-3 tracking-tight">
-                {PLANS.find(p => p.id === subscription?.planName)?.name || 'Trial'} Plan
+              <h2 className="text-5xl font-black text-gray-900 mt-6 mb-4 tracking-tighter">
+                {PLANS.find(p => p.id === subscription?.planName)?.name || 'Custom'}
               </h2>
-              <p className="text-gray-500 font-medium text-lg mb-10 leading-relaxed">
-                {PLANS.find(p => p.id === subscription?.planName)?.desc || 'Your free trial period to explore the system.'}
+              <p className="text-gray-500 font-medium text-xl mb-12 leading-relaxed">
+                {PLANS.find(p => p.id === subscription?.planName)?.desc || 'Your current subscription plan details.'}
               </p>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-10 mb-12">
                 <div className="space-y-1">
                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-2">
-                     <Calendar size={14} /> {subscription?.status === 'TRIAL' ? 'Trial Ends' : 'Next Billing Date'}
+                     <Calendar size={14} className="text-emerald-500" /> {isTrial ? 'Trial Ends' : 'Next Billing Date'}
                    </p>
-                   <p className="text-lg font-black text-gray-900 hl-mono">
+                   <p className="text-xl font-black text-gray-900 hl-mono">
                      {subscription?.endDate ? new Date(subscription.endDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : 'N/A'}
                    </p>
                 </div>
                 <div className="space-y-1">
                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-2">
-                     <CreditCard size={14} /> Monthly Amount
+                     <CreditCard size={14} className="text-emerald-500" /> Monthly Investment
                    </p>
-                   <p className="text-lg font-black text-[#0D4A3E] hl-mono">
-                     KES {PLANS.find(p => p.id === subscription?.planName)?.price.toLocaleString() || '0'} / mo
+                   <p className="text-xl font-black text-[#0D4A3E] hl-mono">
+                     KES {PLANS.find(p => p.id === subscription?.planName)?.price.toLocaleString() || '0'}
                    </p>
                 </div>
               </div>
 
-              <div className="flex gap-4">
+              <div className="flex flex-wrap gap-4">
                 <button 
                   onClick={() => {
                     setMpesaPhone('')
                     setShowRenewModal(true)
                   }}
-                  className="bg-[#0D4A3E] text-white px-10 py-5 rounded-xl font-black text-xs uppercase tracking-widest hover:bg-[#0A3D33] transition-all shadow-xl shadow-emerald-900/10"
+                  className="bg-[#0D4A3E] text-white px-12 py-5 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-[#0A3D33] transition-all shadow-xl shadow-emerald-900/20 active:scale-95"
                 >
-                  Renew Now
+                  Renew Subscription
                 </button>
                 <button 
                   onClick={() => setShowChangeModal(true)}
-                  className="bg-white text-gray-600 px-10 py-5 rounded-xl font-black text-xs uppercase tracking-widest border border-gray-100 hover:bg-gray-50 transition-all"
+                  className="bg-white text-gray-600 px-12 py-5 rounded-2xl font-black text-xs uppercase tracking-widest border border-gray-100 hover:bg-gray-50 transition-all active:scale-95"
                 >
-                  Change Plan
+                  Change My Plan
                 </button>
               </div>
             </div>
           </div>
 
-          <div className="bg-amber-50 border border-amber-100 p-8 rounded-[14px] flex items-start gap-6">
-            <div className="h-12 w-12 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center shrink-0 border border-amber-200">
-              <AlertTriangle size={24} />
-            </div>
-            <div>
-              <h4 className="text-lg font-black text-amber-900 mb-1">Payment Method: M-Pesa</h4>
-              <p className="text-sm text-amber-700 font-medium leading-relaxed">Your subscription is managed via M-Pesa. To renew or upgrade, you will receive an STK push on your registered number.</p>
-            </div>
+          <div className="bg-white p-12 rounded-[28px] border border-gray-100 shadow-sm">
+             <div className="mb-12">
+               <h3 className="text-2xl font-black text-gray-900 tracking-tight mb-2">Compare hlynk Packages</h3>
+               <p className="text-gray-500 font-medium italic">Choose the level of control your business needs.</p>
+             </div>
+
+             <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="border-b-2 border-gray-50">
+                      <th className="py-6 text-[10px] font-black text-gray-400 uppercase tracking-widest">Feature</th>
+                      <th className="py-6 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Starter</th>
+                      <th className="py-6 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Growth</th>
+                      <th className="py-6 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Pro</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-50">
+                    {FEATURE_COMPARISON.map((f, i) => (
+                      <tr key={i} className="hover:bg-slate-50/50 transition-all group">
+                        <td className="py-6 font-bold text-slate-700 text-sm">{f.name}</td>
+                        <td className="py-6 text-center">
+                          {f.starter ? <CheckCircle2 size={20} className="mx-auto text-emerald-500" /> : <span className="text-slate-200">✕</span>}
+                        </td>
+                        <td className="py-6 text-center">
+                          {f.growth ? <CheckCircle2 size={20} className="mx-auto text-blue-500" /> : <span className="text-slate-200">✕</span>}
+                        </td>
+                        <td className="py-6 text-center">
+                          {f.pro ? <CheckCircle2 size={20} className="mx-auto text-purple-500" /> : <span className="text-slate-200">✕</span>}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+             </div>
           </div>
         </>
       ) : (
-        <div className="bg-white rounded-[14px] border border-gray-100 shadow-sm overflow-hidden">
+        <div className="bg-white rounded-[28px] border border-gray-100 shadow-sm overflow-hidden">
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-gray-50/50 border-b border-gray-100">
-                <th className="p-6 text-[10px] font-black text-gray-400 uppercase tracking-widest">Date</th>
-                <th className="p-6 text-[10px] font-black text-gray-400 uppercase tracking-widest">Reference</th>
-                <th className="p-6 text-[10px] font-black text-gray-400 uppercase tracking-widest">Amount</th>
-                <th className="p-6 text-[10px] font-black text-gray-400 uppercase tracking-widest">Status</th>
-                <th className="p-6 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Invoice</th>
+                <th className="p-8 text-[10px] font-black text-gray-400 uppercase tracking-widest">Date</th>
+                <th className="p-8 text-[10px] font-black text-gray-400 uppercase tracking-widest">Reference</th>
+                <th className="p-8 text-[10px] font-black text-gray-400 uppercase tracking-widest">Plan</th>
+                <th className="p-8 text-[10px] font-black text-gray-400 uppercase tracking-widest">Amount</th>
+                <th className="p-8 text-[10px] font-black text-gray-400 uppercase tracking-widest">Status</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="divide-y divide-gray-50">
               {historyLoading ? (
-                <tr><td colSpan={5} className="p-12 text-center text-gray-400">Loading history...</td></tr>
+                <tr><td colSpan={5} className="p-20 text-center animate-pulse text-slate-300 uppercase font-black text-[10px] tracking-widest">Loading history...</td></tr>
               ) : history.length === 0 ? (
-                <tr><td colSpan={5} className="p-12 text-center text-gray-400 font-medium">No billing records found</td></tr>
+                <tr><td colSpan={5} className="p-20 text-center text-gray-400 font-medium italic">No billing records found. Your business journey is just beginning.</td></tr>
               ) : (
                 history.map((inv: any) => (
-                  <tr key={inv.id} className="border-b border-gray-50 hover:bg-gray-50/50 transition-all group">
-                    <td className="p-6 font-bold text-gray-900 text-sm">{new Date(inv.createdAt).toLocaleDateString()}</td>
-                    <td className="p-6 font-medium text-gray-500 text-xs hl-mono">{inv.reference}</td>
-                    <td className="p-6 font-black text-emerald-700 hl-mono">KES {Number(inv.amount).toLocaleString()}</td>
-                    <td className="p-6">
-                      <span className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${inv.status === 'PAID' ? 'bg-emerald-100 text-emerald-700' : inv.status === 'FAILED' ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-700'}`}>
-                        {inv.status}
+                  <tr key={inv.id} className="hover:bg-gray-50/50 transition-all group">
+                    <td className="p-8 font-bold text-gray-900 text-sm">{new Date(inv.createdAt).toLocaleDateString()}</td>
+                    <td className="p-8 font-medium text-gray-400 text-xs hl-mono">{inv.reference}</td>
+                    <td className="p-8">
+                      <span className="px-3 py-1 rounded-full bg-slate-100 text-slate-600 text-[10px] font-black uppercase tracking-widest">
+                        {inv.plan}
                       </span>
                     </td>
-                    <td className="p-6 text-right">
-                      <button className="text-gray-300 group-hover:text-emerald-600 transition-all">
-                        <ChevronRight size={18} />
-                      </button>
+                    <td className="p-8 font-black text-emerald-800 hl-mono">KES {Number(inv.amount).toLocaleString()}</td>
+                    <td className="p-8">
+                      <span className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${inv.status === 'PAID' ? 'bg-emerald-100 text-emerald-700' : inv.status === 'FAILED' ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-700'}`}>
+                        {inv.status}
+                      </span>
                     </td>
                   </tr>
                 ))

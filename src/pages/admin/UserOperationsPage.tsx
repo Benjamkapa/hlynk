@@ -7,22 +7,44 @@ import { toast } from 'sonner'
 
 export default function UserOperationsPage() {
   const [search, setSearch] = useState('')
+  const [selectedUser, setSelectedUser] = useState<any>(null)
   const queryClient = useQueryClient()
 
-  const { data: usersData, isLoading } = useQuery<{ success: boolean; data: { users: any[] } }>({
+  const { data: usersData, isLoading } = useQuery<{ success: boolean; data: any[] }>({
     queryKey: ['admin-users', search],
     queryFn: () => adminApi.getUsers({ search })
   })
 
-  const users = usersData?.data?.users || []
+  const { data: sessionsResponse } = useQuery<{ success: boolean; data: any[] }>({
+    queryKey: ['admin-sessions'],
+    queryFn: adminApi.getSessions,
+    refetchInterval: 10000
+  })
+
+  const { data: userActivityResponse } = useQuery<{ success: boolean; data: any[] }>({
+    queryKey: ['user-activity', selectedUser?.id],
+    queryFn: () => adminApi.getUserActivity(selectedUser.id),
+    enabled: !!selectedUser
+  })
+
+  const users = usersData?.data || []
+  const sessions = sessionsResponse?.data || []
+  const activityLogs = userActivityResponse?.data || []
 
   const deleteMutation = useMutation({
     mutationFn: adminApi.deleteUser,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-users'] })
       toast.success('User deleted successfully')
-    },
-    onError: () => toast.error('Failed to delete user')
+    }
+  })
+
+  const terminateMutation = useMutation({
+    mutationFn: adminApi.terminateSession,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-sessions'] })
+      toast.success('Session terminated')
+    }
   })
 
   return (
@@ -32,28 +54,24 @@ export default function UserOperationsPage() {
       <div className="flex justify-between items-end">
         <div>
           <h1 className="text-3xl font-black text-gray-900 tracking-tight">User Operations</h1>
-          <p className="text-gray-500 font-medium">Manage all platform users, roles, and access controls</p>
+          <p className="text-gray-500 font-medium">Manage platform users, security sessions, and deep activity audits</p>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 space-y-6">
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+        <div className="lg:col-span-3 space-y-6">
           <div className="bg-white rounded-lg border border-gray-100 shadow-sm overflow-hidden">
             <div className="p-6 border-b border-gray-50 flex gap-4">
               <div className="relative flex-1">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
                 <input 
                   type="text" 
-                  placeholder="Search users by name, phone, or email..." 
+                  placeholder="Search by name, phone, or email..." 
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   className="w-full bg-gray-50 border-none rounded-md py-3.5 pl-12 pr-4 outline-none focus:ring-2 focus:ring-emerald-500/10 transition-all text-sm" 
                 />
               </div>
-              <button className="bg-gray-50 text-gray-500 h-12 px-4 rounded-md flex items-center gap-2 font-bold text-xs hover:bg-gray-100 transition-all border border-gray-100">
-                <Filter size={16} />
-                Filters
-              </button>
             </div>
 
             <div className="overflow-x-auto">
@@ -61,92 +79,118 @@ export default function UserOperationsPage() {
                 <thead>
                   <tr className="bg-gray-50/50">
                     <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest">User Details</th>
-                    <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest">Business</th>
-                    <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest">Role</th>
+                    <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest">Business / Tenant</th>
                     <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Status</th>
                     <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Action</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
                   {isLoading ? (
-                    <tr>
-                      <td colSpan={5} className="py-20 text-center">
-                        <div className="h-8 w-8 animate-spin rounded-full border-4 border-emerald-500 border-t-transparent mx-auto" />
-                      </td>
-                    </tr>
-                  ) : users.length > 0 ? users.map((u: any) => (
-                    <tr key={u.id} className="hover:bg-gray-50/50 transition-all group">
+                    <tr><td colSpan={4} className="py-20 text-center animate-pulse">Loading users...</td></tr>
+                  ) : users.map((u: any) => (
+                    <tr 
+                      key={u.id} 
+                      onClick={() => setSelectedUser(u)}
+                      className={`hover:bg-gray-50/50 transition-all group cursor-pointer ${selectedUser?.id === u.id ? 'bg-emerald-50/50' : ''}`}
+                    >
                       <td className="px-8 py-5">
                         <div className="flex items-center gap-4">
-                          {u.photoUrl ? (
-                            <img src={u.photoUrl} alt="Avatar" className="h-10 w-10 rounded-md object-cover border border-emerald-100" />
-                          ) : (
-                            <div className="h-10 w-10 rounded-md bg-emerald-50 text-emerald-600 flex items-center justify-center font-black border border-emerald-100 group-hover:bg-emerald-600 group-hover:text-white transition-all">
-                              {u.name?.charAt(0) || 'U'}
-                            </div>
-                          )}
+                          <img 
+                            src={u.photoUrl || `https://api.dicebear.com/7.x/initials/svg?seed=${u.name}`} 
+                            className="h-12 w-12 rounded-xl object-cover border border-slate-100 shadow-sm" 
+                            alt="" 
+                          />
                           <div>
-                            <p className="font-bold text-gray-900 text-sm">{u.name}</p>
-                            <p className="text-[10px] text-gray-400 font-bold hl-mono">{u.phone}</p>
+                            <p className="font-black text-gray-900 text-sm">{u.name}</p>
+                            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">{u.email || u.phone}</p>
                           </div>
                         </div>
                       </td>
                       <td className="px-8 py-5">
-                        <p className="text-sm font-bold text-gray-600">{u.tenant?.businessName || 'N/A'}</p>
-                      </td>
-                      <td className="px-8 py-5">
-                        <span className="text-[10px] font-black text-gray-600 bg-gray-100 px-2 py-0.5 rounded uppercase tracking-widest">{u.role}</span>
+                        <p className="text-[10px] font-black text-emerald-700 uppercase tracking-widest bg-emerald-50 px-2 py-1 rounded inline-block">
+                          {u.tenant?.businessName || 'GLOBAL / SYSTEM'}
+                        </p>
                       </td>
                       <td className="px-8 py-5 text-center">
-                        <span className={`px-2 py-1 rounded-md text-[10px] font-black uppercase tracking-wider ${
-                          u.phoneVerified ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'
-                        }`}>
-                          {u.phoneVerified ? 'Verified' : 'Unverified'}
+                        <span className={`px-2 py-1 rounded-md text-[9px] font-black uppercase tracking-wider ${u.isActive ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`}>
+                          {u.isActive ? 'Active' : 'Banned'}
                         </span>
                       </td>
                       <td className="px-8 py-5 text-right">
-                        <button 
-                          onClick={() => { if(window.confirm('Delete this user permanently?')) deleteMutation.mutate(u.id) }} 
-                          className="p-2 hover:bg-red-50 rounded-md transition-all group-hover:scale-110"
-                        >
-                          <Trash2 size={18} className="text-gray-400 group-hover:text-red-600" />
-                        </button>
+                        <button className="text-gray-400 hover:text-red-600 transition-all p-2"><Trash2 size={16} /></button>
                       </td>
                     </tr>
-                  )) : (
-                    <tr>
-                      <td colSpan={5} className="py-20 text-center text-gray-400 font-bold text-xs uppercase tracking-widest">No users found</td>
-                    </tr>
-                  )}
+                  ))}
                 </tbody>
               </table>
             </div>
           </div>
+
+          {selectedUser && (
+            <div className="bg-slate-900 rounded-2xl p-8 text-white animate-in slide-in-from-bottom duration-500">
+               <div className="flex justify-between items-center mb-8">
+                  <div>
+                    <h3 className="text-xl font-black">Audit Trail: {selectedUser.name}</h3>
+                    <p className="text-slate-400 text-xs font-medium uppercase tracking-widest mt-1">Deep Activity Analysis</p>
+                  </div>
+                  <button onClick={() => setSelectedUser(null)} className="text-slate-500 hover:text-white transition-all text-xs font-black uppercase">Close Audit</button>
+               </div>
+                <div className="space-y-4 max-h-[400px] overflow-y-auto pr-4 scrollbar-hide">
+                  {activityLogs.length > 0 ? activityLogs.map((log: any, i: number) => (
+                    <div key={i} className="flex items-start gap-4 p-4 bg-white/5 rounded-xl border border-white/10">
+                       <div className="h-8 w-8 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center shrink-0">
+                          <Users size={14} />
+                       </div>
+                       <div className="flex-1">
+                          <div className="flex justify-between items-start mb-1">
+                             <p className="text-xs font-black text-white">{log.action}</p>
+                             <span className="text-[10px] font-bold text-slate-500 hl-mono">{new Date(log.createdAt).toLocaleString()}</span>
+                          </div>
+                          <p className="text-[10px] text-slate-400 font-medium leading-relaxed">{log.details}</p>
+                       </div>
+                    </div>
+                  )) : (
+                    <p className="text-center text-slate-500 py-10 italic text-sm">No activity logs found for this user.</p>
+                  )}
+                </div>
+            </div>
+          )}
         </div>
 
         <div className="space-y-6">
-          <div className="bg-white p-8 rounded-lg border border-gray-100 shadow-sm">
+          <div className="bg-white p-8 rounded-lg border border-gray-100 shadow-sm sticky top-6">
             <h3 className="text-lg font-black text-gray-900 mb-8 flex items-center gap-2">
               <Monitor size={20} className="text-emerald-600" />
               Live Sessions
             </h3>
             <div className="space-y-4">
-              {[1, 2].map((i) => (
-                <div key={i} className="flex items-center justify-between p-5 rounded-md bg-gray-50 border border-gray-100 hover:bg-white hover:shadow-md transition-all group">
-                  <div className="flex items-center gap-4">
-                    <div className="h-10 w-10 rounded-md bg-white text-gray-400 flex items-center justify-center border border-gray-100 group-hover:border-emerald-100 transition-all">
-                      <Users size={18} />
-                    </div>
+              {sessions.length > 0 ? sessions.map((s: any) => (
+                <div key={s.id} className="p-5 rounded-xl bg-gray-50 border border-gray-100 hover:shadow-md transition-all">
+                  <div className="flex items-center gap-4 mb-4">
+                    <img 
+                      src={s.user?.photoUrl || `https://api.dicebear.com/7.x/initials/svg?seed=${s.user?.name}`} 
+                      className="h-10 w-10 rounded-lg object-cover" 
+                      alt="" 
+                    />
                     <div>
-                      <p className="text-sm font-black text-gray-900">User <span className="hl-mono">#{i}042</span></p>
-                      <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest hl-mono">10.0.0.{i} • Nairobi, KE</p>
+                      <p className="text-xs font-black text-gray-900 truncate max-w-[120px]">{s.user?.name}</p>
+                      <p className="text-[9px] text-gray-400 font-bold hl-mono uppercase">{s.ipAddress || 'Unknown IP'}</p>
                     </div>
                   </div>
-                  <button className="h-9 w-9 rounded-md text-gray-400 hover:text-red-600 hover:bg-red-50 transition-all flex items-center justify-center">
-                    <LogOut size={16} />
-                  </button>
+                  <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+                    <span className="text-[9px] font-black text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded uppercase tracking-widest">Active Now</span>
+                    <button 
+                      onClick={() => terminateMutation.mutate(s.id)}
+                      disabled={terminateMutation.isPending}
+                      className="text-red-500 hover:bg-red-50 p-2 rounded-lg transition-all"
+                    >
+                      <LogOut size={16} />
+                    </button>
+                  </div>
                 </div>
-              ))}
+              )) : (
+                <div className="py-10 text-center text-gray-400 text-xs font-bold uppercase tracking-widest">No active sessions</div>
+              )}
             </div>
           </div>
         </div>

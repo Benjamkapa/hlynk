@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Plus, Search, Filter, Download, Edit, Trash2, Package, TrendingDown, Activity } from 'lucide-react'
+import { Plus, Search, Filter, Download, Edit, Trash2, Package, TrendingDown, Activity, Lock } from 'lucide-react'
 import { ADMIN_CSS } from '../admin/hl-design-system'
 import { SlideOver } from '../../components/shared/SlideOver'
 import { toast } from 'sonner'
@@ -7,6 +7,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { inventoryApi } from '../../lib/api/providers'
 import { getErrorMessage } from '../../lib/utils/error'
 import { exportToCSV } from '../../lib/utils/export'
+import FeatureGate from '../../components/shared/FeatureGate'
 
 import { useEffect } from 'react'
 import { keepPreviousData } from '@tanstack/react-query'
@@ -86,7 +87,9 @@ export default function ProductsPage() {
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <SummaryCard title="Total Items" value={stats.totalItems.toLocaleString()} sub="Unique SKUs" icon={Package} variant="emerald" />
-        <SummaryCard title="Low Stock" value={`${stats.lowStock} ALERTS`} sub="Requires attention" icon={TrendingDown} variant="red" />
+        <FeatureGate feature="low_stock_alerts">
+          <SummaryCard title="Low Stock" value={`${stats.lowStock} ALERTS`} sub="Requires attention" icon={TrendingDown} variant="red" />
+        </FeatureGate>
         <SummaryCard title="Stock Value" value={`KES ${stats.totalValue.toLocaleString()}`} sub="Total inventory" icon={Activity} variant="blue" />
       </div>
 

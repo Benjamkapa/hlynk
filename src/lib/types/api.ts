@@ -31,6 +31,12 @@ export interface AdminStats {
   tenantsCount: number;
   recentEvents: any[];
   recentSubscriptions: any[];
+  trends: {
+    weeklyGrowth: any[];
+    revenueTrend: any[];
+    dailyActive: any[];
+    ticketTrend: any[];
+  };
 }
 
 export interface SystemHealth {

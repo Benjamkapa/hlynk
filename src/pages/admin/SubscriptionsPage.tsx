@@ -10,21 +10,22 @@ export default function SubscriptionsPage() {
   const [search, setSearch] = useState('')
   const queryClient = useQueryClient()
 
-  const { data: stats, error: statsError } = useQuery<AdminStats>({
+  const { data: rawStats, error: statsError } = useQuery<any>({
     queryKey: ['admin-stats'],
-    queryFn: adminApi.getStats
+    queryFn: () => adminApi.getStats()
   })
 
-  const { data: subsData, isLoading, error: subsError } = useQuery<{ success: boolean; data: { subscriptions: any[] } }>({
+  const { data: subsData, isLoading, error: subsError } = useQuery<any>({
     queryKey: ['admin-subscriptions', search],
-    queryFn: () => adminApi.getSubscriptions({ status: search })
+    queryFn: () => adminApi.getSubscriptions({ search })
   })
 
   useEffect(() => {
     if (statsError || subsError) toast.error('Failed to load subscription data')
   }, [statsError, subsError])
 
-  const subscriptions = subsData?.data?.subscriptions || []
+  const stats: AdminStats = rawStats?.data || rawStats
+  const subscriptions = subsData?.data || subsData || []
 
   const upgradeMutation = useMutation({
     mutationFn: ({ id, plan }: { id: string, plan: string }) => adminApi.upgradePlan(id, plan),

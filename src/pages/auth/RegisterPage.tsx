@@ -25,7 +25,7 @@ type RegisterFormState = {
   category: string;
   county: string;
   location: string;
-  planName: "TRIAL" | "BASIC";
+  planName: "STARTER";
 };
 
 export default function RegisterPage() {
@@ -39,7 +39,7 @@ export default function RegisterPage() {
     }
   }, [user, navigate]);
 
-  const planName = (searchParams.get('plan') || 'TRIAL').toUpperCase() === 'BASIC' ? 'BASIC' : 'TRIAL';
+  const planName = "STARTER";
   
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
@@ -107,7 +107,7 @@ export default function RegisterPage() {
             category: formData.category,
             county: formData.county,
             location: formData.location,
-            planName: formData.planName as "TRIAL" | "BASIC",
+            planName: formData.planName as "STARTER",
           },
         });
 

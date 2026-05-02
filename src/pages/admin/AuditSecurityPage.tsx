@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { adminApi } from '../../lib/api/providers'
 import { toast } from 'sonner'
-import { ShieldCheck, UserX, Key, Search, Filter, AlertTriangle, ShieldAlert, ChevronLeft, ChevronRight, RefreshCcw, FileText } from 'lucide-react'
+import { ShieldCheck, UserX, Key, Search, Filter, AlertTriangle, ShieldAlert, ChevronLeft, ChevronRight, RefreshCcw, FileText, Loader2 } from 'lucide-react'
 import { ADMIN_CSS } from './hl-design-system'
 import { useState, useEffect } from 'react'
 import { AdminStats } from '../../lib/types/api'
@@ -10,15 +10,22 @@ import { exportToCSV } from '../../lib/utils/export'
 export default function AuditSecurityPage() {
   const [logPage, setLogPage] = useState(1)
 
-  const { data: stats, isLoading: statsLoading, error: statsError } = useQuery<AdminStats>({
+  const { data: rawStats, isLoading: statsLoading, error: statsError } = useQuery<any>({
     queryKey: ['admin-stats'],
-    queryFn: adminApi.getStats
+    queryFn: () => adminApi.getStats()
   })
+
+  const stats: AdminStats = rawStats?.data || rawStats
 
   const { data: logsData, isLoading: logsLoading, refetch: refetchLogs } = useQuery({
     queryKey: ['admin-activity-logs', logPage],
     queryFn: () => adminApi.getActivityLogs({ page: logPage, limit: 15 })
   })
+
+  const handleIncidentReport = () => {
+    window.location.href = 'mailto:security@hudumalynk.com?subject=SECURITY INCIDENT: [Action Required]&body=Please describe the incident details here...'
+    toast.success('Security incident report initiated')
+  }
 
   useEffect(() => {
     if (statsError) toast.error('Failed to load security data')
@@ -40,7 +47,10 @@ export default function AuditSecurityPage() {
           <p className="text-gray-500 font-medium">Global security monitoring, compliance tracking and threat mitigation</p>
         </div>
         <div className="flex gap-3">
-          <button className="bg-red-600 text-white h-12 px-6 rounded-xl font-bold text-sm hover:bg-red-700 transition-all flex items-center gap-2 shadow-lg shadow-red-900/20">
+          <button 
+            onClick={handleIncidentReport}
+            className="bg-red-600 text-white h-12 px-6 rounded-xl font-bold text-sm hover:bg-red-700 transition-all flex items-center gap-2 shadow-lg shadow-red-900/20"
+          >
             <ShieldAlert size={18} /> Incident Report
           </button>
         </div>

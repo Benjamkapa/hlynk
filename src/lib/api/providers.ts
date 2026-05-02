@@ -8,6 +8,10 @@ export const providersApi = {
   deactivateAccount: () => api.post('/providers/me/security/deactivate').then(r => r.data),
   getActivityLogs: (params?: { page?: number; limit?: number }) => api.get('/providers/me/activity', { params }).then(r => r.data),
   getStats: () => api.get('/providers/stats').then(r => r.data),
+  getStaff: () => api.get('/providers/staff').then(r => r.data),
+  createStaff: (data: any) => api.post('/providers/staff', data).then(r => r.data),
+  updateStaff: (id: string, data: any) => api.put(`/providers/staff/${id}`, data).then(r => r.data),
+  deleteStaff: (id: string) => api.delete(`/providers/staff/${id}`).then(r => r.data),
   uploadPhoto: (file: File) => {
     const form = new FormData()
     form.append('file', file)
@@ -92,6 +96,8 @@ export const paymentsApi = {
 
 export const adminApi = {
   getStats: (timeframe?: string) => api.get('/admin/stats', { params: { timeframe } }).then(r => r.data),
+  getHealth: () => api.get('/admin/system-health').then(r => r.data),
+  getSystemHealth: () => api.get('/admin/system-health').then(r => r.data),
   getTenants: (params?: { page?: number; search?: string; limit?: number }) =>
     api.get('/admin/tenants', { params }).then(r => r.data),
   suspendTenant: (id: string) => api.put(`/admin/tenants/${id}/suspend`).then(r => r.data),
@@ -101,10 +107,12 @@ export const adminApi = {
   createTenant: (data: any) => api.post('/admin/tenants', data).then(r => r.data),
   getUsers: (params?: { page?: number; search?: string; limit?: number }) => api.get('/admin/users', { params }).then(r => r.data),
   deleteUser: (id: string) => api.delete(`/admin/users/${id}`).then(r => r.data),
-  getSubscriptions: (params?: { page?: number; status?: string; limit?: number }) => api.get('/admin/subscriptions', { params }).then(r => r.data),
+  getSubscriptions: (params?: { page?: number; search?: string; status?: string; limit?: number }) => api.get('/admin/subscriptions', { params }).then(r => r.data),
   updateTenant: (id: string, data: any) => api.put(`/admin/tenants/${id}`, data).then(r => r.data),
+  getSessions: () => api.get('/admin/sessions').then(r => r.data),
+  terminateSession: (id: string) => api.put(`/admin/sessions/${id}/terminate`).then(r => r.data),
+  getUserActivity: (userId: string) => api.get(`/admin/users/${userId}/activity`).then(r => r.data),
   deleteTenant: (id: string) => api.delete(`/admin/tenants/${id}`).then(r => r.data),
-  getSystemHealth: () => api.get('/admin/system-health').then(r => r.data),
   runReportQuery: (data: any) => api.post('/admin/reports/query', data).then(r => r.data),
   getSchedules: () => api.get('/admin/schedules').then(r => r.data),
   getSettings: () => api.get('/admin/settings').then(r => r.data),

@@ -1,4 +1,4 @@
-import { TrendingUp, Receipt, PackageSearch, BarChart3, LayoutDashboard, Sparkles } from 'lucide-react'
+import { TrendingUp, Receipt, PackageSearch, BarChart3, LayoutDashboard, Users } from 'lucide-react'
 import { FadeUp } from './Animations'
 
 const features = [
@@ -28,9 +28,9 @@ const features = [
     desc: "Get a clear summary of your business health every morning and evening. Simple, easy to read."
   },
   {
-    icon: <Sparkles size={24} />,
-    title: "Google Sign-In",
-    desc: "Skip friction at login with secure Google access, so providers can get into hlynk faster and get back to work."
+    icon: <Users size={24} />,
+    title: "Staff Management",
+    desc: "Create sub-accounts for your staff with limited access. Keep your business secure while you delegate tasks."
   },
 ]
 

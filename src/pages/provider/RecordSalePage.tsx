@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
-import { Search, Plus, Minus, Trash2, CreditCard, Wallet, Banknote, Zap, CheckCircle2, Package, Scan, ArrowRight, ShoppingCart, Loader2, LayoutGrid, List, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Search, Plus, Minus, Trash2, CreditCard, Wallet, Banknote, Zap, CheckCircle2, Package, Scan, ArrowRight, ShoppingCart, Loader2, LayoutGrid, List, ChevronLeft, ChevronRight, Lock, Smartphone } from 'lucide-react'
+import FeatureGate, { FEATURE_PLANS } from '../../components/shared/FeatureGate'
 import { toast } from 'sonner'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { inventoryApi, salesApi, paymentsApi, customersApi } from '../../lib/api/providers'
@@ -441,20 +442,43 @@ export default function RecordSalePage() {
         <div className="bg-white p-10 rounded-3xl border border-slate-100 shadow-xl shadow-slate-900/5 space-y-8">
           <div className="grid grid-cols-2 gap-4">
             {[
-              { id: 'CASH', label: 'Cash', icon: Banknote },
-              { id: 'MPESA', label: 'M-Pesa', icon: Wallet },
+              { id: 'CASH', label: 'Cash', icon: Banknote, feature: null },
+              { id: 'MPESA', label: 'M-Pesa', icon: Wallet, feature: 'mpesa_stk' },
             ].map(method => (
-              <button
+              <FeatureGate 
                 key={method.id}
-                onClick={() => setPaymentMethod(method.id)}
-                className={`flex items-center justify-center gap-3 py-5 rounded-2xl border-2 transition-all ${paymentMethod === method.id
-                  ? 'border-[#0D4A3E] bg-emerald-50/50 text-[#0D4A3E] shadow-lg shadow-emerald-900/5'
-                  : 'border-slate-50 bg-white text-slate-400 hover:bg-slate-50 hover:text-slate-600'
-                  }`}
+                feature={method.feature as any} 
+                fallback={
+                  method.feature ? (
+                    <button
+                      onClick={() => toast.info(`${method.label} requires the Growth Plan. Please upgrade to unlock.`)}
+                      className="relative group flex flex-col items-center justify-center gap-2 py-5 rounded-2xl border-2 border-slate-50 bg-slate-50/50 text-slate-300 cursor-not-allowed overflow-hidden"
+                    >
+                      <div className="flex items-center gap-3">
+                        <method.icon size={20} />
+                        <span className="text-[10px] font-black uppercase tracking-widest">{method.label}</span>
+                      </div>
+                      <span className="text-[8px] font-black bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full uppercase tracking-tighter">
+                         Requires {(FEATURE_PLANS as any)[method.feature as string][0]}
+                      </span>
+                      <div className="absolute top-0 right-0 p-2 opacity-20">
+                        <Lock size={12} />
+                      </div>
+                    </button>
+                  ) : null
+                }
               >
-                <method.icon size={20} />
-                <span className="text-[10px] font-black uppercase tracking-widest">{method.label}</span>
-              </button>
+                <button
+                  onClick={() => setPaymentMethod(method.id)}
+                  className={`flex items-center justify-center gap-3 py-5 rounded-2xl border-2 transition-all ${paymentMethod === method.id
+                    ? 'border-[#0D4A3E] bg-emerald-50/50 text-[#0D4A3E] shadow-lg shadow-emerald-900/5'
+                    : 'border-slate-50 bg-white text-slate-400 hover:bg-slate-50 hover:text-slate-600'
+                    }`}
+                >
+                  <method.icon size={20} />
+                  <span className="text-[10px] font-black uppercase tracking-widest">{method.label}</span>
+                </button>
+              </FeatureGate>
             ))}
           </div>
 

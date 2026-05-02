@@ -12,6 +12,7 @@ import ResetPasswordPage from './pages/auth/ResetPasswordPage'
 // Layouts
 import ProviderLayout from './components/shared/ProviderLayout'
 import AdminLayout from './components/shared/AdminLayout'
+import SubscriptionGuard from './components/shared/SubscriptionGuard'
 
 // Dashboards
 import DashboardPage from './pages/provider/DashboardPage'
@@ -68,7 +69,7 @@ export default function App() {
       <Route path="/reset-password" element={<ResetPasswordPage />} />
 
       {/* Provider Portal */}
-      <Route path="/dashboard" element={<ProtectedRoute><ProviderLayout /></ProtectedRoute>}>
+      <Route path="/dashboard" element={<ProtectedRoute><SubscriptionGuard><ProviderLayout /></SubscriptionGuard></ProtectedRoute>}>
         <Route index element={<DashboardPage />} />
         <Route path="sales/new" element={<RecordSalePage />} />
         <Route path="sales" element={<SalesHistoryPage />} />

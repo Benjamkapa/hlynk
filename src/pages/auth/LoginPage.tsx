@@ -11,7 +11,7 @@ import GoogleAuthButton from '../../components/auth/GoogleAuthButton'
 export default function LoginPage() {
   const navigate = useNavigate()
   const { login } = useAuth()
-  const [form, setForm] = useState({ phone: '', password: '' })
+  const [form, setForm] = useState({ identifier: '', password: '' })
   const [loading, setLoading] = useState(false)
   const [googleLoading, setGoogleLoading] = useState(false)
 
@@ -31,7 +31,7 @@ export default function LoginPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!form.phone || !form.password) {
+    if (!form.identifier || !form.password) {
       toast.error('Please fill in all fields')
       return
     }
@@ -79,15 +79,17 @@ export default function LoginPage() {
         <div className="bg-white rounded-[24px] p-8 shadow-xl shadow-slate-200/50 border border-slate-100">
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-2">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Phone Number</label>
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Phone or Email</label>
               <div className="relative group">
-                <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-emerald-500 transition-colors" size={18} />
+                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-emerald-500 transition-colors">
+                   <Phone size={18} />
+                </div>
                 <input 
                   type="text" 
-                  placeholder="e.g. 0712 345 678" 
-                  value={form.phone}
-                  onChange={e => setForm({ ...form, phone: e.target.value })}
-                  className="w-full bg-slate-50 border border-transparent focus:bg-white focus:border-emerald-200 focus:ring-4 focus:ring-emerald-500/5 rounded-xl py-4 pl-12 pr-4 text-sm outline-none transition-all font-bold placeholder:text-slate-300 hl-mono" 
+                  placeholder="e.g. 0712 345 678 or user@email.com" 
+                  value={form.identifier}
+                  onChange={e => setForm({ ...form, identifier: e.target.value })}
+                  className="w-full bg-slate-50 border border-transparent focus:bg-white focus:border-emerald-200 focus:ring-4 focus:ring-emerald-500/5 rounded-xl py-4 pl-12 pr-4 text-sm outline-none transition-all font-bold placeholder:text-slate-300" 
                 />
               </div>
             </div>

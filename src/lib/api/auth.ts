@@ -20,6 +20,7 @@ export interface AuthUser {
   }
   hasGoogleAuth?: boolean
   usesPasswordAuth?: boolean
+  permissions?: string[]
 }
 
 export interface RegisterPayload {
@@ -31,7 +32,7 @@ export interface RegisterPayload {
   category: string
   county: string
   location: string
-  planName: 'TRIAL' | 'BASIC'
+  planName: 'STARTER'
 }
 
 export interface GoogleRegistrationPayload {
@@ -41,15 +42,16 @@ export interface GoogleRegistrationPayload {
   category: string
   county: string
   location: string
-  planName: 'TRIAL' | 'BASIC'
+  planName: 'STARTER'
 }
 
 export const authApi = {
   register: (data: RegisterPayload) => api.post('/auth/register', data).then(r => r.data),
   verifyOtp: (data: { phone: string; otp: string }) => api.post('/auth/verify-otp', data).then(r => r.data),
-  login: (data: { phone: string; password: string }) => api.post('/auth/login', data).then(r => r.data),
+  login: (data: { identifier: string; password: string }) => 
+    api.post('/auth/login', { ...data, userAgent: navigator.userAgent }).then(r => r.data),
   googleAuth: (data: { credential: string; registration?: GoogleRegistrationPayload }) =>
-    api.post('/auth/google', data).then(r => r.data),
+    api.post('/auth/google', { ...data, userAgent: navigator.userAgent }).then(r => r.data),
   forgotPassword: (data: { phone: string }) => api.post('/auth/forgot-password', data).then(r => r.data),
   resetPassword: (data: { phone: string; otp: string; newPassword: string }) => api.post('/auth/reset-password', data).then(r => r.data),
   logout: () => api.post('/auth/logout').then(r => r.data),

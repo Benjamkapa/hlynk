@@ -40,12 +40,30 @@ export default function FinancialsPage() {
            <a href="/admin/audit" className="px-6 py-3 bg-white border border-slate-200 rounded-md text-xs font-black hover:bg-slate-50 transition-all uppercase tracking-widest text-slate-600 block flex items-center justify-center">
              Audit Trail
            </a>
-           <button 
-             onClick={() => window.open(`${import.meta.env.VITE_API_URL}/admin/financials/export?type=SALES`, '_blank')}
-             className="bg-[#0D4A3E] text-white h-12 px-6 rounded-md font-bold text-sm hover:bg-[#0A3D33] transition-all flex items-center gap-2 shadow-xl shadow-emerald-900/10"
-           >
-             <Download size={18} /> Export Reports
-           </button>
+            <button 
+              onClick={async () => {
+                try {
+                  const token = localStorage.getItem('accessToken')
+                  const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000/api/v1'}/admin/financials/export?type=SALES`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                  })
+                  if (!response.ok) throw new Error('Export failed')
+                  const blob = await response.blob()
+                  const url = window.URL.createObjectURL(blob)
+                  const a = document.createElement('a')
+                  a.href = url
+                  a.download = `financial-report-${Date.now()}.csv`
+                  document.body.appendChild(a)
+                  a.click()
+                  a.remove()
+                } catch (err) {
+                  toast.error('Failed to export report')
+                }
+              }}
+              className="bg-[#0D4A3E] text-white h-12 px-6 rounded-md font-bold text-sm hover:bg-[#0A3D33] transition-all flex items-center gap-2 shadow-xl shadow-emerald-900/10"
+            >
+              <Download size={18} /> Export Reports
+            </button>
         </div>
       </div>
 
@@ -94,49 +112,51 @@ export default function FinancialsPage() {
         </div>
 
         <div className="space-y-10">
-           <div className="bg-emerald-900 rounded-lg p-10 text-white shadow-2xl shadow-emerald-900/20 relative overflow-hidden">
-              <div className="relative z-10">
-                <PieChart size={40} className="text-emerald-400 mb-6" />
-                <h4 className="text-xl font-black mb-2">Payout Health</h4>
-                <p className="text-emerald-200/80 text-sm font-medium leading-relaxed mb-8">All payout batches for current week have been initiated. Average settlement time: 4.2 hours.</p>
-                <div className="space-y-4">
-                   <div className="flex justify-between items-center text-xs font-bold border-b border-white/10 pb-4">
-                      <span className="text-emerald-400">Total Pending</span>
-                      <span className="hl-mono">KES 1.2M</span>
-                   </div>
-                   <div className="flex justify-between items-center text-xs font-bold pt-2">
-                      <span className="text-emerald-400">Batches Processing</span>
-                      <span className="hl-mono">12</span>
-                   </div>
-                </div>
-              </div>
-              <Landmark size={180} className="absolute -right-10 -bottom-10 text-white opacity-5 rotate-12" />
-           </div>
+            <div className="bg-emerald-900 rounded-lg p-10 text-white shadow-2xl shadow-emerald-900/20 relative overflow-hidden">
+               <div className="relative z-10">
+                 <PieChart size={40} className="text-emerald-400 mb-6" />
+                 <h4 className="text-xl font-black mb-2">Payout Health</h4>
+                 <p className="text-emerald-200/80 text-sm font-medium leading-relaxed mb-8">
+                   Platform fee collection is active. Settlements are calculated based on the last 48 hours of transaction volume.
+                 </p>
+                 <div className="space-y-4">
+                    <div className="flex justify-between items-center text-xs font-bold border-b border-white/10 pb-4">
+                       <span className="text-emerald-400">Pending Settlement</span>
+                       <span className="hl-mono">KES {(stats?.overview?.totalPendingPayouts || 0).toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between items-center text-xs font-bold pt-2">
+                       <span className="text-emerald-400">Total Gross Fees</span>
+                       <span className="hl-mono">KES {(stats?.overview?.totalGrossFees || 0).toLocaleString()}</span>
+                    </div>
+                 </div>
+               </div>
+               <Landmark size={180} className="absolute -right-10 -bottom-10 text-white opacity-5 rotate-12" />
+            </div>
 
            <div className="bg-white p-8 rounded-[32px] border border-slate-100 shadow-sm">
               <h4 className="text-lg font-black text-slate-900 mb-6">Recent Adjustments</h4>
               <div className="space-y-6">
-                 {[
-                   { type: 'Refund', entity: 'Mama Jane Shop', amount: '-KES 450', time: '2h ago' },
-                   { type: 'Commission', entity: 'Apex Cleaners', amount: '+KES 120', time: '5h ago' },
-                   { type: 'Fee Adjustment', entity: 'System Audit', amount: '-KES 1,200', time: '1d ago' },
-                 ].map((adj, i) => (
-                   <div key={i} className="flex justify-between items-center group cursor-pointer">
-                      <div className="flex items-center gap-4">
-                         <div className="h-10 w-10 rounded-xl bg-slate-50 text-slate-400 flex items-center justify-center group-hover:bg-emerald-50 group-hover:text-emerald-600 transition-all">
-                            <ArrowUpRight size={18} />
-                         </div>
-                         <div>
-                            <p className="text-sm font-black text-slate-900">{adj.type}</p>
-                            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">{adj.entity}</p>
-                         </div>
-                      </div>
-                      <div className="text-right">
-                         <p className={`text-sm font-black hl-mono ${adj.amount.startsWith('+') ? 'text-emerald-600' : 'text-red-600'}`}>{adj.amount}</p>
-                         <p className="text-[10px] text-slate-400 font-bold hl-mono uppercase">{adj.time}</p>
-                      </div>
-                   </div>
-                 ))}
+                 {stats?.recentActivity?.length > 0 ? stats.recentActivity.map((adj: any, i: number) => (
+                    <div key={i} className="flex justify-between items-center group cursor-pointer">
+                       <div className="flex items-center gap-4">
+                          <div className="h-10 w-10 rounded-xl bg-slate-50 text-slate-400 flex items-center justify-center group-hover:bg-emerald-50 group-hover:text-emerald-600 transition-all">
+                             <Activity size={18} />
+                          </div>
+                          <div>
+                             <p className="text-sm font-black text-slate-900">{adj.event}</p>
+                             <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">{adj.entity}</p>
+                          </div>
+                       </div>
+                       <div className="text-right">
+                          <p className="text-sm font-black hl-mono text-slate-900">SYSTEM</p>
+                          <p className="text-[10px] text-slate-400 font-bold hl-mono uppercase">
+                            {new Date(adj.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          </p>
+                       </div>
+                    </div>
+                 )) : (
+                    <p className="text-xs text-slate-400 font-bold text-center py-4">No recent adjustments</p>
+                 )}
               </div>
            </div>
         </div>
