@@ -11,7 +11,6 @@ export default function HelpPage() {
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500 pt-6">
-      <style>{ADMIN_CSS}</style>
       
       <div className="bg-[#0D4A3E] rounded-[14px] p-12 text-white relative overflow-hidden">
         <div className="relative z-10 max-w-2xl">

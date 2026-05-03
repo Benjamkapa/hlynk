@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import { User, Store, Bell, Lock, Save, Camera, Loader2, LogOut, Trash2, Users, Shield, Mail, Phone, ArrowRight, Plus, CheckCircle2, Edit, FileText, RefreshCcw } from 'lucide-react'
+import { User, Store, Bell, Lock, Save, Camera, Loader2, LogOut, Trash2, Users, Shield, Mail, Phone, ArrowRight, Plus, CheckCircle2, Edit, FileText, RefreshCcw, Code } from 'lucide-react'
 import { ADMIN_CSS } from '../admin/hl-design-system'
 import { toast } from 'sonner'
 import { useAuth } from '../../lib/auth/AuthContext'
@@ -102,6 +102,7 @@ export default function SettingsPage() {
   const allTabs = [
     { name: 'Profile', icon: User },
     { name: 'Business', icon: Store },
+    { name: 'Developer', icon: Code },
     { name: 'Notifications', icon: Bell },
     { name: 'Team', icon: Users, role: ['PROVIDER', 'SUPER_ADMIN'] },
     { name: 'Security', icon: Lock },
@@ -117,7 +118,6 @@ export default function SettingsPage() {
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500 pt-6">
-      <style>{ADMIN_CSS}</style>
 
       <div className="flex justify-between items-end">
         <div>
@@ -260,6 +260,51 @@ export default function SettingsPage() {
                     />
                   </div>
                 </div>
+              </div>
+            )}
+
+            {activeTab === 'Developer' && (
+              <div className="space-y-6">
+                <FeatureGate feature="mpesa_stk">
+                  <h4 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-6">Vendor M-Pesa Gateway</h4>
+                  <p className="text-[11px] text-gray-500 mb-6 font-medium max-w-lg">Enter your Daraja API credentials to receive payments directly to your Till or Paybill number via STK Push.</p>
+                  <div className="space-y-4 max-w-2xl bg-slate-50 p-6 rounded-2xl border border-slate-100">
+                    <div className="flex gap-4 mb-4">
+                      <button 
+                        onClick={() => setFormData({ ...formData, operationalSettings: { ...formData.operationalSettings, mpesa: { ...formData.operationalSettings?.mpesa, env: 'sandbox' } } })}
+                        className={`flex-1 py-3 rounded-xl font-bold text-xs uppercase tracking-widest transition-all ${formData.operationalSettings?.mpesa?.env !== 'production' ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-900/10' : 'bg-white border border-slate-200 text-slate-500'}`}
+                      >Sandbox</button>
+                      <button 
+                        onClick={() => setFormData({ ...formData, operationalSettings: { ...formData.operationalSettings, mpesa: { ...formData.operationalSettings?.mpesa, env: 'production' } } })}
+                        className={`flex-1 py-3 rounded-xl font-bold text-xs uppercase tracking-widest transition-all ${formData.operationalSettings?.mpesa?.env === 'production' ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-900/10' : 'bg-white border border-slate-200 text-slate-500'}`}
+                      >Production</button>
+                    </div>
+                    <InputGroup
+                      label="Consumer Key"
+                      value={formData.operationalSettings?.mpesa?.consumerKey || ''}
+                      onChange={(v: string) => setFormData({ ...formData, operationalSettings: { ...formData.operationalSettings, mpesa: { ...formData.operationalSettings?.mpesa, consumerKey: v } } })}
+                    />
+                    <InputGroup
+                      label="Consumer Secret"
+                      type="password"
+                      value={formData.operationalSettings?.mpesa?.consumerSecret || ''}
+                      onChange={(v: string) => setFormData({ ...formData, operationalSettings: { ...formData.operationalSettings, mpesa: { ...formData.operationalSettings?.mpesa, consumerSecret: v } } })}
+                    />
+                    <div className="grid grid-cols-2 gap-6">
+                      <InputGroup
+                        label="Shortcode"
+                        value={formData.operationalSettings?.mpesa?.shortcode || ''}
+                        onChange={(v: string) => setFormData({ ...formData, operationalSettings: { ...formData.operationalSettings, mpesa: { ...formData.operationalSettings?.mpesa, shortcode: v } } })}
+                      />
+                      <InputGroup
+                        label="Passkey"
+                        type="password"
+                        value={formData.operationalSettings?.mpesa?.passkey || ''}
+                        onChange={(v: string) => setFormData({ ...formData, operationalSettings: { ...formData.operationalSettings, mpesa: { ...formData.operationalSettings?.mpesa, passkey: v } } })}
+                      />
+                    </div>
+                  </div>
+                </FeatureGate>
               </div>
             )}
 

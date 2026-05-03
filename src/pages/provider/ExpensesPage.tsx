@@ -46,7 +46,6 @@ export default function ExpensesPage() {
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500 pt-6">
-      <style>{ADMIN_CSS}</style>
 
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
         <div>

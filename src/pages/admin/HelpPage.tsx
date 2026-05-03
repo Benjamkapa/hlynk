@@ -10,7 +10,6 @@ export default function HelpPage() {
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500 pt-6">
-      <style>{ADMIN_CSS}</style>
       
       <div className="text-center space-y-4 py-8">
         <h1 className="text-4xl font-black text-gray-900 tracking-tight">How can we help, Admin?</h1>

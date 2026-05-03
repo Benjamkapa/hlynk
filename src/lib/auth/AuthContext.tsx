@@ -13,17 +13,25 @@ interface AuthContextValue {
 const AuthContext = createContext<AuthContextValue | null>(null)
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<AuthUser | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
+  const [user, setUser] = useState<AuthUser | null>(() => {
+    const cached = localStorage.getItem('user_profile')
+    return cached ? JSON.parse(cached) : null
+  })
+  const [isLoading, setIsLoading] = useState(!localStorage.getItem('user_profile'))
 
   useEffect(() => {
     const token = localStorage.getItem('accessToken')
     if (token) {
       authApi.me()
-        .then(res => setUser(res.data))
+        .then(res => {
+          setUser(res.data)
+          localStorage.setItem('user_profile', JSON.stringify(res.data))
+        })
         .catch(() => {
           localStorage.removeItem('accessToken')
           localStorage.removeItem('refreshToken')
+          localStorage.removeItem('user_profile')
+          setUser(null)
         })
         .finally(() => setIsLoading(false))
     } else {
@@ -34,6 +42,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const login = (tokens: { accessToken: string; refreshToken: string }, userData: AuthUser) => {
     localStorage.setItem('accessToken', tokens.accessToken)
     localStorage.setItem('refreshToken', tokens.refreshToken)
+    localStorage.setItem('user_profile', JSON.stringify(userData))
     setUser(userData)
   }
 
@@ -41,6 +50,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try { await authApi.logout() } catch { /* ignore */ }
     localStorage.removeItem('accessToken')
     localStorage.removeItem('refreshToken')
+    localStorage.removeItem('user_profile')
     queryClient.clear()
     setUser(null)
   }
@@ -48,6 +58,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const refreshUser = async () => {
     const res = await authApi.me()
     setUser(res.data)
+    localStorage.setItem('user_profile', JSON.stringify(res.data))
   }
 
   return (

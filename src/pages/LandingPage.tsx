@@ -5,6 +5,7 @@ import WhoUses from '../components/landing/WhoUses'
 import Features from '../components/landing/Features'
 import HowItWorks from '../components/landing/HowItWorks'
 import Pricing from '../components/landing/Pricing'
+import FAQ from '../components/landing/FAQ'
 import Contact from '../components/landing/Contact'
 import Footer from '../components/landing/Footer'
 
@@ -27,6 +28,8 @@ export default function LandingPage() {
         <HowItWorks />
 
         <Pricing />
+
+        <FAQ />
 
         <Contact />
       </main>

@@ -1,15 +1,26 @@
-import { useState, useEffect } from 'react'
-import { Settings, Shield, Bell, Globe, Database, Cpu, Lock, Save, Key, UserCheck, ShieldAlert, ShieldCheck } from 'lucide-react'
+import { useState, useEffect, useRef } from 'react'
+import { Settings, Shield, Bell, Globe, Database, Cpu, Lock, Save, Key, UserCheck, ShieldAlert, ShieldCheck, User, Camera, Loader2 } from 'lucide-react'
 import { ADMIN_CSS } from './hl-design-system'
 import { toast } from 'sonner'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { adminApi } from '../../lib/api/providers'
+import { useAuth } from '../../lib/auth/AuthContext'
+import { getErrorMessage } from '../../lib/utils/error'
 
 export default function SettingsPage() {
   const queryClient = useQueryClient()
-  const [activeTab, setActiveTab] = useState('General')
+  const { user, refreshUser } = useAuth()
+  const [activeTab, setActiveTab] = useState('Profile')
   const [formState, setFormState] = useState<Record<string, string>>({})
+  const [profileForm, setProfileForm] = useState({ name: '', email: '', phone: '' })
+  const [uploading, setUploading] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
   
+  useEffect(() => {
+    if (user) {
+      setProfileForm({ name: user.name || '', email: user.email || '', phone: user.phone || '' })
+    }
+  }, [user])
   const { data: res, error } = useQuery<any>({
     queryKey: ['admin-settings'],
     queryFn: adminApi.getSettings
@@ -42,7 +53,41 @@ export default function SettingsPage() {
     onError: () => toast.error('Failed to update settings')
   })
 
+  const profileMutation = useMutation({
+    mutationFn: () => adminApi.updateProfile(profileForm),
+    onSuccess: () => {
+      toast.success('Profile updated successfully')
+      refreshUser()
+    },
+    onError: (err) => toast.error(getErrorMessage(err))
+  })
+
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    setUploading(true)
+    try {
+      await adminApi.uploadPhoto(file)
+      await refreshUser()
+      toast.success('Profile photo updated')
+    } catch (err) {
+      toast.error(getErrorMessage(err))
+    } finally {
+      setUploading(false)
+    }
+  }
+
+  const handleSave = () => {
+    if (activeTab === 'Profile') {
+      profileMutation.mutate()
+    } else {
+      updateMutation.mutate()
+    }
+  }
+
   const tabs = [
+    { name: 'Profile', icon: User, desc: 'Personal info & avatar' },
     { name: 'General', icon: Settings, desc: 'Global platform configs' },
     { name: 'Security', icon: Shield, desc: 'Auth & Access control' },
     { name: 'Notifications', icon: Bell, desc: 'Email & SMS alerts' },
@@ -52,7 +97,6 @@ export default function SettingsPage() {
 
   return (
     <div className="max-w-[1200px] mx-auto space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
-      <style>{ADMIN_CSS}</style>
       
       <div className="flex justify-between items-start">
         <div className="space-y-2">
@@ -60,11 +104,11 @@ export default function SettingsPage() {
           <p className="text-slate-500 font-medium text-lg">System-wide configuration and administrative controls</p>
         </div>
         <button 
-          onClick={() => updateMutation.mutate()}
-          disabled={updateMutation.isPending}
+          onClick={handleSave}
+          disabled={updateMutation.isPending || profileMutation.isPending}
           className="hl-btn-primary shadow-xl shadow-emerald-900/10 rounded-md"
         >
-          <Save size={20} /> {updateMutation.isPending ? 'Syncing...' : 'Deploy Changes'}
+          <Save size={20} /> {updateMutation.isPending || profileMutation.isPending ? 'Syncing...' : 'Deploy Changes'}
         </button>
       </div>
 
@@ -121,6 +165,63 @@ export default function SettingsPage() {
             </div>
             
             <div className="p-10 space-y-12">
+              {activeTab === 'Profile' && (
+                <div className="space-y-8">
+                  <div className="flex items-center gap-6">
+                    <div className="relative group">
+                      <div className="h-24 w-24 rounded-2xl bg-slate-100 flex items-center justify-center overflow-hidden border border-slate-200">
+                        {user?.photoUrl || user?.avatar ? (
+                          <img src={user.photoUrl || user.avatar} className="h-full w-full object-cover" alt="" />
+                        ) : (
+                          <User size={40} className="text-slate-300" />
+                        )}
+                        {uploading && (
+                          <div className="absolute inset-0 bg-black/20 flex items-center justify-center backdrop-blur-[2px]">
+                            <Loader2 size={24} className="text-white animate-spin" />
+                          </div>
+                        )}
+                      </div>
+                      <input
+                        type="file"
+                        ref={fileInputRef}
+                        onChange={handlePhotoUpload}
+                        className="hidden"
+                        accept="image/*"
+                      />
+                      <button
+                        onClick={() => fileInputRef.current?.click()}
+                        disabled={uploading}
+                        className="absolute -bottom-2 -right-2 bg-emerald-600 text-white p-2 rounded-xl shadow-lg hover:bg-emerald-700 transition-all hover:scale-110 active:scale-95 disabled:opacity-50"
+                      >
+                        <Camera size={16} />
+                      </button>
+                    </div>
+                    <div>
+                      <h4 className="font-black text-slate-900 text-lg">Administrator Profile</h4>
+                      <p className="text-sm text-slate-500 font-medium">PNG, JPG or GIF. Max 5MB.</p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <InputGroup
+                      label="Full Name"
+                      value={profileForm.name}
+                      onChange={(v: string) => setProfileForm({ ...profileForm, name: v })}
+                    />
+                    <InputGroup
+                      label="Email Address"
+                      value={profileForm.email}
+                      onChange={(v: string) => setProfileForm({ ...profileForm, email: v })}
+                    />
+                    <InputGroup
+                      label="Phone Number"
+                      value={profileForm.phone}
+                      onChange={(v: string) => setProfileForm({ ...profileForm, phone: v })}
+                    />
+                  </div>
+                </div>
+              )}
+
               {activeTab === 'General' && (
                 <>
                   <section className="space-y-6">

@@ -34,7 +34,6 @@ export default function SystemPerformancePage() {
   const clusterNodes = health?.nodes || []
   return (
     <div className="max-w-[1600px] mx-auto space-y-12 animate-in fade-in duration-700">
-      <style>{ADMIN_CSS}</style>
       
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
         <div className="space-y-2">

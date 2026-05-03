@@ -115,7 +115,6 @@ export default function AdminLayout() {
 
   return (
     <div className="flex h-screen overflow-hidden hl-dash bg-slate-50/50">
-      <style>{ADMIN_CSS}</style>
 
       {/* ── MOBILE BACKDROP ── */}
       {isMobileOpen && (

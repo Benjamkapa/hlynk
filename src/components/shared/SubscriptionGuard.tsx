@@ -19,7 +19,6 @@ export default function SubscriptionGuard({ children }: { children?: React.React
   if (authLoading || subLoading) {
     return (
       <div className="flex h-screen items-center justify-center bg-slate-50">
-        <style>{ADMIN_CSS}</style>
         <div className="flex flex-col items-center gap-4">
           <Loader2 className="h-12 w-12 animate-spin text-emerald-600" />
           <p className="font-black text-[10px] uppercase tracking-widest text-slate-400">Verifying Subscription...</p>

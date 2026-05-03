@@ -38,6 +38,7 @@ export const salesApi = {
   list: (params?: { page?: number; search?: string; date?: string; limit?: number }) => api.get('/sales', { params }).then(r => r.data),
   create: (data: any) => api.post('/sales', data).then(r => r.data),
   getDetails: (id: string) => api.get(`/sales/${id}`).then(r => r.data),
+  vendorMpesaPush: (data: { phone: string; amount: number; reference: string }) => api.post('/sales/mpesa-push', data).then(r => r.data),
 }
 
 export const subscriptionsApi = {
@@ -122,4 +123,12 @@ export const adminApi = {
   getSettings: () => api.get('/admin/settings').then(r => r.data),
   updateSettings: (data: any) => api.put('/admin/settings', data).then(r => r.data),
   getActivityLogs: (params?: { page?: number; limit?: number }) => api.get('/admin/activity', { params }).then(r => r.data),
+  updateProfile: (data: any) => api.put('/admin/me', data).then(r => r.data),
+  uploadPhoto: (file: File) => {
+    const formData = new FormData()
+    formData.append('photo', file)
+    return api.post('/admin/me/photo', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    }).then(r => r.data)
+  }
 }

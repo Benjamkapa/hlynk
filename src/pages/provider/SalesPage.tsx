@@ -13,7 +13,6 @@ export default function SalesPage() {
 
   return (
     <>
-      <style>{ADMIN_CSS}</style>
       <div className="hl-dash" style={{ padding: '32px 0' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 32 }}>
           <h1 style={{ fontSize: '1.75rem' }}>Point of Sale (POS)</h1>

@@ -89,7 +89,6 @@ export default function SalesHistoryPage() {
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500 pt-6">
-      <style>{ADMIN_CSS}</style>
       <style>{RECEIPT_PRINT_CSS}</style>
 
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
@@ -157,8 +156,8 @@ export default function SalesHistoryPage() {
           <table className="w-full text-left">
             <thead>
               <tr className="bg-gray-50/50">
-                {['Receipt #', 'Time', 'Customer', 'Items', 'Total', 'Method', 'Action'].map((h, i) => (
-                  <th key={h} className={`px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest ${i >= 3 ? 'text-center' : ''} ${i === 4 ? 'text-right' : ''} ${i === 6 ? 'text-right' : ''}`}>{h}</th>
+                {['Receipt #', 'Time', 'Customer', 'Items', 'Total', 'Method', 'Status', 'Action'].map((h, i) => (
+                  <th key={h} className={`px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest ${i >= 3 && i !== 4 && i !== 7 ? 'text-center' : ''} ${i === 4 ? 'text-right' : ''} ${i === 7 ? 'text-right' : ''}`}>{h}</th>
                 ))}
               </tr>
             </thead>
@@ -177,6 +176,11 @@ export default function SalesHistoryPage() {
                   <td className="px-8 py-5 text-center">
                     <span className={`text-[10px] font-black px-2.5 py-1 rounded-md uppercase tracking-widest ${s.paymentMethod === 'MPESA' ? 'text-emerald-600 bg-emerald-50' : 'text-blue-600 bg-blue-50'}`}>
                       {s.paymentMethod}
+                    </span>
+                  </td>
+                  <td className="px-8 py-5 text-center">
+                    <span className={`text-[10px] font-black px-2.5 py-1 rounded-md uppercase tracking-widest ${s.status === 'PENDING' ? 'text-amber-600 bg-amber-50' : s.status === 'FAILED' ? 'text-red-600 bg-red-50' : 'text-emerald-600 bg-emerald-50'}`}>
+                      {s.status || 'COMPLETED'}
                     </span>
                   </td>
                   <td className="px-8 py-5 text-right">
@@ -336,6 +340,10 @@ function ThermalReceipt({ sale }: { sale: any }) {
             <span style={{ background: '#000', color: '#fff', padding: '0 6px', borderRadius: 2, fontSize: 8, letterSpacing: '0.1em' }}>
               {sale.paymentMethod}
             </span>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', color: '#666', marginBottom: 6 }}>
+            <span>STATUS</span>
+            <span style={{ fontWeight: 'bold' }}>{sale.status || 'COMPLETED'}</span>
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', fontSize: 15, borderTop: '2px solid #000', paddingTop: 8, marginTop: 4 }}>
             <span>TOTAL</span><span>KES {Number(sale.totalAmount).toLocaleString()}</span>

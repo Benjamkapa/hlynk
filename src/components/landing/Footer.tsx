@@ -26,7 +26,7 @@ export default function Footer() {
               © {new Date().getFullYear()} HudumaLynk Portal
             </div>
             <div className="text-[9px] font-bold text-white uppercase tracking-widest">
-              Built By <a href="https://github.com/benjamkapa9823">Benjamkapa</a>
+              Built By <a href="https://github.com/benjamkapa">Benjamkapa9823</a>
             </div>
           </div>
         </div>

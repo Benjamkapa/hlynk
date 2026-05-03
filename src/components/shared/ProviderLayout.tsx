@@ -7,7 +7,6 @@ import {
 } from "lucide-react";
 import { useLocation, Outlet, NavLink, Link } from "react-router-dom";
 import {Tag} from "lucide-react";
-import { ADMIN_CSS } from "../../pages/admin/hl-design-system";
 import TopNav from "./TopNav";
 
 interface NavItem {
@@ -161,7 +160,6 @@ export default function ProviderLayout() {
 
   return (
     <div className="flex h-screen overflow-hidden hl-dash bg-slate-50/50">
-      <style>{ADMIN_CSS}</style>
       
       {/* ── MOBILE BACKDROP ── */}
       {isMobileOpen && (

@@ -11,7 +11,6 @@ export default function SupportPage() {
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500 pt-6">
-      <style>{ADMIN_CSS}</style>
       
       <div className="flex justify-between items-end">
         <div>

@@ -88,7 +88,7 @@ export default function RecordSalePage() {
   const total = subtotal - discount
 
   const handleCompleteSale = useMutation({
-    mutationFn: () => salesApi.create({
+    mutationFn: (args?: { status?: string, mpesaRequestId?: string }) => salesApi.create({
       items: cart.map(i => ({
         productId: i.id,
         name: i.name,
@@ -98,7 +98,9 @@ export default function RecordSalePage() {
       paymentMethod,
       totalAmount: total,
       customerId: selectedCustomerId,
-      customerName: selectedCustomer?.name || null
+      customerName: selectedCustomer?.name || null,
+      status: args?.status || 'COMPLETED',
+      mpesaRequestId: args?.mpesaRequestId
     }),
     onSuccess: (data: any) => {
       toast.success('Transaction Finalized', {
@@ -128,7 +130,7 @@ export default function RecordSalePage() {
 
     setIsProcessingMpesa(true)
     try {
-      await paymentsApi.stkPush({
+      const res = await salesApi.vendorMpesaPush({
         phone: mpesaPhone,
         amount: total,
         reference: `SALE-${Date.now().toString().slice(-6)}`
@@ -138,7 +140,7 @@ export default function RecordSalePage() {
         description: 'Waiting for customer to enter PIN on their phone...',
       })
 
-      handleCompleteSale.mutate()
+      handleCompleteSale.mutate({ status: 'PENDING', mpesaRequestId: res?.data?.CheckoutRequestID || res?.CheckoutRequestID })
     } catch (err: any) {
       toast.error(getErrorMessage(err))
     } finally {
@@ -148,7 +150,6 @@ export default function RecordSalePage() {
 
   return (
     <div className="flex flex-col xl:flex-row gap-12 max-w-[1800px] mx-auto items-start animate-in fade-in slide-in-from-bottom-4 duration-700">
-      <style>{ADMIN_CSS}</style>
 
       {/* Left: Product Selection */}
       <div className="flex-1 space-y-10 min-w-0">
@@ -496,7 +497,7 @@ export default function RecordSalePage() {
 
           <button
             disabled={cart.length === 0 || handleCompleteSale.isPending || isProcessingMpesa}
-            onClick={() => paymentMethod === 'MPESA' ? initiateMpesaPayment() : handleCompleteSale.mutate()}
+            onClick={() => paymentMethod === 'MPESA' ? initiateMpesaPayment() : handleCompleteSale.mutate(undefined)}
             className={`w-full py-6 rounded-2xl font-black text-sm uppercase tracking-widest shadow-2xl transition-all flex items-center justify-center gap-4 ${cart.length === 0 || handleCompleteSale.isPending || isProcessingMpesa
               ? 'bg-slate-100 text-slate-300 cursor-not-allowed shadow-none'
               : 'bg-slate-900 text-white hover:bg-black shadow-slate-900/20 active:scale-[0.98]'

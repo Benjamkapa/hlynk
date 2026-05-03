@@ -29,9 +29,7 @@ export default function TopNav({ onMobileMenuToggle, extraActions, showMail = fa
 
   const notifications = logResponse?.items || []
 
-  const profileImageSrc = !avatarFailed && user?.photoUrl
-    ? user.photoUrl
-    : `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.name || 'User'}`
+  const profileImageSrc = user?.photoUrl || null;
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -79,12 +77,12 @@ export default function TopNav({ onMobileMenuToggle, extraActions, showMail = fa
         )}
 
         <div className="flex items-center gap-3 pr-6 border-r border-slate-100">
-          {showMail && (
+          {/* {showMail && (
             <button className="h-12 w-12 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-500 hover:text-emerald-600 hover:bg-emerald-50 transition-all relative">
               <Mail size={20} />
               <span className="absolute top-3.5 right-3.5 w-2 h-2 bg-emerald-500 rounded-full border-2 border-white" />
             </button>
-          )}
+          )} */}
 
           {/* Alerts */}
           <div className="relative" ref={notificationRef}>
@@ -151,13 +149,16 @@ export default function TopNav({ onMobileMenuToggle, extraActions, showMail = fa
             onClick={() => setShowUserMenu(!showUserMenu)} 
             className={`p-1.5 rounded-2xl border flex items-center gap-3 transition-all ${showUserMenu ? 'bg-white border-emerald-200 shadow-xl ring-4 ring-emerald-500/5' : 'bg-transparent border-transparent hover:bg-white hover:border-slate-100 hover:shadow-lg'}`}
           >
-            <div className="w-10 h-10 rounded-xl bg-emerald-600 overflow-hidden shadow-2xl shadow-emerald-900/20 border border-white/20">
-              <img
-                src={profileImageSrc}
-                alt={user?.name ? `${user.name} profile` : 'Profile'}
-                className="w-full h-full object-cover"
-                onError={() => setAvatarFailed(true)}
-              />
+            <div className="w-10 h-10 rounded-xl bg-emerald-600 overflow-hidden shadow-2xl shadow-emerald-900/20 border border-white/20 flex items-center justify-center">
+              {profileImageSrc ? (
+                <img
+                  src={profileImageSrc}
+                  alt={user?.name ? `${user.name} profile` : 'Profile'}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <User size={20} className="text-white" />
+              )}
             </div>
             <div className="text-left hidden xl:block pr-3">
               <p className="text-sm font-black text-slate-900 tracking-tight leading-none mb-1.5">{user?.name}</p>
