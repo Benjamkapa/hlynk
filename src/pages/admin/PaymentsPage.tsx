@@ -2,7 +2,6 @@ import { useQuery } from '@tanstack/react-query'
 import { adminApi } from '../../lib/api/providers'
 import { toast } from 'sonner'
 import { Clock, XCircle, Download, CreditCard, ArrowUpRight, Search, Filter, Landmark } from 'lucide-react'
-import { ADMIN_CSS } from './hl-design-system'
 
 import { useEffect } from 'react'
 import { AdminStats } from '../../lib/types/api'

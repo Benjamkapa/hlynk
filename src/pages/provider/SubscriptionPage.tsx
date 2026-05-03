@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react'
 import { Calendar, CreditCard, CheckCircle2, Zap, AlertTriangle, ChevronRight, Loader2, Phone, Star } from 'lucide-react'
-import { ADMIN_CSS } from '../admin/hl-design-system'
 import { subscriptionsApi } from '../../lib/api/providers'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'

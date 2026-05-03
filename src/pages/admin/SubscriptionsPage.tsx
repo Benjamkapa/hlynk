@@ -3,7 +3,6 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { adminApi } from '../../lib/api/providers'
 import { toast } from 'sonner'
 import { Search, Filter, CreditCard, CheckCircle2, Clock, ArrowUpCircle } from 'lucide-react'
-import { ADMIN_CSS } from './hl-design-system'
 import { AdminStats } from '../../lib/types/api'
 
 export default function SubscriptionsPage() {

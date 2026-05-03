@@ -6,7 +6,6 @@ import {
   Briefcase, ShieldCheck, Activity, DollarSign
 } from 'lucide-react'
 import { useState, useEffect } from 'react'
-import { ADMIN_CSS } from '../../pages/admin/hl-design-system'
 import TopNav from './TopNav'
 
 export default function AdminLayout() {

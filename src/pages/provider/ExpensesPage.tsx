@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { Plus, Search, Wallet, TrendingUp, Trash2, Download } from 'lucide-react'
-import { ADMIN_CSS } from '../admin/hl-design-system'
 import { SlideOver } from '../../components/shared/SlideOver'
 import { toast } from 'sonner'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'

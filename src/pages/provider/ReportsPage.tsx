@@ -1,6 +1,5 @@
 import { TrendingUp, TrendingDown, Download, BarChart3, PieChart, Loader2, RefreshCcw, Filter, ChevronLeft, ChevronRight, FileText } from 'lucide-react'
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts'
-import { ADMIN_CSS } from '../admin/hl-design-system'
 import { useQuery } from '@tanstack/react-query'
 import { providersApi } from '../../lib/api/providers'
 import { toast } from 'sonner'

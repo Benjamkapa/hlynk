@@ -3,7 +3,6 @@ import { useQuery, useMutation } from '@tanstack/react-query'
 import { adminApi } from '../../lib/api/providers'
 import { toast } from 'sonner'
 import { FileText, Download, Calendar, Play } from 'lucide-react'
-import { ADMIN_CSS } from './hl-design-system'
 
 export default function ReportsPage() {
   const [table, setTable] = useState('User')

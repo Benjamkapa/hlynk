@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
 import { Search, Download, Calendar, Eye, Receipt, User, CreditCard, ChevronLeft, ChevronRight, Printer, Store, CheckCircle } from 'lucide-react'
-import { ADMIN_CSS } from '../admin/hl-design-system'
 import { useQuery } from '@tanstack/react-query'
 import { salesApi } from '../../lib/api/providers'
 import { toast } from 'sonner'

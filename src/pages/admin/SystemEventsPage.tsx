@@ -5,7 +5,6 @@ import { toast } from 'sonner'
 import { adminApi } from '../../lib/api/providers'
 import { getErrorMessage } from '../../lib/utils/error'
 import { exportToCSV } from '../../lib/utils/export'
-import { ADMIN_CSS } from './hl-design-system'
 
 export default function SystemEventsPage() {
   const [page, setPage] = useState(1)

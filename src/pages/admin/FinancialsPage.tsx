@@ -1,6 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
 import { adminApi } from '../../lib/api/providers'
-import { ADMIN_CSS } from './hl-design-system'
 import { toast } from 'sonner'
 import { getErrorMessage } from '../../lib/utils/error'
 import { DollarSign, TrendingUp, PieChart, ArrowUpRight, Download, Search, Filter, CheckCircle2, Clock, CreditCard, Activity, Landmark, Wallet } from 'lucide-react'

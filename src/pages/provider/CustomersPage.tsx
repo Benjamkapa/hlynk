@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { Users, Phone, Search, Plus, Filter, Mail, User, Trash2, Edit, Download, Star } from 'lucide-react'
-import { ADMIN_CSS } from '../admin/hl-design-system'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { customersApi } from '../../lib/api/providers'
 import { toast } from 'sonner'

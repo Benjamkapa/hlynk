@@ -11,7 +11,6 @@ import {
 } from 'recharts'
 import { useQuery } from '@tanstack/react-query'
 import { adminApi } from '../../lib/api/providers'
-import { ADMIN_CSS } from './hl-design-system'
 import { toast } from 'sonner'
 import { Link } from 'react-router-dom'
 

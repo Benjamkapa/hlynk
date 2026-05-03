@@ -3,7 +3,6 @@ import { useAuth } from '../../lib/auth/AuthContext'
 import { useQuery } from '@tanstack/react-query'
 import { subscriptionsApi } from '../../lib/api/providers'
 import { Loader2, AlertCircle, CreditCard } from 'lucide-react'
-import { ADMIN_CSS } from '../../pages/admin/hl-design-system'
 
 export default function SubscriptionGuard({ children }: { children?: React.ReactNode }) {
   const { user, isLoading: authLoading } = useAuth()

@@ -1,5 +1,4 @@
 import { Search, BookOpen, MessageCircle, FileText, ChevronRight, HelpCircle } from 'lucide-react'
-import { ADMIN_CSS } from './hl-design-system'
 
 export default function HelpPage() {
   const resources = [

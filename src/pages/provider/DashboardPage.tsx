@@ -10,7 +10,6 @@ import {
 } from 'recharts'
 import { useQuery } from '@tanstack/react-query'
 import { providersApi, salesApi } from '../../lib/api/providers'
-import { ADMIN_CSS } from '../admin/hl-design-system'
 import { toast } from 'sonner'
 import { Link } from 'react-router-dom'
 import { getErrorMessage } from '../../lib/utils/error'

@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { Plus, Search, ShoppingCart, Trash2, Printer } from 'lucide-react'
-import { ADMIN_CSS } from '../admin/hl-design-system'
 import { toast } from 'sonner'
 
 export default function SalesPage() {

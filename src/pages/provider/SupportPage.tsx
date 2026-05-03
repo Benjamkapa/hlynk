@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { Search, MessageCircle, Phone, Mail, ChevronRight, HelpCircle, AlertCircle } from 'lucide-react'
-import { ADMIN_CSS } from '../admin/hl-design-system'
 
 export default function SupportPage() {
   const commonIssues = [

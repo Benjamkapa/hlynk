@@ -1,5 +1,4 @@
 import { Search, Zap, Package, TrendingUp, Users, Shield, ChevronRight } from 'lucide-react'
-import { ADMIN_CSS } from '../admin/hl-design-system'
 
 export default function HelpPage() {
   const guides = [
