@@ -31,21 +31,7 @@ export default function LoginPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!form.identifier || !form.password) {
-      toast.error('Please fill in all fields')
-      return
-    }
-
-    setLoading(true)
-    try {
-      const res = await authApi.login(form)
-      completeLogin(res.data)
-      toast.success('Welcome back!')
-    } catch (err: any) {
-      toast.error(getErrorMessage(err))
-    } finally {
-      setLoading(false)
-    }
+    toast.info('Use Google Sign In for now (SMS coming soon)')
   }
 
   const handleGoogleAuth = async (credential: string) => {
@@ -77,7 +63,7 @@ export default function LoginPage() {
 
         {/* Card */}
         <div className="bg-white rounded-[24px] p-8 shadow-xl shadow-slate-200/50 border border-slate-100">
-          <form onSubmit={handleSubmit} className="space-y-5">
+          {/* <form onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-2">
               <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Phone or Email</label>
               <div className="relative group">
@@ -115,20 +101,19 @@ export default function LoginPage() {
 
             <button 
               type="submit" 
-              disabled={isBusy}
-              className="w-full py-5 bg-[#0D4A3E] text-white rounded-xl font-black text-xs uppercase tracking-widest hover:bg-[#064E3B] transition-all shadow-xl shadow-emerald-900/10 flex items-center justify-center gap-2 group disabled:opacity-50"
+              disabled
+              className="w-full py-5 bg-slate-100 text-slate-400 rounded-xl font-black text-xs uppercase tracking-widest cursor-not-allowed border border-slate-200 flex items-center justify-center gap-2 opacity-50"
             >
-              {isBusy ? <Loader2 size={16} className="animate-spin" /> : 'Sign In To Account'}
-              {!isBusy && <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />}
+              Phone/Password (Coming Soon)
             </button>
-          </form>
+          </form> */}
 
           <div className="relative my-8">
             <div className="absolute inset-0 flex items-center">
               <div className="w-full border-t border-slate-100"></div>
             </div>
             <div className="relative flex justify-center text-[10px] font-black uppercase tracking-widest">
-              <span className="bg-white px-4 text-slate-300">Or continue with</span>
+              <span className="bg-white px-4 text-slate-300">continue with</span>
             </div>
           </div>
 
@@ -145,9 +130,15 @@ export default function LoginPage() {
 
           <Link 
             to="/register" 
-            className="w-full py-4 border-2 border-slate-50 text-slate-600 rounded-xl font-black text-xs uppercase tracking-widest hover:bg-slate-50 transition-all flex items-center justify-center gap-2"
+            className="w-full py-4 border-2 border-slate-50 text-slate-600 rounded-xl font-black text-xs uppercase tracking-widest hover:underline transition-all flex items-center justify-center gap-2"
           >
             Create Business Account
+          </Link>
+          <Link 
+            to="/" 
+            className="block mt-4 text-slate-500 hover:text-slate-700 font-medium text-xs text-left"
+          >
+            ← Visit Landing Page
           </Link>
         </div>
 
