@@ -1,6 +1,4 @@
 import React from 'react'
-import { useQuery } from '@tanstack/react-query'
-import { subscriptionsApi } from '../../lib/api/providers'
 import { useAuth } from '../../lib/auth/AuthContext'
 import { Lock, Zap, ArrowRight } from 'lucide-react'
 import { Link } from 'react-router-dom'
@@ -33,11 +31,6 @@ export const FEATURE_PLANS: Record<Feature, string[]> = {
 
 export default function FeatureGate({ feature, children, fallback, variant = 'card' }: FeatureGateProps) {
   const { user } = useAuth()
-  const { data: subResponse } = useQuery({
-    queryKey: ['my-subscription'],
-    queryFn: subscriptionsApi.getMe,
-    enabled: !!user && user.role !== 'SUPER_ADMIN'
-  })
 
   // No feature specified means everyone has access
   if (!feature) return <>{children}</>
@@ -45,7 +38,7 @@ export default function FeatureGate({ feature, children, fallback, variant = 'ca
   // Super admins have all features
   if (user?.role === 'SUPER_ADMIN') return <>{children}</>
 
-  const plan = subResponse?.data?.planName || 'STARTER'
+  const plan = user?.subscription?.planName || 'STARTER'
   const featurePlans = FEATURE_PLANS[feature]
 
   if (!featurePlans) return <>{children}</> // Fallback safety

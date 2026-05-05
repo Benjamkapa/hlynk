@@ -24,12 +24,14 @@ export default function TopNav({ onMobileMenuToggle, extraActions, showMail = fa
   const { data: logResponse, isLoading: logsLoading } = useQuery({
     queryKey: ['recent-logs'],
     queryFn: () => providersApi.getActivityLogs({ limit: 5 }),
-    enabled: !!user
+    enabled: !!user,
+    refetchInterval: 15000
   })
 
   const notifications = logResponse?.items || []
 
   const profileImageSrc = user?.photoUrl || null;
+  const hasAuditLogs = user?.role === 'SUPER_ADMIN' || user?.subscription?.planName === 'PRO';
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -88,7 +90,7 @@ export default function TopNav({ onMobileMenuToggle, extraActions, showMail = fa
           <div className="relative" ref={notificationRef}>
             <button 
               onClick={() => setShowNotifications(!showNotifications)} 
-              className={`w-12 h-12 rounded-xl border flex items-center justify-center transition-all relative ${showNotifications ? 'bg-white border-emerald-200 shadow-xl text-emerald-600' : 'bg-slate-50 border-slate-100 text-slate-400 hover:border-slate-200 hover:text-slate-600 hover:bg-emerald-50'}`}
+              className={`w-12 h-12 rounded-xl border flex items-center justify-center transition-all relative ${showNotifications ? 'bg-white border-emerald-200 shadow-xl text-emerald-600' : 'hover:bg-slate-50 hover:border-slate-100 hover:text-slate-400 border-slate-200 text-slate-600 bg-emerald-50'}`}
             >
               <Bell size={20} />
               {notifications.length > 0 && (
@@ -124,8 +126,24 @@ export default function TopNav({ onMobileMenuToggle, extraActions, showMail = fa
                             </div>
                             <div className="space-y-1">
                               <p className="text-sm font-black text-slate-900 tracking-tight">{n.action.replace('_', ' ')}</p>
-                              <p className="text-[11px] font-bold text-slate-500 leading-tight">{n.details || n.logName}</p>
-                              <p className="text-[9px] font-black text-slate-400 uppercase hl-mono">{new Date(n.createdAt).toLocaleTimeString()}</p>
+                              
+                              {hasAuditLogs ? (
+                                <p className="text-[11px] font-bold text-slate-500 leading-tight">{n.details || n.logName}</p>
+                              ) : (
+                                <div className="relative overflow-hidden inline-block group/lock">
+                                  <p className="text-[11px] font-bold text-slate-500 leading-tight blur-[4px] select-none opacity-50">
+                                    {n.details || "Unlock deep transaction telemetry"}
+                                  </p>
+                                  <div className="absolute inset-0 flex items-center gap-1 opacity-80 group-hover/lock:opacity-100 transition-opacity">
+                                    <div className="h-3 w-3 rounded-full bg-amber-500 flex items-center justify-center">
+                                      <span className="text-[6px] font-black text-white">🔒</span>
+                                    </div>
+                                    <span className="text-[9px] font-black uppercase tracking-widest text-amber-600 bg-amber-50 px-1 py-0.5 rounded">Pro Telemetry</span>
+                                  </div>
+                                </div>
+                              )}
+                              
+                              <p className="text-[9px] font-black text-slate-400 uppercase hl-mono mt-1">{new Date(n.createdAt).toLocaleTimeString()}</p>
                             </div>
                           </div>
                         </div>
@@ -134,8 +152,8 @@ export default function TopNav({ onMobileMenuToggle, extraActions, showMail = fa
                   )}
                 </div>
                 <div className="p-4 border-t border-slate-100 bg-slate-50/30 text-center">
-                  <Link to={user?.role === 'SUPER_ADMIN' ? "/admin/audit" : "/dashboard/reports"} onClick={() => setShowNotifications(false)} className="text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-slate-900 transition-colors">
-                    View Full System Logs
+                  <Link to={hasAuditLogs ? (user?.role === 'SUPER_ADMIN' ? "/admin/audit" : "/dashboard/settings") : "/dashboard/subscription"} onClick={() => setShowNotifications(false)} className="text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-emerald-600 transition-colors flex items-center justify-center gap-1">
+                    {hasAuditLogs ? 'View Full Audit Trail' : 'Upgrade to Unlock Intelligence'}
                   </Link>
                 </div>
               </div>

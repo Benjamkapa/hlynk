@@ -21,19 +21,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const token = localStorage.getItem('accessToken')
+    
+    const fetchUser = async () => {
+      try {
+        const res = await authApi.me()
+        setUser(res.data)
+        localStorage.setItem('user_profile', JSON.stringify(res.data))
+      } catch {
+        localStorage.removeItem('accessToken')
+        localStorage.removeItem('refreshToken')
+        localStorage.removeItem('user_profile')
+        setUser(null)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
     if (token) {
-      authApi.me()
-        .then(res => {
-          setUser(res.data)
-          localStorage.setItem('user_profile', JSON.stringify(res.data))
-        })
-        .catch(() => {
-          localStorage.removeItem('accessToken')
-          localStorage.removeItem('refreshToken')
-          localStorage.removeItem('user_profile')
-          setUser(null)
-        })
-        .finally(() => setIsLoading(false))
+      fetchUser()
+      // Global polling to keep subscription and user state in sync
+      const intervalId = setInterval(fetchUser, 15000)
+      return () => clearInterval(intervalId)
     } else {
       setIsLoading(false)
     }

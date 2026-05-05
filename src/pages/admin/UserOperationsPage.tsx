@@ -146,6 +146,94 @@ export default function UserOperationsPage() {
             </div>
           </div>
 
+          <div className="bg-white rounded-lg border border-gray-100 shadow-sm overflow-hidden mt-8">
+            <div className="p-10 border-b border-gray-50 flex justify-between items-center bg-white relative overflow-hidden">
+              <div>
+                <h3 className="text-xl font-black text-slate-900">Global Identity Registry</h3>
+                <p className="text-slate-400 text-xs font-medium uppercase tracking-widest mt-1">All Platform Users & Customers</p>
+              </div>
+              <div className="relative w-72">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+                <input 
+                  type="text"
+                  placeholder="Search identities..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="w-full pl-12 pr-4 py-3 bg-slate-50 border-none rounded-xl text-sm font-black focus:ring-2 focus:ring-emerald-500/20 outline-none"
+                />
+              </div>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-left">
+                <thead>
+                  <tr className="bg-gray-50/50">
+                    <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest">Identity</th>
+                    <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest">Contact</th>
+                    <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Role</th>
+                    <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Action</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-50">
+                  {isLoading ? (
+                    <tr><td colSpan={4} className="py-20 text-center text-slate-400 font-black text-xs uppercase tracking-widest animate-pulse">Indexing Registry...</td></tr>
+                  ) : users.length > 0 ? users.map((u: any) => (
+                    <tr 
+                      key={u.id} 
+                      onClick={() => setSelectedUser(u)}
+                      className={`hover:bg-gray-50/50 transition-all group cursor-pointer ${selectedUser?.id === u.id ? 'bg-emerald-50/50' : ''}`}
+                    >
+                      <td className="px-8 py-5">
+                        <div className="flex items-center gap-4">
+                          <img 
+                            src={u.photoUrl || `https://api.dicebear.com/7.x/initials/svg?seed=${u.name}`} 
+                            className="h-10 w-10 rounded-xl object-cover border border-slate-100 shadow-sm" 
+                            alt="" 
+                          />
+                          <div>
+                            <p className="font-black text-gray-900 text-sm tracking-tight">{u.name}</p>
+                            <p className="text-[9px] text-slate-400 font-bold hl-mono mt-1">ID: {u.id.slice(-8).toUpperCase()}</p>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-8 py-5">
+                        <div className="space-y-0.5">
+                          <p className="text-xs font-black text-slate-700 hl-mono">{u.phone}</p>
+                          <p className="text-[9px] text-slate-400 font-black tracking-widest">{u.email || 'No Email'}</p>
+                        </div>
+                      </td>
+                      <td className="px-8 py-5 text-center">
+                        <span className={`text-[9px] font-black px-2 py-1 rounded-md uppercase tracking-widest ${
+                          u.role === 'SUPER_ADMIN' ? 'bg-purple-50 text-purple-600' :
+                          u.role === 'PROVIDER' ? 'bg-blue-50 text-blue-600' :
+                          u.role === 'STAFF' ? 'bg-amber-50 text-amber-600' :
+                          'bg-emerald-50 text-emerald-600'
+                        }`}>
+                          {u.role}
+                        </span>
+                      </td>
+                      <td className="px-8 py-5 text-right">
+                        <button 
+                          onClick={(e) => { e.stopPropagation(); if(window.confirm('Delete this user completely?')) deleteMutation.mutate(u.id); }}
+                          className="text-gray-400 hover:text-red-600 transition-all p-2 hover:bg-red-50 rounded-lg"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </td>
+                    </tr>
+                  )) : (
+                    <tr>
+                      <td colSpan={4} className="py-20 text-center text-slate-300 font-bold text-[10px] uppercase tracking-[0.2em] italic">
+                        No users found in registry
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+
           {selectedUser && (
             <div className="bg-slate-900 rounded-2xl p-10 text-white animate-in slide-in-from-bottom duration-700 border border-white/5 relative overflow-hidden">
                <div className="absolute top-0 right-0 p-8 opacity-10">
@@ -221,19 +309,20 @@ export default function UserOperationsPage() {
   )
 }
 
-function TrafficItem({ label, count, color }: any) {
-  const colors: any = {
+function TrafficItem({ label, count, color }: { label: string; count: number; color: 'blue' | 'emerald' | 'purple' }) {
+  const colors = {
     blue: 'bg-blue-500',
     emerald: 'bg-emerald-500',
     purple: 'bg-purple-500',
-  }
+  };
+
   return (
     <div className="flex items-center justify-between p-3 bg-white border border-slate-50 rounded-xl hover:bg-slate-50 transition-all">
-       <div className="flex items-center gap-2">
-          <div className={`h-2 w-2 rounded-full ${colors[color]}`} />
-          <span className="text-[10px] font-black text-slate-600 uppercase tracking-widest">{label}</span>
-       </div>
-       <span className="text-xs font-black text-slate-900 hl-mono">{count}</span>
+      <div className="flex items-center gap-2">
+        <div className={`h-2 w-2 rounded-full ${colors[color]}`} />
+        <span className="text-[10px] font-black text-slate-600 uppercase tracking-widest">{label}</span>
+      </div>
+      <span className="text-xs font-black text-slate-900 hl-mono">{count}</span>
     </div>
-  )
+  );
 }

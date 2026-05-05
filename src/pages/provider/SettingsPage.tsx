@@ -740,7 +740,15 @@ function ActivityLogViewer() {
                       </span>
                     </td>
                     <td className="px-8 py-5">
-                      <p className="text-[11px] text-slate-500 font-medium max-w-[300px] truncate">{log.details}</p>
+                      <div className="space-y-1.5">
+                        <p className="text-[11px] text-slate-600 font-medium max-w-[300px] leading-relaxed">{log.details}</p>
+                        {log.actionId && (
+                          <div className="flex items-center gap-2">
+                            <div className="h-1 w-1 rounded-full bg-emerald-500" />
+                            <span className="text-[9px] font-black uppercase tracking-widest text-emerald-600 hl-mono">Trace ID: {log.actionId}</span>
+                          </div>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))

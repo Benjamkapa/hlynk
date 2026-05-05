@@ -66,7 +66,7 @@ export default function SalesHistoryPage() {
       s.id.slice(-8).toUpperCase(),
       new Date(s.createdAt).toLocaleString(),
       s.customerName || 'Walk-in',
-      s.items?.length || 0,
+      s.items?.reduce((sum: number, item: any) => sum + (item.quantity || 1), 0) || 0,
       s.totalAmount,
       s.paymentMethod,
     ])
@@ -170,7 +170,7 @@ export default function SalesHistoryPage() {
                   <td className="px-8 py-5 text-sm font-black text-gray-900 hl-mono">#{s.id.slice(-8).toUpperCase()}</td>
                   <td className="px-8 py-5 text-sm font-bold text-gray-400 hl-mono">{new Date(s.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</td>
                   <td className="px-8 py-5 text-sm font-bold text-gray-600">{s.customerName || 'Walk-in'}</td>
-                  <td className="px-8 py-5 text-center text-sm font-black hl-mono">{s.items?.length || 0}</td>
+                  <td className="px-8 py-5 text-center text-sm font-black hl-mono">{s.items?.reduce((sum: number, item: any) => sum + (item.quantity || 1), 0) || 0}</td>
                   <td className="px-8 py-5 text-right font-black text-[#0D4A3E] text-sm hl-mono">KES {Number(s.totalAmount).toLocaleString()}</td>
                   <td className="px-8 py-5 text-center">
                     <span className={`text-[10px] font-black px-2.5 py-1 rounded-md uppercase tracking-widest ${s.paymentMethod === 'MPESA' ? 'text-emerald-600 bg-emerald-50' : 'text-blue-600 bg-blue-50'}`}>

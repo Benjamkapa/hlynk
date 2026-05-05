@@ -18,6 +18,7 @@ export default function RecordSalePage() {
   const [customerSearch, setCustomerSearch] = useState('')
   const [mpesaPhone, setMpesaPhone] = useState('')
   const [isProcessingMpesa, setIsProcessingMpesa] = useState(false)
+  const [waitingMpesaSaleId, setWaitingMpesaSaleId] = useState<string | null>(null)
   const queryClient = useQueryClient()
 
   const { data: productsData, isLoading: productsLoading, error: productsError } = useQuery<PaginatedResponse<any>>({
@@ -101,25 +102,82 @@ export default function RecordSalePage() {
       status: args?.status || 'COMPLETED',
       mpesaRequestId: args?.mpesaRequestId
     }),
-    onSuccess: (data: any) => {
-      toast.success('Transaction Finalized', {
-        description: `Receipt #${data.id?.slice(-6).toUpperCase()} issued successfully.`,
-        icon: <CheckCircle2 className="text-emerald-500" />
-      })
-      setCart([])
-      setMpesaPhone('')
-      setSelectedCustomerId(null)
-      setCustomerSearch('')
-      queryClient.invalidateQueries({ queryKey: ['inventory-pos'] })
-      queryClient.invalidateQueries({ queryKey: ['recent-sales'] })
-      queryClient.invalidateQueries({ queryKey: ['provider-stats'] })
-      queryClient.invalidateQueries({ queryKey: ['pos-customers'] })
+    onSuccess: (data: any, variables: any) => {
+      const saleId = data.data?.sale?.id || data.data?.id || data.id;
+      
+      if (variables?.status === 'PENDING') {
+        setWaitingMpesaSaleId(saleId)
+        setTimeout(() => {
+          setWaitingMpesaSaleId((prev) => {
+            if (prev === saleId) {
+              setIsProcessingMpesa(false)
+              toast.error('Transaction Timed Out', {
+                description: 'No response received from M-Pesa. Please check if the customer received the prompt.'
+              })
+              return null
+            }
+            return prev
+          })
+        }, 60000)
+      } else {
+        toast.success('Transaction Finalized', {
+          description: `Receipt #${saleId?.slice(-6)?.toUpperCase() || 'issued'} successfully.`,
+          icon: <CheckCircle2 className="text-emerald-500" />
+        })
+        setCart([])
+        setMpesaPhone('')
+        setPaymentMethod('CASH')
+        setSelectedCustomerId(null)
+        setCustomerSearch('')
+        queryClient.invalidateQueries({ queryKey: ['inventory-pos'] })
+        queryClient.invalidateQueries({ queryKey: ['recent-sales'] })
+        queryClient.invalidateQueries({ queryKey: ['provider-stats'] })
+        queryClient.invalidateQueries({ queryKey: ['pos-customers'] })
+      }
     }
   })
 
   useEffect(() => {
     if (handleCompleteSale.error) toast.error(getErrorMessage(handleCompleteSale.error))
   }, [handleCompleteSale.error])
+
+  const { data: pendingSaleData } = useQuery({
+    queryKey: ['sale-details', waitingMpesaSaleId],
+    queryFn: () => salesApi.getDetails(waitingMpesaSaleId!),
+    enabled: !!waitingMpesaSaleId,
+    refetchInterval: waitingMpesaSaleId ? 2000 : false,
+    refetchIntervalInBackground: true,
+    staleTime: 0
+  })
+
+  useEffect(() => {
+    if (waitingMpesaSaleId && pendingSaleData?.data) {
+      const sale = pendingSaleData.data;
+      if (sale.status === 'COMPLETED' || sale.status === 'PAID') {
+        setWaitingMpesaSaleId(null)
+        setIsProcessingMpesa(false)
+        toast.success('Transaction Finalized', {
+          description: `M-Pesa payment received. Receipt #${sale.id?.slice(-6).toUpperCase()} issued.`,
+          icon: <CheckCircle2 className="text-emerald-500" />
+        })
+        setCart([])
+        setMpesaPhone('')
+        setPaymentMethod('CASH')
+        setSelectedCustomerId(null)
+        setCustomerSearch('')
+        queryClient.invalidateQueries({ queryKey: ['inventory-pos'] })
+        queryClient.invalidateQueries({ queryKey: ['recent-sales'] })
+        queryClient.invalidateQueries({ queryKey: ['provider-stats'] })
+        queryClient.invalidateQueries({ queryKey: ['pos-customers'] })
+      } else if (sale.status === 'FAILED' || sale.status === 'CANCELLED') {
+        setWaitingMpesaSaleId(null)
+        setIsProcessingMpesa(false)
+        toast.error('Payment Failed', {
+          description: 'The M-Pesa transaction was declined or failed.'
+        })
+      }
+    }
+  }, [pendingSaleData, waitingMpesaSaleId, queryClient])
 
   const initiateMpesaPayment = async () => {
     if (!mpesaPhone || mpesaPhone.length < 10) {
@@ -142,7 +200,6 @@ export default function RecordSalePage() {
       handleCompleteSale.mutate({ status: 'PENDING', mpesaRequestId: res?.data?.CheckoutRequestID || res?.CheckoutRequestID })
     } catch (err: any) {
       toast.error(getErrorMessage(err))
-    } finally {
       setIsProcessingMpesa(false)
     }
   }

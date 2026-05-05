@@ -4,6 +4,7 @@ import { subscriptionsApi } from '../../lib/api/providers'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { getErrorMessage } from '../../lib/utils/error'
+import { useAuth } from '../../lib/auth/AuthContext'
 
 const PLANS = [
   { 
@@ -52,22 +53,43 @@ import { SubscriptionExpiredBanner } from '../../components/shared/SubscriptionG
 
 export default function SubscriptionPage() {
   const queryClient = useQueryClient()
+  const { refreshUser } = useAuth()
   const [showRenewModal, setShowRenewModal] = useState(false)
   const [showChangeModal, setShowChangeModal] = useState(false)
   const [mpesaPhone, setMpesaPhone] = useState('')
   const [selectedPlan, setSelectedPlan] = useState<any>(null)
   const [activeTab, setActiveTab] = useState<'current' | 'history'>('current')
+  const [isWaitingForPayment, setIsWaitingForPayment] = useState(false)
 
   const { data: subResponse, isLoading: subLoading } = useQuery({
     queryKey: ['my-subscription'],
-    queryFn: subscriptionsApi.getMe
+    queryFn: subscriptionsApi.getMe,
+    refetchInterval: isWaitingForPayment ? 3000 : false
   })
 
   const { data: historyResponse, isLoading: historyLoading } = useQuery({
     queryKey: ['billing-history'],
     queryFn: subscriptionsApi.getHistory,
-    enabled: activeTab === 'history'
+    enabled: activeTab === 'history' || isWaitingForPayment,
+    refetchInterval: isWaitingForPayment ? 3000 : false
   })
+
+  // Watch for payment status change
+  useEffect(() => {
+    if (isWaitingForPayment && historyResponse?.data) {
+      const latestPayment = historyResponse.data[0];
+      if (latestPayment && latestPayment.status !== 'PENDING') {
+        setIsWaitingForPayment(false);
+        if (latestPayment.status === 'PAID') {
+          toast.success("Payment successful! Your subscription is now active.");
+          queryClient.invalidateQueries({ queryKey: ['my-subscription'] });
+          refreshUser();
+        } else if (latestPayment.status === 'FAILED') {
+          toast.error("Payment failed or was cancelled by user.");
+        }
+      }
+    }
+  }, [historyResponse, isWaitingForPayment, queryClient]);
 
   const subscription = subResponse?.data
   const history = historyResponse?.data || []
@@ -80,6 +102,8 @@ export default function SubscriptionPage() {
     onSuccess: (data) => {
       toast.success(data.message || 'STK Push sent!')
       setShowRenewModal(false)
+      setIsWaitingForPayment(true)
+      setTimeout(() => setIsWaitingForPayment(false), 60000)
     },
     onError: (err) => toast.error(getErrorMessage(err))
   })
@@ -89,6 +113,8 @@ export default function SubscriptionPage() {
     onSuccess: (data) => {
       toast.success(data.message || 'Payment initiated for plan upgrade!')
       setShowChangeModal(false)
+      setIsWaitingForPayment(true)
+      setTimeout(() => setIsWaitingForPayment(false), 60000)
     },
     onError: (err) => toast.error(getErrorMessage(err))
   })
@@ -98,6 +124,16 @@ export default function SubscriptionPage() {
   return (
     <div className="space-y-8 animate-in fade-in duration-500 pt-6">
       
+      {isWaitingForPayment && (
+        <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 px-6 py-4 rounded-2xl flex items-center gap-4 shadow-sm animate-pulse">
+          <Loader2 className="animate-spin text-emerald-600" size={24} />
+          <div>
+            <h4 className="font-black text-sm tracking-tight">Waiting for Payment...</h4>
+            <p className="text-xs font-medium text-emerald-600/80">Please check your phone and enter your M-Pesa PIN. The page will refresh automatically.</p>
+          </div>
+        </div>
+      )}
+
       <SubscriptionExpiredBanner expired={isExpired} />
 
       <div className="flex justify-between items-end">
