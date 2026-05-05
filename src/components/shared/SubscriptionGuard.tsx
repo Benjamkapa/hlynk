@@ -30,15 +30,26 @@ export default function SubscriptionGuard({ children }: { children?: React.React
   if (user?.role === 'SUPER_ADMIN') return <>{children || <Outlet />}</>
 
   const subscription = subResponse?.data
-  const isExpired = subscription?.status === 'EXPIRED' || (subscription?.endDate && new Date(subscription.endDate) < new Date())
+  
+  const now = new Date().getTime()
+  const endDate = subscription?.endDate ? new Date(subscription.endDate).getTime() : null
+  const trialEndDate = subscription?.trialEndDate ? new Date(subscription.trialEndDate).getTime() : null
+
+  const isPastEndDate = endDate ? endDate < now : false
+  const isPastGracePeriod = endDate ? (endDate + (24 * 60 * 60 * 1000)) < now : false
+
   const isTrial = subscription?.status === 'TRIAL'
-  const isTrialExpired = subscription?.trialEndDate && new Date(subscription.trialEndDate) < new Date()
+  const isTrialExpired = trialEndDate ? trialEndDate < now : false
 
-  const expired = isExpired || (isTrial && isTrialExpired)
+  // Account is completely locked if past grace period (or trial expired)
+  const lockedOut = (subscription?.status === 'EXPIRED') || isPastGracePeriod || (isTrial && isTrialExpired)
+  
+  // They are in grace period if past end date but NOT past grace period
+  const inGracePeriod = isPastEndDate && !isPastGracePeriod && !isTrial
 
-  // If expired and not already on the subscription page, redirect
-  if (expired && !location.pathname.includes('/dashboard/subscription')) {
-    return <Navigate to="/dashboard/subscription" state={{ expired: true }} replace />
+  // If locked out and not already on the subscription page, redirect
+  if (lockedOut && !location.pathname.includes('/dashboard/subscription')) {
+    return <Navigate to="/dashboard/subscription" state={{ lockedOut: true }} replace />
   }
 
   // If no subscription at all (rare), redirect
@@ -46,7 +57,22 @@ export default function SubscriptionGuard({ children }: { children?: React.React
     return <Navigate to="/dashboard/subscription" replace />
   }
 
-  return <>{children || <Outlet />}</>
+  return (
+    <>
+      {inGracePeriod && !location.pathname.includes('/dashboard/subscription') && (
+        <div className="bg-red-600 text-white px-4 py-3 flex items-center justify-center gap-3 relative z-50 animate-in slide-in-from-top-full shadow-md">
+          <AlertCircle size={18} className="animate-pulse" />
+          <p className="text-xs font-bold">
+            GRACE PERIOD: Your subscription has expired. You have less than 24 hours to renew before your account is locked.
+          </p>
+          <a href="/dashboard/subscription" className="ml-4 px-3 py-1 bg-white text-red-600 rounded-md text-[10px] font-black uppercase tracking-widest hover:bg-red-50">
+            Renew Now
+          </a>
+        </div>
+      )}
+      {children || <Outlet />}
+    </>
+  )
 }
 
 export function SubscriptionExpiredBanner({ expired }: { expired?: boolean }) {

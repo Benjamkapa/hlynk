@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import { User, Store, Bell, Lock, Save, Camera, Loader2, LogOut, Trash2, Users, Shield, Mail, Phone, ArrowRight, Plus, CheckCircle2, Edit, FileText, RefreshCcw, Code } from 'lucide-react'
+import { User, Store, Bell, Lock, Save, Camera, Loader2, LogOut, Trash2, Users, Shield, Mail, Phone, ArrowRight, Plus, CheckCircle2, Edit, FileText, RefreshCcw, Code, Sparkles } from 'lucide-react'
 import { toast } from 'sonner'
 import { useAuth } from '../../lib/auth/AuthContext'
 import { providersApi } from '../../lib/api/providers'
@@ -304,6 +304,40 @@ export default function SettingsPage() {
                     </div>
                   </div>
                 </FeatureGate>
+
+                <div className="mt-10 pt-10 border-t border-gray-100">
+                  <h4 className="text-xs font-black text-emerald-600 uppercase tracking-widest mb-2 flex items-center gap-2">
+                    <Sparkles size={16} /> Pro Feature: AI Analyst Integration
+                  </h4>
+                  <p className="text-[11px] text-gray-500 mb-6 font-medium max-w-lg">
+                    Bring your own LLM API Key (OpenAI, Anthropic, or Gemini) to unlock automated 26-day business insight reports. If disabled, you can still copy the data and paste it into ChatGPT manually.
+                  </p>
+                  <div className="space-y-4 max-w-2xl bg-slate-50 p-6 rounded-2xl border border-slate-100">
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">AI Provider</label>
+                      <select 
+                        value={formData.operationalSettings?.ai?.provider || 'none'}
+                        onChange={(e) => setFormData({ ...formData, operationalSettings: { ...formData.operationalSettings, ai: { ...formData.operationalSettings?.ai, provider: e.target.value } } })}
+                        className="w-full bg-white border border-slate-200 rounded-xl py-3 px-4 outline-none focus:ring-4 focus:ring-emerald-500/5 transition-all font-bold text-sm appearance-none"
+                      >
+                        <option value="none">Disabled (Manual Prompts Only)</option>
+                        <option value="openai">OpenAI (ChatGPT)</option>
+                        <option value="anthropic">Anthropic (Claude)</option>
+                        <option value="gemini">Google Gemini</option>
+                      </select>
+                    </div>
+                    
+                    {formData.operationalSettings?.ai?.provider && formData.operationalSettings?.ai?.provider !== 'none' && (
+                      <InputGroup
+                        label="API Key"
+                        type="password"
+                        placeholder="sk-..."
+                        value={formData.operationalSettings?.ai?.apiKey || ''}
+                        onChange={(v: string) => setFormData({ ...formData, operationalSettings: { ...formData.operationalSettings, ai: { ...formData.operationalSettings?.ai, apiKey: v } } })}
+                      />
+                    )}
+                  </div>
+                </div>
               </div>
             )}
 

@@ -1,4 +1,4 @@
-import { TrendingUp, TrendingDown, Download, BarChart3, PieChart, Loader2, RefreshCcw, Filter, ChevronLeft, ChevronRight, FileText } from 'lucide-react'
+import { TrendingUp, TrendingDown, Download, BarChart3, PieChart, Loader2, RefreshCcw, Filter, ChevronLeft, ChevronRight, FileText, Sparkles, Copy, BrainCircuit } from 'lucide-react'
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts'
 import { useQuery } from '@tanstack/react-query'
 import { providersApi } from '../../lib/api/providers'
@@ -10,8 +10,14 @@ import { ProviderStats } from '../../lib/types/api'
 
 export default function ReportsPage() {
   const [logPage, setLogPage] = useState(1)
+  const [isGenerating, setIsGenerating] = useState(false)
   
-  const { data: stats, isLoading: statsLoading, error: statsError } = useQuery<ProviderStats>({
+  const { data: profile } = useQuery({
+    queryKey: ['my-profile'],
+    queryFn: providersApi.getMyProfile
+  })
+
+  const { data: stats, isLoading: statsLoading, error: statsError } = useQuery<ProviderStats & { aiReportData?: any }>({
     queryKey: ['provider-reports'],
     queryFn: providersApi.getStats
   })
@@ -43,6 +49,32 @@ export default function ReportsPage() {
     if (!logsData?.items) return
     exportToCSV(logsData.items, 'activity_logs')
     toast.success('Logs exported to CSV')
+  }
+
+  const aiConfig = profile?.data?.operationalSettings?.ai
+
+  const generatePrompt = () => {
+    if (!stats || !stats.aiReportData) return ''
+    const { totalSales26Days, totalExpenses26Days, transactionCount26Days } = stats.aiReportData
+    
+    return `Act as an expert business consultant for my retail shop. Please analyze my performance over the last 26 days and give me actionable insights.
+
+PERFORMANCE DATA (Last 26 Days):
+- Gross Revenue: KES ${totalSales26Days.toLocaleString()}
+- Total Expenses: KES ${totalExpenses26Days.toLocaleString()}
+- Net Profit: KES ${(totalSales26Days - totalExpenses26Days).toLocaleString()}
+- Total Transactions: ${transactionCount26Days}
+- Out of Stock Items Currently: ${stats.outOfStockCount}
+
+Please provide a brief, actionable report detailing:
+1. Overall trend analysis (is my business healthy?)
+2. Critical warnings (inventory management, expense ratio)
+3. Three highly specific, actionable tips to increase my profit margin next month. Format the response beautifully using Markdown.`
+  }
+
+  const handleCopyPrompt = () => {
+    navigator.clipboard.writeText(generatePrompt())
+    toast.success('Prompt copied! Paste it into ChatGPT or Claude.')
   }
 
   return (
@@ -122,6 +154,54 @@ export default function ReportsPage() {
               Requires Action
             </div>
             <PieChart size={120} className="absolute -right-6 -bottom-6 text-gray-50 opacity-50 rotate-12" />
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-8">
+        <div className="bg-gradient-to-br from-emerald-900 to-slate-900 p-8 rounded-[14px] text-white shadow-2xl relative overflow-hidden">
+          <BrainCircuit size={150} className="absolute -right-10 -bottom-10 text-white opacity-5 rotate-12" />
+          <div className="relative z-10">
+            <h3 className="text-2xl font-black mb-2 flex items-center gap-3">
+              <Sparkles className="text-emerald-400" />
+              Pro Feature: AI Business Analyst
+            </h3>
+            <p className="text-emerald-100/70 mb-8 max-w-2xl text-sm font-medium leading-relaxed">
+              Generate a comprehensive 26-day performance report and get actionable business advice.
+              {aiConfig?.provider && aiConfig.provider !== 'none' 
+                ? ' Your AI API Key is linked. Click below to generate the report instantly.'
+                : ' You haven\'t linked an AI API Key. You can still copy your data as a prompt and paste it manually into ChatGPT.'}
+            </p>
+
+            <div className="flex flex-wrap gap-4">
+              {aiConfig?.provider && aiConfig.provider !== 'none' ? (
+                <button 
+                  onClick={() => toast.info('Direct API calling will be activated in the next phase.')}
+                  disabled={isGenerating}
+                  className="bg-emerald-500 text-white px-8 py-4 rounded-xl font-black text-sm hover:bg-emerald-400 transition-all shadow-lg flex items-center gap-2"
+                >
+                  {isGenerating ? <Loader2 className="animate-spin" size={18} /> : <BrainCircuit size={18} />}
+                  Generate AI Report Now
+                </button>
+              ) : (
+                <button 
+                  onClick={handleCopyPrompt}
+                  className="bg-white/10 backdrop-blur-md border border-white/20 text-white px-8 py-4 rounded-xl font-black text-sm hover:bg-white/20 transition-all flex items-center gap-2"
+                >
+                  <Copy size={18} />
+                  Copy AI Prompt
+                </button>
+              )}
+            </div>
+            
+            {(!aiConfig?.provider || aiConfig.provider === 'none') && (
+              <div className="mt-8 bg-black/30 rounded-xl p-6 border border-white/10 max-w-3xl">
+                <p className="text-[10px] font-black uppercase tracking-widest text-emerald-400 mb-4">Preview of Prompt Payload</p>
+                <pre className="text-xs text-slate-300 whitespace-pre-wrap font-mono leading-relaxed h-32 overflow-y-auto custom-scrollbar pr-4">
+                  {generatePrompt()}
+                </pre>
+              </div>
+            )}
           </div>
         </div>
       </div>

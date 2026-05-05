@@ -10,7 +10,7 @@ const PLANS = [
   { 
     id: 'STARTER', 
     name: 'Starter Plan', 
-    price: 1500, 
+    price: 1600, 
     desc: 'Perfect for small vendors who want to track their money and expenses clearly.', 
     color: 'emerald',
     features: ['Record Sales', 'Expense Tracking', 'Profit Tracking', 'Basic Dashboard'],
@@ -213,10 +213,19 @@ export default function SubscriptionPage() {
               <div className="flex flex-wrap gap-4">
                 <button 
                   onClick={() => {
+                    const daysRemaining = subscription?.endDate ? Math.ceil((new Date(subscription.endDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)) : 0
+                    if (daysRemaining > 10) {
+                      toast.error(`You cannot renew right now. Your current plan has ${daysRemaining} days remaining. Renewals are only allowed 10 days before expiry.`)
+                      return
+                    }
                     setMpesaPhone('')
                     setShowRenewModal(true)
                   }}
-                  className="bg-[#0D4A3E] text-white px-12 py-5 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-[#0A3D33] transition-all shadow-xl shadow-emerald-900/20 active:scale-95"
+                  className={`px-12 py-5 rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-xl active:scale-95 ${
+                    subscription?.endDate && Math.ceil((new Date(subscription.endDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)) > 10 
+                      ? 'bg-gray-100 text-gray-400 cursor-not-allowed shadow-none' 
+                      : 'bg-[#0D4A3E] text-white hover:bg-[#0A3D33] shadow-emerald-900/20'
+                  }`}
                 >
                   Renew Subscription
                 </button>
