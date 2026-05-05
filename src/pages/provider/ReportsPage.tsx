@@ -181,7 +181,7 @@ Please provide a brief, actionable report detailing:
                   className="bg-emerald-500 text-white px-8 py-4 rounded-xl font-black text-sm hover:bg-emerald-400 transition-all shadow-lg flex items-center gap-2"
                 >
                   {isGenerating ? <Loader2 className="animate-spin" size={18} /> : <BrainCircuit size={18} />}
-                  Generate AI Report Now
+                  Generate AI Report Now!
                 </button>
               ) : (
                 <button 
