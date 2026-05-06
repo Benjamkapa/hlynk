@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { Plus, Search, Filter, Download, Edit, Trash2, Package, TrendingDown, Activity, Lock } from 'lucide-react'
+import { Plus, Search, Filter, Download, Edit, Trash2, Package, TrendingDown, Activity, Lock, AlertTriangle } from 'lucide-react'
+import { ConfirmModal } from '../../components/shared/ConfirmModal'
 import { SlideOver } from '../../components/shared/SlideOver'
 import { toast } from 'sonner'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
@@ -16,11 +17,15 @@ export default function ProductsPage() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   const [editingProduct, setEditingProduct] = useState<any>(null)
   const [search, setSearch] = useState('')
+  const [page, setPage] = useState(1)
+  const [sortBy, setSortBy] = useState('createdAt')
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
   const queryClient = useQueryClient()
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
 
   const { data: productsData, isLoading, error } = useQuery<PaginatedResponse<any> & { stats: any }>({
-    queryKey: ['inventory', search],
-    queryFn: () => inventoryApi.list({ search }),
+    queryKey: ['inventory', search, page, sortBy, sortOrder],
+    queryFn: () => inventoryApi.list({ search, page, limit: 10, sortBy, sortOrder }),
     placeholderData: keepPreviousData
   })
 
@@ -83,12 +88,13 @@ export default function ProductsPage() {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <SummaryCard title="Total Items" value={stats.totalItems.toLocaleString()} sub="Unique SKUs" icon={Package} variant="emerald" />
         <FeatureGate feature="low_stock_alerts">
           <SummaryCard title="Low Stock" value={`${stats.lowStock} ALERTS`} sub="Requires attention" icon={TrendingDown} variant="red" />
         </FeatureGate>
         <SummaryCard title="Stock Value" value={`KES ${stats.totalValue.toLocaleString()}`} sub="Total inventory" icon={Activity} variant="blue" />
+        <SummaryCard title="Expiring Soon" value={`${stats.expiringSoon || 0} ITEMS`} sub="Within 30 days" icon={AlertTriangle} variant="amber" />
       </div>
 
       {/* Products Table */}
@@ -131,11 +137,11 @@ export default function ProductsPage() {
           <table className="w-full text-left">
             <thead>
               <tr className="bg-gray-50/50">
-                <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest">Product</th>
-                <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest">Category</th>
-                <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">In Stock</th>
-                <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Buying</th>
-                <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Selling</th>
+                <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest cursor-pointer hover:text-emerald-600" onClick={() => { setSortBy('name'); setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc') }}>Product {sortBy === 'name' && (sortOrder === 'asc' ? '↑' : '↓')}</th>
+                <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest cursor-pointer hover:text-emerald-600" onClick={() => { setSortBy('category'); setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc') }}>Category {sortBy === 'category' && (sortOrder === 'asc' ? '↑' : '↓')}</th>
+                <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center cursor-pointer hover:text-emerald-600" onClick={() => { setSortBy('stockLevel'); setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc') }}>In Stock {sortBy === 'stockLevel' && (sortOrder === 'asc' ? '↑' : '↓')}</th>
+                <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right cursor-pointer hover:text-emerald-600" onClick={() => { setSortBy('buyingPrice'); setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc') }}>Buying {sortBy === 'buyingPrice' && (sortOrder === 'asc' ? '↑' : '↓')}</th>
+                <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right cursor-pointer hover:text-emerald-600" onClick={() => { setSortBy('price'); setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc') }}>Selling {sortBy === 'price' && (sortOrder === 'asc' ? '↑' : '↓')}</th>
                 <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Action</th>
               </tr>
             </thead>
@@ -187,7 +193,7 @@ export default function ProductsPage() {
                         <Edit size={16} />
                       </button>
                       <button 
-                        onClick={(e) => { e.stopPropagation(); confirmDelete(p.id) }}
+                        onClick={(e) => { e.stopPropagation(); setConfirmDeleteId(p.id) }}
                         disabled={deleteMutation.isPending}
                         className="p-2 hover:bg-white hover:shadow-lg rounded-lg transition-all text-slate-300 hover:text-red-600 disabled:opacity-50"
                       >
@@ -205,7 +211,15 @@ export default function ProductsPage() {
           </table>
         </div>
       </div>
-    </div>
+          <ConfirmModal
+        isOpen={!!confirmDeleteId}
+        title="Confirm Action"
+        message="Are you sure you want to proceed? This action cannot be undone."
+        confirmText="Confirm"
+        onConfirm={() => confirmDeleteId && deleteMutation.mutate(confirmDeleteId)}
+        onCancel={() => setConfirmDeleteId(null)}
+      />
+</div>
   )
 }
 
@@ -332,7 +346,15 @@ function AddProductForm({ onClose }: { onClose: () => void }) {
       >
         {mutation.isPending ? 'Saving...' : 'Save Inventory Item'}
       </button>
-    </div>
+          <ConfirmModal
+        isOpen={!!confirmDeleteId}
+        title="Confirm Action"
+        message="Are you sure you want to proceed? This action cannot be undone."
+        confirmText="Confirm"
+        onConfirm={() => confirmDeleteId && deleteMutation.mutate(confirmDeleteId)}
+        onCancel={() => setConfirmDeleteId(null)}
+      />
+</div>
   )
 }
 
@@ -467,7 +489,15 @@ function EditProductForm({ product, onClose }: { product: any; onClose: () => vo
       >
         {mutation.isPending ? 'Updating...' : 'Update Product Details'}
       </button>
-    </div>
+          <ConfirmModal
+        isOpen={!!confirmDeleteId}
+        title="Confirm Action"
+        message="Are you sure you want to proceed? This action cannot be undone."
+        confirmText="Confirm"
+        onConfirm={() => confirmDeleteId && deleteMutation.mutate(confirmDeleteId)}
+        onCancel={() => setConfirmDeleteId(null)}
+      />
+</div>
   )
 }
 
@@ -489,7 +519,15 @@ function SummaryCard({ title, value, sub, icon: Icon, variant }: any) {
         <h3 className="text-xl font-black text-gray-900 hl-mono">{value}</h3>
         <p className="text-[10px] text-gray-500 font-bold">{sub}</p>
       </div>
-    </div>
+          <ConfirmModal
+        isOpen={!!confirmDeleteId}
+        title="Confirm Action"
+        message="Are you sure you want to proceed? This action cannot be undone."
+        confirmText="Confirm"
+        onConfirm={() => confirmDeleteId && deleteMutation.mutate(confirmDeleteId)}
+        onCancel={() => setConfirmDeleteId(null)}
+      />
+</div>
   )
 }
 

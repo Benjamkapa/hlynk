@@ -9,15 +9,21 @@ import { exportToCSV } from '../../lib/utils/export'
 import { useEffect } from 'react'
 import { keepPreviousData } from '@tanstack/react-query'
 import { PaginatedResponse } from '../../lib/types/api'
+import TablePagination from '../../components/shared/TablePagination'
+import { ConfirmModal } from '../../components/shared/ConfirmModal'
 
 export default function ExpensesPage() {
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   const [search, setSearch] = useState('')
+  const [page, setPage] = useState(1)
+  const [sortBy, setSortBy] = useState('createdAt')
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
   const queryClient = useQueryClient()
 
   const { data: expensesData, isLoading, error } = useQuery<PaginatedResponse<any> & { stats: any }>({
-    queryKey: ['expenses', search],
-    queryFn: () => expensesApi.list({ search }),
+    queryKey: ['expenses', search, page, sortBy, sortOrder],
+    queryFn: () => expensesApi.list({ search, page, limit: 10 , sortBy, sortOrder }),
     placeholderData: keepPreviousData
   })
 
@@ -26,6 +32,7 @@ export default function ExpensesPage() {
   }, [error])
 
   const expenses = expensesData?.items || []
+  const pages = expensesData?.pages || 1
   const stats = expensesData?.stats || { totalExpenses: 0, highestCategory: 'N/A', burnRate: 0 }
 
   const handleExport = () => {
@@ -83,7 +90,10 @@ export default function ExpensesPage() {
               type="text"
               placeholder="Search by description or category..."
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(e) => {
+                setSearch(e.target.value)
+                setPage(1)
+              }}
               className="w-full bg-gray-50 border-none rounded-xl py-3.5 pl-12 pr-4 outline-none focus:ring-4 focus:ring-emerald-500/5 transition-all text-sm font-bold"
             />
           </div>
@@ -93,10 +103,32 @@ export default function ExpensesPage() {
           <table className="w-full text-left">
             <thead>
               <tr className="bg-gray-50/50">
-                <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest">Date</th>
-                <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest">Description</th>
-                <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest">Category</th>
-                <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Amount</th>
+                <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest cursor-pointer hover:text-emerald-600" onClick={() => { setSortBy('date'); setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc') }}>Date {sortBy === 'date' && (sortOrder === 'asc' ? '↑' : '↓')}</th>
+                <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest cursor-pointer hover:text-emerald-600" onClick={() => { setSortBy('description'); setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc') }}>Description {sortBy === 'description' && (sortOrder === 'asc' ? '↑' : '↓')}</th>
+                <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest cursor-pointer hover:text-emerald-600" onClick={() => { setSortBy('category'); setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc') }}>Category {sortBy === 'category' && (sortOrder === 'asc' ? '↑' : '↓')}</th>
+                <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right cursor-pointer hover:text-emerald-600" onClick={() => { setSortBy('amount'); setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc') }}>Amount {sortBy === 'amount' && (sortOrder === 'asc' ? '↑' : '↓')}</th>
+                <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Action</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-50">
+              {isLoading ? (
+                <tr>
+                  <td colSpan={5} className="py-20 text-center">
+                    <div className="h-10 w-10 animate-spin rounded-full border-4 border-emerald-500 border-t-transparent mx-auto" />
+                  </td>
+                </tr>
+              ) : expenses.length > 0 ? expenses.map((e: any, i: number) => (
+                <tr key={e.id ?? i} className="hover:bg-red-50/30 transition-all group cursor-pointer">
+                  <td className="px-8 py-5 text-xs font-bold text-gray-400 hl-mono">{new Date(e.date || e.createdAt).toLocaleDateString()}</td>
+                  <td className="px-8 py-5">
+                    <span className="font-black text-gray-900 text-sm">{e.description}</span>
+                    <p className="text-[9px] text-gray-400 font-bold hl-mono tracking-tighter uppercase">ID: {e.id.slice(-8).toUpperCase()}</p>
+            <thead>
+              <tr className="bg-gray-50/50">
+                <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest cursor-pointer hover:text-emerald-600" onClick={() => { setSortBy('date'); setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc') }}>Date {sortBy === 'date' && (sortOrder === 'asc' ? '↑' : '↓')}</th>
+                <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest cursor-pointer hover:text-emerald-600" onClick={() => { setSortBy('description'); setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc') }}>Description {sortBy === 'description' && (sortOrder === 'asc' ? '↑' : '↓')}</th>
+                <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest cursor-pointer hover:text-emerald-600" onClick={() => { setSortBy('category'); setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc') }}>Category {sortBy === 'category' && (sortOrder === 'asc' ? '↑' : '↓')}</th>
+                <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right cursor-pointer hover:text-emerald-600" onClick={() => { setSortBy('amount'); setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc') }}>Amount {sortBy === 'amount' && (sortOrder === 'asc' ? '↑' : '↓')}</th>
                 <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Action</th>
               </tr>
             </thead>
@@ -120,11 +152,7 @@ export default function ExpensesPage() {
                   <td className="px-8 py-5 text-right font-black text-red-600 text-sm hl-mono whitespace-nowrap">KES {Number(e.amount).toLocaleString()}</td>
                   <td className="px-8 py-5 text-right">
                     <button
-                      onClick={() => {
-                        if (window.confirm('Delete this expense record?')) {
-                          deleteMutation.mutate(e.id)
-                        }
-                      }}
+                      onClick={() => setConfirmDeleteId(e.id)}
                       disabled={deleteMutation.isPending}
                       className="p-2 hover:bg-white hover:shadow-lg rounded-lg transition-all text-slate-300 hover:text-red-600 disabled:opacity-50"
                     >
@@ -145,11 +173,27 @@ export default function ExpensesPage() {
             </tbody>
           </table>
         </div>
+
+        <TablePagination
+          page={page}
+          pages={pages}
+          onPrevious={() => setPage((current) => Math.max(1, current - 1))}
+          onNext={() => setPage((current) => Math.min(pages, current + 1))}
+        />
       </div>
 
       <SlideOver isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} title="Log New Expense">
         <AddExpenseForm onClose={() => setIsAddModalOpen(false)} />
       </SlideOver>
+
+      <ConfirmModal
+        isOpen={!!confirmDeleteId}
+        title="Delete Expense"
+        message="Are you sure you want to delete this expense record? This action cannot be undone."
+        confirmText="Delete Expense"
+        onConfirm={() => confirmDeleteId && deleteMutation.mutate(confirmDeleteId)}
+        onCancel={() => setConfirmDeleteId(null)}
+      />
     </div>
   )
 }

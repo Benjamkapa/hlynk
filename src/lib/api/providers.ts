@@ -35,7 +35,7 @@ export const providersApi = {
 }
 
 export const salesApi = {
-  list: (params?: { page?: number; search?: string; date?: string; limit?: number }) => api.get('/sales', { params }).then(r => r.data),
+  list: (params?: { page?: number; search?: string; date?: string; limit?: number; sortBy?: string; sortOrder?: string }) => api.get('/sales', { params }).then(r => r.data),
   create: (data: any) => api.post('/sales', data).then(r => r.data),
   getDetails: (id: string) => api.get(`/sales/${id}`).then(r => r.data),
   vendorMpesaPush: (data: { phone: string; amount: number; reference: string }) => api.post('/sales/mpesa-push', data).then(r => r.data),
@@ -49,7 +49,7 @@ export const subscriptionsApi = {
 }
 
 export const inventoryApi = {
-  list: (params?: { page?: number; search?: string; category?: string; limit?: number }) => api.get('/inventory', { params }).then(r => r.data),
+  list: (params?: { page?: number; search?: string; category?: string; limit?: number; sortBy?: string; sortOrder?: string }) => api.get('/inventory', { params }).then(r => r.data),
   create: (data: any) => api.post('/inventory', data).then(r => r.data),
   update: (id: string, data: any) => api.put(`/inventory/${id}`, data).then(r => r.data),
   adjustStock: (id: string, quantity: number, reason: string) => api.post(`/inventory/${id}/adjust`, { quantity, reason }).then(r => r.data),
@@ -64,13 +64,13 @@ export const inventoryApi = {
 }
 
 export const expensesApi = {
-  list: (params?: { page?: number; search?: string; category?: string; limit?: number }) => api.get('/expenses', { params }).then(r => r.data),
+  list: (params?: { page?: number; search?: string; category?: string; limit?: number; sortBy?: string; sortOrder?: string }) => api.get('/expenses', { params }).then(r => r.data),
   create: (data: any) => api.post('/expenses', data).then(r => r.data),
   delete: (id: string) => api.delete(`/expenses/${id}`).then(r => r.data),
 }
 
 export const customersApi = {
-  list: (params?: { page?: number; search?: string; limit?: number }) => api.get('/customers', { params }).then(r => r.data),
+  list: (params?: { page?: number; search?: string; limit?: number; sortBy?: string; sortOrder?: string }) => api.get('/customers', { params }).then(r => r.data),
   create: (data: any) => api.post('/customers', data).then(r => r.data),
   update: (id: string, data: any) => api.put(`/customers/${id}`, data).then(r => r.data),
   delete: (id: string) => api.delete(`/customers/${id}`).then(r => r.data),

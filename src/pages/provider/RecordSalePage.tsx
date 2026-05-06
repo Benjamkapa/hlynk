@@ -23,7 +23,7 @@ export default function RecordSalePage() {
 
   const { data: productsData, isLoading: productsLoading, error: productsError } = useQuery<PaginatedResponse<any>>({
     queryKey: ['inventory-pos', search, page],
-    queryFn: () => inventoryApi.list({ search, page, limit: 12 }),
+    queryFn: () => inventoryApi.list({ search, page, limit: 10 }),
     placeholderData: keepPreviousData
   })
 

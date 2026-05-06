@@ -11,6 +11,7 @@ type Feature =
   | 'staff_accounts'
   | 'advanced_reports'
   | 'audit_logs'
+  | 'ai_analyst'
 
 interface FeatureGateProps {
   feature: Feature
@@ -27,6 +28,7 @@ export const FEATURE_PLANS: Record<Feature, string[]> = {
   staff_accounts: ['PRO'],
   advanced_reports: ['PRO'],
   audit_logs: ['PRO'],
+  ai_analyst: ['PRO'], // Fallback array, custom logic below
 }
 
 export default function FeatureGate({ feature, children, fallback, variant = 'card' }: FeatureGateProps) {
@@ -39,11 +41,18 @@ export default function FeatureGate({ feature, children, fallback, variant = 'ca
   if (user?.role === 'SUPER_ADMIN') return <>{children}</>
 
   const plan = user?.subscription?.planName || 'STARTER'
+  const isTrial = user?.subscription?.status === 'TRIAL' || user?.subscription?.isTrial
   const featurePlans = FEATURE_PLANS[feature]
 
   if (!featurePlans) return <>{children}</> // Fallback safety
 
-  const hasAccess = featurePlans.includes(plan)
+  let hasAccess = featurePlans.includes(plan)
+
+  if (feature === 'ai_analyst') {
+    if (plan === 'PRO') hasAccess = true
+    else if (isTrial && ['GROWTH', 'PRO'].includes(plan)) hasAccess = true
+    else hasAccess = false
+  }
 
   if (hasAccess) return <>{children}</>
 

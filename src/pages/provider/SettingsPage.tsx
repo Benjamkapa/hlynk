@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { User, Store, Bell, Lock, Save, Camera, Loader2, LogOut, Trash2, Users, Shield, Mail, Phone, ArrowRight, Plus, CheckCircle2, Edit, FileText, RefreshCcw, Code, Sparkles } from 'lucide-react'
+import { ConfirmModal } from '../../components/shared/ConfirmModal'
 import { toast } from 'sonner'
 import { useAuth } from '../../lib/auth/AuthContext'
 import { providersApi } from '../../lib/api/providers'
@@ -10,6 +11,7 @@ import FeatureGate from '../../components/shared/FeatureGate'
 export default function SettingsPage() {
   const { user, refreshUser, logout } = useAuth()
   const queryClient = useQueryClient()
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState('Profile')
   const [uploading, setUploading] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -305,7 +307,7 @@ export default function SettingsPage() {
                   </div>
                 </FeatureGate>
 
-                <div className="mt-10 pt-10 border-t border-gray-100">
+                {/* <div className="mt-10 pt-10 border-t border-gray-100">
                   <h4 className="text-xs font-black text-emerald-600 uppercase tracking-widest mb-2 flex items-center gap-2">
                     <Sparkles size={16} /> Pro Feature: AI Analyst Integration
                   </h4>
@@ -337,7 +339,7 @@ export default function SettingsPage() {
                       />
                     )}
                   </div>
-                </div>
+                </div> */}
               </div>
             )}
 
@@ -413,9 +415,7 @@ export default function SettingsPage() {
                   <p className="text-xs text-gray-500 mb-6 font-medium">Once you deactivate your account, there is no going back. Please be certain.</p>
                   <button
                     onClick={() => {
-                      if (confirm('Are you absolutely sure you want to deactivate your account? This action cannot be undone.')) {
-                        deactivateMutation.mutate()
-                      }
+                      setConfirmDeleteId('deactivate')
                     }}
                     disabled={deactivateMutation.isPending}
                     className="px-6 py-3 border-2 border-red-100 text-red-600 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-red-50 transition-all flex items-center gap-2"
@@ -435,6 +435,17 @@ export default function SettingsPage() {
           </div>
         </div>
       </div>
+          <ConfirmModal
+        isOpen={!!confirmDeleteId}
+        title="Confirm Action"
+        message={confirmDeleteId === 'deactivate' ? "Are you sure you want to deactivate your account? This action cannot be undone." : "Are you sure you want to delete this staff member?"}
+        confirmText="Confirm"
+        onConfirm={() => {
+          if (confirmDeleteId === 'deactivate') deactivateMutation.mutate();
+          else if (confirmDeleteId) deleteMutation.mutate(confirmDeleteId);
+        }}
+        onCancel={() => setConfirmDeleteId(null)}
+      />
     </div>
   )
 }
@@ -659,7 +670,7 @@ function StaffManagement() {
                   <Edit size={16} />
                 </button>
                 <button
-                  onClick={() => confirm('Delete staff member?') && deleteMutation.mutate(staff.id)}
+                  onClick={() => setConfirmDeleteId(staff.id)}
                   className="p-2 text-slate-300 hover:text-red-600 transition-colors"
                 >
                   <Trash2 size={16} />

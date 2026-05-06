@@ -1,6 +1,7 @@
 /// <reference types="vite/client" />
 import axios from 'axios'
 import { queryClient } from '../query/queryClient'
+import { storage } from '../utils/storage'
 
 export const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3000/api/v1',
@@ -8,14 +9,12 @@ export const api = axios.create({
   timeout: 10000,
 })
 
-// ─── Request Interceptor — attach access token ────────────────────────────
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('accessToken')
+  const token = storage.getItem('accessToken')
   if (token) config.headers.Authorization = `Bearer ${token}`
   return config
 })
 
-// ─── Response Interceptor — handle 401 / token refresh ───────────────────
 api.interceptors.response.use(
   (res) => res,
   async (error) => {
@@ -23,8 +22,9 @@ api.interceptors.response.use(
 
     if (error.response?.status === 401 && !original._retry) {
       original._retry = true
+
       try {
-        const refreshToken = localStorage.getItem('refreshToken')
+        const refreshToken = storage.getItem('refreshToken')
         if (!refreshToken) throw new Error('No refresh token')
 
         const { data } = await axios.post(
@@ -33,19 +33,18 @@ api.interceptors.response.use(
         )
 
         const newToken = data.data.accessToken
-        localStorage.setItem('accessToken', newToken)
+        storage.setItem('accessToken', newToken)
         original.headers.Authorization = `Bearer ${newToken}`
         return api(original)
       } catch {
-        // Refresh failed — log out
-        localStorage.removeItem('accessToken')
-        localStorage.removeItem('refreshToken')
+        storage.removeItem('accessToken')
+        storage.removeItem('refreshToken')
+        storage.removeItem('user_profile')
         queryClient.clear()
         window.location.href = '/login'
       }
     }
 
-    // Handle Subscription Expiry
     if (error.response?.status === 403 && error.response.data?.code === 'SUBSCRIPTION_EXPIRED') {
       const isSubscriptionPage = window.location.pathname.includes('/dashboard/subscription')
       if (!isSubscriptionPage) {

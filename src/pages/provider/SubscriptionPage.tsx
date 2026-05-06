@@ -399,6 +399,15 @@ export default function SubscriptionPage() {
 
              {selectedPlan && (
                <div className="bg-white p-8 rounded-[32px] border border-slate-100 animate-in slide-in-from-bottom-4">
+                  {subscription?.endDate && Math.ceil((new Date(subscription.endDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)) > 0 && subscription?.planName !== selectedPlan.id && (
+                    <div className="mb-6 p-4 rounded-2xl bg-amber-50 border border-amber-100 flex gap-4">
+                      <AlertTriangle className="text-amber-500 shrink-0 mt-0.5" size={20} />
+                      <div className="text-sm font-medium text-amber-800 leading-relaxed">
+                        <p className="font-black uppercase tracking-widest text-[10px] mb-1">Billing Cycle Reset</p>
+                        <p>We noticed you still have <strong>{Math.ceil((new Date(subscription.endDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))} days</strong> left on your current plan. To keep things simple and prevent subscription overlapping, changing plans will instantly switch your account to the new tier and start a fresh 28-day billing cycle today. Remaining days will not stack or roll over.</p>
+                      </div>
+                    </div>
+                  )}
                   <div className="flex flex-col md:flex-row items-center gap-8">
                      <div className="flex-1 w-full space-y-2">
                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">M-Pesa Payment Number</label>

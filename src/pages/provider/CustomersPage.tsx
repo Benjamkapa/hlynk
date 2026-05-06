@@ -1,25 +1,35 @@
 import { useState } from 'react'
 import { Users, Phone, Search, Plus, Filter, Mail, User, Trash2, Edit, Download, Star } from 'lucide-react'
+import { ConfirmModal } from '../../components/shared/ConfirmModal'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { customersApi } from '../../lib/api/providers'
 import { toast } from 'sonner'
 import { SlideOver } from '../../components/shared/SlideOver'
 import { exportToCSV } from '../../lib/utils/export'
+import TablePagination from '../../components/shared/TablePagination'
 
 import { useEffect } from 'react'
+import { keepPreviousData } from '@tanstack/react-query'
+import { PaginatedResponse } from '../../lib/types/api'
 
 export default function CustomersPage() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   const [editingCustomer, setEditingCustomer] = useState<any>(null)
   const [search, setSearch] = useState('')
+  const [page, setPage] = useState(1)
+  const [sortBy, setSortBy] = useState('createdAt')
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
   const queryClient = useQueryClient()
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
 
-  const { data: customerData, isLoading } = useQuery({
-    queryKey: ['customers', search],
-    queryFn: () => customersApi.list({ search })
+  const { data: customerData, isLoading } = useQuery<PaginatedResponse<any> & { stats: any }>({
+    queryKey: ['customers', search, page, sortBy, sortOrder],
+    queryFn: () => customersApi.list({ search, page, limit: 10 , sortBy, sortOrder }),
+    placeholderData: keepPreviousData,
   })
 
   const customers = customerData?.items || []
+  const pages = customerData?.pages || 1
   const stats = customerData?.stats || { total: 0, activeToday: 0, topSpender: 'N/A' }
 
   const deleteMutation = useMutation({
@@ -79,7 +89,10 @@ export default function CustomersPage() {
               type="text" 
               placeholder="Search by name, phone or email..." 
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(e) => {
+                setSearch(e.target.value)
+                setPage(1)
+              }}
               className="w-full bg-slate-50 border-none rounded-2xl py-4.5 pl-14 pr-6 outline-none focus:ring-4 focus:ring-emerald-500/5 transition-all text-sm font-bold placeholder:text-slate-400" 
             />
           </div>
@@ -168,6 +181,13 @@ export default function CustomersPage() {
             </tbody>
           </table>
         </div>
+
+        <TablePagination
+          page={page}
+          pages={pages}
+          onPrevious={() => setPage((current) => Math.max(1, current - 1))}
+          onNext={() => setPage((current) => Math.min(pages, current + 1))}
+        />
       </div>
 
       <SlideOver isOpen={isAddModalOpen || !!editingCustomer} onClose={() => { setIsAddModalOpen(false); setEditingCustomer(null); }} title={editingCustomer ? "Edit Customer" : "Add New Customer"}>
@@ -176,7 +196,15 @@ export default function CustomersPage() {
            onClose={() => { setIsAddModalOpen(false); setEditingCustomer(null); }} 
          />
       </SlideOver>
-    </div>
+          <ConfirmModal
+        isOpen={!!confirmDeleteId}
+        title="Confirm Action"
+        message="Are you sure you want to proceed? This action cannot be undone."
+        confirmText="Confirm"
+        onConfirm={() => confirmDeleteId && deleteMutation.mutate(confirmDeleteId)}
+        onCancel={() => setConfirmDeleteId(null)}
+      />
+</div>
   )
 }
 
@@ -211,7 +239,15 @@ function CustomerForm({ customer, onClose }: { customer?: any, onClose: () => vo
       >
         {mutation.isPending ? 'Processing...' : customer ? 'Update Profile' : 'Register Customer'}
       </button>
-    </div>
+          <ConfirmModal
+        isOpen={!!confirmDeleteId}
+        title="Confirm Action"
+        message="Are you sure you want to proceed? This action cannot be undone."
+        confirmText="Confirm"
+        onConfirm={() => confirmDeleteId && deleteMutation.mutate(confirmDeleteId)}
+        onCancel={() => setConfirmDeleteId(null)}
+      />
+</div>
   )
 }
 
@@ -232,7 +268,15 @@ function KpiCard({ title, value, sub, icon: Icon, variant }: any) {
         <h3 className="text-2xl font-black text-slate-900 hl-mono tracking-tight">{value}</h3>
         <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest opacity-60">{sub}</p>
       </div>
-    </div>
+          <ConfirmModal
+        isOpen={!!confirmDeleteId}
+        title="Confirm Action"
+        message="Are you sure you want to proceed? This action cannot be undone."
+        confirmText="Confirm"
+        onConfirm={() => confirmDeleteId && deleteMutation.mutate(confirmDeleteId)}
+        onCancel={() => setConfirmDeleteId(null)}
+      />
+</div>
   )
 }
 
@@ -247,7 +291,15 @@ function InputGroup({ label, placeholder, value, onChange }: any) {
         placeholder={placeholder}
         className="w-full bg-slate-50 border-none rounded-2xl py-4.5 px-6 outline-none focus:ring-4 focus:ring-emerald-500/5 transition-all text-sm font-bold" 
       />
-    </div>
+          <ConfirmModal
+        isOpen={!!confirmDeleteId}
+        title="Confirm Action"
+        message="Are you sure you want to proceed? This action cannot be undone."
+        confirmText="Confirm"
+        onConfirm={() => confirmDeleteId && deleteMutation.mutate(confirmDeleteId)}
+        onCancel={() => setConfirmDeleteId(null)}
+      />
+</div>
   )
 }
 

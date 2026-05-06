@@ -158,7 +158,7 @@ Please provide a brief, actionable report detailing:
         </div>
       </div>
 
-      <div className="mt-8">
+      {/* <div className="mt-8">
         <div className="bg-gradient-to-br from-emerald-900 to-slate-900 p-8 rounded-[14px] text-white shadow-2xl relative overflow-hidden">
           <BrainCircuit size={150} className="absolute -right-10 -bottom-10 text-white opacity-5 rotate-12" />
           <div className="relative z-10">
@@ -204,7 +204,7 @@ Please provide a brief, actionable report detailing:
             )}
           </div>
         </div>
-      </div>
+      </div> */}
 
     </div>
   )

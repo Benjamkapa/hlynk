@@ -1,92 +1,75 @@
-import { useState, useEffect } from "react";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import { User, Phone, ArrowRight, Building2, MapPin, Tag, Mail, Loader2 } from "lucide-react";
-import { toast } from "sonner";
-import { authApi } from "../../lib/api/auth";
-import { useAuth } from "../../lib/auth/AuthContext";
-import { getErrorMessage } from "../../lib/utils/error";
-import GoogleAuthButton from "../../components/auth/GoogleAuthButton";
-import { decodeGoogleCredential, type DecodedGoogleCredential } from "../../lib/google/identity";
+import { useEffect, useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import { ArrowRight, Building2, Mail, MapPin, Phone, Tag, User, Loader2 } from 'lucide-react'
+import { toast } from 'sonner'
+import { authApi } from '../../lib/api/auth'
+import { useAuth } from '../../lib/auth/AuthContext'
+import { getErrorMessage } from '../../lib/utils/error'
+import GoogleAuthButton from '../../components/auth/GoogleAuthButton'
+import { decodeGoogleCredential, type DecodedGoogleCredential } from '../../lib/google/identity'
 
 const COUNTIES = [
-  "Nairobi", "Mombasa", "Kwale", "Kilifi", "Tana River", "Lamu", "Taita/Taveta", "Garissa", "Wajir", "Mandera", "Marsabit", "Isiolo", "Meru", "Tharaka-Nithi", "Embu", "Kitui", "Machakos", "Makueni", "Nyandarua", "Nyeri", "Kirinyaga", "Murang'a", "Kiambu", "Turkana", "West Pokot", "Samburu", "Trans Nzoia", "Uasin Gishu", "Elgeyo/Marakwet", "Nandi", "Baringo", "Laikipia", "Nakuru", "Narok", "Kajiado", "Kericho", "Bomet", "Kakamega", "Vihiga", "Bungoma", "Busia", "Siaya", "Kisumu", "Homa Bay", "Migori", "Kisii", "Nyamira"
-];
+  'Nairobi', 'Mombasa', 'Kwale', 'Kilifi', 'Tana River', 'Lamu', 'Taita/Taveta', 'Garissa', 'Wajir', 'Mandera', 'Marsabit', 'Isiolo', 'Meru', 'Tharaka-Nithi', 'Embu', 'Kitui', 'Machakos', 'Makueni', 'Nyandarua', 'Nyeri', 'Kirinyaga', "Murang'a", 'Kiambu', 'Turkana', 'West Pokot', 'Samburu', 'Trans Nzoia', 'Uasin Gishu', 'Elgeyo/Marakwet', 'Nandi', 'Baringo', 'Laikipia', 'Nakuru', 'Narok', 'Kajiado', 'Kericho', 'Bomet', 'Kakamega', 'Vihiga', 'Bungoma', 'Busia', 'Siaya', 'Kisumu', 'Homa Bay', 'Migori', 'Kisii', 'Nyamira',
+]
 
 const CATEGORIES = [
-  "Retail Store", "Barber & Salon", "Cleaning Services", "Plumbing", "Electrical", "Mechanic", "Consultancy", "Other"
-];
+  'Retail Store', 'Barber & Salon', 'Cleaning Services', 'Plumbing', 'Electrical', 'Mechanic', 'Consultancy', 'Other',
+]
 
 type RegisterFormState = {
-  businessName: string;
-  ownerName: string;
-  phone: string;
-  email: string;
-  category: string;
-  county: string;
-  location: string;
-  planName: "STARTER";
-};
+  businessName: string
+  ownerName: string
+  phone: string
+  email: string
+  category: string
+  county: string
+  location: string
+  planName: 'STARTER'
+}
 
 export default function RegisterPage() {
-  const navigate = useNavigate();
-  const { user, login } = useAuth();
-  const [searchParams] = useSearchParams();
+  const navigate = useNavigate()
+  const { user, login } = useAuth()
+  const [loading, setLoading] = useState(false)
+  const [googleLoading, setGoogleLoading] = useState(false)
+  const [googleCredential, setGoogleCredential] = useState('')
+  const [googleProfile, setGoogleProfile] = useState<DecodedGoogleCredential | null>(null)
+  const [formData, setFormData] = useState<RegisterFormState>({
+    businessName: '',
+    ownerName: '',
+    phone: '',
+    email: '',
+    category: '',
+    county: '',
+    location: '',
+    planName: 'STARTER',
+  })
 
   useEffect(() => {
-    if (user) {
-      navigate(user.role === 'SUPER_ADMIN' ? "/admin" : "/dashboard", { replace: true });
-    }
-  }, [user, navigate]);
-
-  const [loading, setLoading] = useState(false);
-  const [googleLoading, setGoogleLoading] = useState(false);
-  const [googleCredential, setGoogleCredential] = useState("");
-  const [googleProfile, setGoogleProfile] = useState<DecodedGoogleCredential | null>(null);
-  const [formData, setFormData] = useState<RegisterFormState>({
-    businessName: "",
-    ownerName: "",
-    phone: "",
-    email: "",
-    category: "",
-    county: "",
-    location: "",
-    planName: "STARTER",
-  });
+    if (user) navigate(user.role === 'SUPER_ADMIN' ? '/admin' : '/dashboard', { replace: true })
+  }, [user, navigate])
 
   const finishLogin = (data: { accessToken: string; refreshToken: string; user: any }) => {
-    login(
-      {
-        accessToken: data.accessToken,
-        refreshToken: data.refreshToken,
-      },
-      data.user,
-    );
-
-    navigate(data.user.role === 'SUPER_ADMIN' ? "/admin" : "/dashboard", { replace: true });
-  };
+    login({ accessToken: data.accessToken, refreshToken: data.refreshToken }, data.user)
+    navigate(data.user.role === 'SUPER_ADMIN' ? '/admin' : '/dashboard', { replace: true })
+  }
 
   const handleGoogleCredential = async (credential: string) => {
-    setGoogleLoading(true);
-
+    setGoogleLoading(true)
     try {
-      const decoded = decodeGoogleCredential(credential);
-      setGoogleCredential(credential);
-      setGoogleProfile(decoded);
-      setFormData((current) => ({
-        ...current,
-        ownerName: decoded?.name || "",
-        email: decoded?.email || "",
-      }));
-      toast.success("Google email verified! Complete your business profile.");
+      const decoded = decodeGoogleCredential(credential)
+      setGoogleCredential(credential)
+      setGoogleProfile(decoded)
+      setFormData(current => ({ ...current, ownerName: decoded?.name || '', email: decoded?.email || '' }))
+      toast.success('Google email verified. Finish setting up your business profile.')
     } finally {
-      setGoogleLoading(false);
+      setGoogleLoading(false)
     }
-  };
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    
+    e.preventDefault()
+    setLoading(true)
     try {
       const res = await authApi.googleAuth({
         credential: googleCredential,
@@ -97,209 +80,200 @@ export default function RegisterPage() {
           category: formData.category,
           county: formData.county,
           location: formData.location,
-          planName: formData.planName as "STARTER",
+          planName: formData.planName,
         },
-      });
-
-      toast.success("Business account created successfully!");
-      finishLogin(res.data);
+      })
+      toast.success('Business account created successfully!')
+      finishLogin(res.data)
     } catch (err: any) {
-      toast.error(getErrorMessage(err));
+      toast.error(getErrorMessage(err))
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
-  const isBusy = loading || googleLoading;
-  const isGoogleVerified = Boolean(googleCredential && googleProfile);
+  const isBusy = loading || googleLoading
+  const isGoogleVerified = Boolean(googleCredential && googleProfile)
 
   return (
-    <div className="min-h-screen bg-slate-50 flex items-center justify-center px-4 py-12">
-      <div className="w-full max-w-[640px] space-y-8 animate-in fade-in zoom-in duration-500">
-        {/* Branding */}
-        <div className="text-center space-y-2">
-          <Link to="/" className="inline-block transition-transform hover:scale-105 active:scale-95">
-            <img src="/logo.png" alt="HudumaLynk" className="h-14 w-auto mx-auto" />
-          </Link>
-          <h1 className="text-3xl font-black text-slate-900 tracking-tighter pt-1 font-ubuntu">Create Account</h1>
-          <p className="text-slate-500 font-medium text-sm">Join the network of professional service providers</p>
+    <div className="min-h-screen bg-white flex items-center justify-center px-4 py-10">
+      <div className="w-full max-w-[520px]">
+
+        {/* Header */}
+        <div className="mb-8 text-center">
+          <h1 className="text-4xl font-black tracking-tight text-slate-900 sm:text-5xl">Create your account</h1>
+          <p className="mt-3 text-base font-medium text-sm leading-7 text-slate-500">
+            Start with Google, then complete a few business details so your dashboard is ready from day one.
+          </p>
         </div>
 
         {/* Card */}
-        <div className="bg-white rounded-[24px] p-8 md:p-10 shadow-xl shadow-slate-200/50 border border-slate-100">
-          {isGoogleVerified && (
-            <div className="mb-6 rounded-2xl border border-emerald-100 bg-emerald-50/70 p-4">
-              <div className="flex items-start gap-4">
-                <div>
-                  <p className="text-[11px] font-black uppercase tracking-[0.24em] text-emerald-700">Google Verified ✓</p>
-                  <p className="mt-2 text-sm font-semibold text-slate-700">
-                    {googleProfile?.email} will be used for sign-in
-                  </p>
-                  <p className="mt-1 text-sm text-slate-500">
-                    Complete business profile to join (no OTP needed)
-                  </p>
-                </div>
+        <div className="rounded-[15px] bg-white p-6 shadow-[0_24px_60px_rgba(15,23,42,0.08)] ring-1 ring-slate-100 sm:p-7">
+          {!isGoogleVerified ? (
+            <div className="space-y-6">
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-[0.24em] text-slate-400">Step 1 of 2</p>
+                <h2 className="mt-3 text-2xl font-black tracking-tight text-slate-900">Verify with Google</h2>
+                <p className="mt-2 text-sm font-medium leading-7 text-slate-500">
+                  We'll use your verified Google email for sign-in, then you'll finish the business profile on the next step.
+                </p>
+              </div>
+
+              <GoogleAuthButton text="signup_with" disabled={isBusy} onCredential={handleGoogleCredential} />
+
+              <div className="rounded-2xl bg-slate-50 px-4 py-4">
+                <p className="text-xs font-medium leading-7 text-slate-500">
+                  No password setup right now. Google keeps access simple while you focus on getting the business live.
+                </p>
               </div>
             </div>
-          )}
-
-          {isGoogleVerified ? (
+          ) : (
             <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Business Name</label>
-                  <div className="relative group">
-                    <Building2 className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-emerald-500 transition-colors" size={18} />
-                    <input
-                      type="text"
-                      placeholder="e.g. Westlands Salon"
-                      value={formData.businessName}
-                      onChange={(e) => setFormData({ ...formData, businessName: e.target.value })}
-                      className="w-full bg-slate-50 border border-transparent focus:bg-white focus:border-emerald-200 focus:ring-4 focus:ring-emerald-500/5 rounded-xl py-4 pl-12 pr-4 text-sm outline-none transition-all font-bold placeholder:text-slate-300"
-                      required
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Owner Name</label>
-                  <div className="relative group">
-                    <User className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-emerald-500 transition-colors" size={18} />
-                    <input
-                      type="text"
-                      placeholder="e.g. Jane Doe"
-                      value={formData.ownerName}
-                      onChange={(e) => setFormData({ ...formData, ownerName: e.target.value })}
-                      className="w-full bg-slate-50 border border-transparent focus:bg-white focus:border-emerald-200 focus:ring-4 focus:ring-emerald-500/5 rounded-xl py-4 pl-12 pr-4 text-sm outline-none transition-all font-bold placeholder:text-slate-300"
-                      required
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Category</label>
-                  <div className="relative group">
-                    <Tag className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-emerald-500 transition-colors" size={18} />
-                    <select
-                      value={formData.category}
-                      onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                      className="w-full bg-slate-50 border border-transparent focus:bg-white focus:border-emerald-200 focus:ring-4 focus:ring-emerald-500/5 rounded-xl py-4 pl-12 pr-4 text-sm outline-none transition-all font-bold appearance-none cursor-pointer"
-                      required
-                    >
-                      <option value="">Select Category</option>
-                      {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
-                    </select>
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">County</label>
-                  <div className="relative group">
-                    <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-emerald-500 transition-colors" size={18} />
-                    <select
-                      value={formData.county}
-                      onChange={(e) => setFormData({ ...formData, county: e.target.value })}
-                      className="w-full bg-slate-50 border border-transparent focus:bg-white focus:border-emerald-200 focus:ring-4 focus:ring-emerald-500/5 rounded-xl py-4 pl-12 pr-4 text-sm outline-none transition-all font-bold appearance-none cursor-pointer"
-                      required
-                    >
-                      <option value="">Select County</option>
-                      {COUNTIES.map(c => <option key={c} value={c}>{c}</option>)}
-                    </select>
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Phone Number</label>
-                  <div className="relative group">
-                    <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-emerald-500 transition-colors" size={18} />
-                    <input
-                      type="tel"
-                      placeholder="0712 345 678"
-                      value={formData.phone}
-                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                      className="w-full bg-slate-50 border border-transparent focus:bg-white focus:border-emerald-200 focus:ring-4 focus:ring-emerald-500/5 rounded-xl py-4 pl-12 pr-4 text-sm outline-none transition-all font-bold placeholder:text-slate-300 hl-mono"
-                      required
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Email Address</label>
-                  <div className="relative group">
-                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-emerald-500 transition-colors" size={18} />
-                    <input
-                      type="email"
-                      placeholder="jane@example.com"
-                      value={formData.email}
-                      className="w-full bg-slate-50 border border-transparent focus:bg-white focus:border-emerald-200 focus:ring-4 focus:ring-emerald-500/5 rounded-xl py-4 pl-12 pr-4 text-sm outline-none transition-all font-bold placeholder:text-slate-300"
-                      disabled
-                    />
-                  </div>
-                  <p className="px-1 text-xs font-medium text-slate-400">Verified via Google</p>
-                </div>
-
-                <div className="space-y-2 md:col-span-2">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Exact Location / Area</label>
-                  <div className="relative group">
-                    <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-emerald-500 transition-colors" size={18} />
-                    <input
-                      type="text"
-                      placeholder="e.g. Greenhouse Mall, 2nd Floor, Adams"
-                      value={formData.location}
-                      onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                      className="w-full bg-slate-50 border border-transparent focus:bg-white focus:border-emerald-200 focus:ring-4 focus:ring-emerald-500/5 rounded-xl py-4 pl-12 pr-4 text-sm outline-none transition-all font-bold placeholder:text-slate-300"
-                      required
-                    />
-                  </div>
-                </div>
+              <div className="rounded-2xl border border-emerald-100 bg-emerald-50/80 p-4">
+                <p className="text-[10px] font-black uppercase tracking-[0.24em] text-emerald-700">Google verified</p>
+                <p className="mt-2 text-sm font-semibold text-slate-700">{googleProfile?.email}</p>
+                <p className="mt-1 text-sm font-medium text-slate-500">Finish the business profile below to create your workspace.</p>
               </div>
 
-              {/* <div className="md:col-span-2 rounded-2xl border border-emerald-100 bg-emerald-50/50 p-4">
-                <p className="text-[10px] font-black uppercase tracking-widest text-emerald-700">Google Sign-In Only</p>
-                <p className="mt-1 text-sm text-slate-600">No password or OTP verification required</p>
-              </div> */}
+              <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+                <Field label="Business Name" icon={Building2}>
+                  <input
+                    type="text"
+                    placeholder="e.g. Westlands Salon"
+                    value={formData.businessName}
+                    onChange={e => setFormData({ ...formData, businessName: e.target.value })}
+                    className={inputClassName}
+                    required
+                  />
+                </Field>
+
+                <Field label="Owner Name" icon={User}>
+                  <input
+                    type="text"
+                    placeholder="e.g. Jane Doe"
+                    value={formData.ownerName}
+                    onChange={e => setFormData({ ...formData, ownerName: e.target.value })}
+                    className={inputClassName}
+                    required
+                  />
+                </Field>
+
+                <Field label="Category" icon={Tag}>
+                  <select
+                    value={formData.category}
+                    onChange={e => setFormData({ ...formData, category: e.target.value })}
+                    className={inputClassName}
+                    required
+                  >
+                    <option value="">Select Category</option>
+                    {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+                  </select>
+                </Field>
+
+                <Field label="County" icon={MapPin}>
+                  <select
+                    value={formData.county}
+                    onChange={e => setFormData({ ...formData, county: e.target.value })}
+                    className={inputClassName}
+                    required
+                  >
+                    <option value="">Select County</option>
+                    {COUNTIES.map(c => <option key={c} value={c}>{c}</option>)}
+                  </select>
+                </Field>
+
+                <Field label="Phone Number" icon={Phone}>
+                  <input
+                    type="tel"
+                    placeholder="0712 345 678"
+                    value={formData.phone}
+                    onChange={e => setFormData({ ...formData, phone: e.target.value })}
+                    className={inputClassName}
+                    required
+                  />
+                </Field>
+
+                <Field label="Verified Email" icon={Mail}>
+                  <input
+                    type="email"
+                    value={formData.email}
+                    className={`${inputClassName} cursor-not-allowed bg-slate-100 text-slate-400`}
+                    disabled
+                  />
+                </Field>
+
+                <Field label="Location / Area" icon={MapPin} className="md:col-span-2">
+                  <input
+                    type="text"
+                    placeholder="e.g. Greenhouse Mall, 2nd Floor, Adams"
+                    value={formData.location}
+                    onChange={e => setFormData({ ...formData, location: e.target.value })}
+                    className={inputClassName}
+                    required
+                  />
+                </Field>
+              </div>
 
               <button
                 type="submit"
                 disabled={isBusy}
-                className="w-full py-5 bg-[#0D4A3E] text-white rounded-xl font-black text-xs uppercase tracking-widest hover:bg-[#064E3B] transition-all shadow-xl shadow-emerald-900/10 flex items-center justify-center gap-2 group disabled:opacity-50"
+                className="w-full rounded-2xl bg-[#0D4A3E] px-5 py-4 text-xs font-black uppercase tracking-[0.2em] text-white transition-all hover:bg-[#0A3D33] disabled:cursor-not-allowed disabled:opacity-50"
               >
-                {isBusy ? (
-                  <Loader2 className="animate-spin" size={16} />
-                ) : (
-                  <>
-                    Create Business Account
-                    <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
-                  </>
-                )}
+                <span className="inline-flex items-center justify-center gap-2">
+                  {isBusy ? <Loader2 size={16} className="animate-spin" /> : <ArrowRight size={16} />}
+                  {isBusy ? 'Creating workspace...' : 'Create Business Account'}
+                </span>
               </button>
             </form>
-          ) : (
-            <GoogleAuthButton text="signup_with" disabled={isBusy} onCredential={handleGoogleCredential} />
           )}
 
-          <div className="relative my-4">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-slate-100"></div>
-            </div>
-            <div className="relative flex justify-center text-[10px] font-black uppercase tracking-widest">
-              <span className="px-4 text-slate-500">Already have an account?</span>
-            </div>
+          <div className="mt-8 flex items-center gap-3 text-[11px] font-bold uppercase tracking-[0.18em] text-slate-300">
+            <span className="h-px flex-1 bg-slate-100" />
+            <span>Already registered?</span>
+            <span className="h-px flex-1 bg-slate-100" />
           </div>
 
-          <Link 
-            to="/login" 
-            className="w-full py-1 border-2 border-slate-50 text-slate-600 rounded-xl font-black text-xs uppercase tracking-widest hover:underline transition-all flex items-center justify-center gap-2"
+          <Link
+            to="/login"
+            className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-[11px] shadow hover:bg-slate-100 bg-slate-50 px-5 py-4 text-sm font-black tracking-[0.2em] text-slate-700 transition-all hover:border-slate-300 "
           >
-            Log In To Portal
+            Go to Sign In
+            <ArrowRight size={15} />
           </Link>
         </div>
 
-        {/* Footer */}
-        <p className="text-center text-[13px] font-thin text-slate-900 tracking-widest">
-          Secure encryption enabled — © {new Date().getFullYear()} hlynk
+        {/* Footer note */}
+        <p className="mt-6 text-center text-xs font-medium text-slate-400">
+          Protected by encrypted sessions and role-based access controls.
         </p>
       </div>
     </div>
-  );
+  )
+}
+
+const inputClassName =
+  'w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 text-sm font-bold text-slate-700 outline-none transition-all focus:border-emerald-200 focus:bg-white focus:ring-4 focus:ring-emerald-500/5'
+
+function Field({
+  label,
+  icon: Icon,
+  children,
+  className = '',
+}: {
+  label: string
+  icon: any
+  children: any
+  className?: string
+}) {
+  return (
+    <div className={`space-y-2 ${className}`}>
+      <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">{label}</label>
+      <div className="relative">
+        <Icon size={18} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" />
+        <div className="[&>input]:pl-11 [&>select]:pl-11">
+          {children}
+        </div>
+      </div>
+    </div>
+  )
 }

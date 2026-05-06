@@ -1,11 +1,13 @@
 import { useState, useEffect, useRef } from 'react'
 import { Search, Download, Calendar, Eye, Receipt, User, CreditCard, ChevronLeft, ChevronRight, Printer, Store, CheckCircle } from 'lucide-react'
+import { ConfirmModal } from '../../components/shared/ConfirmModal'
 import { useQuery } from '@tanstack/react-query'
 import { salesApi } from '../../lib/api/providers'
 import { toast } from 'sonner'
 import { getErrorMessage } from '../../lib/utils/error'
 import { SlideOver } from '../../components/shared/SlideOver'
 import { PaginatedResponse } from '../../lib/types/api'
+import TablePagination from '../../components/shared/TablePagination'
 
 const RECEIPT_PRINT_CSS = `
   @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
@@ -33,12 +35,15 @@ const RECEIPT_PRINT_CSS = `
 
 export default function SalesHistoryPage() {
   const [search, setSearch] = useState('')
+  const [page, setPage] = useState(1)
+  const [sortBy, setSortBy] = useState('createdAt')
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0])
   const [selectedSale, setSelectedSale] = useState<any>(null)
 
   const { data: salesData, isLoading, error } = useQuery<PaginatedResponse<any> & { stats: any }>({
-    queryKey: ['sales-history', search, selectedDate],
-    queryFn: () => salesApi.list({ search, date: selectedDate }),
+    queryKey: ['sales-history', search, selectedDate, page],
+    queryFn: () => salesApi.list({ search, date: selectedDate, page, limit: 10 }),
     refetchInterval: 15_000,       // live refresh every 15s
     refetchIntervalInBackground: false,
     staleTime: 10_000,
@@ -57,6 +62,7 @@ export default function SalesHistoryPage() {
   }, [error])
 
   const sales = salesData?.items || []
+  const pages = salesData?.pages || 1
   const stats = salesData?.stats || { totalToday: 0, transactions: 0, avgSale: 0 }
 
   const exportToCSV = () => {
@@ -124,14 +130,17 @@ export default function SalesHistoryPage() {
         <div className="p-6 border-b border-gray-50 flex flex-col md:flex-row gap-4">
           <div className="relative flex-1">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-            <input
-              type="text"
-              placeholder="Search by receipt # or customer..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full bg-gray-50 border-none rounded-xl py-3.5 pl-12 pr-4 outline-none focus:ring-4 focus:ring-emerald-500/5 transition-all text-sm font-bold"
-            />
-          </div>
+              <input
+                type="text"
+                placeholder="Search by receipt # or customer..."
+                value={search}
+                onChange={(e) => {
+                  setSearch(e.target.value)
+                  setPage(1)
+                }}
+                className="w-full bg-gray-50 border-none rounded-xl py-3.5 pl-12 pr-4 outline-none focus:ring-4 focus:ring-emerald-500/5 transition-all text-sm font-bold"
+              />
+            </div>
           <div className="flex items-center gap-2 bg-gray-50 p-1.5 rounded-xl border border-gray-100">
             <button onClick={() => shiftDate(-1)} className="p-2 hover:bg-white hover:shadow-sm rounded-lg transition-all text-gray-400 hover:text-slate-900">
               <ChevronLeft size={18} />
@@ -141,7 +150,10 @@ export default function SalesHistoryPage() {
               <input
                 type="date"
                 value={selectedDate}
-                onChange={(e) => setSelectedDate(e.target.value)}
+                onChange={(e) => {
+                  setSelectedDate(e.target.value)
+                  setPage(1)
+                }}
                 className="bg-transparent pl-10 pr-4 py-2 text-sm font-black text-slate-900 outline-none hl-mono"
               />
             </div>
@@ -199,6 +211,13 @@ export default function SalesHistoryPage() {
             </tbody>
           </table>
         </div>
+
+        <TablePagination
+          page={page}
+          pages={pages}
+          onPrevious={() => setPage((current) => Math.max(1, current - 1))}
+          onNext={() => setPage((current) => Math.min(pages, current + 1))}
+        />
       </div>
     </div>
   )
