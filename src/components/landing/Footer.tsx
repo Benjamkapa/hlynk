@@ -25,7 +25,7 @@ export default function Footer() {
             <div className="text-[13px] font-black font-thin tracking-[0.2em] text-white">
               © {new Date().getFullYear()} hlynk Portal
             </div>
-            <div className="text-[9px] font-bold text-white uppercase tracking-widest">
+            {/* <div className="text-[9px] font-bold text-white uppercase tracking-widest">
               <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1">
                 <a href="/terms-conditions" className="hover:text-emerald-500 transition-colors">Terms</a>
                 <a href="/privacy-policy" className="hover:text-emerald-500 transition-colors">Privacy</a>
@@ -33,7 +33,7 @@ export default function Footer() {
                 <a href="/google/privacy" className="hover:text-emerald-500 transition-colors">Google Privacy</a>
               </div>
               <div className="mt-2">Built By <a href="https://github.com/benjamkapa">Benjamkapa9823</a></div>
-            </div>
+            </div> */}
           </div>
         </div>
       </div>

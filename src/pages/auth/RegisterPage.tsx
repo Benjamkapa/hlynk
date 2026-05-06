@@ -242,8 +242,8 @@ export default function RegisterPage() {
           </Link>
         </div>
 
-        <div className="mt-8 text-center">
-          <div className="mt-4 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-[10px] font-bold uppercase tracking-[0.18em] text-slate-300">
+        <div className="fixed bottom-0.5 left-0 right-0 flex justify-center">
+          <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-[10px] font-bold uppercase tracking-[0.18em] text-slate-700">
             <a href="/terms-conditions" className="hover:text-emerald-600 transition-colors">Terms</a>
             <a href="/privacy-policy" className="hover:text-emerald-600 transition-colors">Privacy</a>
             <a href="/google/terms" className="hover:text-emerald-600 transition-colors">Google Terms</a>
