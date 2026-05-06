@@ -43,7 +43,7 @@ export default function LoginPage() {
         </div>
 
         {/* Card */}
-        <div className="rounded-[28px] bg-white p-6 shadow-[0_24px_60px_rgba(15,23,42,0.08)] ring-1 ring-slate-100 sm:p-7">
+        <div className="rounded-[11px] bg-white p-6 shadow-[0_24px_60px_rgba(15,23,42,0.08)] ring-1 ring-slate-100 sm:p-7">
           <p className="text-[10px] font-black uppercase tracking-[0.24em] text-slate-400">Secure access</p>
           <h2 className="mt-3 text-2xl font-black tracking-tight text-slate-900">Continue with Google</h2>
           <p className="mt-2 mb-6 text-sm font-medium leading-7 text-slate-500">
@@ -60,7 +60,7 @@ export default function LoginPage() {
 
           <Link
             to="/register"
-            className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-2xl shadow hover:bg-slate-100 bg-slate-50 px-5 py-4 font-black text-sm tracking-[0.2em] text-slate-700 transition-all hover:border-slate-300"
+            className="mt-6 inline-flex w-full items-center text-sm font-semibold justify-center gap-2 rounded-md shadow hover:bg-slate-100 bg-slate-50 px-5 py-4 font-black tracking-[0.2em] text-slate-700 transition-all hover:border-slate-300"
           >
             Create Business Account
             <ArrowRight size={15} />

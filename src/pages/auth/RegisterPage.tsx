@@ -102,7 +102,7 @@ export default function RegisterPage() {
         {/* Header */}
         <div className="mb-8 text-center">
           <h1 className="text-4xl font-black tracking-tight text-slate-900 sm:text-5xl">Create your account</h1>
-          <p className="mt-3 text-base font-medium text-sm leading-7 text-slate-500">
+          <p className="mt-3 text-base font-medium leading-7 text-slate-500">
             Start with Google, then complete a few business details so your dashboard is ready from day one.
           </p>
         </div>
@@ -235,7 +235,7 @@ export default function RegisterPage() {
 
           <Link
             to="/login"
-            className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-[11px] shadow hover:bg-slate-100 bg-slate-50 px-5 py-4 text-sm font-black tracking-[0.2em] text-slate-700 transition-all hover:border-slate-300 "
+            className="mt-6 inline-flex w-full items-center font-semibold justify-center gap-2 rounded-[11px] shadow hover:bg-slate-100 bg-slate-50 px-5 py-4 text-sm font-black tracking-[0.2em] text-slate-700 transition-all hover:border-slate-300 "
           >
             Go to Sign In
             <ArrowRight size={15} />
