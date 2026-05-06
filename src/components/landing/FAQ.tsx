@@ -4,12 +4,12 @@ import { FadeUp } from './Animations'
 
 const faqs = [
   {
-    question: "Do I need a Paybill or Till number to use HudumaLynk?",
+    question: "Do I need a Paybill or Till number to use hlynk?",
     answer: "No, you don't necessarily need one immediately to start tracking your cash sales. However, on our Growth and Pro plans, you can integrate your Till or Paybill number with our M-Pesa STK push for automatic payment recording."
   },
   {
     question: "Can I use the system on my phone?",
-    answer: "Yes! HudumaLynk is fully mobile-friendly. You can record sales, track inventory, and send digital receipts straight from your smartphone or tablet, whether you're at the shop or on the move."
+    answer: "Yes! hlynk is fully mobile-friendly. You can record sales, track inventory, and send digital receipts straight from your smartphone or tablet, whether you're at the shop or on the move."
   },
   {
     question: "Is my data safe in case I lose my phone or computer?",
@@ -17,7 +17,7 @@ const faqs = [
   },
   {
     question: "How do the digital receipts work?",
-    answer: "Instead of printing paper receipts, HudumaLynk generates a digital receipt link or a customized SMS that you can send directly to your customer's WhatsApp or standard SMS inbox after a sale."
+    answer: "Instead of printing paper receipts, hlynk generates a digital receipt link or a customized SMS that you can send directly to your customer's WhatsApp or standard SMS inbox after a sale."
   },
   {
     question: "Can I track my daily expenses as well?",

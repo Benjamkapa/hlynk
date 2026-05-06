@@ -186,7 +186,7 @@ Please respond with:
                   The key you add in settings is saved with your business profile so the portal knows AI tools are enabled for your account.
                 </p>
                 <p>
-                  Right now this utility converts your live sales data into a structured prompt you can use immediately. Direct provider-to-model execution can be wired next if you want the full report generated inside HudumaLynk.
+                  Right now this utility converts your live sales data into a structured prompt you can use immediately. Direct provider-to-model execution can be wired next if you want the full report generated inside hlynk.
                 </p>
               </div>
             </div>

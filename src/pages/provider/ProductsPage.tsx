@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Plus, Search, Filter, Download, Edit, Trash2, Package, TrendingDown, Activity, Lock, AlertTriangle } from 'lucide-react'
+import { Plus, Search, Filter, Download, Edit, Trash2, Package, TrendingDown, Activity, AlertTriangle } from 'lucide-react'
 import { ConfirmModal } from '../../components/shared/ConfirmModal'
 import { SlideOver } from '../../components/shared/SlideOver'
 import { toast } from 'sonner'
@@ -51,15 +51,10 @@ export default function ProductsPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['inventory'] })
       toast.success('Product removed from inventory')
+      setConfirmDeleteId(null)
     },
     onError: (err: any) => toast.error(getErrorMessage(err))
   })
-
-  const confirmDelete = (id: string) => {
-    if (window.confirm('Are you sure you want to delete this product?')) {
-      deleteMutation.mutate(id)
-    }
-  }
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500 pt-6">
@@ -100,21 +95,21 @@ export default function ProductsPage() {
       {/* Products Table */}
       <div className="bg-white rounded-lg border border-gray-100 shadow-sm overflow-hidden">
       
-      <SlideOver 
-        isOpen={isAddModalOpen} 
-        onClose={() => setIsAddModalOpen(false)} 
-        title="Add New Product"
-      >
-        <AddProductForm onClose={() => setIsAddModalOpen(false)} />
-      </SlideOver>
+        <SlideOver 
+          isOpen={isAddModalOpen} 
+          onClose={() => setIsAddModalOpen(false)} 
+          title="Add New Product"
+        >
+          <AddProductForm onClose={() => setIsAddModalOpen(false)} />
+        </SlideOver>
 
-      <SlideOver 
-        isOpen={!!editingProduct} 
-        onClose={() => setEditingProduct(null)} 
-        title="Edit Product"
-      >
-        {editingProduct && <EditProductForm product={editingProduct} onClose={() => setEditingProduct(null)} />}
-      </SlideOver>
+        <SlideOver 
+          isOpen={!!editingProduct} 
+          onClose={() => setEditingProduct(null)} 
+          title="Edit Product"
+        >
+          {editingProduct && <EditProductForm product={editingProduct} onClose={() => setEditingProduct(null)} />}
+        </SlideOver>
 
         <div className="p-6 border-b border-gray-50 flex gap-4">
           <div className="relative flex-1">
@@ -211,15 +206,17 @@ export default function ProductsPage() {
           </table>
         </div>
       </div>
-          <ConfirmModal
+
+      {/* ConfirmModal lives here, in the parent, where confirmDeleteId and deleteMutation are in scope */}
+      <ConfirmModal
         isOpen={!!confirmDeleteId}
-        title="Confirm Action"
-        message="Are you sure you want to proceed? This action cannot be undone."
-        confirmText="Confirm"
+        title="Delete Product"
+        message="Are you sure you want to delete this product? This action cannot be undone."
+        confirmText="Delete"
         onConfirm={() => confirmDeleteId && deleteMutation.mutate(confirmDeleteId)}
         onCancel={() => setConfirmDeleteId(null)}
       />
-</div>
+    </div>
   )
 }
 
@@ -287,7 +284,6 @@ function AddProductForm({ onClose }: { onClose: () => void }) {
 
       <InputGroup label="Product Name" placeholder="e.g. Fresh Milk" value={form.name} onChange={(v: string) => setForm({ ...form, name: v })} />
 
-      
       <div className="space-y-2">
         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Category</label>
         <select 
@@ -346,15 +342,7 @@ function AddProductForm({ onClose }: { onClose: () => void }) {
       >
         {mutation.isPending ? 'Saving...' : 'Save Inventory Item'}
       </button>
-          <ConfirmModal
-        isOpen={!!confirmDeleteId}
-        title="Confirm Action"
-        message="Are you sure you want to proceed? This action cannot be undone."
-        confirmText="Confirm"
-        onConfirm={() => confirmDeleteId && deleteMutation.mutate(confirmDeleteId)}
-        onCancel={() => setConfirmDeleteId(null)}
-      />
-</div>
+    </div>
   )
 }
 
@@ -431,7 +419,6 @@ function EditProductForm({ product, onClose }: { product: any; onClose: () => vo
 
       <InputGroup label="Product Name" placeholder="e.g. Fresh Milk" value={form.name} onChange={(v: string) => setForm({ ...form, name: v })} />
 
-      
       <div className="space-y-2">
         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Category</label>
         <select 
@@ -489,15 +476,7 @@ function EditProductForm({ product, onClose }: { product: any; onClose: () => vo
       >
         {mutation.isPending ? 'Updating...' : 'Update Product Details'}
       </button>
-          <ConfirmModal
-        isOpen={!!confirmDeleteId}
-        title="Confirm Action"
-        message="Are you sure you want to proceed? This action cannot be undone."
-        confirmText="Confirm"
-        onConfirm={() => confirmDeleteId && deleteMutation.mutate(confirmDeleteId)}
-        onCancel={() => setConfirmDeleteId(null)}
-      />
-</div>
+    </div>
   )
 }
 
@@ -507,6 +486,7 @@ function SummaryCard({ title, value, sub, icon: Icon, variant }: any) {
     emerald: 'bg-emerald-50 text-emerald-600',
     red: 'bg-red-50 text-red-600',
     blue: 'bg-blue-50 text-blue-600',
+    amber: 'bg-amber-50 text-amber-600',
   }
 
   return (
@@ -519,15 +499,7 @@ function SummaryCard({ title, value, sub, icon: Icon, variant }: any) {
         <h3 className="text-xl font-black text-gray-900 hl-mono">{value}</h3>
         <p className="text-[10px] text-gray-500 font-bold">{sub}</p>
       </div>
-          <ConfirmModal
-        isOpen={!!confirmDeleteId}
-        title="Confirm Action"
-        message="Are you sure you want to proceed? This action cannot be undone."
-        confirmText="Confirm"
-        onConfirm={() => confirmDeleteId && deleteMutation.mutate(confirmDeleteId)}
-        onCancel={() => setConfirmDeleteId(null)}
-      />
-</div>
+    </div>
   )
 }
 

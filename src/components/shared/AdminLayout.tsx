@@ -51,9 +51,9 @@ export default function AdminLayout() {
       <div className={`pt-10 pb-12 flex items-center ${collapsed ? 'justify-center' : 'px-8'}`}>
         <Link to="/" className="flex items-center gap-3">
           {collapsed ? (
-            <img src="/fav.png" alt="HudumaLynk" className="h-8 w-8" />
+            <img src="/fav.png" alt="hlynk" className="h-8 w-8" />
           ) : (
-            <img src="/logo.png" alt="HudumaLynk" className="h-10 w-auto" />
+            <img src="/logo.png" alt="hlynk" className="h-10 w-auto" />
           )}
         </Link>
       </div>

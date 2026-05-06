@@ -16,7 +16,6 @@ export default function SettingsPage() {
   const [uploading, setUploading] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  // Fetch full profile including settings
   const { data: profile, isLoading } = useQuery({
     queryKey: ['my-profile'],
     queryFn: providersApi.getMyProfile
@@ -271,11 +270,11 @@ export default function SettingsPage() {
                   <p className="text-[11px] text-gray-500 mb-6 font-medium max-w-lg">Enter your Daraja API credentials to receive payments directly to your Till or Paybill number via STK Push.</p>
                   <div className="space-y-4 max-w-2xl bg-slate-50 p-6 rounded-2xl border border-slate-100">
                     <div className="flex gap-4 mb-4">
-                      <button 
+                      <button
                         onClick={() => setFormData({ ...formData, operationalSettings: { ...formData.operationalSettings, mpesa: { ...formData.operationalSettings?.mpesa, env: 'sandbox' } } })}
                         className={`flex-1 py-3 rounded-xl font-bold text-xs uppercase tracking-widest transition-all ${formData.operationalSettings?.mpesa?.env !== 'production' ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-900/10' : 'bg-white border border-slate-200 text-slate-500'}`}
                       >Sandbox</button>
-                      <button 
+                      <button
                         onClick={() => setFormData({ ...formData, operationalSettings: { ...formData.operationalSettings, mpesa: { ...formData.operationalSettings?.mpesa, env: 'production' } } })}
                         className={`flex-1 py-3 rounded-xl font-bold text-xs uppercase tracking-widest transition-all ${formData.operationalSettings?.mpesa?.env === 'production' ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-900/10' : 'bg-white border border-slate-200 text-slate-500'}`}
                       >Production</button>
@@ -306,40 +305,6 @@ export default function SettingsPage() {
                     </div>
                   </div>
                 </FeatureGate>
-
-                {/* <div className="mt-10 pt-10 border-t border-gray-100">
-                  <h4 className="text-xs font-black text-emerald-600 uppercase tracking-widest mb-2 flex items-center gap-2">
-                    <Sparkles size={16} /> Pro Feature: AI Analyst Integration
-                  </h4>
-                  <p className="text-[11px] text-gray-500 mb-6 font-medium max-w-lg">
-                    Bring your own LLM API Key (OpenAI, Anthropic, or Gemini) to unlock automated 26-day business insight reports. If disabled, you can still copy the data and paste it into ChatGPT manually.
-                  </p>
-                  <div className="space-y-4 max-w-2xl bg-slate-50 p-6 rounded-2xl border border-slate-100">
-                    <div className="space-y-2">
-                      <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">AI Provider</label>
-                      <select 
-                        value={formData.operationalSettings?.ai?.provider || 'none'}
-                        onChange={(e) => setFormData({ ...formData, operationalSettings: { ...formData.operationalSettings, ai: { ...formData.operationalSettings?.ai, provider: e.target.value } } })}
-                        className="w-full bg-white border border-slate-200 rounded-xl py-3 px-4 outline-none focus:ring-4 focus:ring-emerald-500/5 transition-all font-bold text-sm appearance-none"
-                      >
-                        <option value="none">Disabled (Manual Prompts Only)</option>
-                        <option value="openai">OpenAI (ChatGPT)</option>
-                        <option value="anthropic">Anthropic (Claude)</option>
-                        <option value="gemini">Google Gemini</option>
-                      </select>
-                    </div>
-                    
-                    {formData.operationalSettings?.ai?.provider && formData.operationalSettings?.ai?.provider !== 'none' && (
-                      <InputGroup
-                        label="API Key"
-                        type="password"
-                        placeholder="sk-..."
-                        value={formData.operationalSettings?.ai?.apiKey || ''}
-                        onChange={(v: string) => setFormData({ ...formData, operationalSettings: { ...formData.operationalSettings, ai: { ...formData.operationalSettings?.ai, apiKey: v } } })}
-                      />
-                    )}
-                  </div>
-                </div> */}
               </div>
             )}
 
@@ -414,9 +379,7 @@ export default function SettingsPage() {
                   <h4 className="text-xs font-black text-red-600 uppercase tracking-widest mb-4">Danger Zone</h4>
                   <p className="text-xs text-gray-500 mb-6 font-medium">Once you deactivate your account, there is no going back. Please be certain.</p>
                   <button
-                    onClick={() => {
-                      setConfirmDeleteId('deactivate')
-                    }}
+                    onClick={() => setConfirmDeleteId('deactivate')}
                     disabled={deactivateMutation.isPending}
                     className="px-6 py-3 border-2 border-red-100 text-red-600 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-red-50 transition-all flex items-center gap-2"
                   >
@@ -435,14 +398,16 @@ export default function SettingsPage() {
           </div>
         </div>
       </div>
-          <ConfirmModal
+
+      {/* Parent ConfirmModal: only handles account deactivation */}
+      <ConfirmModal
         isOpen={!!confirmDeleteId}
-        title="Confirm Action"
-        message={confirmDeleteId === 'deactivate' ? "Are you sure you want to deactivate your account? This action cannot be undone." : "Are you sure you want to delete this staff member?"}
-        confirmText="Confirm"
+        title="Deactivate Account"
+        message="Are you sure you want to deactivate your account? This action cannot be undone."
+        confirmText="Deactivate"
         onConfirm={() => {
-          if (confirmDeleteId === 'deactivate') deactivateMutation.mutate();
-          else if (confirmDeleteId) deleteMutation.mutate(confirmDeleteId);
+          if (confirmDeleteId === 'deactivate') deactivateMutation.mutate()
+          setConfirmDeleteId(null)
         }}
         onCancel={() => setConfirmDeleteId(null)}
       />
@@ -487,12 +452,15 @@ function Toggle({ active, onToggle }: { active: boolean; onToggle?: (v: boolean)
     </div>
   )
 }
+
 function StaffManagement() {
   const { user } = useAuth()
   const queryClient = useQueryClient()
   const [showForm, setShowForm] = useState(false)
   const [editingStaff, setEditingStaff] = useState<any>(null)
   const [form, setForm] = useState({ name: '', phone: '', email: '', password: '', permissions: [] as string[] })
+  // ✅ confirmDeleteId and deleteMutation now live together in StaffManagement
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
 
   const { data: staffResponse, isLoading } = useQuery({
     queryKey: ['staff-list'],
@@ -527,6 +495,7 @@ function StaffManagement() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['staff-list'] })
       toast.success('Staff removed')
+      setConfirmDeleteId(null)
     },
     onError: (err) => toast.error(getErrorMessage(err))
   })
@@ -688,6 +657,16 @@ function StaffManagement() {
           </div>
         )}
       </div>
+
+      {/* ✅ Staff delete ConfirmModal lives here, next to deleteMutation */}
+      <ConfirmModal
+        isOpen={!!confirmDeleteId}
+        title="Remove Staff Member"
+        message="Are you sure you want to remove this staff member? This action cannot be undone."
+        confirmText="Remove"
+        onConfirm={() => confirmDeleteId && deleteMutation.mutate(confirmDeleteId)}
+        onCancel={() => setConfirmDeleteId(null)}
+      />
     </div>
   )
 }
@@ -802,7 +781,6 @@ function ActivityLogViewer() {
           </table>
         </div>
 
-        {/* Pagination */}
         {logsData?.pagination && logsData.pagination.pages > 1 && (
           <div className="p-6 border-t border-slate-50 flex items-center justify-between bg-slate-50/20">
             <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">

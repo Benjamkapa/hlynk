@@ -10,8 +10,8 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
       manifest: {
-        name: 'HudumaLynk',
-        short_name: 'HudumaLynk',
+        name: 'hlynk',
+        short_name: 'hlynk',
         description: 'Connect with local service providers in Kenya',
         theme_color: '#0B5ED7',
         background_color: '#F8F9FA',
@@ -28,7 +28,7 @@ export default defineConfig({
         maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
         runtimeCaching: [
           {
-            urlPattern: /^https:\/\/api\.hudumalynk\.com\/.*/i,
+            urlPattern: /^https:\/\/api\.hlynk\.com\/.*/i,
             handler: 'NetworkFirst',
             options: {
               cacheName: 'api-cache',

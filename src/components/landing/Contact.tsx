@@ -25,7 +25,7 @@ export default function Contact() {
         user_name: form.name,
         user_email: form.contact,
         user_message: form.message,
-        to_email: "hello@hudumalynk.co.ke", // Ensuring the recipient is never empty
+        to_email: "info@hlynk.co.ke", // Ensuring the recipient is never empty
       };
 
       const res = await emailjs.send(
@@ -86,7 +86,7 @@ export default function Contact() {
                   </div>
                   <div className="space-y-1">
                     <div className="text-[10px] font-black text-white/30 uppercase tracking-widest">Email Us</div>
-                    <div className="text-xl font-black text-white hl-mono tracking-tight font-thin">hello@hudumalynk.co.ke</div>
+                    <div className="text-xl font-black text-white hl-mono tracking-tight font-thin">info@hlynk.co.ke</div>
                   </div>
                 </div>
               </div>

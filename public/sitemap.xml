@@ -2,17 +2,17 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <!-- Core Public Pages -->
   <url>
-    <loc>https://hlynk.com/</loc>
+    <loc>https://hlynk.co.ke/</loc>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://hlynk.com/login</loc>
+    <loc>https://hlynk.co.ke/login</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://hlynk.com/register</loc>
+    <loc>https://hlynk.co.ke/register</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>

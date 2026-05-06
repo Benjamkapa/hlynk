@@ -33,7 +33,7 @@ export default function ResetPasswordPage() {
         {/* Branding */}
         <div className="text-center space-y-2">
           <Link to="/" className="inline-block transition-transform hover:scale-105 active:scale-95">
-            <img src="/logo.png" alt="HudumaLynk" className="h-14 w-auto mx-auto" />
+            <img src="/logo.png" alt="hlynk" className="h-14 w-auto mx-auto" />
           </Link>
           <h1 className="text-3xl font-black text-slate-900 tracking-tighter pt-4 font-ubuntu">Reset Password</h1>
           <p className="text-slate-500 font-medium text-sm">Enter the secure code sent to your phone</p>

@@ -16,6 +16,11 @@ const VerifyOtpPage = lazy(() => import('./pages/auth/VerifyOtpPage'))
 const ForgotPasswordPage = lazy(() => import('./pages/auth/ForgotPasswordPage'))
 const ResetPasswordPage = lazy(() => import('./pages/auth/ResetPasswordPage'))
 
+const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'))
+const TermsConditions = lazy(() => import('./pages/TermsConditions'))
+const GooglePrivacyPolicy = lazy(() => import('./pages/GooglePrivacyPolicy'))
+const GoogleTermsConditions = lazy(() => import('./pages/GoogleTermsConditions'))
+
 // Dashboards
 const DashboardPage = lazy(() => import('./pages/provider/DashboardPage'))
 const AdminDashboardPage = lazy(() => import('./pages/admin/AdminDashboardPage'))
@@ -78,6 +83,12 @@ export default function App() {
         <Route path="/verify" element={<VerifyOtpPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
+
+        {/* Legal pages (public) */}
+        <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+        <Route path="/terms-conditions" element={<TermsConditions />} />
+        <Route path="/google/privacy" element={<GooglePrivacyPolicy />} />
+        <Route path="/google/terms" element={<GoogleTermsConditions />} />
 
         {/* Provider Portal */}
         <Route path="/dashboard" element={<ProtectedRoute><SubscriptionGuard><ProviderLayout /></SubscriptionGuard></ProtectedRoute>}>

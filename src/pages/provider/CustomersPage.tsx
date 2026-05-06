@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Users, Phone, Search, Plus, Filter, Mail, User, Trash2, Edit, Download, Star } from 'lucide-react'
+import { Users, Phone, Search, Plus, Mail, User, Trash2, Edit, Download, Star } from 'lucide-react'
 import { ConfirmModal } from '../../components/shared/ConfirmModal'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { customersApi } from '../../lib/api/providers'
@@ -24,7 +24,7 @@ export default function CustomersPage() {
 
   const { data: customerData, isLoading } = useQuery<PaginatedResponse<any> & { stats: any }>({
     queryKey: ['customers', search, page, sortBy, sortOrder],
-    queryFn: () => customersApi.list({ search, page, limit: 10 , sortBy, sortOrder }),
+    queryFn: () => customersApi.list({ search, page, limit: 10, sortBy, sortOrder }),
     placeholderData: keepPreviousData,
   })
 
@@ -37,6 +37,7 @@ export default function CustomersPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['customers'] })
       toast.success('Customer removed')
+      setConfirmDeleteId(null)
     }
   })
 
@@ -58,13 +59,13 @@ export default function CustomersPage() {
           </p>
         </div>
         <div className="flex gap-3">
-          <button 
+          <button
             onClick={handleExport}
             className="h-14 px-6 bg-white border border-slate-200 text-slate-600 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-slate-50 transition-all shadow-xl shadow-slate-200/50 flex items-center gap-2"
           >
             <Download size={18} /> Export
           </button>
-          <button 
+          <button
             onClick={() => setIsAddModalOpen(true)}
             className="h-14 px-8 bg-[#0D4A3E] text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-[#0A3D33] transition-all shadow-2xl shadow-emerald-900/20 flex items-center gap-2"
           >
@@ -85,15 +86,15 @@ export default function CustomersPage() {
         <div className="p-8 border-b border-slate-50 flex flex-col md:flex-row gap-6">
           <div className="relative flex-1">
             <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
-            <input 
-              type="text" 
-              placeholder="Search by name, phone or email..." 
+            <input
+              type="text"
+              placeholder="Search by name, phone or email..."
               value={search}
               onChange={(e) => {
                 setSearch(e.target.value)
                 setPage(1)
               }}
-              className="w-full bg-slate-50 border-none rounded-2xl py-4.5 pl-14 pr-6 outline-none focus:ring-4 focus:ring-emerald-500/5 transition-all text-sm font-bold placeholder:text-slate-400" 
+              className="w-full bg-slate-50 border-none rounded-2xl py-4.5 pl-14 pr-6 outline-none focus:ring-4 focus:ring-emerald-500/5 transition-all text-sm font-bold placeholder:text-slate-400"
             />
           </div>
         </div>
@@ -121,7 +122,7 @@ export default function CustomersPage() {
                   <td className="px-8 py-6">
                     <div className="flex items-center gap-4">
                       <div className="h-12 w-12 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center justify-center overflow-hidden">
-                         <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${c.name}`} alt="avatar" />
+                        <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${c.name}`} alt="avatar" />
                       </div>
                       <div>
                         <p className="font-black text-slate-900 text-sm">{c.name}</p>
@@ -149,18 +150,14 @@ export default function CustomersPage() {
                   </td>
                   <td className="px-8 py-6 text-right">
                     <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-all">
-                      <button 
+                      <button
                         onClick={() => setEditingCustomer(c)}
                         className="p-2 hover:bg-white hover:shadow-lg rounded-xl transition-all text-slate-400 hover:text-emerald-600"
                       >
                         <Edit size={18} />
                       </button>
-                      <button 
-                        onClick={() => {
-                          if (window.confirm('Delete this customer? This will remove their profile but preserve sales history.')) {
-                            deleteMutation.mutate(c.id)
-                          }
-                        }}
+                      <button
+                        onClick={() => setConfirmDeleteId(c.id)}
                         className="p-2 hover:bg-white hover:shadow-lg rounded-xl transition-all text-slate-400 hover:text-red-600"
                       >
                         <Trash2 size={18} />
@@ -172,7 +169,7 @@ export default function CustomersPage() {
                 <tr>
                   <td colSpan={5} className="py-40 text-center">
                     <div className="h-20 w-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6">
-                       <User size={40} className="text-slate-200" />
+                      <User size={40} className="text-slate-200" />
                     </div>
                     <p className="text-sm font-black uppercase tracking-[0.3em] text-slate-300">No customers found</p>
                   </td>
@@ -190,25 +187,26 @@ export default function CustomersPage() {
         />
       </div>
 
-      <SlideOver isOpen={isAddModalOpen || !!editingCustomer} onClose={() => { setIsAddModalOpen(false); setEditingCustomer(null); }} title={editingCustomer ? "Edit Customer" : "Add New Customer"}>
-         <CustomerForm 
-           customer={editingCustomer} 
-           onClose={() => { setIsAddModalOpen(false); setEditingCustomer(null); }} 
-         />
+      <SlideOver isOpen={isAddModalOpen || !!editingCustomer} onClose={() => { setIsAddModalOpen(false); setEditingCustomer(null) }} title={editingCustomer ? "Edit Customer" : "Add New Customer"}>
+        <CustomerForm
+          customer={editingCustomer}
+          onClose={() => { setIsAddModalOpen(false); setEditingCustomer(null) }}
+        />
       </SlideOver>
-          <ConfirmModal
+
+      <ConfirmModal
         isOpen={!!confirmDeleteId}
-        title="Confirm Action"
-        message="Are you sure you want to proceed? This action cannot be undone."
-        confirmText="Confirm"
+        title="Delete Customer"
+        message="Delete this customer? This will remove their profile but preserve sales history."
+        confirmText="Delete Customer"
         onConfirm={() => confirmDeleteId && deleteMutation.mutate(confirmDeleteId)}
         onCancel={() => setConfirmDeleteId(null)}
       />
-</div>
+    </div>
   )
 }
 
-function CustomerForm({ customer, onClose }: { customer?: any, onClose: () => void }) {
+function CustomerForm({ customer, onClose }: { customer?: any; onClose: () => void }) {
   const queryClient = useQueryClient()
   const [form, setForm] = useState({
     name: customer?.name || '',
@@ -231,23 +229,15 @@ function CustomerForm({ customer, onClose }: { customer?: any, onClose: () => vo
       <InputGroup label="Full Name" placeholder="e.g. John Doe" value={form.name} onChange={(v: string) => setForm({ ...form, name: v })} />
       <InputGroup label="Phone Number" placeholder="0712..." value={form.phone} onChange={(v: string) => setForm({ ...form, phone: v })} />
       <InputGroup label="Email Address" placeholder="john@example.com" value={form.email} onChange={(v: string) => setForm({ ...form, email: v })} />
-      
-      <button 
+
+      <button
         onClick={() => mutation.mutate(form)}
         disabled={mutation.isPending}
         className="w-full py-5 mt-8 bg-[#0D4A3E] text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-[#0A3D33] transition-all shadow-2xl shadow-emerald-900/20"
       >
         {mutation.isPending ? 'Processing...' : customer ? 'Update Profile' : 'Register Customer'}
       </button>
-          <ConfirmModal
-        isOpen={!!confirmDeleteId}
-        title="Confirm Action"
-        message="Are you sure you want to proceed? This action cannot be undone."
-        confirmText="Confirm"
-        onConfirm={() => confirmDeleteId && deleteMutation.mutate(confirmDeleteId)}
-        onCancel={() => setConfirmDeleteId(null)}
-      />
-</div>
+    </div>
   )
 }
 
@@ -268,15 +258,7 @@ function KpiCard({ title, value, sub, icon: Icon, variant }: any) {
         <h3 className="text-2xl font-black text-slate-900 hl-mono tracking-tight">{value}</h3>
         <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest opacity-60">{sub}</p>
       </div>
-          <ConfirmModal
-        isOpen={!!confirmDeleteId}
-        title="Confirm Action"
-        message="Are you sure you want to proceed? This action cannot be undone."
-        confirmText="Confirm"
-        onConfirm={() => confirmDeleteId && deleteMutation.mutate(confirmDeleteId)}
-        onCancel={() => setConfirmDeleteId(null)}
-      />
-</div>
+    </div>
   )
 }
 
@@ -284,25 +266,17 @@ function InputGroup({ label, placeholder, value, onChange }: any) {
   return (
     <div className="space-y-2">
       <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">{label}</label>
-      <input 
-        type="text" 
+      <input
+        type="text"
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="w-full bg-slate-50 border-none rounded-2xl py-4.5 px-6 outline-none focus:ring-4 focus:ring-emerald-500/5 transition-all text-sm font-bold" 
+        className="w-full bg-slate-50 border-none rounded-2xl py-4.5 px-6 outline-none focus:ring-4 focus:ring-emerald-500/5 transition-all text-sm font-bold"
       />
-          <ConfirmModal
-        isOpen={!!confirmDeleteId}
-        title="Confirm Action"
-        message="Are you sure you want to proceed? This action cannot be undone."
-        confirmText="Confirm"
-        onConfirm={() => confirmDeleteId && deleteMutation.mutate(confirmDeleteId)}
-        onCancel={() => setConfirmDeleteId(null)}
-      />
-</div>
+    </div>
   )
 }
 
 function TrendingUpIcon(props: any) {
-  return <Star {...props} /> // Placeholder or actual icon
+  return <Star {...props} />
 }

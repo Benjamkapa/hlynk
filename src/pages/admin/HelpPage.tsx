@@ -44,7 +44,7 @@ export default function HelpPage() {
           <h2 className="text-3xl font-black mb-4">Direct Support Link</h2>
           <p className="text-emerald-200 font-medium max-w-md text-lg leading-relaxed">Need urgent assistance with platform infrastructure or security incidents? Contact the engineering team directly.</p>
           <button 
-            onClick={() => window.location.href = 'mailto:devops@hudumalynk.com?subject=URGENT: Platform Infrastructure Support Request'}
+            onClick={() => window.location.href = 'mailto:devops@hlynk.co.ke?subject=URGENT: Platform Infrastructure Support Request'}
             className="mt-8 bg-emerald-400 text-emerald-900 px-8 py-4 rounded-xl font-black text-sm hover:bg-emerald-300 transition-all"
           >
             Contact DevOps

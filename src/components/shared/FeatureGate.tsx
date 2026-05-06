@@ -28,23 +28,21 @@ export const FEATURE_PLANS: Record<Feature, string[]> = {
   staff_accounts: ['PRO'],
   advanced_reports: ['PRO'],
   audit_logs: ['PRO'],
-  ai_analyst: ['PRO'], // Fallback array, custom logic below
+  ai_analyst: ['PRO'],
 }
 
 export default function FeatureGate({ feature, children, fallback, variant = 'card' }: FeatureGateProps) {
   const { user } = useAuth()
 
-  // No feature specified means everyone has access
   if (!feature) return <>{children}</>
 
-  // Super admins have all features
   if (user?.role === 'SUPER_ADMIN') return <>{children}</>
 
   const plan = user?.subscription?.planName || 'STARTER'
-  const isTrial = user?.subscription?.status === 'TRIAL' || user?.subscription?.isTrial
+  const isTrial = user?.subscription?.status === 'TRIAL'
   const featurePlans = FEATURE_PLANS[feature]
 
-  if (!featurePlans) return <>{children}</> // Fallback safety
+  if (!featurePlans) return <>{children}</>
 
   let hasAccess = featurePlans.includes(plan)
 
@@ -97,12 +95,10 @@ export default function FeatureGate({ feature, children, fallback, variant = 'ca
 
   return (
     <div className="relative group overflow-hidden rounded-[32px]">
-      {/* The actual feature content, blurred - Peeking effect */}
       <div className="blur-[3px] pointer-events-none opacity-90 select-none scale-[0.99] transition-all duration-700">
         {children}
       </div>
 
-      {/* Catchy Restriction Overlay */}
       <div className="absolute inset-0 z-20 flex flex-col items-center justify-center p-8 text-center animate-in fade-in zoom-in duration-500">
         <div className="absolute inset-0 bg-white/10 backdrop-blur-[1px]" />
 

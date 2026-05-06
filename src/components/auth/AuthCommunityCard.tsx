@@ -12,7 +12,7 @@ const FALLBACK_REVIEWS: PlatformReview[] = [
     businessName: 'GreenGlow Salon',
     role: 'PROVIDER',
     rating: 5,
-    comment: 'HudumaLynk made it easier to track sales and keep my salon team accountable every day.',
+    comment: 'hlynk made it easier to track sales and keep my salon team accountable every day.',
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   },

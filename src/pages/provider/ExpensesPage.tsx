@@ -1,16 +1,17 @@
-import { useState } from 'react'
-import { Plus, Search, Wallet, TrendingUp, Trash2, Download } from 'lucide-react'
-import { SlideOver } from '../../components/shared/SlideOver'
-import { toast } from 'sonner'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { expensesApi } from '../../lib/api/providers'
-import { getErrorMessage } from '../../lib/utils/error'
-import { exportToCSV } from '../../lib/utils/export'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
+import { Download, Plus, Search, Trash2, TrendingUp, Wallet } from 'lucide-react'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { keepPreviousData } from '@tanstack/react-query'
-import { PaginatedResponse } from '../../lib/types/api'
+
+import { toast } from 'sonner'
+import { SlideOver } from '../../components/shared/SlideOver'
 import TablePagination from '../../components/shared/TablePagination'
 import { ConfirmModal } from '../../components/shared/ConfirmModal'
+
+import { expensesApi } from '../../lib/api/providers'
+import { exportToCSV } from '../../lib/utils/export'
+import { getErrorMessage } from '../../lib/utils/error'
+import { PaginatedResponse } from '../../lib/types/api'
 
 export default function ExpensesPage() {
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
@@ -21,10 +22,19 @@ export default function ExpensesPage() {
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
   const queryClient = useQueryClient()
 
-  const { data: expensesData, isLoading, error } = useQuery<PaginatedResponse<any> & { stats: any }>({
+  const { data: expensesData, isLoading, error } = useQuery<
+    PaginatedResponse<any> & { stats: any }
+  >({
     queryKey: ['expenses', search, page, sortBy, sortOrder],
-    queryFn: () => expensesApi.list({ search, page, limit: 10 , sortBy, sortOrder }),
-    placeholderData: keepPreviousData
+    queryFn: () =>
+      expensesApi.list({
+        search,
+        page,
+        limit: 10,
+        sortBy,
+        sortOrder,
+      }),
+    placeholderData: keepPreviousData,
   })
 
   useEffect(() => {
@@ -33,7 +43,8 @@ export default function ExpensesPage() {
 
   const expenses = expensesData?.items || []
   const pages = expensesData?.pages || 1
-  const stats = expensesData?.stats || { totalExpenses: 0, highestCategory: 'N/A', burnRate: 0 }
+  const stats =
+    expensesData?.stats || ({ totalExpenses: 0, highestCategory: 'N/A', burnRate: 0 } as any)
 
   const handleExport = () => {
     if (!expenses.length) return
@@ -47,7 +58,7 @@ export default function ExpensesPage() {
       queryClient.invalidateQueries({ queryKey: ['expenses'] })
       toast.success('Expense record deleted')
     },
-    onError: (err: any) => toast.error(getErrorMessage(err))
+    onError: (err: any) => toast.error(getErrorMessage(err)),
   })
 
   return (
@@ -123,28 +134,6 @@ export default function ExpensesPage() {
                   <td className="px-8 py-5">
                     <span className="font-black text-gray-900 text-sm">{e.description}</span>
                     <p className="text-[9px] text-gray-400 font-bold hl-mono tracking-tighter uppercase">ID: {e.id.slice(-8).toUpperCase()}</p>
-            <thead>
-              <tr className="bg-gray-50/50">
-                <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest cursor-pointer hover:text-emerald-600" onClick={() => { setSortBy('date'); setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc') }}>Date {sortBy === 'date' && (sortOrder === 'asc' ? '↑' : '↓')}</th>
-                <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest cursor-pointer hover:text-emerald-600" onClick={() => { setSortBy('description'); setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc') }}>Description {sortBy === 'description' && (sortOrder === 'asc' ? '↑' : '↓')}</th>
-                <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest cursor-pointer hover:text-emerald-600" onClick={() => { setSortBy('category'); setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc') }}>Category {sortBy === 'category' && (sortOrder === 'asc' ? '↑' : '↓')}</th>
-                <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right cursor-pointer hover:text-emerald-600" onClick={() => { setSortBy('amount'); setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc') }}>Amount {sortBy === 'amount' && (sortOrder === 'asc' ? '↑' : '↓')}</th>
-                <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Action</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-50">
-              {isLoading ? (
-                <tr>
-                  <td colSpan={5} className="py-20 text-center">
-                    <div className="h-10 w-10 animate-spin rounded-full border-4 border-emerald-500 border-t-transparent mx-auto" />
-                  </td>
-                </tr>
-              ) : expenses.length > 0 ? expenses.map((e: any, i: number) => (
-                <tr key={e.id ?? i} className="hover:bg-red-50/30 transition-all group cursor-pointer">
-                  <td className="px-8 py-5 text-xs font-bold text-gray-400 hl-mono">{new Date(e.date || e.createdAt).toLocaleDateString()}</td>
-                  <td className="px-8 py-5">
-                    <span className="font-black text-gray-900 text-sm">{e.description}</span>
-                    <p className="text-[9px] text-gray-400 font-bold hl-mono tracking-tighter uppercase">ID: {e.id.slice(-8).toUpperCase()}</p>
                   </td>
                   <td className="px-8 py-5">
                     <span className="text-[10px] font-black text-gray-500 bg-gray-100 px-2.5 py-1 rounded-md uppercase tracking-widest">{e.category}</span>
@@ -162,11 +151,8 @@ export default function ExpensesPage() {
                 </tr>
               )) : (
                 <tr>
-                  <td colSpan={5} className="py-32 text-center">
-                    <div className="h-16 w-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <Wallet size={32} className="text-gray-200" />
-                    </div>
-                    <p className="text-xs font-black uppercase tracking-widest text-gray-400">No expense records found</p>
+                  <td colSpan={5} className="py-20 text-center text-sm font-bold text-gray-400">
+                    No expenses found.
                   </td>
                 </tr>
               )}
@@ -203,7 +189,6 @@ export default function ExpensesPage() {
 function BurnRateGauge({ value, target }: { value: number; target: number }) {
   const pct = Math.min(Math.round((value / target) * 100), 100)
 
-  // Color ramps based on intensity zones
   const zone =
     pct < 40 ? { color: '#10b981', track: '#d1fae5', label: 'Safe', labelColor: '#065f46' }
     : pct < 70 ? { color: '#f59e0b', track: '#fef3c7', label: 'Moderate', labelColor: '#92400e' }
@@ -251,14 +236,14 @@ function BurnRateGauge({ value, target }: { value: number; target: number }) {
             }
             return <line key={tick} x1={inner.x} y1={inner.y} x2={outer.x} y2={outer.y} stroke="#e2e8f0" strokeWidth={1.5} strokeLinecap="round" />
           })}
-          <circle 
-            cx={needle.x} 
-            cy={needle.y} 
-            r={7} 
-            fill="white" 
-            stroke={zone.color} 
-            strokeWidth={3} 
-            style={{ transition: 'cx 0.8s ease, cy 0.8s ease, stroke 0.6s ease' }} 
+          <circle
+            cx={needle.x}
+            cy={needle.y}
+            r={7}
+            fill="white"
+            stroke={zone.color}
+            strokeWidth={3}
+            style={{ transition: 'cx 0.8s ease, cy 0.8s ease, stroke 0.6s ease' }}
           />
           <text x={cx} y={cy + 10} textAnchor="middle" fontSize="26" fontWeight="800" fontFamily="monospace" fill="#0f172a">{value.toLocaleString()}</text>
           <text x={cx} y={cy + 28} textAnchor="middle" fontSize="9" fontWeight="700" fontFamily="sans-serif" fill="#94a3b8" letterSpacing="1.5">KES / DAY</text>
@@ -267,7 +252,6 @@ function BurnRateGauge({ value, target }: { value: number; target: number }) {
         </svg>
       </div>
 
-      {/* Footer: rolling avg vs target */}
       <div className="w-full flex justify-between items-end pt-3 border-t border-gray-50">
         <div>
           <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Rolling Avg</p>

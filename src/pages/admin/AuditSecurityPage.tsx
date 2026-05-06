@@ -22,7 +22,7 @@ export default function AuditSecurityPage() {
   })
 
   const handleIncidentReport = () => {
-    window.location.href = 'mailto:security@hudumalynk.com?subject=SECURITY INCIDENT: [Action Required]&body=Please describe the incident details here...'
+    window.location.href = 'mailto:security@hlynk.co.ke?subject=SECURITY INCIDENT: [Action Required]&body=Please describe the incident details here...'
     toast.success('Security incident report initiated')
   }
 
