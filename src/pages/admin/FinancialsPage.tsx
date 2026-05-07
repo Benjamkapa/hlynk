@@ -42,7 +42,7 @@ export default function FinancialsPage() {
               onClick={async () => {
                 try {
                   const token = localStorage.getItem('accessToken')
-                  const response = await fetch(`${import.meta.env.VITE_API_URL/api/v1 || 'http://localhost:3000/api/v1'}/admin/financials/export?type=SALES`, {
+                  const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/v1/admin/financials/export?type=SALES`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                   })
                   if (!response.ok) throw new Error('Export failed')
