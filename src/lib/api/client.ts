@@ -28,7 +28,7 @@ api.interceptors.response.use(
         if (!refreshToken) throw new Error('No refresh token')
 
         const { data } = await axios.post(
-          `${import.meta.env.VITE_API_URL || 'http://localhost:3000/api/v1'}/auth/refresh`,
+          `${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/v1/auth/refresh`,
           { refreshToken },
         )
 
