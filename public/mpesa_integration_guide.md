@@ -1,13 +1,13 @@
 # M-Pesa Integration Guide for Providers
 
-This guide outlines the exact steps to connect your HudumaLynk account directly to your Safaricom M-Pesa Till or Paybill number. This allows you to push payment requests (STK Push) directly to your customers' phones at the Point of Sale.
+This guide outlines the exact steps to connect your hlynk account directly to your Safaricom M-Pesa Till or Paybill number. This allows you to push payment requests (STK Push) directly to your customers' phones at the Point of Sale.
 
 > [!IMPORTANT]
 > To use this feature, your account must have access to the **M-Pesa Gateway** feature (typically available on Pro or higher subscription tiers).
 
 ## Prerequisites: Safaricom Daraja Credentials
 
-Before you begin in HudumaLynk, you must have an approved app on the [Safaricom Daraja Portal](https://developer.safaricom.co.ke/). You will need the following four pieces of information from Safaricom:
+Before you begin in hlynk, you must have an approved app on the [Safaricom Daraja Portal](https://developer.safaricom.co.ke/). You will need the following four pieces of information from Safaricom:
 
 1. **Consumer Key**: The public API key for your Daraja App.
 2. **Consumer Secret**: The private API key for your Daraja App.
@@ -16,7 +16,7 @@ Before you begin in HudumaLynk, you must have an approved app on the [Safaricom 
 
 ## Step 1: Navigate to Developer Settings
 
-1. Log into your HudumaLynk **Provider Portal**.
+1. Log into your hlynk **Provider Portal**.
 2. On the left-hand navigation menu, click on **Settings**.
 3. In the Settings page, click on the **Developer** tab.
 
@@ -49,7 +49,7 @@ Once configured, the M-Pesa option becomes fully automated in your Point of Sale
 
 You do not need to configure any callback URLs on the Safaricom portal manually. 
 
-When you trigger a payment from the POS, HudumaLynk automatically tells Safaricom to send the success or failure response back to our secure webhook (`/api/v1/sales/mpesa-callback`). Once the customer enters their PIN, the system will automatically mark the sale as **Completed** or **Failed** in your dashboard.
+When you trigger a payment from the POS, hlynk automatically tells Safaricom to send the success or failure response back to our secure webhook (`/api/v1/sales/mpesa-callback`). Once the customer enters their PIN, the system will automatically mark the sale as **Completed** or **Failed** in your dashboard.
 
 > [!WARNING]
-> If you change your Daraja App credentials on the Safaricom portal, you must immediately update them in the HudumaLynk Developer settings, otherwise your payment triggers will fail.
+> If you change your Daraja App credentials on the Safaricom portal, you must immediately update them in the hlynk Developer settings, otherwise your payment triggers will fail.
