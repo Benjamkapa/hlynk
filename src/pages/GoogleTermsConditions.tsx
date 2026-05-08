@@ -1,13 +1,22 @@
 import { useMemo } from 'react'
+import { ChevronLeft } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 
 export default function GoogleTermsConditions() {
+  const navigate = useNavigate()
   const updated = useMemo(() => new Date().toLocaleDateString(), [])
 
   return (
     <div className="min-h-screen bg-white">
+
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <h1 className="text-3xl font-black text-slate-900">Google Terms (Sign-in)</h1>
         <p className="mt-2 text-sm font-medium text-slate-600">Last updated: {updated}</p>
+
+        {/* back arrow */}
+        <button onClick={() => window.history.back()} className="absolute top-4 left-4">
+          <ChevronLeft className="w-8 h-8 text-slate-900" />
+        </button>
 
         <div className="mt-8 space-y-6 text-slate-700 leading-7">
           <section>

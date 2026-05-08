@@ -50,12 +50,15 @@ const FEATURE_COMPARISON = [
 ]
 
 import { SubscriptionExpiredBanner } from '../../components/shared/SubscriptionGuard'
+import { ConfirmModal } from '../../components/shared/ConfirmModal'
 
 export default function SubscriptionPage() {
   const queryClient = useQueryClient()
   const { refreshUser } = useAuth()
   const [showRenewModal, setShowRenewModal] = useState(false)
   const [showChangeModal, setShowChangeModal] = useState(false)
+  const [showConfirmChange, setShowConfirmChange] = useState(false)
+  const [showConfirmRenew, setShowConfirmRenew] = useState(false)
   const [mpesaPhone, setMpesaPhone] = useState('')
   const [selectedPlan, setSelectedPlan] = useState<any>(null)
   const [activeTab, setActiveTab] = useState<'current' | 'history'>('current')
@@ -213,19 +216,10 @@ export default function SubscriptionPage() {
               <div className="flex flex-wrap gap-4">
                 <button 
                   onClick={() => {
-                    const daysRemaining = subscription?.endDate ? Math.ceil((new Date(subscription.endDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)) : 0
-                    if (daysRemaining > 10) {
-                      toast.error(`You cannot renew right now. Your current plan has ${daysRemaining} days remaining. Renewals are only allowed 10 days before expiry.`)
-                      return
-                    }
                     setMpesaPhone('')
                     setShowRenewModal(true)
                   }}
-                  className={`px-12 py-5 rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-xl active:scale-95 ${
-                    subscription?.endDate && Math.ceil((new Date(subscription.endDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)) > 10 
-                      ? 'bg-gray-100 text-gray-400 cursor-not-allowed shadow-none' 
-                      : 'bg-[#0D4A3E] text-white hover:bg-[#0A3D33] shadow-emerald-900/20'
-                  }`}
+                  className="px-12 py-5 rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-xl active:scale-95 bg-[#0D4A3E] text-white hover:bg-[#0A3D33] shadow-emerald-900/20"
                 >
                   Renew Subscription
                 </button>
@@ -351,7 +345,14 @@ export default function SubscriptionPage() {
                 </div>
 
                 <button 
-                  onClick={() => renewMutation.mutate(mpesaPhone)}
+                  onClick={() => {
+                    const daysLeft = subscription?.endDate ? Math.ceil((new Date(subscription.endDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)) : 0
+                    if (daysLeft > 0) {
+                      setShowConfirmRenew(true)
+                    } else {
+                      renewMutation.mutate(mpesaPhone)
+                    }
+                  }}
                   disabled={renewMutation.isPending || !mpesaPhone}
                   className="w-full bg-[#0D4A3E] text-white py-4 rounded-xl font-black text-xs uppercase tracking-widest hover:bg-[#0A3D33] transition-all flex items-center justify-center gap-2 shadow-lg shadow-emerald-900/20 disabled:opacity-50"
                 >
@@ -399,15 +400,7 @@ export default function SubscriptionPage() {
 
              {selectedPlan && (
                <div className="bg-white p-8 rounded-[32px] border border-slate-100 animate-in slide-in-from-bottom-4">
-                  {subscription?.endDate && Math.ceil((new Date(subscription.endDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)) > 0 && subscription?.planName !== selectedPlan.id && (
-                    <div className="mb-6 p-4 rounded-2xl bg-amber-50 border border-amber-100 flex gap-4">
-                      <AlertTriangle className="text-amber-500 shrink-0 mt-0.5" size={20} />
-                      <div className="text-sm font-medium text-amber-800 leading-relaxed">
-                        <p className="font-black uppercase tracking-widest text-[10px] mb-1">Billing Cycle Reset</p>
-                        <p>We noticed you still have <strong>{Math.ceil((new Date(subscription.endDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))} days</strong> left on your current plan. To keep things simple and prevent subscription overlapping, changing plans will instantly switch your account to the new tier and start a fresh 28-day billing cycle today. Remaining days will not stack or roll over.</p>
-                      </div>
-                    </div>
-                  )}
+                  {/* The warning was moved to ConfirmModal */}
                   <div className="flex flex-col md:flex-row items-center gap-8">
                      <div className="flex-1 w-full space-y-2">
                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">M-Pesa Payment Number</label>
@@ -423,7 +416,14 @@ export default function SubscriptionPage() {
                         </div>
                      </div>
                      <button 
-                       onClick={() => changePlanMutation.mutate({ plan: selectedPlan.id, phone: mpesaPhone })}
+                       onClick={() => {
+                         const daysLeft = subscription?.endDate ? Math.ceil((new Date(subscription.endDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)) : 0
+                         if (daysLeft > 0 && subscription?.planName !== selectedPlan.id) {
+                           setShowConfirmChange(true)
+                         } else {
+                           changePlanMutation.mutate({ plan: selectedPlan.id, phone: mpesaPhone })
+                         }
+                       }}
                        disabled={changePlanMutation.isPending || !mpesaPhone}
                        className="w-full md:w-auto bg-emerald-600 text-white px-12 py-5 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-emerald-700 transition-all flex items-center justify-center gap-3 shadow-xl shadow-emerald-900/20 disabled:opacity-50"
                      >
@@ -435,6 +435,32 @@ export default function SubscriptionPage() {
           </div>
         </div>
       )}
+
+      <ConfirmModal
+        isOpen={showConfirmChange}
+        title="Override Existing Days?"
+        message={`You currently have ${subscription?.endDate ? Math.ceil((new Date(subscription.endDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)) : 0} days left. Upgrading now will instantly unlock your new plan and apply a 28-day cycle starting today. Your existing days will be replaced and will not stack.`}
+        confirmText="Upgrade Anyway"
+        cancelText="Cancel"
+        isDestructive={false}
+        onConfirm={() => {
+          changePlanMutation.mutate({ plan: selectedPlan.id, phone: mpesaPhone })
+        }}
+        onCancel={() => setShowConfirmChange(false)}
+      />
+
+      <ConfirmModal
+        isOpen={showConfirmRenew}
+        title="Override Existing Days?"
+        message={`You currently have ${subscription?.endDate ? Math.ceil((new Date(subscription.endDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)) : 0} days left. Renewing early will simply apply 28 days to your plan starting today. Your existing days will be replaced and will not stack.`}
+        confirmText="Renew Anyway"
+        cancelText="Cancel"
+        isDestructive={false}
+        onConfirm={() => {
+          renewMutation.mutate(mpesaPhone)
+        }}
+        onCancel={() => setShowConfirmRenew(false)}
+      />
     </div>
   )
 }

@@ -6,8 +6,10 @@ import {
   Zap, PanelLeftClose, PanelLeftOpen, Clock, AlertTriangle
 } from "lucide-react";
 import { useLocation, Outlet, NavLink, Link } from "react-router-dom";
-import {Tag} from "lucide-react";
+import { Tag, Star, X, Loader2 } from "lucide-react";
 import TopNav from "./TopNav";
+import { providersApi } from "../../lib/api/providers";
+import { toast } from "sonner";
 
 interface NavItem {
   to: string;
@@ -28,6 +30,10 @@ export default function ProviderLayout() {
   const location = useLocation();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const [showReviewModal, setShowReviewModal] = useState(false);
+  const [reviewRating, setReviewRating] = useState(0);
+  const [reviewText, setReviewText] = useState("");
+  const [isSubmittingReview, setIsSubmittingReview] = useState(false);
 
   useEffect(() => {
     setIsMobileOpen(false);
@@ -85,6 +91,29 @@ export default function ProviderLayout() {
 
   const daysRemaining = Math.max(0, Math.floor(timeRemainingMs / (1000 * 60 * 60 * 24)));
   const isCritical = daysRemaining < 3 && timeRemainingMs > 0;
+  const isExpiringSoon = daysRemaining <= 5 && timeRemainingMs > 0;
+
+  useEffect(() => {
+    if (isExpiringSoon && !localStorage.getItem('hlynk_has_reviewed')) {
+      const timer = setTimeout(() => setShowReviewModal(true), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [isExpiringSoon]);
+
+  const handleSubmitReview = async () => {
+    if (reviewRating === 0) return toast.error("Please select a rating");
+    setIsSubmittingReview(true);
+    try {
+      await providersApi.submitReview({ rating: reviewRating, reviewText });
+      toast.success("Thank you for your feedback!");
+      localStorage.setItem('hlynk_has_reviewed', 'true');
+      setShowReviewModal(false);
+    } catch (err: any) {
+      toast.error(err.message || "Failed to submit review");
+    } finally {
+      setIsSubmittingReview(false);
+    }
+  };
 
   const SidebarContent = ({ collapsed }: { collapsed: boolean }) => (
     <div className="flex flex-col h-full bg-white">
@@ -129,7 +158,7 @@ export default function ProviderLayout() {
       {/* Profile Summary */}
       <div className="p-4 mt-auto border-t border-slate-50">
          {!collapsed && (
-           <div className="bg-emerald-900 rounded-[24px] p-4 border border-emerald-800 shadow-2xl shadow-emerald-950/20 mb-4 relative overflow-hidden group">
+           <div className="bg-emerald-900 rounded-[8px] p-4 border border-emerald-800 shadow-2xl shadow-emerald-950/20 mb-4 relative overflow-hidden group">
               <div className="absolute top-0 right-0 p-2 opacity-10 group-hover:opacity-20 transition-opacity">
                 <Clock size={48} className="text-white" />
               </div>
@@ -161,6 +190,66 @@ export default function ProviderLayout() {
   return (
     <div className="flex h-screen overflow-hidden hl-dash bg-slate-50/50">
       
+      {/* ── REVIEW MODAL ── */}
+      {showReviewModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-gray-900/60 backdrop-blur-sm p-4 animate-in fade-in duration-300">
+          <div className="bg-white rounded-3xl w-full max-w-md p-8 relative shadow-2xl animate-in zoom-in-95 duration-300">
+            <button 
+              onClick={() => {
+                setShowReviewModal(false);
+                localStorage.setItem('hlynk_has_reviewed', 'true');
+              }}
+              className="absolute top-6 right-6 text-slate-400 hover:text-slate-900 transition-colors"
+            >
+              <X size={20} />
+            </button>
+
+            <div className="text-center mb-8">
+              <div className="h-16 w-16 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Star size={32} className="fill-emerald-600" />
+              </div>
+              <h2 className="text-2xl font-black text-slate-900 tracking-tight mb-2">How are we doing?</h2>
+              <p className="text-xs text-slate-500 font-medium leading-relaxed">
+                Your subscription is renewing soon. We'd love to know how HudumaLynk has helped your business grow!
+              </p>
+            </div>
+
+            <div className="flex justify-center gap-2 mb-8">
+              {[1, 2, 3, 4, 5].map((star) => (
+                <button
+                  key={star}
+                  onClick={() => setReviewRating(star)}
+                  className="transition-transform hover:scale-110 focus:outline-none"
+                >
+                  <Star 
+                    size={40} 
+                    className={`${reviewRating >= star ? 'text-[#0D4A3E] fill-[#0D4A3E]' : 'text-slate-200 fill-slate-200'} transition-colors`} 
+                  />
+                </button>
+              ))}
+            </div>
+
+            <div className="mb-8">
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 block">Your Feedback (Optional)</label>
+              <textarea 
+                value={reviewText}
+                onChange={e => setReviewText(e.target.value)}
+                placeholder="What do you love? What could we improve?"
+                className="w-full bg-slate-50 border border-slate-100 rounded-2xl p-4 text-sm font-medium text-slate-700 outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all resize-none h-28"
+              />
+            </div>
+
+            <button
+              onClick={handleSubmitReview}
+              disabled={isSubmittingReview || reviewRating === 0}
+              className="w-full h-14 bg-[#0D4A3E] text-white rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-[#0A3D33] transition-all flex items-center justify-center shadow-xl shadow-emerald-900/20 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isSubmittingReview ? <Loader2 className="animate-spin" size={20} /> : 'Submit Review'}
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* ── MOBILE BACKDROP ── */}
       {isMobileOpen && (
         <div

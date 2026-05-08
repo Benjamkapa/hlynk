@@ -99,6 +99,7 @@ export default function RecordSalePage() {
       totalAmount: total,
       customerId: selectedCustomerId,
       customerName: selectedCustomer?.name || null,
+      customerPhone: mpesaPhone || undefined,
       status: args?.status || 'COMPLETED',
       mpesaRequestId: args?.mpesaRequestId
     }),
@@ -118,7 +119,7 @@ export default function RecordSalePage() {
             }
             return prev
           })
-        }, 60000)
+        }, 130000)
       } else {
         toast.success('Transaction Finalized', {
           description: `Receipt #${saleId?.slice(-6)?.toUpperCase() || 'issued'} successfully.`,
@@ -205,13 +206,13 @@ export default function RecordSalePage() {
   }
 
   return (
-    <div className="flex flex-col xl:flex-row gap-12 max-w-[1800px] mx-auto items-start animate-in fade-in slide-in-from-bottom-4 duration-700">
+    <div className="flex flex-col xl:flex-row gap-12 mx-auto items-start animate-in fade-in slide-in-from-bottom-4 duration-700">
 
       {/* Left: Product Selection */}
       <div className="flex-1 space-y-10 min-w-0">
         {/* Sticky Header and Search */}
         <div className="sticky top-0 z-30 bg-white/80 backdrop-blur-md pt-4 pb-8 space-y-8">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <div className="flex flex-col md:flex-row P-4 justify-between items-start md:items-center gap-2">
             <div className="space-y-1">
               <h1 className="text-4xl font-black text-slate-900 tracking-tighter">Point of Sale</h1>
               <p className="text-slate-500 font-medium text-sm">Select items or scan barcode to add to cart</p>
@@ -231,9 +232,9 @@ export default function RecordSalePage() {
                   <List size={20} />
                 </button>
               </div>
-              <button className="h-12 px-5 bg-white border border-slate-200 rounded-lg flex items-center gap-3 text-slate-500 font-black text-[10px] uppercase tracking-widest hover:bg-slate-50 transition-all">
+              {/* <button className="h-12 px-5 bg-white border border-slate-200 rounded-lg flex items-center gap-3 text-slate-500 font-black text-[10px] uppercase tracking-widest hover:bg-slate-50 transition-all">
                 <Scan size={18} /> Barcode
-              </button>
+              </button> */}
             </div>
           </div>
 

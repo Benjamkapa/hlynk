@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Users, Phone, Search, Plus, Mail, User, Trash2, Edit, Download, Star } from 'lucide-react'
+import { Users, Phone, Search, Plus, Mail, User, Trash2, Edit, Download, Star, Eye } from 'lucide-react'
 import { ConfirmModal } from '../../components/shared/ConfirmModal'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { customersApi } from '../../lib/api/providers'
@@ -48,7 +48,7 @@ export default function CustomersPage() {
   }
 
   return (
-    <div className="max-w-[1600px] mx-auto space-y-12 animate-in fade-in duration-700 pb-20">
+    <div className="mx-auto space-y-12 animate-in fade-in duration-700 pb-20">
 
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
@@ -150,6 +150,12 @@ export default function CustomersPage() {
                   </td>
                   <td className="px-8 py-6 text-right">
                     <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-all">
+                      <button
+                        onClick={() => toast.info('Customer insights coming soon!', { description: 'Full performance and purchase history will be viewable here.'})}
+                        className="p-2 hover:bg-white hover:shadow-lg rounded-xl transition-all text-slate-400 hover:text-blue-500"
+                      >
+                        <Eye size={18} />
+                      </button>
                       <button
                         onClick={() => setEditingCustomer(c)}
                         className="p-2 hover:bg-white hover:shadow-lg rounded-xl transition-all text-slate-400 hover:text-emerald-600"

@@ -19,6 +19,14 @@ export const getErrorMessage = (err: any): string => {
       if (Array.isArray(data.message)) {
         return data.message.map((e: any) => e.message || e).join(". ")
       }
+      if (typeof data.message === 'string' && data.message.trim().startsWith('[') && data.message.includes('"message"')) {
+        try {
+          const parsed = JSON.parse(data.message)
+          if (Array.isArray(parsed) && parsed[0]?.message) {
+            return parsed.map((e: any) => e.message).join(". ")
+          }
+        } catch (e) {}
+      }
       return data.message
     }
     if (data.error) return data.error

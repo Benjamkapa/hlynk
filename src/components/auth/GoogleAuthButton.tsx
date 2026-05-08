@@ -126,7 +126,7 @@ export default function GoogleAuthButton({
           </svg>
         )}
         <span className="font-black text-[15px] font-semibold tracking-[0.15em] mt-0.5">
-          {isLoading ? 'Processing...' : (isOffline ? 'Offline - Check Connection' : (!isReady ? 'Connecting Google...' : (text === 'signup_with' ? 'Sign Up With Google' : 'Sign In With Google')))}
+          {isLoading ? 'Processing...' : (isOffline ? 'Offline - Check Connection' : (!isReady ? 'Connecting Google...' : (text === 'signup_with' ? 'Sign Up With Google' : 'Proceed With Google')))}
         </span>
       </div>
 

@@ -19,6 +19,8 @@ export const providersApi = {
       headers: { 'Content-Type': 'multipart/form-data' },
     }).then(r => r.data)
   },
+  submitReview: (data: { rating: number, reviewText: string }) => api.post('/providers/review', data).then(r => r.data),
+  getReviews: () => api.get('/providers/reviews').then(r => r.data),
   // Inventory aliases
   getProducts: (params?: any) => inventoryApi.list(params),
   updateProduct: (id: string, data: any) => inventoryApi.update(id, data),

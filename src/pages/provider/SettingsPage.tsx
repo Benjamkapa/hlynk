@@ -377,14 +377,14 @@ export default function SettingsPage() {
 
                 <div className="pt-8 border-t border-gray-50">
                   <h4 className="text-xs font-black text-red-600 uppercase tracking-widest mb-4">Danger Zone</h4>
-                  <p className="text-xs text-gray-500 mb-6 font-medium">Once you deactivate your account, there is no going back. Please be certain.</p>
+                  <p className="text-xs text-gray-500 mb-6 font-medium">Once you delete your account, there is no going back. Please be certain.</p>
                   <button
                     onClick={() => setConfirmDeleteId('deactivate')}
                     disabled={deactivateMutation.isPending}
                     className="px-6 py-3 border-2 border-red-100 text-red-600 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-red-50 transition-all flex items-center gap-2"
                   >
                     {deactivateMutation.isPending ? <Loader2 className="animate-spin" size={14} /> : <Trash2 size={14} />}
-                    Deactivate My Account
+                    Delete My Account
                   </button>
                 </div>
               </div>
@@ -402,9 +402,9 @@ export default function SettingsPage() {
       {/* Parent ConfirmModal: only handles account deactivation */}
       <ConfirmModal
         isOpen={!!confirmDeleteId}
-        title="Deactivate Account"
-        message="Are you sure you want to deactivate your account? This action cannot be undone."
-        confirmText="Deactivate"
+        title="Delete Account"
+        message="Are you sure you want to delete your account? This action will disable your access."
+        confirmText="Delete"
         onConfirm={() => {
           if (confirmDeleteId === 'deactivate') deactivateMutation.mutate()
           setConfirmDeleteId(null)
