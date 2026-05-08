@@ -125,7 +125,7 @@ export default function GoogleAuthButton({
             <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
           </svg>
         )}
-        <span className="font-black text-[15px] font-semibold tracking-[0.15em] mt-0.5">
+        <span className="font-black text-[15px] font-semibold font-ubuntu font-thin tracking-[0.15em] mt-0.5">
           {isLoading ? 'Processing...' : (isOffline ? 'Offline - Check Connection' : (!isReady ? 'Connecting Google...' : (text === 'signup_with' ? 'Sign Up With Google' : 'Proceed With Google')))}
         </span>
       </div>

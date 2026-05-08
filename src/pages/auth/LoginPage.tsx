@@ -352,13 +352,13 @@ export default function LoginPage() {
             {!requiresRegistration ? (
               <>
                 {/* ── Headline ── */}
-                <h1 className="lp-serif" style={{
+                {/* <h1 className="lp-serif" style={{
                   fontSize: 34, fontWeight: 400, lineHeight: 1.18,
                   letterSpacing: '-0.01em', color: '#0f172a', marginBottom: 8,
                 }}>
                   Welcome<br />
                   <em style={{ fontStyle: 'italic', color: '#0D4A3E' }}>back.</em>
-                </h1>
+                </h1> */}
 
                 <p style={{ fontSize: 13, color: '#64748b', lineHeight: 1.6, marginBottom: 28, maxWidth: 320 }}>
                   Sign in with your Google account. New accounts are guided through setup automatically.
