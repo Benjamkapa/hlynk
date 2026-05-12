@@ -190,7 +190,7 @@ export default function LoginPage() {
         .lp-container {
           width: 100%;
           max-width: 1300px;
-          min-height: 840px;
+          min-height: 740px;
           background: white;
           border-radius: 2rem;
           display: flex;
@@ -212,7 +212,7 @@ export default function LoginPage() {
           display: flex;
           flex-direction: column;
           justify-content: space-between;
-          padding: 80px;
+          padding: 60px;
           border: 3px solid white;
           overflow: hidden;
         }
@@ -231,15 +231,15 @@ export default function LoginPage() {
           display: flex;
           flex-direction: column;
           justify-content: center;
-          padding: 80px;
+          padding: 60px;
           position: relative;
           z-index: 10;
         }
 
         .lp-title {
           font-family: 'Cormorant Garamond', serif;
-          font-size: clamp(52px, 5vw, 84px);
-          line-height: 0.9;
+          font-size: clamp(48px, 4vw, 72px);
+          line-height: 0.95;
           font-weight: 300;
           color: white;
           margin-bottom: 24px;
@@ -288,14 +288,14 @@ export default function LoginPage() {
               </h1>
               
               <p className="text-xl text-white font-light opacity-90 leading-relaxed max-w-sm drop-shadow-lg mb-10">
-                Stop the guesswork. Join 1,000+ owners using AI to track sales, manage stock, and double their profits.
+                Stop the guesswork. Join 1,000+ owners using modern tracking to manage stock and double their profits.
               </p>
 
               <div className="flex flex-col gap-5">
                  {[
                    'M-Pesa Friendly Sales Tracking',
                    'Zero Manual Record Books Needed',
-                   'AI Ideas to Cut Business Costs',
+                   'Automated Insights to Cut Costs',
                    'Instant Setup, No Fees to Start'
                  ].map((item, i) => (
                    <div key={item} className="flex items-center gap-4 text-white group" style={{ opacity: 0, animation: `lp-text-in 0.8s forwards ${0.7 + (i * 0.1)}s` }}>
@@ -318,7 +318,7 @@ export default function LoginPage() {
             <div className="w-full max-w-[380px] mx-auto flex flex-col h-full">
 
               <div className="flex justify-center mb-12">
-                <img src={logo} alt="HudumaLynk" className="h-9 object-contain" />
+                <img src={logo} alt="HudumaLynk" className="h-12 object-contain sm:h-12 md:h-12 lg:h-12" />
               </div>
 
               {!requiresRegistration ? (
@@ -413,7 +413,7 @@ export default function LoginPage() {
 
                   <div className="mt-8 text-center">
                     <p className="text-[10px] text-gray-200 tracking-widest font-bold uppercase">
-                      Instant Setup · No Credit Card Required · AI-Powered
+                      Instant Setup · No Credit Card Required · Fully Automated
                     </p>
                   </div>
                 </form>
