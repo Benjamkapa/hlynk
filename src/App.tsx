@@ -42,6 +42,7 @@ const RecordSalePage = lazy(() => import('./pages/provider/RecordSalePage'))
 const CustomersPage = lazy(() => import('./pages/provider/CustomersPage'))
 const ReportsPageProvider = lazy(() => import('./pages/provider/ReportsPage'))
 const SubscriptionPage = lazy(() => import('./pages/provider/SubscriptionPage'))
+const StaffManagementPage = lazy(() => import('./pages/provider/StaffManagementPage'))
 const ProductsPage = lazy(() => import('./pages/provider/ProductsPage'))
 const ExpensesPage = lazy(() => import('./pages/provider/ExpensesPage'))
 const SalesHistoryPage = lazy(() => import('./pages/provider/SalesHistoryPage'))
@@ -95,6 +96,7 @@ export default function App() {
           <Route path="sales/new" element={<RecordSalePage />} />
           <Route path="sales" element={<SalesHistoryPage />} />
           <Route path="products" element={<ProductsPage />} />
+          <Route path="staff" element={<StaffManagementPage />} />
           <Route path="expenses" element={<ExpensesPage />} />
           <Route path="customers" element={<CustomersPage />} />
           <Route path="reports" element={<ReportsPageProvider />} />

@@ -307,7 +307,7 @@ export default function Navbar() {
 
         {/* Bottom CTAs */}
         <div style={{ padding: '0 28px 52px', display: 'flex', flexDirection: 'column', gap: 10 }}>
-          <Link
+          {/* <Link
             to="/login"
             onClick={() => setMenuOpen(false)}
             style={{
@@ -326,7 +326,7 @@ export default function Navbar() {
               <path fill="#EA4335" d="M9 3.58c1.32 0 2.5.45 3.44 1.33l2.58-2.58C13.46.9 11.42 0 9 0A9 9 0 0 0 1.96 4.95l2.02 2.33c.71-2.12 2.68-3.7 5.02-3.7Z" />
             </svg>
             Sign In With Google
-          </Link>
+          </Link> */}
           <Link
             to="/register"
             onClick={() => setMenuOpen(false)}

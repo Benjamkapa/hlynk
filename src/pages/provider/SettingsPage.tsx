@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import { User, Store, Bell, Lock, Save, Camera, Loader2, LogOut, Trash2, Users, Shield, Mail, Phone, ArrowRight, Plus, CheckCircle2, Edit, FileText, RefreshCcw, Code, Sparkles } from 'lucide-react'
+import { User, Store, Bell, Lock, Save, Camera, Loader2, LogOut, Trash2, Users, Shield, Mail, Phone, ArrowRight, Plus, CheckCircle2, Edit, FileText, RefreshCcw, Code, Sparkles, Eye } from 'lucide-react'
 import { ConfirmModal } from '../../components/shared/ConfirmModal'
 import { toast } from 'sonner'
 import { useAuth } from '../../lib/auth/AuthContext'
@@ -104,7 +104,6 @@ export default function SettingsPage() {
     { name: 'Business', icon: Store },
     { name: 'Developer', icon: Code },
     { name: 'Notifications', icon: Bell },
-    { name: 'Team', icon: Users, role: ['PROVIDER', 'SUPER_ADMIN'] },
     { name: 'Security', icon: Lock },
     { name: 'Logs', icon: Shield, role: ['PROVIDER', 'SUPER_ADMIN'] },
   ]
@@ -343,11 +342,6 @@ export default function SettingsPage() {
               </div>
             )}
 
-            {activeTab === 'Team' && (
-              <FeatureGate feature="staff_accounts">
-                <StaffManagement />
-              </FeatureGate>
-            )}
 
             {activeTab === 'Security' && (
               <div className="space-y-8">
@@ -453,223 +447,6 @@ function Toggle({ active, onToggle }: { active: boolean; onToggle?: (v: boolean)
   )
 }
 
-function StaffManagement() {
-  const { user } = useAuth()
-  const queryClient = useQueryClient()
-  const [showForm, setShowForm] = useState(false)
-  const [editingStaff, setEditingStaff] = useState<any>(null)
-  const [form, setForm] = useState({ name: '', phone: '', email: '', password: '', permissions: [] as string[] })
-  // ✅ confirmDeleteId and deleteMutation now live together in StaffManagement
-  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
-
-  const { data: staffResponse, isLoading } = useQuery({
-    queryKey: ['staff-list'],
-    queryFn: providersApi.getStaff
-  })
-
-  const staffList = staffResponse?.data || []
-
-  const createMutation = useMutation({
-    mutationFn: providersApi.createStaff,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['staff-list'] })
-      toast.success('Staff member created')
-      setShowForm(false)
-      setForm({ name: '', phone: '', email: '', password: '', permissions: [] })
-    },
-    onError: (err) => toast.error(getErrorMessage(err))
-  })
-
-  const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: string, data: any }) => providersApi.updateStaff(id, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['staff-list'] })
-      toast.success('Staff updated')
-      setEditingStaff(null)
-    },
-    onError: (err) => toast.error(getErrorMessage(err))
-  })
-
-  const deleteMutation = useMutation({
-    mutationFn: providersApi.deleteStaff,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['staff-list'] })
-      toast.success('Staff removed')
-      setConfirmDeleteId(null)
-    },
-    onError: (err) => toast.error(getErrorMessage(err))
-  })
-
-  const PERMISSIONS = [
-    { id: 'overview', label: 'Dashboard Overview' },
-    { id: 'sales', label: 'Record Sales' },
-    { id: 'products', label: 'Products & Stock' },
-    { id: 'customers', label: 'Customer Management' },
-    { id: 'reports', label: 'View Reports' },
-  ]
-
-  const togglePermission = (permId: string) => {
-    setForm(prev => ({
-      ...prev,
-      permissions: prev.permissions.includes(permId)
-        ? prev.permissions.filter(p => p !== permId)
-        : [...prev.permissions, permId]
-    }))
-  }
-
-  if (isLoading) return <div className="py-12 text-center animate-pulse text-slate-400 font-black text-[10px] uppercase tracking-widest">Accessing team directory...</div>
-
-  return (
-    <div className="space-y-8">
-      <div className="flex justify-between items-center">
-        <div>
-          <h4 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-1">Active Team Members</h4>
-          <p className="text-xs text-gray-500 font-medium italic">Grant specific access to your staff.</p>
-        </div>
-        {!showForm && !editingStaff && (
-          <button
-            onClick={() => setShowForm(true)}
-            className="bg-[#0D4A3E] text-white px-6 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-[#0A3D33] transition-all shadow-xl shadow-emerald-900/10 flex items-center gap-2"
-          >
-            <Plus size={14} /> Add Staff Member
-          </button>
-        )}
-      </div>
-
-      {(showForm || editingStaff) && (
-        <div className="bg-slate-50 p-8 rounded-2xl border border-emerald-100 animate-in slide-in-from-top-4 duration-300">
-          <div className="flex justify-between items-start mb-8">
-            <h4 className="text-sm font-black text-slate-900 uppercase tracking-widest">{editingStaff ? 'Edit' : 'Register New'} Staff</h4>
-            <button onClick={() => { setShowForm(false); setEditingStaff(null); }} className="text-slate-400 hover:text-slate-600">✕</button>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-            <InputGroup label="Full Name" placeholder="e.g. John Doe" value={form.name} onChange={(v: string) => setForm({ ...form, name: v })} />
-            <InputGroup label="Phone Number" placeholder="07..." value={form.phone} onChange={(v: string) => setForm({ ...form, phone: v })} mono />
-            <InputGroup label="Email (Optional)" placeholder="john@example.com" value={form.email} onChange={(v: string) => setForm({ ...form, email: v })} />
-            <InputGroup label="Login Password" type="password" placeholder="••••••••" value={form.password} onChange={(v: string) => setForm({ ...form, password: v })} />
-          </div>
-
-          <div className="space-y-4 mb-8">
-            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Access Permissions</label>
-            <div className="grid grid-cols-2 gap-4">
-              {PERMISSIONS.map(perm => (
-                <div
-                  key={perm.id}
-                  onClick={() => togglePermission(perm.id)}
-                  className={`p-4 rounded-xl border-2 transition-all cursor-pointer flex items-center gap-3 ${form.permissions.includes(perm.id) ? 'bg-emerald-50 border-emerald-500' : 'bg-white border-slate-100 opacity-60'}`}
-                >
-                  <div className={`h-4 w-4 rounded border flex items-center justify-center ${form.permissions.includes(perm.id) ? 'bg-emerald-600 border-emerald-600' : 'border-slate-300'}`}>
-                    {form.permissions.includes(perm.id) && <CheckCircle2 size={10} className="text-white" />}
-                  </div>
-                  <span className="text-[11px] font-black uppercase tracking-tight text-slate-700">{perm.label}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="flex gap-4">
-            <button
-              onClick={() => {
-                if (editingStaff) updateMutation.mutate({ id: editingStaff.id, data: form })
-                else createMutation.mutate(form)
-              }}
-              disabled={createMutation.isPending || updateMutation.isPending}
-              className="flex-1 bg-[#0D4A3E] text-white py-4 rounded-xl font-black text-xs uppercase tracking-widest hover:bg-[#0A3D33] transition-all shadow-xl shadow-emerald-900/20 disabled:opacity-50"
-            >
-              {createMutation.isPending || updateMutation.isPending ? 'Processing...' : (editingStaff ? 'Update Staff Member' : 'Create Staff Account')}
-            </button>
-            <button onClick={() => { setShowForm(false); setEditingStaff(null); }} className="px-8 py-4 bg-white border border-slate-100 rounded-xl font-black text-xs uppercase tracking-widest text-slate-400 hover:bg-slate-100 transition-all">Cancel</button>
-          </div>
-        </div>
-      )}
-
-      <div className="space-y-4">
-        {/* Owner always visible */}
-        <div className="p-6 rounded-2xl bg-white border border-slate-100 flex items-center justify-between shadow-sm">
-          <div className="flex items-center gap-4">
-            <div className="h-12 w-12 rounded-2xl bg-emerald-900 text-white flex items-center justify-center font-black shadow-lg">
-              {user?.name?.charAt(0) || 'P'}
-            </div>
-            <div>
-              <p className="text-sm font-black text-gray-900">{user?.name} <span className="text-[10px] text-emerald-600 ml-2">(Owner)</span></p>
-              <p className="text-[10px] text-gray-500 font-medium">{user?.email || user?.phone}</p>
-            </div>
-          </div>
-          <div className="px-4 py-1.5 rounded-full bg-emerald-100 text-emerald-700 text-[9px] font-black uppercase tracking-widest">
-            Full Access
-          </div>
-        </div>
-
-        {staffList.map((staff: any) => (
-          <div key={staff.id} className="p-6 rounded-2xl bg-white border border-slate-50 flex items-center justify-between hover:border-emerald-100 transition-all group">
-            <div className="flex items-center gap-4">
-              <div className="h-12 w-12 rounded-2xl bg-slate-100 text-slate-400 flex items-center justify-center font-black group-hover:bg-emerald-50 group-hover:text-emerald-600 transition-all">
-                {staff.name.charAt(0).toUpperCase()}
-              </div>
-              <div>
-                <p className="text-sm font-black text-slate-900">{staff.name}</p>
-                <p className="text-[10px] text-slate-400 font-medium">{staff.email || staff.phone}</p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-6">
-              <div className="flex flex-wrap gap-1 max-w-[200px] justify-end">
-                {staff.permissions && Array.isArray(staff.permissions) && staff.permissions.map((p: string) => (
-                  <span key={p} className="px-2 py-0.5 rounded bg-slate-50 text-slate-400 text-[8px] font-black uppercase tracking-tighter">
-                    {p}
-                  </span>
-                ))}
-              </div>
-
-              <div className="flex gap-2">
-                <button
-                  onClick={() => {
-                    setEditingStaff(staff)
-                    setForm({
-                      name: staff.name,
-                      phone: staff.phone,
-                      email: staff.email || '',
-                      password: '',
-                      permissions: staff.permissions || []
-                    })
-                  }}
-                  className="p-2 text-slate-300 hover:text-emerald-600 transition-colors"
-                >
-                  <Edit size={16} />
-                </button>
-                <button
-                  onClick={() => setConfirmDeleteId(staff.id)}
-                  className="p-2 text-slate-300 hover:text-red-600 transition-colors"
-                >
-                  <Trash2 size={16} />
-                </button>
-              </div>
-            </div>
-          </div>
-        ))}
-
-        {staffList.length === 0 && !showForm && (
-          <div className="p-20 text-center border-2 border-dashed border-slate-100 rounded-[32px]">
-            <Users size={48} className="mx-auto text-slate-200 mb-6" />
-            <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-2">No Staff Members Found</p>
-            <p className="text-[11px] text-slate-400 font-medium italic">Add your first team member to start delegating tasks.</p>
-          </div>
-        )}
-      </div>
-
-      {/* ✅ Staff delete ConfirmModal lives here, next to deleteMutation */}
-      <ConfirmModal
-        isOpen={!!confirmDeleteId}
-        title="Remove Staff Member"
-        message="Are you sure you want to remove this staff member? This action cannot be undone."
-        confirmText="Remove"
-        onConfirm={() => confirmDeleteId && deleteMutation.mutate(confirmDeleteId)}
-        onCancel={() => setConfirmDeleteId(null)}
-      />
-    </div>
-  )
-}
 
 function ActivityLogViewer() {
   const [page, setPage] = useState(1)
@@ -724,7 +501,7 @@ function ActivityLogViewer() {
         </div>
       </div>
 
-      <div className="bg-white rounded-[32px] border border-slate-100 overflow-hidden shadow-sm">
+      <div className="bg-white rounded-[12px] border border-slate-100 overflow-hidden shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>

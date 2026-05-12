@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { MessageSquareQuote, Star } from 'lucide-react'
+import { MessageSquareQuote } from 'lucide-react'
 import { platformApi, type PlatformReview } from '../../lib/api/platform'
+import StarRating from '../shared/StarRating'
 
 const FALLBACK_REVIEWS: PlatformReview[] = [
   {
@@ -98,27 +99,33 @@ export default function AuthCommunityCard({ className = '' }: AuthCommunityCardP
         </div>
       </div>
 
-      <div className="mt-5 flex items-center gap-1 text-amber-400">
-        {Array.from({ length: 5 }).map((_, index) => (
-          <Star
-            key={index}
-            size={16}
-            className={index < Math.round(summary.averageRating) ? 'fill-current' : 'text-slate-200'}
-          />
-        ))}
-      </div>
+      <StarRating rating={summary.averageRating} size={16} className="mt-5" />
 
       <div className="mt-5 rounded-3xl bg-slate-50 p-5">
+        <StarRating rating={activeReview.rating} size={12} className="mb-2" />
         <p className="text-sm leading-7 text-slate-700">"{activeReview.comment}"</p>
-        <div className="mt-4">
-          <p className="text-sm font-black text-slate-900">{activeReview.name}</p>
-          <p className="text-xs font-medium text-slate-500">{activeReview.businessName}</p>
+        <div className="mt-4 flex items-center gap-3">
+          {activeReview.photoUrl ? (
+            <img 
+              src={activeReview.photoUrl} 
+              alt={activeReview.name} 
+              className="h-10 w-10 rounded-full object-cover"
+            />
+          ) : (
+            <div className="h-10 w-10 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-700 font-bold text-xs">
+              {activeReview.name.split(' ').map((n: string) => n[0]).join('').toUpperCase()}
+            </div>
+          )}
+          <div>
+            <p className="text-sm font-black text-slate-900">{activeReview.name}</p>
+            <p className="text-xs font-medium text-slate-500">{activeReview.businessName}</p>
+          </div>
         </div>
       </div>
 
       {reviews.length > 1 && (
         <div className="mt-5 flex items-center gap-2">
-          {reviews.map((review, index) => (
+          {reviews.map((review: PlatformReview, index: number) => (
             <button
               key={review.id}
               type="button"

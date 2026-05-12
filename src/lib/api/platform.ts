@@ -9,6 +9,7 @@ export interface PlatformReview {
   role: string
   rating: number
   comment: string
+  photoUrl?: string
   createdAt: string
   updatedAt: string
 }
@@ -29,4 +30,14 @@ export const platformApi = {
     api.get('/platform/reviews/me').then((r) => r.data as { success: boolean; data: PlatformReview | null }),
   submitReview: (data: { rating: number; comment: string }) =>
     api.post('/platform/reviews', data).then((r) => r.data as { success: boolean; data: PlatformReview }),
+  getStats: () =>
+    api.get('/platform/stats').then((r) => r.data as { success: boolean; data: { totalBusinesses: number; averageRating: number; totalReviews: number } }),
+  
+  // --- Notifications ---
+  getNotifications: () =>
+    api.get('/platform/notifications').then((r) => r.data as { success: boolean; data: any[] }),
+  markAsRead: (id: string) =>
+    api.patch(`/platform/notifications/${id}/read`).then((r) => r.data),
+  markAllAsRead: () =>
+    api.post('/platform/notifications/read-all').then((r) => r.data),
 }

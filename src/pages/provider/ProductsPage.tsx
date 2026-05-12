@@ -223,7 +223,7 @@ export default function ProductsPage() {
 
 function AddProductForm({ onClose }: { onClose: () => void }) {
   const queryClient = useQueryClient()
-  const [form, setForm] = useState({ name: '', category: 'Groceries', buyingPrice: '', price: '', stock: '', imageUrl: '', isPerishable: false, expiryDate: '' })
+  const [form, setForm] = useState({ name: '', category: 'Groceries', type: 'GOOD', buyingPrice: '', price: '', stock: '', imageUrl: '', isPerishable: false, expiryDate: '' })
 
   const mutation = useMutation({
     mutationFn: inventoryApi.create,
@@ -300,20 +300,37 @@ function AddProductForm({ onClose }: { onClose: () => void }) {
         <InputGroup label="Buying Price" placeholder="0.00" mono value={form.buyingPrice} onChange={(v: string) => setForm({ ...form, buyingPrice: v })} />
         <InputGroup label="Selling Price" placeholder="0.00" mono value={form.price} onChange={(v: string) => setForm({ ...form, price: v })} />
       </div>
-      <InputGroup label="Initial Stock" placeholder="0" mono value={form.stock} onChange={(v: string) => setForm({ ...form, stock: v })} />
-      
-      <div className="flex items-center gap-3 bg-slate-50 p-4 rounded-xl border border-slate-100">
-        <input 
-          type="checkbox" 
-          id="isPerishableAdd" 
-          checked={form.isPerishable} 
-          onChange={(e) => setForm({ ...form, isPerishable: e.target.checked })}
-          className="h-4 w-4 accent-emerald-600 rounded border-slate-300"
-        />
-        <label htmlFor="isPerishableAdd" className="text-sm font-bold text-slate-700 cursor-pointer">This item is perishable</label>
+
+      <div className="space-y-2">
+        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Product Type</label>
+        <select 
+          value={form.type}
+          onChange={(e) => setForm({ ...form, type: e.target.value })}
+          className="w-full bg-slate-50 border-none rounded-xl py-4 px-4 outline-none focus:ring-4 focus:ring-emerald-500/5 transition-all font-bold appearance-none text-sm"
+        >
+           <option value="GOOD">Physical Good (Track Stock)</option>
+           <option value="SERVICE">Service (Barber, Consult, etc)</option>
+        </select>
       </div>
 
-      {form.isPerishable && (
+      {form.type === 'GOOD' && (
+        <InputGroup label="Initial Stock" placeholder="0" mono value={form.stock} onChange={(v: string) => setForm({ ...form, stock: v })} />
+      )}
+      
+      {form.type === 'GOOD' && (
+        <div className="flex items-center gap-3 bg-slate-50 p-4 rounded-xl border border-slate-100 mt-4">
+          <input 
+            type="checkbox" 
+            id="isPerishableAdd" 
+            checked={form.isPerishable} 
+            onChange={(e) => setForm({ ...form, isPerishable: e.target.checked })}
+            className="h-4 w-4 accent-emerald-600 rounded border-slate-300"
+          />
+          <label htmlFor="isPerishableAdd" className="text-sm font-bold text-slate-700 cursor-pointer">This item is perishable</label>
+        </div>
+      )}
+
+      {form.type === 'GOOD' && form.isPerishable && (
         <div className="space-y-2 animate-in fade-in slide-in-from-top-2">
           <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Expiry Date</label>
           <input 
@@ -352,6 +369,7 @@ function EditProductForm({ product, onClose }: { product: any; onClose: () => vo
   const [form, setForm] = useState({ 
     name: product.name, 
     category: product.category, 
+    type: product.type || 'GOOD',
     buyingPrice: product.buyingPrice?.toString() || '', 
     price: product.price?.toString() || '', 
     stock: product.stockLevel?.toString() || '',
@@ -435,20 +453,37 @@ function EditProductForm({ product, onClose }: { product: any; onClose: () => vo
         <InputGroup label="Buying Price" placeholder="0.00" mono value={form.buyingPrice} onChange={(v: string) => setForm({ ...form, buyingPrice: v })} />
         <InputGroup label="Selling Price" placeholder="0.00" mono value={form.price} onChange={(v: string) => setForm({ ...form, price: v })} />
       </div>
-      <InputGroup label="Current Stock" placeholder="0" mono value={form.stock} onChange={(v: string) => setForm({ ...form, stock: v })} />
       
-      <div className="flex items-center gap-3 bg-slate-50 p-4 rounded-xl border border-slate-100">
-        <input 
-          type="checkbox" 
-          id="isPerishableEdit" 
-          checked={form.isPerishable} 
-          onChange={(e) => setForm({ ...form, isPerishable: e.target.checked })}
-          className="h-4 w-4 accent-emerald-600 rounded border-slate-300"
-        />
-        <label htmlFor="isPerishableEdit" className="text-sm font-bold text-slate-700 cursor-pointer">This item is perishable</label>
+      <div className="space-y-2">
+        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Product Type</label>
+        <select 
+          value={form.type}
+          onChange={(e) => setForm({ ...form, type: e.target.value })}
+          className="w-full bg-slate-50 border-none rounded-xl py-4 px-4 outline-none focus:ring-4 focus:ring-emerald-500/5 transition-all font-bold appearance-none text-sm"
+        >
+           <option value="GOOD">Physical Good (Track Stock)</option>
+           <option value="SERVICE">Service (Barber, Consult, etc)</option>
+        </select>
       </div>
 
-      {form.isPerishable && (
+      {form.type === 'GOOD' && (
+        <InputGroup label="Current Stock" placeholder="0" mono value={form.stock} onChange={(v: string) => setForm({ ...form, stock: v })} />
+      )}
+      
+      {form.type === 'GOOD' && (
+        <div className="flex items-center gap-3 bg-slate-50 p-4 rounded-xl border border-slate-100 mt-4">
+          <input 
+            type="checkbox" 
+            id="isPerishableEdit" 
+            checked={form.isPerishable} 
+            onChange={(e) => setForm({ ...form, isPerishable: e.target.checked })}
+            className="h-4 w-4 accent-emerald-600 rounded border-slate-300"
+          />
+          <label htmlFor="isPerishableEdit" className="text-sm font-bold text-slate-700 cursor-pointer">This item is perishable</label>
+        </div>
+      )}
+
+      {form.type === 'GOOD' && form.isPerishable && (
         <div className="space-y-2 animate-in fade-in slide-in-from-top-2">
           <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Expiry Date</label>
           <input 

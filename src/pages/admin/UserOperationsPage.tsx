@@ -3,11 +3,15 @@ import { Users, Monitor, LogOut, Search, Filter, Trash2 } from 'lucide-react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { adminApi } from '../../lib/api/providers'
 import { toast } from 'sonner'
+import { useAuth } from '../../lib/auth/AuthContext'
+import { useNavigate } from 'react-router-dom'
 
 export default function UserOperationsPage() {
   const [search, setSearch] = useState('')
   const [selectedUser, setSelectedUser] = useState<any>(null)
   const queryClient = useQueryClient()
+  const { login } = useAuth()
+  const navigate = useNavigate()
 
   const { data: usersData, isLoading } = useQuery<{ success: boolean; data: any[] }>({
     queryKey: ['admin-users', search],
@@ -44,6 +48,19 @@ export default function UserOperationsPage() {
       queryClient.invalidateQueries({ queryKey: ['admin-sessions'] })
       toast.success('Session terminated')
     }
+  })
+
+  const impersonateMutation = useMutation({
+    mutationFn: adminApi.impersonateUser,
+    onSuccess: (res: any) => {
+      login(
+        { accessToken: res.data.accessToken, refreshToken: res.data.refreshToken },
+        res.data.user
+      )
+      toast.success(`impersonation active: now acting as ${res.data.user.name}`)
+      navigate('/dashboard')
+    },
+    onError: (err: any) => toast.error(err.message || 'Failed to impersonate')
   })
 
   return (
@@ -213,12 +230,25 @@ export default function UserOperationsPage() {
                         </span>
                       </td>
                       <td className="px-8 py-5 text-right">
-                        <button 
-                          onClick={(e) => { e.stopPropagation(); if(window.confirm('Delete this user completely?')) deleteMutation.mutate(u.id); }}
-                          className="text-gray-400 hover:text-red-600 transition-all p-2 hover:bg-red-50 rounded-lg"
-                        >
-                          <Trash2 size={16} />
-                        </button>
+                        <div className="flex justify-end gap-2 text-gray-400">
+                          {u.role !== 'SUPER_ADMIN' && (
+                            <button 
+                              onClick={(e) => { e.stopPropagation(); if(window.confirm(`Login as ${u.name}?`)) impersonateMutation.mutate(u.id); }}
+                              disabled={impersonateMutation.isPending}
+                              title="Impersonate User"
+                              className="hover:text-[#0D4A3E] transition-all p-2 hover:bg-emerald-50 rounded-lg disabled:opacity-50"
+                            >
+                              <Monitor size={16} />
+                            </button>
+                          )}
+                          <button 
+                            onClick={(e) => { e.stopPropagation(); if(window.confirm('Delete this user completely?')) deleteMutation.mutate(u.id); }}
+                            className="hover:text-red-600 transition-all p-2 hover:bg-red-50 rounded-lg"
+                            title="Delete User"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   )) : (

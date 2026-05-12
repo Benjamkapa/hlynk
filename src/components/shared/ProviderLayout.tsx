@@ -63,6 +63,12 @@ export default function ProviderLayout() {
         { to: '/dashboard/subscription', label: 'Billing Plan', icon: Calendar, role: 'PROVIDER' },
       ],
     },
+    {
+      label: 'Team',
+      items: [
+        { to: '/dashboard/staff', label: 'Staff Management', icon: Users, role: 'PROVIDER' },
+      ],
+    },
   ];
 
   const filteredGroups = navGroups.map(group => ({
@@ -305,8 +311,15 @@ export default function ProviderLayout() {
           }
         />
 
-        <main className="flex-1 overflow-y-auto px-8 lg:px-12 py-12 bg-slate-50/30">
+        <main className="flex-1 overflow-y-auto px-8 lg:px-12 py-12 bg-slate-50/30 relative">
           <Outlet />
+
+          {/* ── Transparent Background Footer ── */}
+          <div className="fixed bottom-0 left-0 lg:left-64 right-0 p-4 pointer-events-none z-[40] flex justify-center bg-gradient-to-t from-white/90 to-transparent backdrop-blur-[2px]">
+            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 opacity-60 select-none">
+              {user?.businessName || 'HudumaLynk Provider Workspace'}
+            </p>
+          </div>
         </main>
       </div>
     </div>

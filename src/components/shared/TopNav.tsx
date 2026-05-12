@@ -1,10 +1,10 @@
 import { useState, useRef, useEffect } from 'react'
-import { Bell, User, LogOut, ChevronDown, Menu, Search, Sparkles, CheckCircle2, AlertCircle, ShoppingBag, Mail } from 'lucide-react'
+import { Bell, User, LogOut, ChevronDown, Menu, Sparkles, X } from 'lucide-react'
 import { useAuth } from '../../lib/auth/AuthContext'
 import { Link, useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
-import { useQuery } from '@tanstack/react-query'
-import { providersApi } from '../../lib/api/providers'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { platformApi } from '../../lib/api/platform'
 
 interface TopNavProps {
   onMobileMenuToggle?: () => void
@@ -12,26 +12,38 @@ interface TopNavProps {
   showMail?: boolean
 }
 
-export default function TopNav({ onMobileMenuToggle, extraActions, showMail = false }: TopNavProps) {
+export default function TopNav({ onMobileMenuToggle, extraActions }: TopNavProps) {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
   const [showUserMenu, setShowUserMenu] = useState(false)
   const [showNotifications, setShowNotifications] = useState(false)
-  const [avatarFailed, setAvatarFailed] = useState(false)
   const userMenuRef = useRef<HTMLDivElement>(null)
   const notificationRef = useRef<HTMLDivElement>(null)
 
-  const { data: logResponse, isLoading: logsLoading } = useQuery({
-    queryKey: ['recent-logs'],
-    queryFn: () => providersApi.getActivityLogs({ limit: 5 }),
+  const { data: notifyRes, isLoading: notifyLoading } = useQuery({
+    queryKey: ['notifications'],
+    queryFn: () => platformApi.getNotifications(),
     enabled: !!user,
-    refetchInterval: 15000
+    refetchInterval: 30000 // Refresh every 30s
   })
 
-  const notifications = logResponse?.items || []
+  const markReadMutation = useMutation({
+    mutationFn: (id: string) => platformApi.markAsRead(id),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['notifications'] })
+  })
 
-  const profileImageSrc = user?.photoUrl || null;
-  const hasAuditLogs = user?.role === 'SUPER_ADMIN' || user?.subscription?.planName === 'PRO';
+  const markAllReadMutation = useMutation({
+    mutationFn: () => platformApi.markAllAsRead(),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['notifications'] })
+      toast.success('Tray cleared')
+    }
+  })
+
+  const notifications = notifyRes?.data || []
+  const unreadCount = notifications.filter((n: any) => !n.isRead).length
+  const profileImageSrc = user?.photoUrl || null
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -44,10 +56,6 @@ export default function TopNav({ onMobileMenuToggle, extraActions, showMail = fa
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
-  useEffect(() => {
-    setAvatarFailed(false)
-  }, [user?.avatar])
-
   const handleLogout = async () => {
     await logout()
     toast.success('Session terminated successfully')
@@ -57,7 +65,6 @@ export default function TopNav({ onMobileMenuToggle, extraActions, showMail = fa
   return (
     <header className="h-24 bg-transparent flex items-center justify-between z-[100] px-6 sm:px-8">
 
-      {/* Search Console Removed */}
       <div className="flex items-center gap-4 flex-1 max-w-xl">
         {onMobileMenuToggle && (
           <button 
@@ -69,7 +76,6 @@ export default function TopNav({ onMobileMenuToggle, extraActions, showMail = fa
         )}
       </div>
 
-      {/* Terminal Actions */}
       <div className="flex items-center gap-4 sm:gap-6">
         
         {extraActions && (
@@ -79,12 +85,6 @@ export default function TopNav({ onMobileMenuToggle, extraActions, showMail = fa
         )}
 
         <div className="flex items-center gap-3 pr-6 border-r border-slate-100">
-          {/* {showMail && (
-            <button className="h-12 w-12 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-500 hover:text-emerald-600 hover:bg-emerald-50 transition-all relative">
-              <Mail size={20} />
-              <span className="absolute top-3.5 right-3.5 w-2 h-2 bg-emerald-500 rounded-full border-2 border-white" />
-            </button>
-          )} */}
 
           {/* Alerts */}
           <div className="relative" ref={notificationRef}>
@@ -93,8 +93,10 @@ export default function TopNav({ onMobileMenuToggle, extraActions, showMail = fa
               className={`w-12 h-12 rounded-xl border flex items-center justify-center transition-all relative ${showNotifications ? 'bg-white border-emerald-200 shadow-xl text-emerald-600' : 'hover:bg-slate-50 hover:border-slate-100 hover:text-slate-400 border-slate-200 text-slate-600 bg-emerald-50'}`}
             >
               <Bell size={20} />
-              {notifications.length > 0 && (
-                <span className="absolute top-3.5 right-3.5 w-2 h-2 bg-emerald-500 rounded-full border-2 border-white animate-pulse" />
+              {unreadCount > 0 && (
+                <span className="absolute top-2 right-2 w-5 h-5 bg-red-500 rounded-full border-2 border-white flex items-center justify-center text-[10px] font-black text-white animate-in zoom-in duration-300">
+                  {unreadCount}
+                </span>
               )}
             </button>
 
@@ -102,59 +104,47 @@ export default function TopNav({ onMobileMenuToggle, extraActions, showMail = fa
               <div className="absolute top-16 right-0 w-[340px] bg-white border border-slate-100 rounded-3xl shadow-2xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200 z-[200]">
                 <div className="p-5 bg-slate-50/50 border-b border-slate-100 flex justify-between items-center">
                   <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Intelligence Stream</span>
-                  <button 
-                    onClick={() => toast.info('System logs are persistent and cannot be manually cleared.')}
-                    className="text-[10px] font-black text-emerald-600 uppercase tracking-widest hover:text-emerald-700"
-                  >
-                    Manage History
-                  </button>
+                  {unreadCount > 0 && (
+                    <button 
+                      onClick={() => markAllReadMutation.mutate()}
+                      className="text-[10px] font-black text-emerald-600 uppercase tracking-widest hover:text-emerald-700"
+                    >
+                      Clear All
+                    </button>
+                  )}
                 </div>
                 <div className="max-h-[400px] overflow-y-auto">
-                  {logsLoading ? (
+                  {notifyLoading ? (
                      <div className="p-12 text-center animate-pulse text-slate-400 font-black text-[9px] uppercase tracking-widest">Fetching stream...</div>
                   ) : notifications.length === 0 ? (
                     <div className="p-16 text-center">
-                      <p className="text-sm font-black text-slate-400 italic">No recent activity found</p>
+                      <p className="text-sm font-black text-slate-400 italic">No recent alerts</p>
                     </div>
                   ) : (
                     <div className="divide-y divide-slate-50">
                       {notifications.map((n: any) => (
-                        <div key={n.id} className="p-5 hover:bg-slate-50 transition-colors cursor-pointer group">
+                        <div 
+                          key={n.id} 
+                          className={`p-5 transition-colors cursor-pointer group relative ${n.isRead ? 'opacity-60 grayscale-[0.5]' : 'bg-emerald-50/20'}`}
+                          onClick={() => !n.isRead && markReadMutation.mutate(n.id)}
+                        >
                           <div className="flex gap-4">
-                            <div className="h-10 w-10 rounded-2xl bg-white border border-slate-100 flex items-center justify-center shrink-0 group-hover:scale-110 group-hover:shadow-lg transition-all text-emerald-600">
+                            <div className={`h-10 w-10 rounded-2xl flex items-center justify-center shrink-0 transition-all border ${n.isRead ? 'bg-white border-slate-100 text-slate-400' : 'bg-white border-emerald-100 text-emerald-600 shadow-sm'}`}>
                               <Sparkles size={14} />
                             </div>
-                            <div className="space-y-1">
-                              <p className="text-sm font-black text-slate-900 tracking-tight">{n.action.replace('_', ' ')}</p>
-                              
-                              {hasAuditLogs ? (
-                                <p className="text-[11px] font-bold text-slate-500 leading-tight">{n.details || n.logName}</p>
-                              ) : (
-                                <div className="relative overflow-hidden inline-block group/lock">
-                                  <p className="text-[11px] font-bold text-slate-500 leading-tight blur-[4px] select-none opacity-50">
-                                    {n.details || "Unlock deep transaction telemetry"}
-                                  </p>
-                                  <div className="absolute inset-0 flex items-center gap-1 opacity-80 group-hover/lock:opacity-100 transition-opacity">
-                                    <div className="h-3 w-3 rounded-full bg-amber-500 flex items-center justify-center">
-                                      <span className="text-[6px] font-black text-white">🔒</span>
-                                    </div>
-                                    <span className="text-[9px] font-black uppercase tracking-widest text-amber-600 bg-amber-50 px-1 py-0.5 rounded">Pro Telemetry</span>
-                                  </div>
-                                </div>
-                              )}
-                              
-                              <p className="text-[9px] font-black text-slate-400 uppercase hl-mono mt-1">{new Date(n.createdAt).toLocaleTimeString()}</p>
+                            <div className="space-y-1 flex-1">
+                              <div className="flex justify-between items-start">
+                                <p className={`text-sm font-black tracking-tight ${n.isRead ? 'text-slate-600' : 'text-slate-900'}`}>{n.title}</p>
+                                {!n.isRead && <div className="w-2 h-2 bg-emerald-500 rounded-full" />}
+                              </div>
+                              <p className="text-[11px] font-bold text-slate-500 leading-tight">{n.message}</p>
+                              <p className="text-[9px] font-black text-slate-400 uppercase hl-mono mt-1">{new Date(n.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
                             </div>
                           </div>
                         </div>
                       ))}
                     </div>
                   )}
-                </div>
-                <div className="p-4 border-t border-slate-100 bg-slate-50/30 text-center">
-                  <Link to={hasAuditLogs ? (user?.role === 'SUPER_ADMIN' ? "/admin/audit" : "/dashboard/settings") : "/dashboard/subscription"} onClick={() => setShowNotifications(false)} className="text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-emerald-600 transition-colors flex items-center justify-center gap-1">
-                    {hasAuditLogs ? 'View Full Audit Trail' : 'Upgrade to Unlock Intelligence'}
-                  </Link>
                 </div>
               </div>
             )}

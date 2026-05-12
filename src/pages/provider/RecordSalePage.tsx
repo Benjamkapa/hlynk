@@ -453,8 +453,8 @@ export default function RecordSalePage() {
           <div className="flex-1 overflow-y-auto space-y-4 mb-8 pr-2 custom-scrollbar relative z-10">
             {cart.length === 0 ? (
               <div className="h-full flex flex-col items-center justify-center text-slate-200 py-20">
-                <div className="h-24 w-24 rounded-full bg-slate-50 flex items-center justify-center mb-6">
-                  <ShoppingCart size={48} className="opacity-10" />
+                <div className="h-24 w-24 rounded-full bg-slate-20 flex items-center justify-center mb-6">
+                  <ShoppingCart size={48} className="opacity-90" />
                 </div>
                 <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Cart is empty</p>
               </div>

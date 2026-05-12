@@ -4,6 +4,7 @@ import {
   TrendingUp, ArrowUpRight, ArrowDownRight, 
   Clock, DollarSign, Receipt, Star
 } from 'lucide-react'
+import StarRating from '../../components/shared/StarRating'
 import {
   ResponsiveContainer, AreaChart, Area,
   XAxis, YAxis, CartesianGrid, Tooltip
@@ -59,8 +60,13 @@ export default function DashboardPage() {
               <Star size={20} className="fill-emerald-600" />
            </div>
            <div>
-              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Store Rating</p>
-              <p className="text-sm font-black text-slate-900">{stats?.rating || '0.0'} / 5.0 <span className="text-slate-400 font-medium text-[10px]">({stats?.reviewCount || 0} reviews)</span></p>
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Store Rating</p>
+              <StarRating 
+                rating={Number(stats?.rating || 0)} 
+                count={stats?.reviewCount || 0} 
+                showText 
+                size={14} 
+              />
            </div>
         </div>
       </div>

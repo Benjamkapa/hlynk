@@ -108,12 +108,13 @@ export default function GoogleAuthButton({
   const isButtonDisabled = disabled || isLoading || isOffline || !isReady
 
   return (
-    <div className="relative w-full h-[56px] rounded-[11px] hover:shadow overflow-hidden shadow-sm group select-none">
+    <div className="relative w-full h-[48px] rounded-[12px] group select-none">
       {/* Custom styled UI matching the app's look and feel */}
       <div
-        className={`absolute inset-0 flex items-center justify-center gap-3 bg-slate-200 transition-all text-slate-700
-          ${isButtonDisabled ? 'opacity-60 bg-slate-50' : 'cursor-pointer'}
+        className={`absolute inset-0 flex items-center justify-center gap-3 border transition-all
+          ${isButtonDisabled ? 'opacity-60 bg-slate-50 border-slate-100' : 'cursor-pointer bg-[#faf8f5] border-[#e8e4db] hover:border-[#7A6F5A] group-hover:shadow-[0_2px_12px_rgba(122,111,90,0.1)]'}
         `}
+        style={{ borderRadius: 'inherit' }}
       >
         {isLoading ? (
           <Loader2 size={18} className="animate-spin text-slate-400" />
@@ -125,7 +126,7 @@ export default function GoogleAuthButton({
             <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
           </svg>
         )}
-        <span className="font-black text-[15px] font-semibold font-ubuntu font-thin tracking-[0.15em] mt-0.5">
+        <span className="text-[13px] font-medium tracking-[0.03em] text-[#1a1714]">
           {isLoading ? 'Processing...' : (isOffline ? 'Offline - Check Connection' : (!isReady ? 'Connecting Google...' : (text === 'signup_with' ? 'Sign Up With Google' : 'Proceed With Google')))}
         </span>
       </div>

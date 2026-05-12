@@ -115,6 +115,7 @@ export const adminApi = {
   getSessions: () => api.get('/admin/sessions').then(r => r.data),
   terminateSession: (id: string) => api.put(`/admin/sessions/${id}/terminate`).then(r => r.data),
   getUserActivity: (userId: string) => api.get(`/admin/users/${userId}/activity`).then(r => r.data),
+  impersonateUser: (userId: string) => api.post(`/admin/users/${userId}/impersonate`).then(r => r.data),
   deleteTenant: (id: string) => api.delete(`/admin/tenants/${id}`).then(r => r.data),
   resolveAllTickets: () => api.post('/admin/support/resolve-all').then(r => r.data),
   restartCluster: () => api.post('/admin/system/restart').then(r => r.data),

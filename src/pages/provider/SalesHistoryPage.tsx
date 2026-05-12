@@ -194,9 +194,12 @@ export default function SalesHistoryPage() {
                       {s.status || 'COMPLETED'}
                     </span>
                   </td>
-                  <td className="px-8 py-5 text-right">
+                  <td className="px-8 py-5 text-right flex gap-1">
                     <div className="p-2 bg-slate-50 group-hover:bg-white group-hover:shadow-lg group-hover:shadow-emerald-900/10 rounded-lg transition-all text-gray-300 group-hover:text-emerald-600 inline-block">
                       <Eye size={18} />
+                    </div>
+                    <div className="p-2 bg-slate-50 group-hover:bg-white group-hover:shadow-lg group-hover:shadow-emerald-900/10 rounded-lg transition-all text-gray-300 group-hover:text-emerald-600 inline-block">
+                      <Receipt size={18} />
                     </div>
                   </td>
                 </tr>
