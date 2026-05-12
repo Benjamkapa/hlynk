@@ -32,7 +32,7 @@ export default function ProvidersPage() {
       
       <div className="flex justify-between items-end">
         <div>
-          <h1 className="text-3xl font-black text-gray-900 tracking-tight">Business Intelligence</h1>
+          <h1 className="text-3xl font-black text-gray-900 tracking-tight">Business Oversight</h1>
           <p className="text-gray-500 font-medium">Platform growth trajectory and vendor account management</p>
         </div>
         <div className="flex gap-4">
@@ -93,7 +93,7 @@ export default function ProvidersPage() {
                   <h4 className="text-sm font-black mb-4">Awaiting Verification</h4>
                   <div className="p-3 bg-white/10 rounded-xl border border-white/10 mb-4 backdrop-blur-md">
                      <p className="text-xs font-black">{stats?.recentRegistrations?.[0]?.name || 'No new entries'}</p>
-                     <p className="text-[9px] text-emerald-300 font-bold uppercase mt-1 hl-mono">{stats?.recentRegistrations?.[0]?.plan || 'STARTER'} Plan</p>
+                     <p className="text-[9px] text-emerald-300 font-bold uppercase mt-1 hl-mono">{stats?.recentRegistrations?.[0]?.plan || 'LITE'} Plan</p>
                   </div>
                   <button className="w-full py-3 bg-emerald-500 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-emerald-400 transition-all">Review Application</button>
                </div>

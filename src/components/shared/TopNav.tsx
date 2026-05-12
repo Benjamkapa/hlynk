@@ -103,7 +103,7 @@ export default function TopNav({ onMobileMenuToggle, extraActions }: TopNavProps
             {showNotifications && (
               <div className="absolute top-16 right-0 w-[340px] bg-white border border-slate-100 rounded-3xl shadow-2xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200 z-[200]">
                 <div className="p-5 bg-slate-50/50 border-b border-slate-100 flex justify-between items-center">
-                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Intelligence Stream</span>
+                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Activity Stream</span>
                   {unreadCount > 0 && (
                     <button 
                       onClick={() => markAllReadMutation.mutate()}
@@ -115,7 +115,7 @@ export default function TopNav({ onMobileMenuToggle, extraActions }: TopNavProps
                 </div>
                 <div className="max-h-[400px] overflow-y-auto">
                   {notifyLoading ? (
-                     <div className="p-12 text-center animate-pulse text-slate-400 font-black text-[9px] uppercase tracking-widest">Fetching stream...</div>
+                     <div className="p-12 text-center animate-pulse text-slate-400 font-black text-[9px] uppercase tracking-widest">Fetching feed...</div>
                   ) : notifications.length === 0 ? (
                     <div className="p-16 text-center">
                       <p className="text-sm font-black text-slate-400 italic">No recent alerts</p>
@@ -130,7 +130,7 @@ export default function TopNav({ onMobileMenuToggle, extraActions }: TopNavProps
                         >
                           <div className="flex gap-4">
                             <div className={`h-10 w-10 rounded-2xl flex items-center justify-center shrink-0 transition-all border ${n.isRead ? 'bg-white border-slate-100 text-slate-400' : 'bg-white border-emerald-100 text-emerald-600 shadow-sm'}`}>
-                              <Sparkles size={14} />
+                              <Bell size={14} />
                             </div>
                             <div className="space-y-1 flex-1">
                               <div className="flex justify-between items-start">

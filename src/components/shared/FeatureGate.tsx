@@ -21,14 +21,14 @@ interface FeatureGateProps {
 }
 
 export const FEATURE_PLANS: Record<Feature, string[]> = {
-  inventory_auto: ['GROWTH', 'PRO'],
-  low_stock_alerts: ['GROWTH', 'PRO'],
-  mpesa_stk: ['GROWTH', 'PRO'],
-  customer_tracking: ['GROWTH', 'PRO'],
-  staff_accounts: ['PRO'],
-  advanced_reports: ['PRO'],
-  audit_logs: ['PRO'],
-  ai_analyst: ['PRO'],
+  inventory_auto: ['PLUS', 'MAX'],
+  low_stock_alerts: ['PLUS', 'MAX'],
+  mpesa_stk: ['PLUS', 'MAX'],
+  customer_tracking: ['PLUS', 'MAX'],
+  staff_accounts: ['MAX'],
+  advanced_reports: ['MAX'],
+  audit_logs: ['MAX'],
+  ai_analyst: ['MAX'],
 }
 
 export default function FeatureGate({ feature, children, fallback, variant = 'card' }: FeatureGateProps) {
@@ -38,7 +38,7 @@ export default function FeatureGate({ feature, children, fallback, variant = 'ca
 
   if (user?.role === 'SUPER_ADMIN') return <>{children}</>
 
-  const plan = user?.subscription?.planName || 'STARTER'
+  const plan = user?.subscription?.planName || 'LITE'
   const isTrial = user?.subscription?.status === 'TRIAL'
   const featurePlans = FEATURE_PLANS[feature]
 
@@ -47,8 +47,8 @@ export default function FeatureGate({ feature, children, fallback, variant = 'ca
   let hasAccess = featurePlans.includes(plan)
 
   if (feature === 'ai_analyst') {
-    if (plan === 'PRO') hasAccess = true
-    else if (isTrial && ['GROWTH', 'PRO'].includes(plan)) hasAccess = true
+    if (plan === 'MAX') hasAccess = true
+    else if (isTrial && ['PLUS', 'MAX'].includes(plan)) hasAccess = true
     else hasAccess = false
   }
 
@@ -81,7 +81,7 @@ export default function FeatureGate({ feature, children, fallback, variant = 'ca
           <div className="h-10 w-10 rounded-full bg-emerald-600 text-white flex items-center justify-center shadow-lg mb-3">
             <Zap size={20} fill="currentColor" />
           </div>
-          <p className="text-[10px] font-black uppercase tracking-widest text-slate-900 mb-2">Growth Plan Feature</p>
+          <p className="text-[10px] font-black uppercase tracking-widest text-slate-900 mb-2">Plus Plan Feature</p>
           <Link
             to="/dashboard/subscription"
             className="flex items-center gap-2 text-[10px] font-black text-emerald-600 uppercase tracking-widest hover:underline"

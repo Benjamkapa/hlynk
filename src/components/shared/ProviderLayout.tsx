@@ -174,7 +174,7 @@ export default function ProviderLayout() {
                     {isCritical && <AlertTriangle size={12} className="text-amber-400 animate-pulse" />}
                  </div>
                  <CountdownTimer expiryDate={user?.subscription?.endDate} />
-                 <p className="text-[8px] text-emerald-500/60 font-black uppercase tracking-[0.1em] mt-3 text-center">Remaining Intelligence Access</p>
+                 <p className="text-[8px] text-emerald-500/60 font-black uppercase tracking-[0.1em] mt-3 text-center">Remaining System Access</p>
               </div>
            </div>
          )}

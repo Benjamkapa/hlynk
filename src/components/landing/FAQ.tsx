@@ -5,7 +5,7 @@ import { FadeUp } from './Animations'
 const faqs = [
   {
     question: "Do I need a Paybill or Till number to use hlynk?",
-    answer: "No, you don't necessarily need one immediately to start tracking your cash sales. However, on our Growth and Pro plans, you can integrate your Till or Paybill number with our M-Pesa STK push for automatic payment recording."
+    answer: "No, you don't necessarily need one immediately to start tracking your cash sales. However, on our Plus and Max plans, you can integrate your Till or Paybill number with our M-Pesa STK push for automatic payment recording."
   },
   {
     question: "Can I use the system on my phone?",

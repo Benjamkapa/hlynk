@@ -8,45 +8,45 @@ import { useAuth } from '../../lib/auth/AuthContext'
 
 const PLANS = [
   { 
-    id: 'STARTER', 
-    name: 'Starter Plan', 
-    price: 1600, 
-    desc: 'Perfect for small vendors who want to track their money and expenses clearly.', 
+    id: 'LITE', 
+    name: 'Lite Plan', 
+    price: 1999, 
+    desc: 'Simple digital control for everyday businesses like kiosks, salons, and mini shops.', 
     color: 'emerald',
-    features: ['Record Sales', 'Expense Tracking', 'Profit Tracking', 'Basic Dashboard'],
-    notIncluded: ['Inventory Auto-Update', 'Low Stock Alerts', 'M-Pesa STK Push', 'Multi-User']
+    features: ['POS Checkout', 'Product & Service Sales', 'Cash & M-Pesa Tracking', 'Basic Inventory tracking'],
+    notIncluded: ['Net Profit Tracking', 'Expense Tracking', 'Advanced Reports', 'Multi-User']
   },
   { 
-    id: 'GROWTH', 
-    name: 'Growth Plan', 
-    price: 2500, 
-    desc: 'The complete toolkit for scaling businesses with full inventory and automated payments.', 
+    id: 'PLUS', 
+    name: 'Plus Plan', 
+    price: 4999, 
+    desc: 'Built for growing businesses like minimarts, pharmacies, and hardware shops.', 
     color: 'blue',
-    features: ['Everything in Starter', 'Auto Stock Deduction', 'Low Stock Alerts', 'M-Pesa STK Push', 'Customer Tracking'],
-    notIncluded: ['Multi-User Support', 'Advanced Analytics']
+    features: ['Everything in Lite', 'Net Profit Tracking', 'Expense Tracking', 'Revenue Trend Charts', 'Staff Salaries'],
+    notIncluded: ['Unlimited Staff Accounts', 'Advanced Audit Logs']
   },
   { 
-    id: 'PRO', 
-    name: 'Professional Plan', 
-    price: 5000, 
-    desc: 'Advanced business intelligence and staff management for professional operations.', 
+    id: 'MAX', 
+    name: 'Max Plan', 
+    price: 11999, 
+    desc: 'Full operational management for large retail, distributors, and institutions.', 
     color: 'purple',
-    features: ['Everything in Growth', 'Multi-User (Staff Accounts)', 'Audit Logs', 'Advanced Business Insights', 'Priority Support'],
+    features: ['Everything in Plus', 'Unlimited Staff Accounts', 'Advanced Audit Logs', 'Full KPI Dashboard Access', 'Priority Support'],
     notIncluded: []
   },
 ]
 
 const FEATURE_COMPARISON = [
-  { name: 'Record Sales', starter: true, growth: true, pro: true },
-  { name: 'Expense Tracking', starter: true, growth: true, pro: true },
-  { name: 'Profit Tracking', starter: true, growth: true, pro: true },
-  { name: 'Inventory Auto-Update', starter: false, growth: true, pro: true },
-  { name: 'Low Stock Alerts', starter: false, growth: true, pro: true },
-  { name: 'M-Pesa STK Push', starter: false, growth: true, pro: true },
-  { name: 'Customer Tracking', starter: false, growth: true, pro: true },
-  { name: 'Multi-User (Staff)', starter: false, growth: false, pro: true },
-  { name: 'Advanced Reports', starter: false, growth: false, pro: true },
-  { name: 'Audit Logs', starter: false, growth: false, pro: true },
+  { name: 'POS Checkout', lite: true, plus: true, max: true },
+  { name: 'Inventory Tracking', lite: true, plus: true, max: true },
+  { name: 'M-Pesa Tracking', lite: true, plus: true, max: true },
+  { name: 'Net Profit Tracking', lite: false, plus: true, max: true },
+  { name: 'Expense Tracking', lite: false, plus: true, max: true },
+  { name: 'Staff Salaries', lite: false, plus: true, max: true },
+  { name: 'Security Activity Logs', lite: false, plus: true, max: true },
+  { name: 'Unlimited Staff', lite: false, plus: false, max: true },
+  { name: 'Advanced Audit Logs', lite: false, plus: false, max: true },
+  { name: 'Priority Support', lite: false, plus: false, max: true },
 ]
 
 import { SubscriptionExpiredBanner } from '../../components/shared/SubscriptionGuard'
@@ -166,7 +166,7 @@ export default function SubscriptionPage() {
           {isTrial && !isExpired && (
             <div className="bg-emerald-900 text-white p-8 rounded-3xl shadow-2xl shadow-emerald-900/20 flex flex-col md:flex-row justify-between items-center gap-6">
               <div>
-                <h3 className="text-xl font-black tracking-tight">You're exploring hlynk on a 14-Day Free Trial</h3>
+                <h3 className="text-xl font-black tracking-tight">You're exploring HudumaLynk on a 7-Day Free Trial</h3>
                 <p className="text-emerald-200 text-sm font-medium">No payment required. See your real profit before you pay.</p>
               </div>
               <div className="bg-emerald-800 px-6 py-3 rounded-xl border border-emerald-700/50 flex flex-col items-center">
@@ -244,9 +244,9 @@ export default function SubscriptionPage() {
                   <thead>
                     <tr className="border-b-2 border-gray-50">
                       <th className="py-6 text-[10px] font-black text-gray-400 uppercase tracking-widest">Feature</th>
-                      <th className="py-6 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Starter</th>
-                      <th className="py-6 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Growth</th>
-                      <th className="py-6 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Pro</th>
+                      <th className="py-6 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Lite</th>
+                      <th className="py-6 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Plus</th>
+                      <th className="py-6 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Max</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-50">
@@ -254,13 +254,13 @@ export default function SubscriptionPage() {
                       <tr key={i} className="hover:bg-slate-50/50 transition-all group">
                         <td className="py-6 font-bold text-slate-700 text-sm">{f.name}</td>
                         <td className="py-6 text-center">
-                          {f.starter ? <CheckCircle2 size={20} className="mx-auto text-emerald-500" /> : <span className="text-slate-200">✕</span>}
+                          {f.lite ? <CheckCircle2 size={20} className="mx-auto text-emerald-500" /> : <span className="text-slate-200">✕</span>}
                         </td>
                         <td className="py-6 text-center">
-                          {f.growth ? <CheckCircle2 size={20} className="mx-auto text-blue-500" /> : <span className="text-slate-200">✕</span>}
+                          {f.plus ? <CheckCircle2 size={20} className="mx-auto text-blue-500" /> : <span className="text-slate-200">✕</span>}
                         </td>
                         <td className="py-6 text-center">
-                          {f.pro ? <CheckCircle2 size={20} className="mx-auto text-purple-500" /> : <span className="text-slate-200">✕</span>}
+                          {f.max ? <CheckCircle2 size={20} className="mx-auto text-purple-500" /> : <span className="text-slate-200">✕</span>}
                         </td>
                       </tr>
                     ))}

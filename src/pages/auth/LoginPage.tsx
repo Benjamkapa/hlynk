@@ -31,7 +31,7 @@ const CATEGORIES = [
 
 type RegisterFormState = {
   businessName: string; ownerName: string; phone: string
-  category: string; county: string; location: string; planName: 'STARTER'
+  category: string; county: string; location: string; planName: 'LITE'
 }
 
 function ReviewCard({ review }: { review: any }) {
@@ -129,7 +129,7 @@ export default function LoginPage() {
   }, [])
 
   const [formData, setFormData] = useState<RegisterFormState>({
-    businessName: '', ownerName: '', phone: '', category: '', county: '', location: '', planName: 'STARTER',
+    businessName: '', ownerName: '', phone: '', category: '', county: '', location: '', planName: 'LITE',
   })
 
   const handleGoogleAuth = async (credential: string) => {
@@ -173,7 +173,6 @@ export default function LoginPage() {
         .lp-page {
           min-height: 100vh;
           width: 100%;
-          background-color: #000;
           background-image: url(${authBg});
           background-size: cover;
           background-position: center;
@@ -425,3 +424,4 @@ export default function LoginPage() {
     </>
   )
 }
+

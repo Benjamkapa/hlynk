@@ -480,7 +480,7 @@ function ActivityLogViewer() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h3 className="text-xl font-black text-slate-900 tracking-tight mb-1">System Intelligence Logs</h3>
+          <h3 className="text-xl font-black text-slate-900 tracking-tight mb-1">System Security Logs</h3>
           <p className="text-[11px] text-slate-400 font-medium italic lowercase tracking-wider">
             {logsData?.pagination?.total || 0} secure events recorded in this audit period
           </p>
@@ -509,7 +509,7 @@ function ActivityLogViewer() {
                 <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Event Timeline</th>
                 <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">User Agent</th>
                 <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Operation</th>
-                <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Intelligence Details</th>
+                <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Action Details</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50">
