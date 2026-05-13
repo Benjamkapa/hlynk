@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { Plus, Search, Eye, ShieldAlert, UserCheck, Filter, TrendingUp, Bell, Users, Landmark, Zap } from 'lucide-react'
+import { Plus, Search, Eye, ShieldAlert, UserCheck, Filter, TrendingUp, Bell, Users, Landmark, Zap, LayoutGrid } from 'lucide-react'
+import Pagination from '../../components/shared/Pagination'
 import { SlideOver } from '../../components/shared/SlideOver'
 import { toast } from 'sonner'
 import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query'
@@ -10,6 +11,9 @@ export default function ProvidersPage() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   const [selectedProvider, setSelectedProvider] = useState<any>(null)
   const [search, setSearch] = useState('')
+  const [status, setStatus] = useState('')
+  const [planName, setPlanName] = useState('')
+  const [page, setPage] = useState(1)
   const queryClient = useQueryClient()
 
   const { data: statsData } = useQuery({
@@ -17,15 +21,21 @@ export default function ProvidersPage() {
     queryFn: () => adminApi.getStats()
   })
 
-  const { data: tenantsData, isLoading } = useQuery<{ success: boolean; data: { tenants: any[] } }>({
-    queryKey: ['admin-tenants', search],
-    queryFn: () => adminApi.getTenants({ search }),
+  const { data: tenantsRes, isLoading } = useQuery<any>({
+    queryKey: ['admin-tenants', search, status, planName, page],
+    queryFn: () => adminApi.getTenants({ search, status, planName, page, limit: 10 }),
     placeholderData: keepPreviousData
   })
 
   const stats = statsData?.data || statsData;
-  const providers = tenantsData?.data?.tenants || []
+  const providers = tenantsRes?.data?.tenants || []
+  const pagination = tenantsRes?.data || { total: 0, pages: 1 }
   const weeklyGrowth = stats?.trends?.weeklyGrowth || []
+
+  const handleFilterChange = (setter: any, val: string) => {
+    setter(val)
+    setPage(1)
+  }
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500 pt-6">
@@ -49,7 +59,6 @@ export default function ProvidersPage() {
         </div>
       </div>
 
-      {/* NEW: Stats & Trajectory Section */}
       <div className="grid grid-cols-1 xl:grid-cols-4 gap-8">
          <div className="xl:col-span-3 bg-white p-8 rounded-2xl border border-gray-100 shadow-sm">
             <div className="flex justify-between items-center mb-8">
@@ -103,21 +112,47 @@ export default function ProvidersPage() {
       </div>
 
       <div className="bg-white rounded-lg border border-gray-100 shadow-sm overflow-hidden">
-        <div className="p-6 border-b border-gray-50 flex gap-4">
-          <div className="relative flex-1">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-            <input 
-              type="text" 
-              placeholder="Search by business name, owner, or phone..." 
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full bg-gray-50 border-none rounded-md py-3.5 pl-12 pr-4 outline-none focus:ring-2 focus:ring-emerald-500/10 transition-all text-sm font-medium" 
-            />
+        <div className="p-8 border-b border-gray-50 flex flex-wrap items-center justify-between gap-6 bg-white">
+          <div className="flex items-center gap-3">
+             <div className="h-10 w-10 rounded-xl bg-[#0D4A3E] text-white flex items-center justify-center shadow-lg">
+                <LayoutGrid size={20} />
+             </div>
+             <div>
+                <h3 className="text-lg font-black text-slate-900">Provider Registry</h3>
+                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Manage Tenant Lifecycle</p>
+             </div>
           </div>
-          <button className="bg-gray-50 text-gray-500 h-11 px-4 rounded-md flex items-center gap-2 font-bold text-xs hover:bg-gray-100 transition-all border border-gray-100">
-            <Filter size={16} />
-            Filters
-          </button>
+          <div className="flex flex-wrap gap-4 flex-1 justify-end">
+            <div className="relative w-full md:w-80">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+              <input 
+                type="text" 
+                placeholder="Search by name, slug or phone..." 
+                value={search}
+                onChange={(e) => handleFilterChange(setSearch, e.target.value)}
+                className="w-full bg-slate-50 border-none rounded-xl py-3.5 pl-12 pr-4 outline-none focus:ring-2 focus:ring-emerald-500/10 transition-all text-sm font-bold" 
+              />
+            </div>
+            <select 
+              value={status} 
+              onChange={(e) => handleFilterChange(setStatus, e.target.value)}
+              className="bg-slate-50 border-none rounded-xl px-4 py-3.5 text-sm font-bold outline-none focus:ring-2 focus:ring-emerald-500/10 min-w-[140px] transition-all"
+            >
+              <option value="">All Statuses</option>
+              <option value="ACTIVE">Active</option>
+              <option value="INACTIVE">Suspended</option>
+            </select>
+            <select 
+              value={planName} 
+              onChange={(e) => handleFilterChange(setPlanName, e.target.value)}
+              className="bg-slate-50 border-none rounded-xl px-4 py-3.5 text-sm font-bold outline-none focus:ring-2 focus:ring-emerald-500/10 min-w-[140px] transition-all"
+            >
+              <option value="">All Plans</option>
+              <option value="LITE">Lite</option>
+              <option value="PLUS">Plus</option>
+              <option value="MAX">Max</option>
+            </select>
+          </div>
         </div>
 
         <div className="overflow-x-auto">
@@ -153,19 +188,19 @@ export default function ProvidersPage() {
                     </div>
                   </td>
                   <td className="px-8 py-5">
-                    <span className="text-[10px] font-black text-gray-600 bg-gray-100 px-2 py-0.5 rounded uppercase tracking-widest">{p.subscription?.planName || 'TRIAL'}</span>
+                    <span className="text-[10px] font-black text-gray-600 bg-gray-100 px-2 py-0.5 rounded uppercase tracking-widest">{p.planName || 'TRIAL'}</span>
                   </td>
                   <td className="px-8 py-5 text-center">
                     <span className="text-[10px] font-black hl-mono text-gray-500">
-                      {p._count?.services || 0}
+                      {p.servicesCount || 0}
                     </span>
                   </td>
-                  <td className="px-8 py-5 text-right font-black text-gray-900 text-sm hl-mono">{p._count?.users || 0}</td>
+                  <td className="px-8 py-5 text-right font-black text-gray-900 text-sm hl-mono">{p.usersCount || 0}</td>
                   <td className="px-8 py-5 text-center">
                     <span className={`px-2 py-1 rounded-md text-[10px] font-black uppercase tracking-wider ${
                       p.isActive ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'
                     }`}>
-                      {p.isActive ? 'Active' : 'Suspended'}
+                      {p.isActive === 1 ? 'Active' : 'Suspended'}
                     </span>
                   </td>
                   <td className="px-8 py-5 text-right">
@@ -182,6 +217,14 @@ export default function ProvidersPage() {
             </tbody>
           </table>
         </div>
+
+        <Pagination 
+          page={page} 
+          pages={pagination.pages} 
+          total={pagination.total} 
+          onPageChange={setPage}
+          label="Provider"
+        />
       </div>
 
       <SlideOver isOpen={!!selectedProvider} onClose={() => setSelectedProvider(null)} title="Business Details">

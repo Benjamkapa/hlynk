@@ -109,7 +109,16 @@ export default function SettingsPage() {
   ]
 
   const tabs = allTabs.filter(tab => {
-    if (tab.role) return tab.role.includes(user?.role || '')
+    // Role-based filtering
+    if (tab.role && !tab.role.includes(user?.role || '')) return false
+
+    // Plan & Role based for Developer section
+    if (tab.name === 'Developer') {
+      const isProvider = user?.role === 'PROVIDER'
+      const isPaidPlan = user?.subscription?.planName === 'PLUS' || user?.subscription?.planName === 'MAX'
+      return isProvider && isPaidPlan
+    }
+
     return true
   })
 
@@ -301,6 +310,47 @@ export default function SettingsPage() {
                         value={formData.operationalSettings?.mpesa?.passkey || ''}
                         onChange={(v: string) => setFormData({ ...formData, operationalSettings: { ...formData.operationalSettings, mpesa: { ...formData.operationalSettings?.mpesa, passkey: v } } })}
                       />
+                    </div>
+                  </div>
+                </FeatureGate>
+
+                <FeatureGate feature="ai_analyst">
+                  <div className="pt-10 border-t border-gray-100">
+                    <h4 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-6">AI Intelligence Engine</h4>
+                    <p className="text-[11px] text-gray-500 mb-6 font-medium max-w-lg">Configure your preferred AI model to power the business analyst workspace. Requires an active API key.</p>
+                    
+                    <div className="space-y-6 max-w-2xl bg-emerald-50/30 p-8 rounded-3xl border border-emerald-100">
+                      <div className="flex flex-wrap gap-3 mb-6">
+                        {['none', 'openai', 'anthropic', 'gemini'].map(p => (
+                          <button
+                            key={p}
+                            onClick={() => setFormData({ ...formData, operationalSettings: { ...formData.operationalSettings, ai: { ...formData.operationalSettings?.ai, provider: p } } })}
+                            className={`px-4 py-2 rounded-xl font-black text-[9px] uppercase tracking-widest transition-all ${
+                              (formData.operationalSettings?.ai?.provider || 'none') === p 
+                              ? 'bg-[#0D4A3E] text-white shadow-lg' 
+                              : 'bg-white border border-slate-100 text-slate-400'
+                            }`}
+                          >
+                            {p}
+                          </button>
+                        ))}
+                      </div>
+
+                      {(formData.operationalSettings?.ai?.provider && formData.operationalSettings?.ai?.provider !== 'none') && (
+                        <div className="space-y-4 animate-in slide-in-from-top-2 duration-500">
+                          <InputGroup
+                            label={`${formData.operationalSettings.ai.provider.toUpperCase()} API Key`}
+                            type="password"
+                            placeholder="sk-..."
+                            value={formData.operationalSettings?.ai?.apiKey || ''}
+                            onChange={(v: string) => setFormData({ ...formData, operationalSettings: { ...formData.operationalSettings, ai: { ...formData.operationalSettings?.ai, apiKey: v } } })}
+                          />
+                          <p className="text-[9px] text-emerald-600 font-bold uppercase tracking-widest flex items-center gap-2">
+                             <Sparkles size={10} />
+                             This key is encrypted at rest and never shared.
+                          </p>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </FeatureGate>

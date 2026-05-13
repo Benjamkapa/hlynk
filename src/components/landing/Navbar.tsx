@@ -114,12 +114,13 @@ export default function Navbar() {
         }
 
         .hl-mobile-link {
-          font-size: 1.6rem;
-          font-weight: 900;
+          font-size: 1.1rem;
+          font-weight: 300;
           color: #0f172a;
           text-decoration: none;
           letter-spacing: -0.02em;
           line-height: 1;
+          text-align: center;
           padding: 20px 0;
           display: block;
           transition: color 0.2s;

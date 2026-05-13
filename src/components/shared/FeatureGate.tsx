@@ -13,11 +13,13 @@ type Feature =
   | 'audit_logs'
   | 'ai_analyst'
 
+  | 'tease'
+
 interface FeatureGateProps {
   feature: Feature
   children: React.ReactNode
   fallback?: React.ReactNode
-  variant?: 'inline' | 'card' | 'overlay'
+  variant?: 'inline' | 'card' | 'overlay' | 'tease'
 }
 
 export const FEATURE_PLANS: Record<Feature, string[]> = {
@@ -46,9 +48,12 @@ export default function FeatureGate({ feature, children, fallback, variant = 'ca
 
   let hasAccess = featurePlans.includes(plan)
 
+  // CRITICAL: Grant full access to everything during the Trial period 
+  // to let users experience the full value of the platform.
+  if (isTrial) hasAccess = true
+
   if (feature === 'ai_analyst') {
-    if (plan === 'MAX') hasAccess = true
-    else if (isTrial && ['PLUS', 'MAX'].includes(plan)) hasAccess = true
+    if (plan === 'MAX' || isTrial) hasAccess = true
     else hasAccess = false
   }
 
@@ -71,60 +76,87 @@ export default function FeatureGate({ feature, children, fallback, variant = 'ca
     )
   }
 
-  if (variant === 'overlay') {
+  if (variant === 'tease') {
     return (
-      <div className="relative group">
-        <div className="blur-[2px] pointer-events-none opacity-90">
+      <div className="relative group cursor-pointer opacity-80 hover:opacity-100 transition-opacity">
+        <Link to="/dashboard/subscription" className="absolute inset-0 z-20" />
+        <div className="blur-[8px] grayscale-[0.8] pointer-events-none opacity-40 select-none">
           {children}
         </div>
-        <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-white/40 backdrop-blur-[1px] rounded-xl transition-all group-hover:bg-white/60">
-          <div className="h-10 w-10 rounded-full bg-emerald-600 text-white flex items-center justify-center shadow-lg mb-3">
-            <Zap size={20} fill="currentColor" />
-          </div>
-          <p className="text-[10px] font-black uppercase tracking-widest text-slate-900 mb-2">Plus Plan Feature</p>
-          <Link
-            to="/dashboard/subscription"
-            className="flex items-center gap-2 text-[10px] font-black text-emerald-600 uppercase tracking-widest hover:underline"
-          >
-            Unlock Now <ArrowRight size={12} />
-          </Link>
+        <div className="absolute inset-0 flex flex-col items-center justify-center z-10 p-4">
+           <div className="bg-slate-900/90 text-white px-3 py-1.5 rounded-full border border-white/20 shadow-2xl scale-90 group-hover:scale-100 transition-transform flex items-center gap-2">
+             <Lock size={12} className="text-emerald-400" />
+             <span className="text-[9px] font-black uppercase tracking-[0.2em]">{FEATURE_PLANS[feature][0]}</span>
+           </div>
+        </div>
+        <div className="absolute inset-0 bg-gradient-to-t from-white/10 to-transparent pointer-events-none" />
+      </div>
+    )
+  }
+
+  if (variant === 'overlay') {
+    return (
+      <div className="relative group overflow-hidden rounded-2xl">
+        <div className="blur-[3px] pointer-events-none opacity-60">
+          {children}
+        </div>
+        <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-white/20 backdrop-blur-[2px] transition-all group-hover:bg-white/40">
+           <Link to="/dashboard/subscription" className="flex flex-col items-center gap-2 px-6 py-3 bg-white/90 rounded-2xl shadow-2xl shadow-black/5 border border-white hover:scale-105 transition-all">
+              <div className="h-10 w-10 rounded-full bg-slate-900 text-white flex items-center justify-center shadow-lg">
+                <Lock size={18} className="text-emerald-400" />
+              </div>
+              <p className="text-[10px] font-black uppercase tracking-widest text-slate-900">Unlock {FEATURE_PLANS[feature][0]} Feature</p>
+           </Link>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="relative group overflow-hidden rounded-[32px]">
-      <div className="blur-[3px] pointer-events-none opacity-90 select-none scale-[0.99] transition-all duration-700">
+    <div className="relative group overflow-hidden rounded-[40px] border border-slate-100 shadow-2xl shadow-slate-200/50 bg-white">
+      <div className="blur-[12px] pointer-events-none opacity-30 select-none scale-[1.05] transition-all duration-1000 grayscale group-hover:grayscale-0">
         {children}
       </div>
 
-      <div className="absolute inset-0 z-20 flex flex-col items-center justify-center p-8 text-center animate-in fade-in zoom-in duration-500">
-        <div className="absolute inset-0 bg-white/10 backdrop-blur-[1px]" />
+      <div className="absolute inset-0 z-20 flex flex-col items-center justify-center p-12 text-center animate-in fade-in zoom-in duration-1000">
+        <div className="absolute inset-0 bg-gradient-to-br from-white/80 via-white/40 to-emerald-50/50 backdrop-blur-[4px]" />
 
-        <div className="relative z-30 flex flex-col items-center">
-          <div className="h-16 w-16 rounded-3xl bg-[#0D4A3E] text-white flex items-center justify-center shadow-2xl shadow-emerald-900/40 mb-6 group-hover:scale-110 transition-transform duration-500">
-            <Zap size={28} fill="currentColor" className="animate-pulse" />
+        {/* Dynamic Blobs */}
+        <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
+          <div className="absolute -top-24 -left-24 w-80 h-80 bg-emerald-500/10 rounded-full blur-[100px] animate-pulse" />
+          <div className="absolute -bottom-24 -right-24 w-80 h-80 bg-blue-500/10 rounded-full blur-[100px] animate-pulse delay-700" />
+        </div>
+
+        <div className="relative z-30 flex flex-col items-center max-w-sm">
+          <div className="h-24 w-24 rounded-[32px] bg-slate-900 text-white flex items-center justify-center shadow-[0_20px_50px_rgba(0,0,0,0.3)] mb-10 group-hover:scale-110 group-hover:rotate-6 transition-all duration-700">
+            <Zap size={40} fill="currentColor" className="text-emerald-400 animate-pulse" />
           </div>
 
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-amber-100 text-amber-700 rounded-full mb-4 border border-amber-200">
-            <Lock size={12} className="fill-current" />
-            <span className="text-[10px] font-black uppercase tracking-[0.2em]">{FEATURE_PLANS[feature][0]} ONLY</span>
+          <div className="inline-flex items-center gap-3 px-5 py-2 bg-slate-900 text-white rounded-full mb-8 border border-white/10 shadow-2xl">
+            <Lock size={14} className="text-emerald-400" />
+            <span className="text-[10px] font-black uppercase tracking-[0.4em]">{FEATURE_PLANS[feature][0]} EDITION</span>
           </div>
 
-          <h4 className="text-lg font-black text-slate-900 mb-2 tracking-tight">Premium Business Tool</h4>
-          <p className="text-[11px] text-slate-500 font-medium italic mb-8 max-w-[200px] leading-relaxed">
-            Unleash the full power of your business portal with the {FEATURE_PLANS[feature][0]} toolkit.
+          <h4 className="text-2xl font-black text-slate-900 mb-4 tracking-tighter">Limited Utility Visibility</h4>
+          <p className="text-sm text-slate-500 font-medium mb-12 leading-relaxed opacity-80">
+            This professional tool is reserved for <span className="text-slate-900 font-black">{FEATURE_PLANS[feature][0]}</span> subscribers. Upgrade now to activate full business control.
           </p>
 
           <Link
             to="/dashboard/subscription"
-            className="group/btn relative px-8 py-4 bg-white text-[#0D4A3E] border-2 border-[#0D4A3E] rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-[#0D4A3E] hover:text-white transition-all shadow-xl shadow-slate-200 active:scale-95"
+            className="group/btn relative h-16 w-full bg-[#0D4A3E] text-white rounded-[20px] font-black text-xs uppercase tracking-[0.2em] hover:bg-black hover:scale-[1.02] transition-all shadow-2xl shadow-emerald-900/30 flex items-center justify-center overflow-hidden"
           >
-            <span className="relative z-10 flex items-center gap-2">
-              Upgrade to Unlock <ArrowRight size={14} className="group-hover/btn:translate-x-1 transition-transform" />
+            <span className="relative z-10 flex items-center gap-4">
+              Unlock Premium Package <ArrowRight size={20} className="group-hover/btn:translate-x-2 transition-transform" />
             </span>
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover/btn:translate-x-full transition-transform duration-1000" />
           </Link>
+
+          <div className="mt-8 flex items-center gap-4 opacity-40">
+             <div className="h-[1px] w-8 bg-slate-400" />
+             <p className="text-[9px] text-slate-400 font-black uppercase tracking-[0.2em]">Instant 1-Click Upgrade</p>
+             <div className="h-[1px] w-8 bg-slate-400" />
+          </div>
         </div>
       </div>
     </div>

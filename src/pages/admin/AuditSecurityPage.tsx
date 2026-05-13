@@ -1,13 +1,15 @@
 import { useQuery } from '@tanstack/react-query'
 import { adminApi } from '../../lib/api/providers'
 import { toast } from 'sonner'
-import { ShieldCheck, UserX, Key, Search, Filter, AlertTriangle, ShieldAlert, ChevronLeft, ChevronRight, RefreshCcw, FileText, Loader2 } from 'lucide-react'
+import { ShieldCheck, UserX, Key, Search, ShieldAlert, ChevronLeft, ChevronRight, RefreshCcw, FileText, Loader2 } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { AdminStats } from '../../lib/types/api'
 import { exportToCSV } from '../../lib/utils/export'
 
 export default function AuditSecurityPage() {
   const [logPage, setLogPage] = useState(1)
+  const [search, setSearch] = useState('')
+  const [category, setCategory] = useState('')
 
   const { data: rawStats, isLoading: statsLoading, error: statsError } = useQuery<any>({
     queryKey: ['admin-stats'],
@@ -16,10 +18,12 @@ export default function AuditSecurityPage() {
 
   const stats: AdminStats = rawStats?.data || rawStats
 
-  const { data: logsData, isLoading: logsLoading, refetch: refetchLogs } = useQuery({
-    queryKey: ['admin-activity-logs', logPage],
-    queryFn: () => adminApi.getActivityLogs({ page: logPage, limit: 15 })
+  const { data: logsRes, isLoading: logsLoading, refetch: refetchLogs } = useQuery<any>({
+    queryKey: ['admin-activity-logs', logPage, search, category],
+    queryFn: () => adminApi.getActivityLogs({ page: logPage, limit: 10, search, category })
   })
+
+  const logsData = logsRes?.data
 
   const handleIncidentReport = () => {
     window.location.href = 'mailto:security@hlynk.co.ke?subject=SECURITY INCIDENT: [Action Required]&body=Please describe the incident details here...'
@@ -34,6 +38,11 @@ export default function AuditSecurityPage() {
     if (!logsData?.items) return
     exportToCSV(logsData.items, 'global_activity_logs')
     toast.success('Global logs exported to CSV')
+  }
+
+  const handleFilterChange = (setter: any, val: string) => {
+    setter(val)
+    setLogPage(1)
   }
 
   return (
@@ -76,14 +85,29 @@ export default function AuditSecurityPage() {
           </div>
         </div>
         
-        <div className="px-8 py-4 bg-slate-50/30 border-b border-gray-50 flex gap-4">
-           <div className="flex-1 relative">
+        <div className="px-8 py-4 bg-slate-50/30 border-b border-gray-50 flex flex-wrap gap-4">
+           <div className="flex-1 relative min-w-[200px]">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
-              <input type="text" placeholder="Search by user, tenant or action..." className="w-full bg-white border border-gray-100 rounded-xl py-2.5 pl-12 pr-4 outline-none focus:ring-2 focus:ring-emerald-500/10 text-sm font-medium" />
+              <input 
+                type="text" 
+                placeholder="Search by user, business or action..." 
+                value={search}
+                onChange={(e) => handleFilterChange(setSearch, e.target.value)}
+                className="w-full bg-white border border-gray-100 rounded-xl py-2.5 pl-12 pr-4 outline-none focus:ring-2 focus:ring-emerald-500/10 text-sm font-medium" 
+              />
            </div>
-           <button className="h-10 px-6 bg-[#0D4A3E] text-white rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
-              <Filter size={14} /> Filter Logs
-           </button>
+           <select 
+             value={category} 
+             onChange={(e) => handleFilterChange(setCategory, e.target.value)}
+             className="bg-white border border-gray-100 rounded-xl px-6 py-2.5 text-xs font-black uppercase tracking-widest outline-none focus:ring-2 focus:ring-emerald-500/10 min-w-[180px]"
+           >
+             <option value="">All Categories</option>
+             <option value="LOGIN">Auth Events</option>
+             <option value="PAYMENT">Financials</option>
+             <option value="INVENTORY">Inventory</option>
+             <option value="STAFF">Management</option>
+             <option value="SYSTEM">Infrastructure</option>
+           </select>
         </div>
 
         <div className="overflow-x-auto">
@@ -102,7 +126,7 @@ export default function AuditSecurityPage() {
               {logsLoading ? (
                 <tr><td colSpan={6} className="py-24 text-center"><Loader2 size={32} className="animate-spin text-emerald-600 mx-auto" /></td></tr>
               ) : logsData?.items?.length === 0 ? (
-                <tr><td colSpan={6} className="py-24 text-center text-gray-400 italic">No activity logs found</td></tr>
+                <tr><td colSpan={6} className="py-24 text-center text-gray-400 italic font-black text-xs uppercase tracking-widest">No activity logs found</td></tr>
               ) : logsData?.items.map((log: any) => (
                 <tr key={log.id} className="hover:bg-gray-50/50 transition-all group cursor-pointer">
                   <td className="p-6">
@@ -115,7 +139,7 @@ export default function AuditSecurityPage() {
                          {log.user?.photoUrl ? (
                            <img src={log.user.photoUrl} alt="" className="h-full w-full object-cover" />
                          ) : (
-                           <span className="text-[10px] font-black text-slate-400">{log.user?.name?.substring(0,2).toUpperCase()}</span>
+                           <span className="text-[10px] font-black text-slate-400">{log.user?.name?.substring(0,2).toUpperCase() || 'SYS'}</span>
                          )}
                       </div>
                       <div>
@@ -135,7 +159,7 @@ export default function AuditSecurityPage() {
                   </td>
                   <td className="p-6 text-center text-[10px] font-black text-gray-400 hl-mono">{log.ipAddress || '127.0.0.1'}</td>
                   <td className="p-6 text-right">
-                    <p className="text-[10px] font-black text-emerald-600/30 hl-mono group-hover:text-emerald-600 transition-colors uppercase">{log.actionId || '#GLOBAL-LOG'}</p>
+                    <p className="text-[10px] font-black text-emerald-600/30 hl-mono group-hover:text-emerald-600 transition-colors uppercase">{log.actionId || log.id.slice(-8).toUpperCase()}</p>
                   </td>
                 </tr>
               ))}

@@ -1,21 +1,25 @@
-import { useState } from 'react'
-import { Users, Monitor, LogOut, Search, Filter, Trash2 } from 'lucide-react'
+import { useState, useRef } from 'react'
+import { Users, Monitor, LogOut, Search, Trash2 } from 'lucide-react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { adminApi } from '../../lib/api/providers'
 import { toast } from 'sonner'
 import { useAuth } from '../../lib/auth/AuthContext'
 import { useNavigate } from 'react-router-dom'
+import Pagination from '../../components/shared/Pagination'
 
 export default function UserOperationsPage() {
   const [search, setSearch] = useState('')
+  const [role, setRole] = useState('')
+  const [page, setPage] = useState(1)
   const [selectedUser, setSelectedUser] = useState<any>(null)
   const queryClient = useQueryClient()
   const { login } = useAuth()
   const navigate = useNavigate()
+  const usersTableRef = useRef<HTMLDivElement>(null)
 
-  const { data: usersData, isLoading } = useQuery<{ success: boolean; data: any[] }>({
-    queryKey: ['admin-users', search],
-    queryFn: () => adminApi.getUsers({ search })
+  const { data: usersRes, isLoading } = useQuery<any>({
+    queryKey: ['admin-users', search, role, page],
+    queryFn: () => adminApi.getUsers({ search, role, page, limit: 10 })
   })
 
   const { data: sessionsResponse } = useQuery<{ success: boolean; data: any[] }>({
@@ -30,7 +34,8 @@ export default function UserOperationsPage() {
     enabled: !!selectedUser
   })
 
-  const users = usersData?.data || []
+  const users = usersRes?.data?.items || []
+  const pagination = usersRes?.data?.pagination || { total: 0, pages: 1 }
   const sessions = sessionsResponse?.data || []
   const activityLogs = userActivityResponse?.data || []
 
@@ -62,6 +67,11 @@ export default function UserOperationsPage() {
     },
     onError: (err: any) => toast.error(err.message || 'Failed to impersonate')
   })
+
+  const handleFilterChange = (setter: any, val: string) => {
+    setter(val)
+    setPage(1)
+  }
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500 pt-6">
@@ -163,21 +173,34 @@ export default function UserOperationsPage() {
             </div>
           </div>
 
-          <div className="bg-white rounded-lg border border-gray-100 shadow-sm overflow-hidden mt-8">
-            <div className="p-10 border-b border-gray-50 flex justify-between items-center bg-white relative overflow-hidden">
+          <div className="bg-white rounded-lg border border-gray-100 shadow-sm overflow-hidden mt-8" ref={usersTableRef}>
+            <div className="p-10 border-b border-gray-50 flex flex-wrap justify-between items-center bg-white relative overflow-hidden gap-6">
               <div>
                 <h3 className="text-xl font-black text-slate-900">Global Identity Registry</h3>
                 <p className="text-slate-400 text-xs font-medium uppercase tracking-widest mt-1">All Platform Users & Customers</p>
               </div>
-              <div className="relative w-72">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
-                <input 
-                  type="text"
-                  placeholder="Search identities..."
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  className="w-full pl-12 pr-4 py-3 bg-slate-50 border-none rounded-xl text-sm font-black focus:ring-2 focus:ring-emerald-500/20 outline-none"
-                />
+              <div className="flex flex-wrap gap-4 flex-1 justify-end">
+                <div className="relative w-64">
+                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+                  <input 
+                    type="text"
+                    placeholder="Search identities..."
+                    value={search}
+                    onChange={(e) => handleFilterChange(setSearch, e.target.value)}
+                    className="w-full pl-12 pr-4 py-3 bg-slate-50 border-none rounded-xl text-sm font-black focus:ring-2 focus:ring-emerald-500/20 outline-none"
+                  />
+                </div>
+                <select 
+                  value={role} 
+                  onChange={(e) => handleFilterChange(setRole, e.target.value)}
+                  className="bg-slate-50 border-none rounded-xl px-4 py-3 text-sm font-black outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all"
+                >
+                  <option value="">All Roles</option>
+                  <option value="SUPER_ADMIN">Admin</option>
+                  <option value="PROVIDER">Provider</option>
+                  <option value="STAFF">Staff</option>
+                  <option value="CUSTOMER">Customer</option>
+                </select>
               </div>
             </div>
 
@@ -261,11 +284,23 @@ export default function UserOperationsPage() {
                 </tbody>
               </table>
             </div>
+
+            {/* Pagination UI */}
+            <Pagination 
+              page={page} 
+              pages={pagination.pages} 
+              total={pagination.total} 
+              onPageChange={(p) => {
+                setPage(p)
+                usersTableRef.current?.scrollIntoView({ behavior: 'smooth' })
+              }}
+              label="Identity"
+            />
           </div>
 
 
           {selectedUser && (
-            <div className="bg-slate-900 rounded-2xl p-10 text-white animate-in slide-in-from-bottom duration-700 border border-white/5 relative overflow-hidden">
+            <div className="bg-slate-900 rounded-2xl p-10 text-white animate-in slide-in-from-bottom duration-700 border border-white/5 relative overflow-hidden mt-8">
                <div className="absolute top-0 right-0 p-8 opacity-10">
                   <Users size={120} className="text-white" />
                </div>

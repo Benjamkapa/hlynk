@@ -75,7 +75,7 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
         <StoreKpi title="Daily Sales" value={`KES ${stats?.dailySales?.toLocaleString() || '0'}`} sub={`${stats?.dailyTransactions || 0} transactions`} icon={Zap} color="emerald" trend="" />
         <StoreKpi title="New Customers" value={stats?.newCustomers || '0'} sub="Total registered" icon={Users} color="blue" trend="" />
-        <FeatureGate feature="low_stock_alerts" variant="inline">
+        <FeatureGate feature="low_stock_alerts" variant="tease">
           <StoreKpi title="Out of Stock" value={stats?.outOfStockCount || '0'} sub="Items below 5 qty" icon={Package} color="red" trend="" />
         </FeatureGate>
         <StoreKpi title="Daily Profit" value={`KES ${stats?.profit?.toLocaleString() || '0'}`} sub="Sales minus expenses" icon={TrendingUp} color="purple" trend="" />

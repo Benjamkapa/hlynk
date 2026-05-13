@@ -65,7 +65,7 @@ export default function About() {
         </div>
 
         {/* Pillars - Glassmorphic Grid */}
-        <div className="grid md:grid-cols-3 gap-8">
+        <div className="grid md:grid-cols-3 gap-8 ">
           {[
             {
               icon: ShieldCheck,

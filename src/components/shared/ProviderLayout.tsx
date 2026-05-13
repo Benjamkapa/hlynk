@@ -3,13 +3,14 @@ import { useAuth } from "../../lib/auth/AuthContext";
 import {
   LayoutDashboard, Calendar, BarChart2, Users,
   Settings, LogOut, Package, ShoppingCart,
-  Zap, PanelLeftClose, PanelLeftOpen, Clock, AlertTriangle
+  Zap, PanelLeftClose, PanelLeftOpen, Clock, AlertTriangle,
+  Lock
 } from "lucide-react";
 import { useLocation, Outlet, NavLink, Link } from "react-router-dom";
-import { Tag, Star, X, Loader2 } from "lucide-react";
 import TopNav from "./TopNav";
 import { providersApi } from "../../lib/api/providers";
 import { toast } from "sonner";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface NavItem {
   to: string;
@@ -17,6 +18,7 @@ interface NavItem {
   icon: any;
   permission?: string;
   role?: 'PROVIDER' | 'SUPER_ADMIN' | 'STAFF' | 'CUSTOMER';
+  plan?: 'PLUS' | 'MAX';
   end?: boolean;
 }
 
@@ -29,6 +31,7 @@ export default function ProviderLayout() {
   const { user, logout } = useAuth();
   const location = useLocation();
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [reviewRating, setReviewRating] = useState(0);
@@ -59,36 +62,45 @@ export default function ProviderLayout() {
     {
       label: 'Insights',
       items: [
-        { to: '/dashboard/reports', label: 'Business Reports', icon: BarChart2, permission: 'reports' },
+        { to: '/dashboard/reports', label: 'Business Reports', icon: BarChart2, permission: 'reports', plan: 'PLUS' },
         { to: '/dashboard/subscription', label: 'Billing Plan', icon: Calendar, role: 'PROVIDER' },
       ],
     },
     {
       label: 'Team',
       items: [
-        { to: '/dashboard/staff', label: 'Staff Management', icon: Users, role: 'PROVIDER' },
+        { to: '/dashboard/staff', label: 'Staff Management', icon: Users, role: 'PROVIDER', plan: 'MAX' },
       ],
     },
   ];
 
   const filteredGroups = navGroups.map(group => ({
     ...group,
-    items: group.items.filter(item => {
-      // Super admin sees everything
-      if (user?.role === 'SUPER_ADMIN') return true
+    items: group.items.map(item => {
+      // Super admin sees everything as unlocked
+      if (user?.role === 'SUPER_ADMIN') return { ...item, isLocked: false }
       
       // If item is role-restricted (e.g. Billing for PROVIDER only)
-      if ((item as any).role && user?.role !== (item as any).role) return false
+      if ((item as any).role && user?.role !== (item as any).role) return null
+
+      // Plan restrictions
+      const currentPlan = user?.subscription?.planName || 'LITE'
+      let isLocked = false
+      if (item.plan === 'MAX' && currentPlan !== 'MAX') isLocked = true
+      if (item.plan === 'PLUS' && !['PLUS', 'MAX'].includes(currentPlan)) isLocked = true
 
       // If user is STAFF, check permissions
       if (user?.role === 'STAFF') {
         if ((item as any).permission && !user.permissions?.includes((item as any).permission)) {
-          return false
+          // If they don't have permission, they shouldn't even see the locked version if it's a security thing
+          // But for "missed utilities", we might want to show them?
+          // Let's hide if no permission, but lock if no plan.
+          return null
         }
       }
       
-      return true
-    })
+      return { ...item, isLocked }
+    }).filter((item): item is any => item !== null)
   })).filter(group => group.items.length > 0);
 
   const timeRemainingMs = user?.subscription?.endDate 
@@ -122,8 +134,8 @@ export default function ProviderLayout() {
   };
 
   const SidebarContent = ({ collapsed }: { collapsed: boolean }) => (
-    <div className="flex flex-col h-full bg-white">
-      <div className={`pt-10 pb-12 flex items-center ${collapsed ? 'justify-center' : 'px-8'}`}>
+    <div className={`flex flex-col h-full bg-white transition-all duration-300 ${collapsed ? 'w-[90px]' : 'w-[280px]'}`}>
+      <div className={`pt-10 pb-12 flex items-center transition-all duration-300 ${collapsed ? 'justify-center' : 'px-8'}`}>
         <Link to="/" className="flex items-center gap-3">
           {collapsed ? (
             <img src="/fav.png" alt="hlynk" className="h-8 w-8" />
@@ -134,14 +146,21 @@ export default function ProviderLayout() {
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 px-4 space-y-8 overflow-y-auto pt-4 custom-scrollbar">
+      <nav className="flex-1 px-4 space-y-8 overflow-y-auto overflow-x-hidden pt-4 custom-scrollbar">
         {filteredGroups.map((group) => (
           <div key={group.label}>
-            {!collapsed && (
-              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 px-4 mb-4">
-                {group.label}
-              </p>
-            )}
+            <AnimatePresence mode="wait">
+              {!collapsed && (
+                <motion.p 
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -10 }}
+                  className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 px-4 mb-4 whitespace-nowrap"
+                >
+                  {group.label}
+                </motion.p>
+              )}
+            </AnimatePresence>
             <div className="space-y-1.5">
               {group.items.map((item) => (
                 <NavLink
@@ -149,11 +168,25 @@ export default function ProviderLayout() {
                   to={item.to}
                   end={item.end}
                   className={({ isActive }) =>
-                    `hl-sidebar-item ${isActive ? 'active' : ''} ${collapsed ? 'justify-center px-0' : ''}`
+                    `hl-sidebar-item ${isActive ? 'active' : ''} ${collapsed ? 'justify-center px-0' : ''} ${item.isLocked ? 'opacity-60 grayscale-[0.5]' : ''}`
                   }
                 >
-                  <item.icon size={20} className={collapsed ? '' : 'shrink-0'} />
-                  {!collapsed && <span className="font-bold">{item.label}</span>}
+                  <div className="relative">
+                    <item.icon size={20} className={collapsed ? '' : 'shrink-0'} />
+                    {item.isLocked && (
+                      <div className="absolute -top-1 -right-1 h-3 w-3 bg-amber-500 rounded-full flex items-center justify-center border-2 border-white">
+                        <Lock size={6} className="text-white fill-white" />
+                      </div>
+                    )}
+                  </div>
+                  {!collapsed && (
+                    <div className="flex items-center justify-between flex-1 min-w-0">
+                      <span className="font-bold whitespace-nowrap truncate">{item.label}</span>
+                      {item.isLocked && (
+                        <span className="text-[7px] font-black bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-full uppercase tracking-widest ml-2">Pro</span>
+                      )}
+                    </div>
+                  )}
                 </NavLink>
               ))}
             </div>
@@ -163,21 +196,30 @@ export default function ProviderLayout() {
 
       {/* Profile Summary */}
       <div className="p-4 mt-auto border-t border-slate-50">
-         {!collapsed && (
-           <div className="bg-emerald-900 rounded-[8px] p-4 border border-emerald-800 shadow-2xl shadow-emerald-950/20 mb-4 relative overflow-hidden group">
-              <div className="absolute top-0 right-0 p-2 opacity-10 group-hover:opacity-20 transition-opacity">
-                <Clock size={48} className="text-white" />
-              </div>
-              <div className="relative z-10">
-                 <div className="flex justify-between items-center mb-3">
-                    <p className="text-[10px] text-emerald-400 font-black uppercase tracking-[0.2em]">{user?.subscription?.planName || 'TRIAL'} STATUS</p>
-                    {isCritical && <AlertTriangle size={12} className="text-amber-400 animate-pulse" />}
-                 </div>
-                 <CountdownTimer expiryDate={user?.subscription?.endDate} />
-                 <p className="text-[8px] text-emerald-500/60 font-black uppercase tracking-[0.1em] mt-3 text-center">Remaining System Access</p>
-              </div>
-           </div>
-         )}
+         <AnimatePresence>
+           {!collapsed && (
+             <motion.div 
+               initial={{ opacity: 0, y: 20 }}
+               animate={{ opacity: 1, y: 0 }}
+               exit={{ opacity: 0, y: 20 }}
+               className="bg-emerald-900 rounded-[8px] p-4 border border-emerald-800 shadow-2xl shadow-emerald-950/20 mb-4 relative overflow-hidden group"
+             >
+                <div className="absolute top-0 right-0 p-2 opacity-10 group-hover:opacity-20 transition-opacity">
+                  <Clock size={48} className="text-white" />
+                </div>
+                <div className="relative z-10">
+                    <div className="flex justify-between items-center mb-3">
+                       <p className="text-[10px] text-emerald-400 font-black uppercase tracking-[0.2em]">
+                         {user?.subscription?.planName} {user?.subscription?.isTrial ? '(TRIAL)' : 'STATUS'}
+                       </p>
+                       {isCritical && <AlertTriangle size={12} className="text-amber-400 animate-pulse" />}
+                    </div>
+                   <CountdownTimer expiryDate={user?.subscription?.endDate} />
+                   <p className="text-[8px] text-emerald-500/60 font-black uppercase tracking-[0.1em] mt-3 text-center">Remaining System Access</p>
+                </div>
+             </motion.div>
+           )}
+         </AnimatePresence>
          <div className="flex gap-2">
             <NavLink to="/dashboard/settings" className="flex-1 h-12 bg-slate-50 rounded-md flex items-center justify-center text-slate-400 hover:bg-emerald-50 hover:text-emerald-600 transition-all border border-slate-100">
                <Settings size={20} />
@@ -266,22 +308,34 @@ export default function ProviderLayout() {
 
       {/* ── SIDEBAR ── */}
       <aside
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
         className={`
-          fixed inset-y-0 left-0 z-50 bg-white border-r border-slate-100 flex flex-col
+          fixed inset-y-0 left-0 z-50 flex flex-col
           transition-all duration-300 ease-in-out
           lg:relative lg:translate-x-0
           ${isMobileOpen ? 'translate-x-0 w-[280px]' : '-translate-x-full lg:w-[280px]'}
           ${isCollapsed ? 'lg:w-[90px]' : 'lg:w-[280px]'}
         `}
       >
-        <button
-          onClick={() => setIsCollapsed(!isCollapsed)}
-          className="hidden lg:flex absolute -right-3 top-12 h-6 w-6 rounded-full bg-white text-gray-400 items-center justify-center shadow-lg z-50 border border-slate-100 hover:text-emerald-600 hover:scale-110 transition-all"
-        >
-          {isCollapsed ? <PanelLeftOpen size={12} /> : <PanelLeftClose size={12} />}
-        </button>
-        <SidebarContent collapsed={isCollapsed} />
+        <div className={`
+          absolute inset-y-0 left-0 bg-white border-r border-slate-100 flex flex-col
+          transition-all duration-300 ease-in-out overflow-hidden
+          ${isCollapsed && isHovered ? 'w-[280px] shadow-2xl z-[60]' : 'w-full'}
+        `}>
+          <SidebarContent collapsed={isCollapsed && !isHovered} />
+        </div>
       </aside>
+
+      {/* ── MOBILE SWIPE HANDLE ── */}
+      <motion.div 
+        drag="x"
+        dragConstraints={{ left: 0, right: 0 }}
+        onDragEnd={(_, info) => {
+          if (info.offset.x > 50) setIsMobileOpen(true);
+        }}
+        className="fixed inset-y-0 left-0 w-4 z-[60] lg:hidden cursor-grab active:cursor-grabbing"
+      />
 
       {/* ── MAIN CONTENT ── */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
@@ -303,6 +357,8 @@ export default function ProviderLayout() {
         )}
         <TopNav 
           onMobileMenuToggle={() => setIsMobileOpen(true)}
+          isCollapsed={isCollapsed}
+          onToggleCollapse={() => setIsCollapsed(!isCollapsed)}
           showMail={true}
           extraActions={
             <Link to="/dashboard/sales/new" className="hidden lg:flex items-center gap-2 px-6 py-3 bg-[#0D4A3E] text-white rounded-xl font-black text-xs uppercase tracking-widest shadow-xl shadow-emerald-900/10 hover:bg-[#064E3B] hover:-translate-y-0.5 transition-all">

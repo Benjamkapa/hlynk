@@ -5,6 +5,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { getErrorMessage } from '../../lib/utils/error'
 import { useAuth } from '../../lib/auth/AuthContext'
+import Pagination from '../../components/shared/Pagination'
+import { Filter, Search } from 'lucide-react'
 
 const PLANS = [
   { 
@@ -57,12 +59,18 @@ export default function SubscriptionPage() {
   const { refreshUser } = useAuth()
   const [showRenewModal, setShowRenewModal] = useState(false)
   const [showChangeModal, setShowChangeModal] = useState(false)
+  const [showSuccessModal, setShowSuccessModal] = useState(false)
   const [showConfirmChange, setShowConfirmChange] = useState(false)
   const [showConfirmRenew, setShowConfirmRenew] = useState(false)
   const [mpesaPhone, setMpesaPhone] = useState('')
   const [selectedPlan, setSelectedPlan] = useState<any>(null)
   const [activeTab, setActiveTab] = useState<'current' | 'history'>('current')
   const [isWaitingForPayment, setIsWaitingForPayment] = useState(false)
+  
+  // History Filters
+  const [historyPage, setHistoryPage] = useState(1)
+  const [statusFilter, setStatusFilter] = useState('')
+  const [planFilter, setPlanFilter] = useState('')
 
   const { data: subResponse, isLoading: subLoading } = useQuery({
     queryKey: ['my-subscription'],
@@ -71,31 +79,40 @@ export default function SubscriptionPage() {
   })
 
   const { data: historyResponse, isLoading: historyLoading } = useQuery({
-    queryKey: ['billing-history'],
-    queryFn: subscriptionsApi.getHistory,
+    queryKey: ['billing-history', historyPage, statusFilter, planFilter],
+    queryFn: () => subscriptionsApi.getHistory({ 
+      page: historyPage, 
+      status: statusFilter || undefined, 
+      plan: planFilter || undefined,
+      limit: 10 
+    }),
     enabled: activeTab === 'history' || isWaitingForPayment,
     refetchInterval: isWaitingForPayment ? 3000 : false
   })
 
   // Watch for payment status change
   useEffect(() => {
-    if (isWaitingForPayment && historyResponse?.data) {
-      const latestPayment = historyResponse.data[0];
+    if (isWaitingForPayment && historyResponse?.payments) {
+      const latestPayment = historyResponse.payments[0];
       if (latestPayment && latestPayment.status !== 'PENDING') {
         setIsWaitingForPayment(false);
         if (latestPayment.status === 'PAID') {
           toast.success("Payment successful! Your subscription is now active.");
-          queryClient.invalidateQueries({ queryKey: ['my-subscription'] });
+          queryClient.clear(); // Clear everything to be safe
           refreshUser();
+          setShowSuccessModal(true);
+        } else if (latestPayment.status === 'CANCELLED') {
+          toast.error("Transaction cancelled by user.");
         } else if (latestPayment.status === 'FAILED') {
-          toast.error("Payment failed or was cancelled by user.");
+          toast.error("Payment failed. Please check your balance and try again.");
         }
       }
     }
   }, [historyResponse, isWaitingForPayment, queryClient]);
 
   const subscription = subResponse?.data
-  const history = historyResponse?.data || []
+  const history = historyResponse?.payments || []
+  const pagination = historyResponse?.pagination
 
   const isTrial = subscription?.status === 'TRIAL'
   const isExpired = subscription?.status === 'EXPIRED' || (subscription?.endDate && new Date(subscription.endDate) < new Date())
@@ -122,6 +139,21 @@ export default function SubscriptionPage() {
     onError: (err) => toast.error(getErrorMessage(err))
   })
 
+  const verifyMutation = useMutation({
+    mutationFn: (paymentId: string) => subscriptionsApi.verify(paymentId),
+    onSuccess: (data) => {
+      if (data.data.status === 'PAID') {
+        toast.success("Payment verified successfully! Your plan is active.")
+        queryClient.clear()
+        refreshUser()
+      } else {
+        toast.info(`Transaction Status: ${data.data.status}`)
+        queryClient.invalidateQueries({ queryKey: ['billing-history'] })
+      }
+    },
+    onError: (err) => toast.error(getErrorMessage(err))
+  })
+
   if (subLoading) return <div className="p-12 text-center animate-pulse">Loading subscription details...</div>
 
   return (
@@ -138,6 +170,47 @@ export default function SubscriptionPage() {
       )}
 
       <SubscriptionExpiredBanner expired={isExpired} />
+
+      {/* ── SUCCESS CELEBRATION MODAL ── */}
+      {showSuccessModal && (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center bg-emerald-950/90 backdrop-blur-xl p-4 animate-in fade-in duration-500">
+           <div className="bg-white rounded-[40px] w-full max-w-xl p-12 text-center relative overflow-hidden shadow-[0_0_100px_rgba(16,185,129,0.3)] animate-in zoom-in-95 duration-500">
+              {/* Confetti-like decoration */}
+              <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-emerald-400 via-amber-400 to-blue-400" />
+              <div className="absolute -top-24 -left-24 w-64 h-64 bg-emerald-400/10 rounded-full blur-[80px]" />
+              <div className="absolute -bottom-24 -right-24 w-64 h-64 bg-amber-400/10 rounded-full blur-[80px]" />
+
+              <div className="relative z-10">
+                <div className="h-24 w-24 bg-emerald-100 text-emerald-600 rounded-[32px] flex items-center justify-center mx-auto mb-8 animate-bounce">
+                   <Zap size={48} fill="currentColor" />
+                </div>
+                <h2 className="text-4xl font-black text-slate-900 tracking-tighter mb-4">Upgrade Successful!</h2>
+                <p className="text-lg text-slate-500 font-medium mb-10 leading-relaxed">
+                   Welcome to the <span className="text-emerald-600 font-black">{subscription?.planName}</span> tier. 
+                   Your business control has been elevated and all premium features are now active.
+                </p>
+
+                <div className="grid grid-cols-2 gap-4 mb-10">
+                   <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">New Plan</p>
+                      <p className="text-lg font-black text-slate-900 hl-mono">{subscription?.planName}</p>
+                   </div>
+                   <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Status</p>
+                      <p className="text-lg font-black text-emerald-600 hl-mono uppercase">Active</p>
+                   </div>
+                </div>
+
+                <button 
+                  onClick={() => setShowSuccessModal(false)}
+                  className="w-full py-6 bg-[#0D4A3E] text-white rounded-[24px] font-black text-sm uppercase tracking-[0.2em] hover:bg-black transition-all shadow-2xl shadow-emerald-900/30 active:scale-95"
+                >
+                  Start Exploring Features
+                </button>
+              </div>
+           </div>
+        </div>
+      )}
 
       <div className="flex justify-between items-end">
         <div>
@@ -270,43 +343,104 @@ export default function SubscriptionPage() {
           </div>
         </>
       ) : (
-        <div className="bg-white rounded-[28px] border border-gray-100 shadow-sm overflow-hidden">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="bg-gray-50/50 border-b border-gray-100">
-                <th className="p-8 text-[10px] font-black text-gray-400 uppercase tracking-widest">Date</th>
-                <th className="p-8 text-[10px] font-black text-gray-400 uppercase tracking-widest">Reference</th>
-                <th className="p-8 text-[10px] font-black text-gray-400 uppercase tracking-widest">Plan</th>
-                <th className="p-8 text-[10px] font-black text-gray-400 uppercase tracking-widest">Amount</th>
-                <th className="p-8 text-[10px] font-black text-gray-400 uppercase tracking-widest">Status</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-50">
-              {historyLoading ? (
-                <tr><td colSpan={5} className="p-20 text-center animate-pulse text-slate-300 uppercase font-black text-[10px] tracking-widest">Loading history...</td></tr>
-              ) : history.length === 0 ? (
-                <tr><td colSpan={5} className="p-20 text-center text-gray-400 font-medium italic">No billing records found. Your business journey is just beginning.</td></tr>
-              ) : (
-                history.map((inv: any) => (
-                  <tr key={inv.id} className="hover:bg-gray-50/50 transition-all group">
-                    <td className="p-8 font-bold text-gray-900 text-sm">{new Date(inv.createdAt).toLocaleDateString()}</td>
-                    <td className="p-8 font-medium text-gray-400 text-xs hl-mono">{inv.reference}</td>
-                    <td className="p-8">
-                      <span className="px-3 py-1 rounded-full bg-slate-100 text-slate-600 text-[10px] font-black uppercase tracking-widest">
-                        {inv.plan}
-                      </span>
-                    </td>
-                    <td className="p-8 font-black text-emerald-800 hl-mono">KES {Number(inv.amount).toLocaleString()}</td>
-                    <td className="p-8">
-                      <span className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${inv.status === 'PAID' ? 'bg-emerald-100 text-emerald-700' : inv.status === 'FAILED' ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-700'}`}>
-                        {inv.status}
-                      </span>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+        <div className="space-y-6">
+          {/* Filters */}
+          <div className="flex flex-wrap gap-4 items-center bg-white p-6 rounded-[24px] border border-gray-100">
+            <div className="flex items-center gap-2 text-slate-400 mr-2">
+              <Filter size={16} />
+              <span className="text-[10px] font-black uppercase tracking-widest">Filter By:</span>
+            </div>
+            
+            <select 
+              value={statusFilter}
+              onChange={(e) => { setStatusFilter(e.target.value); setHistoryPage(1); }}
+              className="bg-slate-50 border-none rounded-xl px-4 py-2 text-xs font-black text-slate-600 outline-none focus:ring-2 focus:ring-emerald-500/10 min-w-[140px]"
+            >
+              <option value="">All Statuses</option>
+              <option value="PAID">Paid Only</option>
+              <option value="PENDING">Pending</option>
+              <option value="FAILED">Failed</option>
+            </select>
+
+            <select 
+              value={planFilter}
+              onChange={(e) => { setPlanFilter(e.target.value); setHistoryPage(1); }}
+              className="bg-slate-50 border-none rounded-xl px-4 py-2 text-xs font-black text-slate-600 outline-none focus:ring-2 focus:ring-emerald-500/10 min-w-[140px]"
+            >
+              <option value="">All Plans</option>
+              <option value="LITE">Lite Plan</option>
+              <option value="PLUS">Plus Plan</option>
+              <option value="MAX">Max Plan</option>
+            </select>
+
+            <div className="ml-auto text-[10px] font-black text-slate-300 uppercase tracking-widest">
+              Showing {history.length} of {pagination?.total || 0} Records
+            </div>
+          </div>
+
+          <div className="bg-white rounded-[28px] border border-gray-100 shadow-sm overflow-hidden">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-gray-50/50 border-b border-gray-100">
+                  <th className="p-8 text-[10px] font-black text-gray-400 uppercase tracking-widest">Date</th>
+                  <th className="p-8 text-[10px] font-black text-gray-400 uppercase tracking-widest">Reference</th>
+                  <th className="p-8 text-[10px] font-black text-gray-400 uppercase tracking-widest">Plan</th>
+                  <th className="p-8 text-[10px] font-black text-gray-400 uppercase tracking-widest">Amount</th>
+                  <th className="p-8 text-[10px] font-black text-gray-400 uppercase tracking-widest">Status</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-50">
+                {historyLoading ? (
+                  <tr><td colSpan={5} className="p-20 text-center animate-pulse text-slate-300 uppercase font-black text-[10px] tracking-widest">Loading history...</td></tr>
+                ) : history.length === 0 ? (
+                  <tr><td colSpan={5} className="p-20 text-center text-gray-400 font-medium italic">No billing records found matching your filters.</td></tr>
+                ) : (
+                  history.map((inv: any) => (
+                    <tr key={inv.id} className="hover:bg-gray-50/50 transition-all group">
+                      <td className="p-8 font-bold text-gray-900 text-sm">{new Date(inv.createdAt).toLocaleDateString()}</td>
+                      <td className="p-8 font-medium text-gray-400 text-xs hl-mono">{inv.reference}</td>
+                      <td className="p-8">
+                        <span className="px-3 py-1 rounded-full bg-slate-100 text-slate-600 text-[10px] font-black uppercase tracking-widest">
+                          {inv.plan}
+                        </span>
+                      </td>
+                      <td className="p-8 font-black text-emerald-800 hl-mono">KES {Number(inv.amount).toLocaleString()}</td>
+                      <td className="p-8">
+                        <span className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${
+                          inv.status === 'PAID' ? 'bg-emerald-100 text-emerald-700' : 
+                          inv.status === 'FAILED' ? 'bg-red-100 text-red-700' : 
+                          inv.status === 'CANCELLED' ? 'bg-amber-100 text-amber-700' : 
+                          'bg-gray-100 text-gray-700'
+                        }`}>
+                          {inv.status}
+                        </span>
+                        {inv.status === 'PENDING' && (
+                          <button 
+                            onClick={() => verifyMutation.mutate(inv.id)}
+                            disabled={verifyMutation.isPending}
+                            className="ml-3 text-[10px] font-black text-emerald-600 hover:text-emerald-700 uppercase tracking-widest flex items-center gap-1 group/v"
+                          >
+                            {verifyMutation.isPending ? <Loader2 size={10} className="animate-spin" /> : <RefreshCcw size={10} className="group-hover/v:rotate-180 transition-transform duration-500" />}
+                            Verify
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+
+            {pagination && pagination.totalPages > 1 && (
+              <div className="p-8 bg-gray-50/30 border-t border-gray-50">
+                <Pagination 
+                  currentPage={historyPage}
+                  totalPages={pagination.totalPages}
+                  onPageChange={setHistoryPage}
+                />
+              </div>
+            )}
+          </div>
         </div>
       )}
 

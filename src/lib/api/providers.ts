@@ -37,7 +37,7 @@ export const providersApi = {
 }
 
 export const salesApi = {
-  list: (params?: { page?: number; search?: string; date?: string; limit?: number; sortBy?: string; sortOrder?: string }) => api.get('/sales', { params }).then(r => r.data),
+  list: (params?: { page?: number; search?: string; date?: string; status?: string; limit?: number; sortBy?: string; sortOrder?: string }) => api.get('/sales', { params }).then(r => r.data),
   create: (data: any) => api.post('/sales', data).then(r => r.data),
   getDetails: (id: string) => api.get(`/sales/${id}`).then(r => r.data),
   vendorMpesaPush: (data: { phone: string; amount: number; reference: string }) => api.post('/sales/mpesa-push', data).then(r => r.data),
@@ -45,9 +45,10 @@ export const salesApi = {
 
 export const subscriptionsApi = {
   getMe: () => api.get('/subscriptions/me').then(r => r.data),
-  getHistory: () => api.get('/subscriptions/history').then(r => r.data),
+  getHistory: (params?: { page?: number; limit?: number; status?: string; plan?: string }) => api.get('/subscriptions/history', { params }).then(r => r.data),
   renew: (phone: string) => api.post('/subscriptions/renew', { phone }).then(r => r.data),
   changePlan: (planName: string, phone: string) => api.post('/subscriptions/change-plan', { planName, phone }).then(r => r.data),
+  verify: (paymentId: string) => api.get(`/subscriptions/verify/${paymentId}`).then(r => r.data),
 }
 
 export const inventoryApi = {
@@ -101,16 +102,16 @@ export const adminApi = {
   getStats: (timeframe?: string) => api.get('/admin/stats', { params: { timeframe } }).then(r => r.data),
   getHealth: () => api.get('/admin/system-health').then(r => r.data),
   getSystemHealth: () => api.get('/admin/system-health').then(r => r.data),
-  getTenants: (params?: { page?: number; search?: string; limit?: number }) =>
+  getTenants: (params?: { page?: number; search?: string; status?: string; planName?: string; limit?: number }) =>
     api.get('/admin/tenants', { params }).then(r => r.data),
   suspendTenant: (id: string) => api.put(`/admin/tenants/${id}/suspend`).then(r => r.data),
   activateTenant: (id: string) => api.put(`/admin/tenants/${id}/activate`).then(r => r.data),
   upgradePlan: (id: string, planName: string) =>
     api.put(`/admin/tenants/${id}/upgrade`, { planName }).then(r => r.data),
   createTenant: (data: any) => api.post('/admin/tenants', data).then(r => r.data),
-  getUsers: (params?: { page?: number; search?: string; limit?: number }) => api.get('/admin/users', { params }).then(r => r.data),
+  getUsers: (params?: { page?: number; search?: string; role?: string; limit?: number }) => api.get('/admin/users', { params }).then(r => r.data),
   deleteUser: (id: string) => api.delete(`/admin/users/${id}`).then(r => r.data),
-  getSubscriptions: (params?: { page?: number; search?: string; status?: string; limit?: number }) => api.get('/admin/subscriptions', { params }).then(r => r.data),
+  getSubscriptions: (params?: { page?: number; search?: string; status?: string; planName?: string; limit?: number }) => api.get('/admin/subscriptions', { params }).then(r => r.data),
   updateTenant: (id: string, data: any) => api.put(`/admin/tenants/${id}`, data).then(r => r.data),
   getSessions: () => api.get('/admin/sessions').then(r => r.data),
   terminateSession: (id: string) => api.put(`/admin/sessions/${id}/terminate`).then(r => r.data),
@@ -125,7 +126,7 @@ export const adminApi = {
   getSchedules: () => api.get('/admin/schedules').then(r => r.data),
   getSettings: () => api.get('/admin/settings').then(r => r.data),
   updateSettings: (data: any) => api.put('/admin/settings', data).then(r => r.data),
-  getActivityLogs: (params?: { page?: number; limit?: number }) => api.get('/admin/activity', { params }).then(r => r.data),
+  getActivityLogs: (params?: { page?: number; limit?: number; search?: string; category?: string }) => api.get('/admin/activity', { params }).then(r => r.data),
   updateProfile: (data: any) => api.put('/admin/me', data).then(r => r.data),
   uploadPhoto: (file: File) => {
     const formData = new FormData()

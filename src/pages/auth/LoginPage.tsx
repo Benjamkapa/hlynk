@@ -11,6 +11,8 @@ import { getErrorMessage } from '../../lib/utils/error'
 import GoogleAuthButton from '../../components/auth/GoogleAuthButton'
 import { platformApi, type PlatformReview } from '../../lib/api/platform'
 import StarRating from '../../components/shared/StarRating'
+import { FadeUp } from '../../components/landing/Animations'
+import { motion, AnimatePresence } from 'framer-motion'
 
 const logo = '/logo.png'
 const authBg = '/img.png'
@@ -54,7 +56,6 @@ function ReviewPanel() {
   const [visible, setVisible] = useState(true)
 
   useEffect(() => {
-    // Fetch directly from database platform_reviews table
     platformApi.getReviews({ limit: 10 })
       .then(res => {
         if (res.items?.length) {
@@ -78,7 +79,6 @@ function ReviewPanel() {
     return () => clearInterval(t)
   }, [reviews.length])
 
-  // Only render if we have actual database reviews
   if (reviews.length === 0) return null
 
   return (
@@ -112,7 +112,7 @@ const inputCls = "w-full h-12 pl-[42px] pr-4 bg-[#f8fafc] border border-[#f1f5f9
 
 export default function LoginPage() {
   const navigate = useNavigate()
-  const { login } = useAuth()
+  const { login, user } = useAuth()
   const [googleLoading, setGoogleLoading] = useState(false)
   const [formLoading, setFormLoading] = useState(false)
   const [requiresRegistration, setRequiresRegistration] = useState(false)
@@ -121,8 +121,14 @@ export default function LoginPage() {
   const [acceptedEula, setAcceptedEula] = useState(() => localStorage.getItem('hlynk_eula_accepted') === 'true')
   const [platformStats, setPlatformStats] = useState({ totalBusinesses: 1000, averageRating: 4.9 })
 
+  // Auto-redirect if already logged in
   useEffect(() => {
-    // Fetch stats from DB
+    if (user && !requiresRegistration) {
+      navigate(user.role === 'SUPER_ADMIN' ? '/admin' : '/dashboard', { replace: true })
+    }
+  }, [user, requiresRegistration, navigate])
+
+  useEffect(() => {
     platformApi.getStats()
       .then(res => res && res.success && res.data && setPlatformStats(res.data))
       .catch(() => { })
@@ -202,8 +208,10 @@ export default function LoginPage() {
         .lp-left {
           flex: 1;
           margin: 2px;
+          // filter: brightness(0.7);
           position: relative;
           border-radius: 2rem;
+          // color: #01694B;
           background-image: url(${authBg});
           background-size: cover;
           background-position: center;
@@ -212,7 +220,6 @@ export default function LoginPage() {
           flex-direction: column;
           justify-content: space-between;
           padding: 60px;
-          border: 3px solid white;
           overflow: hidden;
         }
 
@@ -225,7 +232,7 @@ export default function LoginPage() {
         }
 
         .lp-right {
-          width: 540px;
+          width: 650px;
           background: white;
           display: flex;
           flex-direction: column;
@@ -239,7 +246,7 @@ export default function LoginPage() {
           font-family: 'Cormorant Garamond', serif;
           font-size: clamp(48px, 4vw, 72px);
           line-height: 0.95;
-          font-weight: 300;
+          font-weight: 500;
           color: white;
           margin-bottom: 24px;
         }
@@ -268,42 +275,54 @@ export default function LoginPage() {
         }
       `}</style>
 
-      <div className="lp-page lp-sans">
-        <div className="lp-container">
+      {/* ── Page fade-in ── */}
+      <motion.div
+        className="lp-page lp-sans"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.6, ease: 'easeOut' }}
+      >
+        {/* ── Card slide-up ── */}
+        <motion.div
+          className="lp-container"
+          initial={{ opacity: 0, y: 40, scale: 0.97 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 0.6, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
+        >
 
           {/* Left section: The "Window" inside the white card */}
           <div className="lp-left hidden lg:flex">
             <div className="relative z-10 w-full">
               <div className="flex items-center gap-4 mb-16">
-                <div className="flex items-center gap-2 px-3 py-1 bg-white/10 backdrop-blur-md rounded-full border border-white/20">
+                {/* <div className="flex items-center gap-2 px-3 py-1 bg-white/10 backdrop-blur-md rounded-full border border-white/20">
                    <Sparkles size={12} className="text-white" />
                    <span className="text-[10px] tracking-[0.2em] uppercase font-bold text-white">Platform Goal</span>
-                </div>
-                <div className="h-[1px] w-24 bg-white/20" />
+                </div> */}
+                <div className="h-[2px] w-24 bg-white/50" />
               </div>
-              
+
               <h1 className="lp-title">
                 The Smartest Way <br /> to Grow <br /> Your Biashara
               </h1>
-              
+
               <p className="text-xl text-white font-light opacity-90 leading-relaxed max-w-sm drop-shadow-lg mb-10">
                 Stop the guesswork. Join 1,000+ owners using modern tracking to manage stock and double their profits.
               </p>
 
               <div className="flex flex-col gap-5">
-                 {[
-                   'M-Pesa Friendly Sales Tracking',
-                   'Zero Manual Record Books Needed',
-                   'Automated Insights to Cut Costs',
-                   'Instant Setup, No Fees to Start'
-                 ].map((item, i) => (
-                   <div key={item} className="flex items-center gap-4 text-white group" style={{ opacity: 0, animation: `lp-text-in 0.8s forwards ${0.7 + (i * 0.1)}s` }}>
-                      <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center group-hover:bg-white/40 transition-colors">
-                         <Check size={14} strokeWidth={3} />
-                      </div>
-                      <span className="text-[15px] font-semibold tracking-wide">{item}</span>
-                   </div>
-                 ))}
+                {[
+                  'M-Pesa Friendly Sales Tracking',
+                  'Zero Manual Record Books Needed',
+                  'Automated Insights to Cut Costs',
+                  'Instant Setup, No Fees to Start'
+                ].map((item, i) => (
+                  <div key={item} className="flex items-center gap-4 text-white group" style={{ opacity: 0, animation: `lp-text-in 0.8s forwards ${0.7 + (i * 0.1)}s` }}>
+                    <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center group-hover:bg-white/40 transition-colors">
+                      <Check size={14} strokeWidth={3} />
+                    </div>
+                    <span className="text-[15px] font-semibold tracking-wide">{item}</span>
+                  </div>
+                ))}
               </div>
             </div>
 
@@ -320,108 +339,128 @@ export default function LoginPage() {
                 <img src={logo} alt="HudumaLynk" className="h-12 object-contain sm:h-12 md:h-12 lg:h-12" />
               </div>
 
-              {!requiresRegistration ? (
-                <>
-                  <div className="text-center mb-10">
-                    <h2 className="lp-serif text-[52px] leading-tight text-black mb-2">Welcome Back</h2>
-                    <p className="text-[#94a3b8] font-light text-[15px]">Your business dashboard is just one click away.</p>
-                  </div>
-
-                  <div className={acceptedEula ? 'opacity-100' : 'opacity-40 pointer-events-none grayscale'}>
-                    <GoogleAuthButton text="continue_with" onCredential={handleGoogleAuth} disabled={googleLoading || !acceptedEula} />
-                  </div>
-
-                  <div className="flex items-center gap-4 my-8">
-                    <div className="h-[1px] flex-1 bg-[#f1f5f9]" />
-                    <span className="text-[9px] text-[#cbd5e1] tracking-[0.34em] font-bold uppercase">Biashara Hub</span>
-                    <div className="h-[1px] flex-1 bg-[#f1f5f9]" />
-                  </div>
-
-                  <div className="bg-[#f8fafc] border border-[#f1f5f9] rounded-2xl p-5 mb-8 flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center text-black border border-gray-100">
-                      <ShieldCheck size={20} strokeWidth={2} />
+              {/* ── AnimatePresence handles the login ↔ registration transition ── */}
+              <AnimatePresence mode="wait">
+                {!requiresRegistration ? (
+                  <motion.div
+                    key="login"
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -20 }}
+                    transition={{ duration: 0.35, ease: 'easeInOut' }}
+                  >
+                    <div className="text-center mb-10">
+                      <h2 className="lp-serif text-[52px] leading-tight text-black mb-2">Welcome Back</h2>
+                      <p className="text-[#94a3b8] font-light text-[15px]">Your business dashboard is just one click away.</p>
                     </div>
-                    <div>
-                      <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1 leading-none">Security Guaranteed</div>
-                      <div className="text-[13px] text-gray-500 font-light leading-none">Your business data is 100% private.</div>
+
+                    <div className={acceptedEula ? 'opacity-100' : 'opacity-80 pointer-events-none grayscale'}>
+                      <GoogleAuthButton text="continue_with" onCredential={handleGoogleAuth} disabled={googleLoading || !acceptedEula} />
                     </div>
-                  </div>
 
-                  <label className="flex items-start gap-4 mb-10 cursor-pointer group">
-                    <input type="checkbox" className="mt-1 accent-black w-5 h-5 cursor-pointer rounded-md border-gray-200"
-                      checked={acceptedEula} onChange={e => {
-                        setAcceptedEula(e.target.checked)
-                        if (e.target.checked) localStorage.setItem('hlynk_eula_accepted', 'true')
-                        else localStorage.removeItem('hlynk_eula_accepted')
-                      }} />
-                    <span className="text-[12px] px-2 pt-1 leading-relaxed font-light">
-                      I agree to the <a href="/terms-conditions" className="text-black border-b border-gray-100 hover:border-black transition-colors">Terms of Service</a> and <a href="/privacy-policy" className="text-black border-b border-gray-100 hover:border-black transition-colors">Privacy Policy</a>
-                    </span>
-                  </label>
-
-                  <div className="mt-auto pt-8 border-t border-gray-50">
-                    <p className="text-[11px] text-[#cbd5e1] tracking-[0.1em] font-bold uppercase text-center">
-                      Join {platformStats.totalBusinesses?.toLocaleString()}+ Kenyan businesses growing today.
-                    </p>
-                  </div>
-                </>
-              ) : (
-                <form onSubmit={handleRegistrationSubmit} className="flex flex-col h-full">
-                  <div className="text-center mb-8">
-                    <h2 className="lp-serif text-[42px] leading-tight text-black mb-2">Setup Shop</h2>
-                    <p className="text-gray-400 font-light text-sm">Tell us about your biashara to get started.</p>
-                  </div>
-
-                  <div className="bg-[#f8fafc] rounded-2xl p-4 mb-6 flex items-center gap-4 border border-[#f1f5f9]">
-                    {googleProfile?.picture && <img src={googleProfile.picture} alt="" className="w-11 h-11 rounded-full border-2 border-white shadow-md" />}
-                    <div className="flex-1 min-w-0">
-                      <div className="text-[9px] text-[#94a3b8] font-bold uppercase tracking-widest mb-1">Verify Ownership</div>
-                      <div className="text-[14px] text-black font-bold truncate">{googleProfile?.email}</div>
+                    <div className="flex items-center gap-4 my-8">
+                      <div className="h-[1px] flex-1 bg-[#f1f5f9]" />
+                      <span className="text-[9px] text-[#cbd5e1] tracking-[0.34em] font-bold uppercase">Biashara Hub</span>
+                      <div className="h-[1px] flex-1 bg-[#f1f5f9]" />
                     </div>
-                    <div className="w-6 h-6 rounded-full bg-black flex items-center justify-center shadow-lg">
-                      <Check size={12} color="white" strokeWidth={4} />
+
+                    <div className="bg-[#f8fafc] border border-[#f1f5f9] rounded-2xl p-5 mb-8 flex items-center gap-4">
+                      <div className="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center text-black border border-gray-100">
+                        <ShieldCheck size={20} strokeWidth={2} />
+                      </div>
+                      <div>
+                        <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1 leading-none">Security Guaranteed</div>
+                        <div className="text-[13px] text-gray-500 font-light leading-none">Your business data is 100% private.</div>
+                      </div>
                     </div>
-                  </div>
 
-                  <div className="flex flex-col gap-4 mb-8">
-                    <Field label="Biashara Name" icon={Building2}>
-                      <input type="text" value={formData.businessName} onChange={e => setFormData({ ...formData, businessName: e.target.value })} className={inputCls} placeholder="e.g. Mama Mboga Pro" required />
-                    </Field>
-                    <div className="grid grid-cols-2 gap-4">
-                      <Field label="County Location" icon={MapPin}>
-                        <select value={formData.county} onChange={e => setFormData({ ...formData, county: e.target.value })} className={inputCls} required>
-                          <option value="">Where is your shop?</option>
-                          {COUNTIES.map(c => <option key={c}>{c}</option>)}
-                        </select>
-                      </Field>
-                      <Field label="Biashara Category" icon={Tag}>
-                        <select value={formData.category} onChange={e => setFormData({ ...formData, category: e.target.value })} className={inputCls} required>
-                          <option value="">What do you do?</option>
-                          {CATEGORIES.map(c => <option key={c}>{c}</option>)}
-                        </select>
-                      </Field>
+                    <label className="flex items-start gap-4 mb-10 cursor-pointer group">
+                      <input type="checkbox" className="mt-1 accent-black w-5 h-5 cursor-pointer rounded-md border-gray-200"
+                        checked={acceptedEula} onChange={e => {
+                          setAcceptedEula(e.target.checked)
+                          if (e.target.checked) localStorage.setItem('hlynk_eula_accepted', 'true')
+                          else localStorage.removeItem('hlynk_eula_accepted')
+                        }} />
+                      <span className="text-[12px] px-2 pt-1 leading-relaxed font-light">
+                        I agree to the <a href="/terms-conditions" className="text-black hover:text-emerald-600 underline transition-colors">Terms of Service</a> and <a href="/privacy-policy" className="text-black hover:text-emerald-600 underline transition-colors">Privacy Policy</a>
+                      </span>
+                    </label>
+
+                    <div className="mt-auto pt-8 border-t border-gray-50">
+                      <p className="text-[11px] text-[#cbd5e1] tracking-[0.1em] font-bold uppercase text-center">
+                        Join {platformStats.totalBusinesses?.toLocaleString()}+ Kenyan businesses growing today.
+                      </p>
                     </div>
-                    <Field label="M-Pesa Number" icon={Phone}>
-                      <input type="tel" value={formData.phone} onChange={e => setFormData({ ...formData, phone: e.target.value })} className={inputCls} placeholder="07xx xxx xxx" required />
-                    </Field>
-                  </div>
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="register"
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -20 }}
+                    transition={{ duration: 0.35, ease: 'easeInOut' }}
+                  >
+                    <form onSubmit={handleRegistrationSubmit} className="flex flex-col h-full">
+                      <div className="text-center mb-8">
+                        <h2 className="lp-serif text-[42px] leading-tight text-black mb-2">Setup Shop</h2>
+                        <p className="text-gray-400 font-light text-sm">Tell us about your biashara to get started.</p>
+                      </div>
 
-                  <button type="submit" disabled={formLoading} className="lp-btn-submit">
-                    {formLoading ? <Loader2 size={18} className="animate-spin" /> : 'Launch My biashara'}
-                  </button>
+                      <div className="bg-[#f8fafc] rounded-2xl p-4 mb-6 flex items-center gap-4 border border-[#f1f5f9]">
+                        {googleProfile?.picture && <img src={googleProfile.picture} alt="" className="w-11 h-11 rounded-full border-2 border-white shadow-md" />}
+                        <div className="flex-1 min-w-0">
+                          <div className="text-[9px] text-[#94a3b8] font-bold uppercase tracking-widest mb-1">Verify Ownership</div>
+                          <div className="text-[14px] text-black font-bold truncate">{googleProfile?.email}</div>
+                        </div>
+                        <div className="w-6 h-6 rounded-full bg-black flex items-center justify-center shadow-lg">
+                          <Check size={12} color="white" strokeWidth={4} />
+                        </div>
+                      </div>
 
-                  <div className="mt-8 text-center">
-                    <p className="text-[10px] text-gray-200 tracking-widest font-bold uppercase">
-                      Instant Setup · No Credit Card Required · Fully Automated
-                    </p>
-                  </div>
-                </form>
-              )}
+                      <div className="flex flex-col gap-4 mb-8">
+                        <Field label="Biashara Name" icon={Building2}>
+                          <input type="text" value={formData.businessName} onChange={e => setFormData({ ...formData, businessName: e.target.value })} className={inputCls} placeholder="e.g. Mama Mboga Pro" required />
+                        </Field>
+                        <div className="grid grid-cols-2 gap-4">
+                          <Field label="County Location" icon={MapPin}>
+                            <select value={formData.county} onChange={e => setFormData({ ...formData, county: e.target.value })} className={inputCls} required>
+                              <option value="">Where is your shop?</option>
+                              {COUNTIES.map(c => <option key={c}>{c}</option>)}
+                            </select>
+                          </Field>
+                          <Field label="Biashara Category" icon={Tag}>
+                            <select value={formData.category} onChange={e => setFormData({ ...formData, category: e.target.value })} className={inputCls} required>
+                              <option value="">What do you do?</option>
+                              {CATEGORIES.map(c => <option key={c}>{c}</option>)}
+                            </select>
+                          </Field>
+                        </div>
+                        <Field label="Specific Town/Area" icon={MapPin}>
+                          <input type="text" value={formData.location} onChange={e => setFormData({ ...formData, location: e.target.value })} className={inputCls} placeholder="e.g. Westlands, Nairobi" required />
+                        </Field>
+                        <Field label="M-Pesa Number" icon={Phone}>
+                          <input type="tel" value={formData.phone} onChange={e => setFormData({ ...formData, phone: e.target.value })} className={inputCls} placeholder="07xx xxx xxx" required />
+                        </Field>
+                      </div>
+
+                      <button type="submit" disabled={formLoading} className="lp-btn-submit">
+                        {formLoading ? <Loader2 size={18} className="animate-spin" /> : 'Launch My biashara'}
+                      </button>
+
+                      <div className="mt-8 text-center">
+                        <p className="text-[10px] text-gray-200 tracking-widest font-bold uppercase">
+                          Instant Setup · No Credit Card Required · Fully Automated
+                        </p>
+                      </div>
+                    </form>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
             </div>
           </div>
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
     </>
   )
 }
-

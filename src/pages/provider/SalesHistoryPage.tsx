@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { Search, Download, Calendar, Eye, Receipt, User, CreditCard, ChevronLeft, ChevronRight, Printer, Store, CheckCircle } from 'lucide-react'
+import { Search, Download, Calendar, Eye, Receipt, User, CreditCard, ChevronLeft, ChevronRight, Printer, Store, CheckCircle, Filter } from 'lucide-react'
 import { ConfirmModal } from '../../components/shared/ConfirmModal'
 import { useQuery } from '@tanstack/react-query'
 import { salesApi } from '../../lib/api/providers'
@@ -40,10 +40,11 @@ export default function SalesHistoryPage() {
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0])
   const [selectedSale, setSelectedSale] = useState<any>(null)
+  const [status, setStatus] = useState('')
 
   const { data: salesData, isLoading, error } = useQuery<PaginatedResponse<any> & { stats: any }>({
-    queryKey: ['sales-history', search, selectedDate, page],
-    queryFn: () => salesApi.list({ search, date: selectedDate, page, limit: 10 }),
+    queryKey: ['sales-history', search, selectedDate, page, status, sortBy, sortOrder],
+    queryFn: () => salesApi.list({ search, date: selectedDate, page, limit: 10, status: status || undefined, sortBy, sortOrder }),
     refetchInterval: 15_000,       // live refresh every 15s
     refetchIntervalInBackground: false,
     staleTime: 10_000,
@@ -161,15 +162,59 @@ export default function SalesHistoryPage() {
               <ChevronRight size={18} />
             </button>
           </div>
+
+          <div className="flex items-center gap-2 bg-gray-50 p-1.5 rounded-xl border border-gray-100">
+             <Filter className="ml-2 text-slate-400" size={14} />
+             <select 
+               value={status}
+               onChange={(e) => { setStatus(e.target.value); setPage(1); }}
+               className="bg-transparent border-none outline-none text-[10px] font-black uppercase tracking-widest text-slate-600 px-2 cursor-pointer"
+             >
+               <option value="">All Statuses</option>
+               <option value="COMPLETED">Completed</option>
+               <option value="PENDING">Pending</option>
+               <option value="FAILED">Failed</option>
+             </select>
+          </div>
         </div>
 
         <div className="overflow-x-auto">
           <table className="w-full text-left">
             <thead>
               <tr className="bg-gray-50/50">
-                {['Receipt #', 'Time', 'Customer', 'Items', 'Total', 'Method', 'Status', 'Action'].map((h, i) => (
-                  <th key={h} className={`px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest ${i >= 3 && i !== 4 && i !== 7 ? 'text-center' : ''} ${i === 4 ? 'text-right' : ''} ${i === 7 ? 'text-right' : ''}`}>{h}</th>
-                ))}
+                <th 
+                  className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest cursor-pointer hover:text-emerald-600 transition-colors"
+                  onClick={() => { setSortBy('id'); setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc') }}
+                >
+                  Receipt # {sortBy === 'id' && (sortOrder === 'asc' ? '↑' : '↓')}
+                </th>
+                <th 
+                  className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest cursor-pointer hover:text-emerald-600 transition-colors"
+                  onClick={() => { setSortBy('createdAt'); setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc') }}
+                >
+                  Time {sortBy === 'createdAt' && (sortOrder === 'asc' ? '↑' : '↓')}
+                </th>
+                <th 
+                  className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest cursor-pointer hover:text-emerald-600 transition-colors"
+                  onClick={() => { setSortBy('customerName'); setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc') }}
+                >
+                  Customer {sortBy === 'customerName' && (sortOrder === 'asc' ? '↑' : '↓')}
+                </th>
+                <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Items</th>
+                <th 
+                  className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right cursor-pointer hover:text-emerald-600 transition-colors"
+                  onClick={() => { setSortBy('totalAmount'); setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc') }}
+                >
+                  Total {sortBy === 'totalAmount' && (sortOrder === 'asc' ? '↑' : '↓')}
+                </th>
+                <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Method</th>
+                <th 
+                  className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center cursor-pointer hover:text-emerald-600 transition-colors"
+                  onClick={() => { setSortBy('status'); setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc') }}
+                >
+                  Status {sortBy === 'status' && (sortOrder === 'asc' ? '↑' : '↓')}
+                </th>
+                <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Action</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">

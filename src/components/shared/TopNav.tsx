@@ -5,14 +5,17 @@ import { Link, useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { platformApi } from '../../lib/api/platform'
+import { PanelLeftClose, PanelLeftOpen } from 'lucide-react'
 
 interface TopNavProps {
   onMobileMenuToggle?: () => void
+  isCollapsed?: boolean
+  onToggleCollapse?: () => void
   extraActions?: React.ReactNode
   showMail?: boolean
 }
 
-export default function TopNav({ onMobileMenuToggle, extraActions }: TopNavProps) {
+export default function TopNav({ onMobileMenuToggle, isCollapsed, onToggleCollapse, extraActions }: TopNavProps) {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
@@ -65,13 +68,13 @@ export default function TopNav({ onMobileMenuToggle, extraActions }: TopNavProps
   return (
     <header className="h-24 bg-transparent flex items-center justify-between z-[100] px-6 sm:px-8">
 
-      <div className="flex items-center gap-4 flex-1 max-w-xl">
-        {onMobileMenuToggle && (
+      <div className="flex items-center gap-4 flex-1">
+        {onToggleCollapse && (
           <button 
-            onClick={onMobileMenuToggle} 
-            className="lg:hidden h-12 w-12 rounded-xl bg-slate-50 flex items-center justify-center text-slate-500 hover:text-emerald-600 hover:bg-emerald-50 transition-all border border-slate-100"
+            onClick={onToggleCollapse} 
+            className="hidden lg:flex h-12 w-12 rounded-xl bg-white border border-slate-100 items-center justify-center text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 hover:border-emerald-100 transition-all shadow-sm"
           >
-            <Menu size={22} />
+            {isCollapsed ? <PanelLeftOpen size={20} /> : <PanelLeftClose size={20} />}
           </button>
         )}
       </div>

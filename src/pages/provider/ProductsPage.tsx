@@ -20,12 +20,13 @@ export default function ProductsPage() {
   const [page, setPage] = useState(1)
   const [sortBy, setSortBy] = useState('createdAt')
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
+  const [category, setCategory] = useState('')
   const queryClient = useQueryClient()
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
 
   const { data: productsData, isLoading, error } = useQuery<PaginatedResponse<any> & { stats: any }>({
-    queryKey: ['inventory', search, page, sortBy, sortOrder],
-    queryFn: () => inventoryApi.list({ search, page, limit: 10, sortBy, sortOrder }),
+    queryKey: ['inventory', search, page, sortBy, sortOrder, category],
+    queryFn: () => inventoryApi.list({ search, page, limit: 10, sortBy, sortOrder, category: category || undefined }),
     placeholderData: keepPreviousData
   })
 
@@ -85,7 +86,7 @@ export default function ProductsPage() {
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <SummaryCard title="Total Items" value={stats.totalItems.toLocaleString()} sub="Unique SKUs" icon={Package} variant="emerald" />
-        <FeatureGate feature="low_stock_alerts">
+        <FeatureGate feature="low_stock_alerts" variant="tease">
           <SummaryCard title="Low Stock" value={`${stats.lowStock} ALERTS`} sub="Requires attention" icon={TrendingDown} variant="red" />
         </FeatureGate>
         <SummaryCard title="Stock Value" value={`KES ${stats.totalValue.toLocaleString()}`} sub="Total inventory" icon={Activity} variant="blue" />
@@ -122,10 +123,19 @@ export default function ProductsPage() {
               className="w-full bg-gray-50 border-none rounded-md py-3.5 pl-12 pr-4 outline-none focus:ring-2 focus:ring-emerald-500/10 transition-all text-sm font-medium" 
             />
           </div>
-          <button className="bg-gray-50 text-gray-500 h-12 px-4 rounded-md flex items-center gap-2 font-bold text-xs hover:bg-gray-100 transition-all border border-gray-100">
-            <Filter size={16} />
-            Filters
-          </button>
+          <div className="flex items-center gap-2 bg-gray-50 p-1.5 rounded-xl border border-gray-100">
+             <Filter className="ml-2 text-slate-400" size={14} />
+             <select 
+               value={category}
+               onChange={(e) => { setCategory(e.target.value); setPage(1); }}
+               className="bg-transparent border-none outline-none text-[10px] font-black uppercase tracking-widest text-slate-600 px-2 cursor-pointer"
+             >
+               <option value="">All Categories</option>
+               {['Groceries', 'Bakery', 'Dairy', 'Hardware', 'Electronics', 'Clothing', 'Services', 'Other'].map(c => (
+                 <option key={c} value={c}>{c}</option>
+               ))}
+             </select>
+          </div>
         </div>
 
         <div className="overflow-x-auto">
@@ -205,6 +215,35 @@ export default function ProductsPage() {
             </tbody>
           </table>
         </div>
+
+        {productsData && productsData.pages > 1 && (
+          <div className="p-6 bg-gray-50/30 border-t border-gray-50">
+            <div className="flex justify-between items-center">
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                Showing {products.length} of {productsData.total} items
+              </p>
+              <div className="flex gap-2">
+                <button 
+                  onClick={() => setPage(p => Math.max(1, p - 1))}
+                  disabled={page === 1}
+                  className="h-10 px-4 bg-white border border-slate-200 rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-slate-50 disabled:opacity-40 transition-all"
+                >
+                  Previous
+                </button>
+                <div className="h-10 px-4 flex items-center justify-center font-black text-xs hl-mono text-emerald-600 bg-emerald-50 rounded-lg">
+                  {page} / {productsData.pages}
+                </div>
+                <button 
+                  onClick={() => setPage(p => Math.min(productsData.pages, p + 1))}
+                  disabled={page === productsData.pages}
+                  className="h-10 px-4 bg-white border border-slate-200 rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-slate-50 disabled:opacity-40 transition-all"
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* ConfirmModal lives here, in the parent, where confirmDeleteId and deleteMutation are in scope */}
