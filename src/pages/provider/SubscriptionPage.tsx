@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Calendar, CreditCard, CheckCircle2, Zap, AlertTriangle, ChevronRight, Loader2, Phone, Star } from 'lucide-react'
+import { Calendar, CreditCard, CheckCircle2, Zap, AlertTriangle, ChevronRight, Loader2, Phone, Star, RefreshCcw, Shield } from 'lucide-react'
 import { subscriptionsApi } from '../../lib/api/providers'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
@@ -9,29 +9,29 @@ import Pagination from '../../components/shared/Pagination'
 import { Filter, Search } from 'lucide-react'
 
 const PLANS = [
-  { 
-    id: 'LITE', 
-    name: 'Lite Plan', 
-    price: 1999, 
-    desc: 'Simple digital control for everyday businesses like kiosks, salons, and mini shops.', 
+  {
+    id: 'LITE',
+    name: 'Lite Plan',
+    price: 1999,
+    desc: 'Simple digital control for everyday businesses like kiosks, salons, and mini shops.',
     color: 'emerald',
     features: ['POS Checkout', 'Product & Service Sales', 'Cash & M-Pesa Tracking', 'Basic Inventory tracking'],
     notIncluded: ['Net Profit Tracking', 'Expense Tracking', 'Advanced Reports', 'Multi-User']
   },
-  { 
-    id: 'PLUS', 
-    name: 'Plus Plan', 
-    price: 4999, 
-    desc: 'Built for growing businesses like minimarts, pharmacies, and hardware shops.', 
+  {
+    id: 'PLUS',
+    name: 'Plus Plan',
+    price: 4999,
+    desc: 'Built for growing businesses like minimarts, pharmacies, and hardware shops.',
     color: 'blue',
     features: ['Everything in Lite', 'Net Profit Tracking', 'Expense Tracking', 'Revenue Trend Charts', 'Staff Salaries'],
     notIncluded: ['Unlimited Staff Accounts', 'Advanced Audit Logs']
   },
-  { 
-    id: 'MAX', 
-    name: 'Max Plan', 
-    price: 11999, 
-    desc: 'Full operational management for large retail, distributors, and institutions.', 
+  {
+    id: 'MAX',
+    name: 'Max Plan',
+    price: 11999,
+    desc: 'Full operational management for large retail, distributors, and institutions.',
     color: 'purple',
     features: ['Everything in Plus', 'Unlimited Staff Accounts', 'Advanced Audit Logs', 'Full KPI Dashboard Access', 'Priority Support'],
     notIncluded: []
@@ -56,7 +56,7 @@ import { ConfirmModal } from '../../components/shared/ConfirmModal'
 
 export default function SubscriptionPage() {
   const queryClient = useQueryClient()
-  const { refreshUser } = useAuth()
+  const { user, refreshUser } = useAuth()
   const [showRenewModal, setShowRenewModal] = useState(false)
   const [showChangeModal, setShowChangeModal] = useState(false)
   const [showSuccessModal, setShowSuccessModal] = useState(false)
@@ -66,7 +66,31 @@ export default function SubscriptionPage() {
   const [selectedPlan, setSelectedPlan] = useState<any>(null)
   const [activeTab, setActiveTab] = useState<'current' | 'history'>('current')
   const [isWaitingForPayment, setIsWaitingForPayment] = useState(false)
-  
+
+  // ── STAFF ACCESS LOCK ──
+  if (user?.role === 'STAFF') {
+    return (
+      <div className="p-20 text-center flex flex-col items-center justify-center space-y-8 animate-in fade-in zoom-in duration-700">
+        <div className="h-24 w-24 bg-red-50 text-red-600 rounded-[32px] flex items-center justify-center shadow-2xl shadow-red-500/10 relative overflow-hidden">
+          <Shield size={48} />
+          <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent" />
+        </div>
+        <div className="max-w-md">
+          <h2 className="text-4xl font-black text-slate-900 tracking-tighter mb-3">Access Restricted</h2>
+          <p className="text-slate-500 font-medium text-lg leading-relaxed">
+            Staff accounts are strictly prohibited from viewing or managing business billing plans. Please contact your administrator for assistance.
+          </p>
+        </div>
+        <button 
+          onClick={() => window.history.back()} 
+          className="px-10 py-4 bg-slate-900 text-white rounded-2xl text-xs font-black uppercase tracking-[0.2em] hover:bg-slate-800 transition-all shadow-xl active:scale-95"
+        >
+          Go Back
+        </button>
+      </div>
+    )
+  }
+
   // History Filters
   const [historyPage, setHistoryPage] = useState(1)
   const [statusFilter, setStatusFilter] = useState('')
@@ -75,40 +99,52 @@ export default function SubscriptionPage() {
   const { data: subResponse, isLoading: subLoading } = useQuery({
     queryKey: ['my-subscription'],
     queryFn: subscriptionsApi.getMe,
-    refetchInterval: isWaitingForPayment ? 3000 : false
+    refetchInterval: isWaitingForPayment ? 1500 : false
   })
 
   const { data: historyResponse, isLoading: historyLoading } = useQuery({
     queryKey: ['billing-history', historyPage, statusFilter, planFilter],
-    queryFn: () => subscriptionsApi.getHistory({ 
-      page: historyPage, 
-      status: statusFilter || undefined, 
+    queryFn: () => subscriptionsApi.getHistory({
+      page: historyPage,
+      status: statusFilter || undefined,
       plan: planFilter || undefined,
-      limit: 10 
+      limit: 10
     }),
     enabled: activeTab === 'history' || isWaitingForPayment,
-    refetchInterval: isWaitingForPayment ? 3000 : false
+    refetchInterval: isWaitingForPayment ? 1500 : false
   })
+
+  const [paymentResultMessage, setPaymentResultMessage] = useState<string | null>(null)
+  const [initialPlan, setInitialPlan] = useState<string | null>(null)
 
   // Watch for payment status change
   useEffect(() => {
     if (isWaitingForPayment && historyResponse?.payments) {
       const latestPayment = historyResponse.payments[0];
       if (latestPayment && latestPayment.status !== 'PENDING') {
-        setIsWaitingForPayment(false);
+        const msg = latestPayment.message || (latestPayment.status === 'PAID' ? 'Payment successful!' : 'Transaction failed.');
+        setPaymentResultMessage(msg);
+
         if (latestPayment.status === 'PAID') {
-          toast.success("Payment successful! Your subscription is now active.");
-          queryClient.clear(); // Clear everything to be safe
+          setIsWaitingForPayment(false);
+          setPaymentResultMessage(null);
+          toast.success(msg);
+          queryClient.invalidateQueries({ queryKey: ['my-subscription'] });
+          queryClient.invalidateQueries({ queryKey: ['billing-history'] });
           refreshUser();
           setShowSuccessModal(true);
-        } else if (latestPayment.status === 'CANCELLED') {
-          toast.error("Transaction cancelled by user.");
-        } else if (latestPayment.status === 'FAILED') {
-          toast.error("Payment failed. Please check your balance and try again.");
+        } else {
+          setIsWaitingForPayment(false); // Stop spinning immediately on failure too
+          setPaymentResultMessage(msg);
+          toast.error(msg);
+          // Keep the message visible in the banner for 8 seconds then hide banner
+          setTimeout(() => {
+            setPaymentResultMessage(null);
+          }, 8000);
         }
       }
     }
-  }, [historyResponse, isWaitingForPayment, queryClient]);
+  }, [historyResponse, isWaitingForPayment, queryClient, refreshUser]);
 
   const subscription = subResponse?.data
   const history = historyResponse?.payments || []
@@ -120,9 +156,11 @@ export default function SubscriptionPage() {
   const renewMutation = useMutation({
     mutationFn: (phone: string) => subscriptionsApi.renew(phone),
     onSuccess: (data) => {
+      setInitialPlan(subResponse?.data?.planName || null)
       toast.success(data.message || 'STK Push sent!')
       setShowRenewModal(false)
       setIsWaitingForPayment(true)
+      // Safety timeout: stop waiting if no response after 60 seconds
       setTimeout(() => setIsWaitingForPayment(false), 60000)
     },
     onError: (err) => toast.error(getErrorMessage(err))
@@ -131,9 +169,11 @@ export default function SubscriptionPage() {
   const changePlanMutation = useMutation({
     mutationFn: ({ plan, phone }: { plan: string, phone: string }) => subscriptionsApi.changePlan(plan, phone),
     onSuccess: (data) => {
+      setInitialPlan(subResponse?.data?.planName || null)
       toast.success(data.message || 'Payment initiated for plan upgrade!')
       setShowChangeModal(false)
       setIsWaitingForPayment(true)
+      // Safety timeout: stop waiting if no response after 60 seconds
       setTimeout(() => setIsWaitingForPayment(false), 60000)
     },
     onError: (err) => toast.error(getErrorMessage(err))
@@ -142,6 +182,7 @@ export default function SubscriptionPage() {
   const verifyMutation = useMutation({
     mutationFn: (paymentId: string) => subscriptionsApi.verify(paymentId),
     onSuccess: (data) => {
+      setIsWaitingForPayment(false) // Force stop spinner immediately
       if (data.data.status === 'PAID') {
         toast.success("Payment verified successfully! Your plan is active.")
         queryClient.clear()
@@ -151,21 +192,52 @@ export default function SubscriptionPage() {
         queryClient.invalidateQueries({ queryKey: ['billing-history'] })
       }
     },
-    onError: (err) => toast.error(getErrorMessage(err))
+    onError: (err) => {
+      setIsWaitingForPayment(false)
+      toast.error(getErrorMessage(err))
+    }
   })
 
-  if (subLoading) return <div className="p-12 text-center animate-pulse">Loading subscription details...</div>
+  if (subLoading) return (
+    <div className="p-20 text-center flex flex-col items-center justify-center space-y-4">
+      <div className="h-12 w-12 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center animate-bounce">
+        <Zap size={24} fill="currentColor" />
+      </div>
+      <p className="text-xs font-black text-slate-400 uppercase tracking-widest animate-pulse">Syncing Subscription Status...</p>
+    </div>
+  )
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500 pt-6">
-      
+
       {isWaitingForPayment && (
-        <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 px-6 py-4 rounded-2xl flex items-center gap-4 shadow-sm animate-pulse">
-          <Loader2 className="animate-spin text-emerald-600" size={24} />
-          <div>
-            <h4 className="font-black text-sm tracking-tight">Waiting for Payment...</h4>
-            <p className="text-xs font-medium text-emerald-600/80">Please check your phone and enter your M-Pesa PIN. The page will refresh automatically.</p>
+        <div className={`${paymentResultMessage ? (paymentResultMessage.includes('Success') || paymentResultMessage.includes('active') ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-red-50 border-red-200 text-red-800') : 'bg-emerald-50 border-emerald-200 text-emerald-800'} border px-6 py-4 rounded-2xl flex items-center justify-between gap-4 shadow-sm ${!paymentResultMessage && 'animate-pulse'}`}>
+          <div className="flex items-center gap-4">
+            {paymentResultMessage ? (
+              (paymentResultMessage.includes('Success') || paymentResultMessage.includes('active') ? <CheckCircle2 size={24} className="text-emerald-600" /> : <AlertTriangle size={24} className="text-red-600" />)
+            ) : (
+              <Loader2 className="animate-spin text-emerald-600" size={24} />
+            )}
+            <div>
+              <h4 className="font-black text-sm tracking-tight">
+                {paymentResultMessage ? 'Transaction Result' : 'Waiting for Payment...'}
+              </h4>
+              <p className={`text-xs font-medium ${paymentResultMessage ? '' : 'text-emerald-600/80'}`}>
+                {paymentResultMessage || "Please check your phone and enter your M-Pesa PIN. The page will refresh automatically."}
+              </p>
+            </div>
           </div>
+
+          {!paymentResultMessage && historyResponse?.payments?.[0]?.id && (
+            <button
+              onClick={() => verifyMutation.mutate(historyResponse.payments[0].id)}
+              disabled={verifyMutation.isPending}
+              className="px-4 py-2 bg-white border border-emerald-100 rounded-xl text-[10px] font-black text-emerald-600 uppercase tracking-widest hover:bg-emerald-50 transition-all flex items-center gap-2 shadow-sm"
+            >
+              {verifyMutation.isPending ? <Loader2 size={12} className="animate-spin" /> : <RefreshCcw size={12} />}
+              Check Status
+            </button>
+          )}
         </div>
       )}
 
@@ -174,41 +246,41 @@ export default function SubscriptionPage() {
       {/* ── SUCCESS CELEBRATION MODAL ── */}
       {showSuccessModal && (
         <div className="fixed inset-0 z-[110] flex items-center justify-center bg-emerald-950/90 backdrop-blur-xl p-4 animate-in fade-in duration-500">
-           <div className="bg-white rounded-[40px] w-full max-w-xl p-12 text-center relative overflow-hidden shadow-[0_0_100px_rgba(16,185,129,0.3)] animate-in zoom-in-95 duration-500">
-              {/* Confetti-like decoration */}
-              <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-emerald-400 via-amber-400 to-blue-400" />
-              <div className="absolute -top-24 -left-24 w-64 h-64 bg-emerald-400/10 rounded-full blur-[80px]" />
-              <div className="absolute -bottom-24 -right-24 w-64 h-64 bg-amber-400/10 rounded-full blur-[80px]" />
+          <div className="bg-white rounded-[40px] w-full max-w-xl p-12 text-center relative overflow-hidden shadow-[0_0_100px_rgba(16,185,129,0.3)] animate-in zoom-in-95 duration-500">
+            {/* Confetti-like decoration */}
+            <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-emerald-400 via-amber-400 to-blue-400" />
+            <div className="absolute -top-24 -left-24 w-64 h-64 bg-emerald-400/10 rounded-full blur-[80px]" />
+            <div className="absolute -bottom-24 -right-24 w-64 h-64 bg-amber-400/10 rounded-full blur-[80px]" />
 
-              <div className="relative z-10">
-                <div className="h-24 w-24 bg-emerald-100 text-emerald-600 rounded-[32px] flex items-center justify-center mx-auto mb-8 animate-bounce">
-                   <Zap size={48} fill="currentColor" />
-                </div>
-                <h2 className="text-4xl font-black text-slate-900 tracking-tighter mb-4">Upgrade Successful!</h2>
-                <p className="text-lg text-slate-500 font-medium mb-10 leading-relaxed">
-                   Welcome to the <span className="text-emerald-600 font-black">{subscription?.planName}</span> tier. 
-                   Your business control has been elevated and all premium features are now active.
-                </p>
-
-                <div className="grid grid-cols-2 gap-4 mb-10">
-                   <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">New Plan</p>
-                      <p className="text-lg font-black text-slate-900 hl-mono">{subscription?.planName}</p>
-                   </div>
-                   <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Status</p>
-                      <p className="text-lg font-black text-emerald-600 hl-mono uppercase">Active</p>
-                   </div>
-                </div>
-
-                <button 
-                  onClick={() => setShowSuccessModal(false)}
-                  className="w-full py-6 bg-[#0D4A3E] text-white rounded-[24px] font-black text-sm uppercase tracking-[0.2em] hover:bg-black transition-all shadow-2xl shadow-emerald-900/30 active:scale-95"
-                >
-                  Start Exploring Features
-                </button>
+            <div className="relative z-10">
+              <div className="h-24 w-24 bg-emerald-100 text-emerald-600 rounded-[32px] flex items-center justify-center mx-auto mb-8 animate-bounce">
+                <Zap size={48} fill="currentColor" />
               </div>
-           </div>
+              <h2 className="text-4xl font-black text-slate-900 tracking-tighter mb-4">Upgrade Successful!</h2>
+              <p className="text-lg text-slate-500 font-medium mb-10 leading-relaxed">
+                Welcome to the <span className="text-emerald-600 font-black">{subscription?.planName}</span> tier.
+                Your business control has been elevated and all premium features are now active.
+              </p>
+
+              <div className="grid grid-cols-2 gap-4 mb-10">
+                <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">New Plan</p>
+                  <p className="text-lg font-black text-slate-900 hl-mono">{subscription?.planName}</p>
+                </div>
+                <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Status</p>
+                  <p className="text-lg font-black text-emerald-600 hl-mono uppercase">Active</p>
+                </div>
+              </div>
+
+              <button
+                onClick={() => setShowSuccessModal(false)}
+                className="w-full py-6 bg-[#0D4A3E] text-white rounded-[24px] font-black text-sm uppercase tracking-[0.2em] hover:bg-black transition-all shadow-2xl shadow-emerald-900/30 active:scale-95"
+              >
+                Start Exploring Features
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
@@ -217,15 +289,15 @@ export default function SubscriptionPage() {
           <h1 className="text-3xl font-black text-gray-900 tracking-tight">Subscription</h1>
           <p className="text-gray-500 font-medium italic">"Know your real profit. Not just what came in — what stayed."</p>
         </div>
-        
+
         <div className="flex bg-gray-100 p-1 rounded-xl">
-          <button 
+          <button
             onClick={() => setActiveTab('current')}
             className={`px-6 py-2 rounded-lg text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'current' ? 'bg-white text-emerald-600 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
           >
             Manage Plan
           </button>
-          <button 
+          <button
             onClick={() => setActiveTab('history')}
             className={`px-6 py-2 rounded-lg text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'history' ? 'bg-white text-emerald-600 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
           >
@@ -243,10 +315,10 @@ export default function SubscriptionPage() {
                 <p className="text-emerald-200 text-sm font-medium">No payment required. See your real profit before you pay.</p>
               </div>
               <div className="bg-emerald-800 px-6 py-3 rounded-xl border border-emerald-700/50 flex flex-col items-center">
-                 <p className="text-[10px] font-black uppercase tracking-widest opacity-60 mb-1">Trial Ends In</p>
-                 <p className="text-2xl font-black hl-mono">
-                    {subscription?.endDate ? Math.ceil((new Date(subscription.endDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)) : 0} Days
-                 </p>
+                <p className="text-[10px] font-black uppercase tracking-widest opacity-60 mb-1">Trial Ends In</p>
+                <p className="text-2xl font-black hl-mono">
+                  {subscription?.endDate ? Math.ceil((new Date(subscription.endDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)) : 0} Days
+                </p>
               </div>
             </div>
           )}
@@ -269,25 +341,25 @@ export default function SubscriptionPage() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-10 mb-12">
                 <div className="space-y-1">
-                   <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-2">
-                     <Calendar size={14} className="text-emerald-500" /> {isTrial ? 'Trial Ends' : 'Next Billing Date'}
-                   </p>
-                   <p className="text-xl font-black text-gray-900 hl-mono">
-                     {subscription?.endDate ? new Date(subscription.endDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : 'N/A'}
-                   </p>
+                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-2">
+                    <Calendar size={14} className="text-emerald-500" /> {isTrial ? 'Trial Ends' : 'Next Billing Date'}
+                  </p>
+                  <p className="text-xl font-black text-gray-900 hl-mono">
+                    {subscription?.endDate ? new Date(subscription.endDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : 'N/A'}
+                  </p>
                 </div>
                 <div className="space-y-1">
-                   <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-2">
-                     <CreditCard size={14} className="text-emerald-500" /> Monthly Investment
-                   </p>
-                   <p className="text-xl font-black text-[#0D4A3E] hl-mono">
-                     KES {PLANS.find(p => p.id === subscription?.planName)?.price.toLocaleString() || '0'}
-                   </p>
+                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-2">
+                    <CreditCard size={14} className="text-emerald-500" /> Monthly Investment
+                  </p>
+                  <p className="text-xl font-black text-[#0D4A3E] hl-mono">
+                    KES {PLANS.find(p => p.id === subscription?.planName)?.price.toLocaleString() || '0'}
+                  </p>
                 </div>
               </div>
 
               <div className="flex flex-wrap gap-4">
-                <button 
+                <button
                   onClick={() => {
                     setMpesaPhone('')
                     setShowRenewModal(true)
@@ -296,7 +368,7 @@ export default function SubscriptionPage() {
                 >
                   Renew Subscription
                 </button>
-                <button 
+                <button
                   onClick={() => setShowChangeModal(true)}
                   className="bg-white text-gray-600 px-12 py-5 rounded-2xl font-black text-xs uppercase tracking-widest border border-gray-100 hover:bg-gray-50 transition-all active:scale-95"
                 >
@@ -307,39 +379,39 @@ export default function SubscriptionPage() {
           </div>
 
           <div className="bg-white p-12 rounded-[28px] border border-gray-100 shadow-sm">
-             <div className="mb-12">
-               <h3 className="text-2xl font-black text-gray-900 tracking-tight mb-2">Compare hlynk Packages</h3>
-               <p className="text-gray-500 font-medium italic">Choose the level of control your business needs.</p>
-             </div>
+            <div className="mb-12">
+              <h3 className="text-2xl font-black text-gray-900 tracking-tight mb-2">Compare hlynk Packages</h3>
+              <p className="text-gray-500 font-medium italic">Choose the level of control your business needs.</p>
+            </div>
 
-             <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse">
-                  <thead>
-                    <tr className="border-b-2 border-gray-50">
-                      <th className="py-6 text-[10px] font-black text-gray-400 uppercase tracking-widest">Feature</th>
-                      <th className="py-6 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Lite</th>
-                      <th className="py-6 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Plus</th>
-                      <th className="py-6 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Max</th>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="border-b-2 border-gray-50">
+                    <th className="py-6 text-[10px] font-black text-gray-400 uppercase tracking-widest">Feature</th>
+                    <th className="py-6 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Lite</th>
+                    <th className="py-6 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Plus</th>
+                    <th className="py-6 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Max</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-50">
+                  {FEATURE_COMPARISON.map((f, i) => (
+                    <tr key={i} className="hover:bg-slate-50/50 transition-all group">
+                      <td className="py-6 font-bold text-slate-700 text-sm">{f.name}</td>
+                      <td className="py-6 text-center">
+                        {f.lite ? <CheckCircle2 size={20} className="mx-auto text-emerald-500" /> : <span className="text-slate-200">✕</span>}
+                      </td>
+                      <td className="py-6 text-center">
+                        {f.plus ? <CheckCircle2 size={20} className="mx-auto text-blue-500" /> : <span className="text-slate-200">✕</span>}
+                      </td>
+                      <td className="py-6 text-center">
+                        {f.max ? <CheckCircle2 size={20} className="mx-auto text-purple-500" /> : <span className="text-slate-200">✕</span>}
+                      </td>
                     </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-50">
-                    {FEATURE_COMPARISON.map((f, i) => (
-                      <tr key={i} className="hover:bg-slate-50/50 transition-all group">
-                        <td className="py-6 font-bold text-slate-700 text-sm">{f.name}</td>
-                        <td className="py-6 text-center">
-                          {f.lite ? <CheckCircle2 size={20} className="mx-auto text-emerald-500" /> : <span className="text-slate-200">✕</span>}
-                        </td>
-                        <td className="py-6 text-center">
-                          {f.plus ? <CheckCircle2 size={20} className="mx-auto text-blue-500" /> : <span className="text-slate-200">✕</span>}
-                        </td>
-                        <td className="py-6 text-center">
-                          {f.max ? <CheckCircle2 size={20} className="mx-auto text-purple-500" /> : <span className="text-slate-200">✕</span>}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-             </div>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         </>
       ) : (
@@ -350,8 +422,8 @@ export default function SubscriptionPage() {
               <Filter size={16} />
               <span className="text-[10px] font-black uppercase tracking-widest">Filter By:</span>
             </div>
-            
-            <select 
+
+            <select
               value={statusFilter}
               onChange={(e) => { setStatusFilter(e.target.value); setHistoryPage(1); }}
               className="bg-slate-50 border-none rounded-xl px-4 py-2 text-xs font-black text-slate-600 outline-none focus:ring-2 focus:ring-emerald-500/10 min-w-[140px]"
@@ -362,7 +434,7 @@ export default function SubscriptionPage() {
               <option value="FAILED">Failed</option>
             </select>
 
-            <select 
+            <select
               value={planFilter}
               onChange={(e) => { setPlanFilter(e.target.value); setHistoryPage(1); }}
               className="bg-slate-50 border-none rounded-xl px-4 py-2 text-xs font-black text-slate-600 outline-none focus:ring-2 focus:ring-emerald-500/10 min-w-[140px]"
@@ -406,16 +478,20 @@ export default function SubscriptionPage() {
                       </td>
                       <td className="p-8 font-black text-emerald-800 hl-mono">KES {Number(inv.amount).toLocaleString()}</td>
                       <td className="p-8">
-                        <span className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${
-                          inv.status === 'PAID' ? 'bg-emerald-100 text-emerald-700' : 
-                          inv.status === 'FAILED' ? 'bg-red-100 text-red-700' : 
-                          inv.status === 'CANCELLED' ? 'bg-amber-100 text-amber-700' : 
-                          'bg-gray-100 text-gray-700'
-                        }`}>
+                        <span className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${inv.status === 'PAID' ? 'bg-emerald-100 text-emerald-700' :
+                          inv.status === 'FAILED' ? 'bg-red-100 text-red-700' :
+                            inv.status === 'CANCELLED' ? 'bg-amber-100 text-amber-700' :
+                              'bg-gray-100 text-gray-700'
+                          }`}>
                           {inv.status}
                         </span>
+                        {inv.message && inv.message !== 'Success' && (
+                          <p className="mt-2 text-[10px] text-gray-400 font-medium max-w-[200px] leading-tight">
+                            {inv.message}
+                          </p>
+                        )}
                         {inv.status === 'PENDING' && (
-                          <button 
+                          <button
                             onClick={() => verifyMutation.mutate(inv.id)}
                             disabled={verifyMutation.isPending}
                             className="ml-3 text-[10px] font-black text-emerald-600 hover:text-emerald-700 uppercase tracking-widest flex items-center gap-1 group/v"
@@ -433,10 +509,12 @@ export default function SubscriptionPage() {
 
             {pagination && pagination.totalPages > 1 && (
               <div className="p-8 bg-gray-50/30 border-t border-gray-50">
-                <Pagination 
-                  currentPage={historyPage}
-                  totalPages={pagination.totalPages}
+                <Pagination
+                  page={historyPage}
+                  pages={pagination.totalPages}
+                  total={pagination.total}
                   onPageChange={setHistoryPage}
+                  label="Transactions"
                 />
               </div>
             )}
@@ -448,51 +526,51 @@ export default function SubscriptionPage() {
       {showRenewModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4">
           <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md p-8 animate-in zoom-in duration-300">
-             <div className="flex justify-between items-start mb-6">
-               <div className="h-12 w-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
-                 <CreditCard size={24} />
-               </div>
-               <button onClick={() => setShowRenewModal(false)} className="text-gray-400 hover:text-gray-600">✕</button>
-             </div>
-             
-             <h3 className="text-2xl font-black text-gray-900 mb-2">Renew Subscription</h3>
-             <p className="text-gray-500 text-sm mb-8 font-medium">Enter your M-Pesa number to receive the payment prompt.</p>
-             
-             <div className="space-y-6">
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">M-Pesa Number</label>
-                  <div className="relative">
-                    <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-                    <input 
-                      type="text" 
-                      placeholder="0712345678" 
-                      value={mpesaPhone}
-                      onChange={(e) => setMpesaPhone(e.target.value)}
-                      className="w-full bg-gray-50 border-none rounded-xl py-4 pl-12 pr-4 outline-none focus:ring-2 focus:ring-emerald-500/10 text-lg font-black hl-mono"
-                    />
-                  </div>
-                </div>
+            <div className="flex justify-between items-start mb-6">
+              <div className="h-12 w-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                <CreditCard size={24} />
+              </div>
+              <button onClick={() => setShowRenewModal(false)} className="text-gray-400 hover:text-gray-600">✕</button>
+            </div>
 
-                <div className="bg-gray-50 p-4 rounded-xl flex justify-between items-center">
-                  <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Amount to Pay</span>
-                  <span className="text-xl font-black text-emerald-900 hl-mono">KES {PLANS.find(p => p.id === subscription?.planName)?.price.toLocaleString() || '0'}</span>
-                </div>
+            <h3 className="text-2xl font-black text-gray-900 mb-2">Renew Subscription</h3>
+            <p className="text-gray-500 text-sm mb-8 font-medium">Enter your M-Pesa number to receive the payment prompt.</p>
 
-                <button 
-                  onClick={() => {
-                    const daysLeft = subscription?.endDate ? Math.ceil((new Date(subscription.endDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)) : 0
-                    if (daysLeft > 0) {
-                      setShowConfirmRenew(true)
-                    } else {
-                      renewMutation.mutate(mpesaPhone)
-                    }
-                  }}
-                  disabled={renewMutation.isPending || !mpesaPhone}
-                  className="w-full bg-[#0D4A3E] text-white py-4 rounded-xl font-black text-xs uppercase tracking-widest hover:bg-[#0A3D33] transition-all flex items-center justify-center gap-2 shadow-lg shadow-emerald-900/20 disabled:opacity-50"
-                >
-                  {renewMutation.isPending ? <Loader2 className="animate-spin" size={18} /> : 'Pay via M-Pesa'}
-                </button>
-             </div>
+            <div className="space-y-6">
+              <div className="space-y-2">
+                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">M-Pesa Number</label>
+                <div className="relative">
+                  <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                  <input
+                    type="text"
+                    placeholder="0712345678"
+                    value={mpesaPhone}
+                    onChange={(e) => setMpesaPhone(e.target.value)}
+                    className="w-full bg-gray-50 border-none rounded-xl py-4 pl-12 pr-4 outline-none focus:ring-2 focus:ring-emerald-500/10 text-lg font-black hl-mono"
+                  />
+                </div>
+              </div>
+
+              <div className="bg-gray-50 p-4 rounded-xl flex justify-between items-center">
+                <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Amount to Pay</span>
+                <span className="text-xl font-black text-emerald-900 hl-mono">KES {PLANS.find(p => p.id === subscription?.planName)?.price.toLocaleString() || '0'}</span>
+              </div>
+
+              <button
+                onClick={() => {
+                  const daysLeft = subscription?.endDate ? Math.ceil((new Date(subscription.endDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)) : 0
+                  if (daysLeft > 0) {
+                    setShowConfirmRenew(true)
+                  } else {
+                    renewMutation.mutate(mpesaPhone)
+                  }
+                }}
+                disabled={renewMutation.isPending || !mpesaPhone}
+                className="w-full bg-[#0D4A3E] text-white py-4 rounded-xl font-black text-xs uppercase tracking-widest hover:bg-[#0A3D33] transition-all flex items-center justify-center gap-2 shadow-lg shadow-emerald-900/20 disabled:opacity-50"
+              >
+                {renewMutation.isPending ? <Loader2 className="animate-spin" size={18} /> : 'Pay via M-Pesa'}
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -501,71 +579,71 @@ export default function SubscriptionPage() {
       {showChangeModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-md p-4">
           <div className="bg-slate-50 rounded-[40px] shadow-2xl w-full max-w-4xl p-12 animate-in zoom-in duration-300 max-h-[90vh] overflow-y-auto">
-             <div className="flex justify-between items-start mb-12">
-               <div>
-                 <h3 className="text-3xl font-black text-slate-900 mb-2">Upgrade Your Business</h3>
-                 <p className="text-slate-500 font-medium italic">Unlock advanced features and scale your operations.</p>
-               </div>
-               <button onClick={() => setShowChangeModal(false)} className="h-12 w-12 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-400 hover:text-slate-900 transition-all">✕</button>
-             </div>
-             
-             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
-                {PLANS.map(plan => (
-                  <div 
-                    key={plan.id}
-                    onClick={() => setSelectedPlan(plan)}
-                    className={`p-8 rounded-[32px] cursor-pointer transition-all border-2 flex flex-col ${selectedPlan?.id === plan.id ? 'bg-white border-emerald-500 shadow-xl ring-8 ring-emerald-500/5' : 'bg-white border-white hover:border-slate-200 shadow-sm'}`}
-                  >
-                    <div className={`h-12 w-12 rounded-2xl bg-${plan.color}-50 text-${plan.color}-600 flex items-center justify-center mb-6`}>
-                      <Star size={24} />
-                    </div>
-                    <h4 className="text-xl font-black text-slate-900 mb-2">{plan.name}</h4>
-                    <div className="flex items-baseline gap-1 mb-6">
-                      <span className="text-2xl font-black text-slate-900 hl-mono">KES {plan.price.toLocaleString()}</span>
-                      <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">/mo</span>
-                    </div>
-                    <p className="text-xs text-slate-500 font-medium leading-relaxed mb-8 flex-1">{plan.desc}</p>
-                    <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${selectedPlan?.id === plan.id ? 'bg-emerald-500 border-emerald-500 text-white' : 'border-slate-200'}`}>
-                      {selectedPlan?.id === plan.id && <CheckCircle2 size={14} />}
-                    </div>
-                  </div>
-                ))}
-             </div>
+            <div className="flex justify-between items-start mb-12">
+              <div>
+                <h3 className="text-3xl font-black text-slate-900 mb-2">Upgrade Your Business</h3>
+                <p className="text-slate-500 font-medium italic">Unlock advanced features and scale your operations.</p>
+              </div>
+              <button onClick={() => setShowChangeModal(false)} className="h-12 w-12 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-400 hover:text-slate-900 transition-all">✕</button>
+            </div>
 
-             {selectedPlan && (
-               <div className="bg-white p-8 rounded-[32px] border border-slate-100 animate-in slide-in-from-bottom-4">
-                  {/* The warning was moved to ConfirmModal */}
-                  <div className="flex flex-col md:flex-row items-center gap-8">
-                     <div className="flex-1 w-full space-y-2">
-                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">M-Pesa Payment Number</label>
-                        <div className="relative">
-                          <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
-                          <input 
-                            type="text" 
-                            placeholder="0712345678" 
-                            value={mpesaPhone}
-                            onChange={(e) => setMpesaPhone(e.target.value)}
-                            className="w-full bg-slate-50 border-none rounded-2xl py-4 pl-12 pr-4 outline-none focus:ring-4 focus:ring-emerald-500/5 text-lg font-black hl-mono"
-                          />
-                        </div>
-                     </div>
-                     <button 
-                       onClick={() => {
-                         const daysLeft = subscription?.endDate ? Math.ceil((new Date(subscription.endDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)) : 0
-                         if (daysLeft > 0 && subscription?.planName !== selectedPlan.id) {
-                           setShowConfirmChange(true)
-                         } else {
-                           changePlanMutation.mutate({ plan: selectedPlan.id, phone: mpesaPhone })
-                         }
-                       }}
-                       disabled={changePlanMutation.isPending || !mpesaPhone}
-                       className="w-full md:w-auto bg-emerald-600 text-white px-12 py-5 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-emerald-700 transition-all flex items-center justify-center gap-3 shadow-xl shadow-emerald-900/20 disabled:opacity-50"
-                     >
-                       {changePlanMutation.isPending ? <Loader2 className="animate-spin" size={18} /> : <>Upgrade to {selectedPlan.name}</>}
-                     </button>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
+              {PLANS.map(plan => (
+                <div
+                  key={plan.id}
+                  onClick={() => setSelectedPlan(plan)}
+                  className={`p-8 rounded-[32px] cursor-pointer transition-all border-2 flex flex-col ${selectedPlan?.id === plan.id ? 'bg-white border-emerald-500 shadow-xl ring-8 ring-emerald-500/5' : 'bg-white border-white hover:border-slate-200 shadow-sm'}`}
+                >
+                  <div className={`h-12 w-12 rounded-2xl bg-${plan.color}-50 text-${plan.color}-600 flex items-center justify-center mb-6`}>
+                    <Star size={24} />
                   </div>
-               </div>
-             )}
+                  <h4 className="text-xl font-black text-slate-900 mb-2">{plan.name}</h4>
+                  <div className="flex items-baseline gap-1 mb-6">
+                    <span className="text-2xl font-black text-slate-900 hl-mono">KES {plan.price.toLocaleString()}</span>
+                    <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">/mo</span>
+                  </div>
+                  <p className="text-xs text-slate-500 font-medium leading-relaxed mb-8 flex-1">{plan.desc}</p>
+                  <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${selectedPlan?.id === plan.id ? 'bg-emerald-500 border-emerald-500 text-white' : 'border-slate-200'}`}>
+                    {selectedPlan?.id === plan.id && <CheckCircle2 size={14} />}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {selectedPlan && (
+              <div className="bg-white p-8 rounded-[32px] border border-slate-100 animate-in slide-in-from-bottom-4">
+                {/* The warning was moved to ConfirmModal */}
+                <div className="flex flex-col md:flex-row items-center gap-8">
+                  <div className="flex-1 w-full space-y-2">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">M-Pesa Payment Number</label>
+                    <div className="relative">
+                      <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
+                      <input
+                        type="text"
+                        placeholder="0712345678"
+                        value={mpesaPhone}
+                        onChange={(e) => setMpesaPhone(e.target.value)}
+                        className="w-full bg-slate-50 border-none rounded-2xl py-4 pl-12 pr-4 outline-none focus:ring-4 focus:ring-emerald-500/5 text-lg font-black hl-mono"
+                      />
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => {
+                      const daysLeft = subscription?.endDate ? Math.ceil((new Date(subscription.endDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)) : 0
+                      if (daysLeft > 0 && subscription?.planName !== selectedPlan.id) {
+                        setShowConfirmChange(true)
+                      } else {
+                        changePlanMutation.mutate({ plan: selectedPlan.id, phone: mpesaPhone })
+                      }
+                    }}
+                    disabled={changePlanMutation.isPending || !mpesaPhone}
+                    className="w-full md:w-auto bg-emerald-600 text-white px-12 py-5 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-emerald-700 transition-all flex items-center justify-center gap-3 shadow-xl shadow-emerald-900/20 disabled:opacity-50"
+                  >
+                    {changePlanMutation.isPending ? <Loader2 className="animate-spin" size={18} /> : <>Upgrade to {selectedPlan.name}</>}
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}

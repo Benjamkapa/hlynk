@@ -122,7 +122,7 @@ export default function CustomersPage() {
                   <td className="px-8 py-6">
                     <div className="flex items-center gap-4">
                       <div className="h-12 w-12 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center justify-center overflow-hidden">
-                        <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${c.name}`} alt="avatar" />
+                        <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${c.name}`} alt="avatar" referrerpolicy="no-referrer" />
                       </div>
                       <div>
                         <p className="font-black text-slate-900 text-sm">{c.name}</p>

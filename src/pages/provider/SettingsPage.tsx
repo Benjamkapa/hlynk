@@ -102,22 +102,13 @@ export default function SettingsPage() {
   const allTabs = [
     { name: 'Profile', icon: User },
     { name: 'Business', icon: Store },
-    { name: 'Developer', icon: Code },
     { name: 'Notifications', icon: Bell },
     { name: 'Security', icon: Lock },
-    { name: 'Logs', icon: Shield, role: ['PROVIDER', 'SUPER_ADMIN'] },
   ]
 
   const tabs = allTabs.filter(tab => {
     // Role-based filtering
     if (tab.role && !tab.role.includes(user?.role || '')) return false
-
-    // Plan & Role based for Developer section
-    if (tab.name === 'Developer') {
-      const isProvider = user?.role === 'PROVIDER'
-      const isPaidPlan = user?.subscription?.planName === 'PLUS' || user?.subscription?.planName === 'MAX'
-      return isProvider && isPaidPlan
-    }
 
     return true
   })
@@ -172,11 +163,12 @@ export default function SettingsPage() {
                 <div className="flex items-center gap-6">
                   <div className="relative group">
                     <div className="h-24 w-24 rounded-3xl bg-gray-100 flex items-center justify-center overflow-hidden border-2 border-slate-200 shadow-inner">
-                      {user?.photoUrl || user?.avatar ? (
-                        <img src={user.photoUrl || user.avatar} className="h-full w-full object-cover" alt="" />
-                      ) : (
-                        <User size={40} className="text-gray-300" />
-                      )}
+                      <img 
+                        src={user?.photoUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(formData?.name || user?.name || '')}&background=0D4A3E&color=fff`} 
+                        className="h-full w-full object-cover" 
+                        alt="" 
+                        referrerPolicy="no-referrer"
+                      />
                       {uploading && (
                         <div className="absolute inset-0 bg-black/20 flex items-center justify-center backdrop-blur-[2px]">
                           <Loader2 size={24} className="text-white animate-spin" />
@@ -271,174 +263,91 @@ export default function SettingsPage() {
               </div>
             )}
 
-            {activeTab === 'Developer' && (
-              <div className="space-y-6">
-                <FeatureGate feature="mpesa_stk">
-                  <h4 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-6">Vendor M-Pesa Gateway</h4>
-                  <p className="text-[11px] text-gray-500 mb-6 font-medium max-w-lg">Enter your Daraja API credentials to receive payments directly to your Till or Paybill number via STK Push.</p>
-                  <div className="space-y-4 max-w-2xl bg-slate-50 p-6 rounded-2xl border border-slate-100">
-                    <div className="flex gap-4 mb-4">
-                      <button
-                        onClick={() => setFormData({ ...formData, operationalSettings: { ...formData.operationalSettings, mpesa: { ...formData.operationalSettings?.mpesa, env: 'sandbox' } } })}
-                        className={`flex-1 py-3 rounded-xl font-bold text-xs uppercase tracking-widest transition-all ${formData.operationalSettings?.mpesa?.env !== 'production' ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-900/10' : 'bg-white border border-slate-200 text-slate-500'}`}
-                      >Sandbox</button>
-                      <button
-                        onClick={() => setFormData({ ...formData, operationalSettings: { ...formData.operationalSettings, mpesa: { ...formData.operationalSettings?.mpesa, env: 'production' } } })}
-                        className={`flex-1 py-3 rounded-xl font-bold text-xs uppercase tracking-widest transition-all ${formData.operationalSettings?.mpesa?.env === 'production' ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-900/10' : 'bg-white border border-slate-200 text-slate-500'}`}
-                      >Production</button>
-                    </div>
-                    <InputGroup
-                      label="Consumer Key"
-                      value={formData.operationalSettings?.mpesa?.consumerKey || ''}
-                      onChange={(v: string) => setFormData({ ...formData, operationalSettings: { ...formData.operationalSettings, mpesa: { ...formData.operationalSettings?.mpesa, consumerKey: v } } })}
-                    />
-                    <InputGroup
-                      label="Consumer Secret"
-                      type="password"
-                      value={formData.operationalSettings?.mpesa?.consumerSecret || ''}
-                      onChange={(v: string) => setFormData({ ...formData, operationalSettings: { ...formData.operationalSettings, mpesa: { ...formData.operationalSettings?.mpesa, consumerSecret: v } } })}
-                    />
-                    <div className="grid grid-cols-2 gap-6">
-                      <InputGroup
-                        label="Shortcode"
-                        value={formData.operationalSettings?.mpesa?.shortcode || ''}
-                        onChange={(v: string) => setFormData({ ...formData, operationalSettings: { ...formData.operationalSettings, mpesa: { ...formData.operationalSettings?.mpesa, shortcode: v } } })}
-                      />
-                      <InputGroup
-                        label="Passkey"
-                        type="password"
-                        value={formData.operationalSettings?.mpesa?.passkey || ''}
-                        onChange={(v: string) => setFormData({ ...formData, operationalSettings: { ...formData.operationalSettings, mpesa: { ...formData.operationalSettings?.mpesa, passkey: v } } })}
-                      />
-                    </div>
-                  </div>
-                </FeatureGate>
-
-                <FeatureGate feature="ai_analyst">
-                  <div className="pt-10 border-t border-gray-100">
-                    <h4 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-6">AI Intelligence Engine</h4>
-                    <p className="text-[11px] text-gray-500 mb-6 font-medium max-w-lg">Configure your preferred AI model to power the business analyst workspace. Requires an active API key.</p>
-                    
-                    <div className="space-y-6 max-w-2xl bg-emerald-50/30 p-8 rounded-3xl border border-emerald-100">
-                      <div className="flex flex-wrap gap-3 mb-6">
-                        {['none', 'openai', 'anthropic', 'gemini'].map(p => (
-                          <button
-                            key={p}
-                            onClick={() => setFormData({ ...formData, operationalSettings: { ...formData.operationalSettings, ai: { ...formData.operationalSettings?.ai, provider: p } } })}
-                            className={`px-4 py-2 rounded-xl font-black text-[9px] uppercase tracking-widest transition-all ${
-                              (formData.operationalSettings?.ai?.provider || 'none') === p 
-                              ? 'bg-[#0D4A3E] text-white shadow-lg' 
-                              : 'bg-white border border-slate-100 text-slate-400'
-                            }`}
-                          >
-                            {p}
-                          </button>
-                        ))}
-                      </div>
-
-                      {(formData.operationalSettings?.ai?.provider && formData.operationalSettings?.ai?.provider !== 'none') && (
-                        <div className="space-y-4 animate-in slide-in-from-top-2 duration-500">
-                          <InputGroup
-                            label={`${formData.operationalSettings.ai.provider.toUpperCase()} API Key`}
-                            type="password"
-                            placeholder="sk-..."
-                            value={formData.operationalSettings?.ai?.apiKey || ''}
-                            onChange={(v: string) => setFormData({ ...formData, operationalSettings: { ...formData.operationalSettings, ai: { ...formData.operationalSettings?.ai, apiKey: v } } })}
-                          />
-                          <p className="text-[9px] text-emerald-600 font-bold uppercase tracking-widest flex items-center gap-2">
-                             <Sparkles size={10} />
-                             This key is encrypted at rest and never shared.
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </FeatureGate>
-              </div>
-            )}
-
             {activeTab === 'Notifications' && (
-              <div className="space-y-6">
-                <h4 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-6">Channel Preferences</h4>
-                <div className="space-y-4">
-                  <ToggleItem
-                    title="Email Alerts"
-                    desc="Receive daily sales reports via email"
-                    active={formData.notificationSettings?.emailAlerts}
-                    onToggle={(v: boolean) => setFormData({
-                      ...formData,
-                      notificationSettings: { ...formData.notificationSettings, emailAlerts: v }
-                    })}
-                  />
-                  <ToggleItem
-                    title="SMS Notifications"
-                    desc="Get notified when stock is low"
-                    active={formData.notificationSettings?.smsNotifications}
-                    onToggle={(v: boolean) => setFormData({
-                      ...formData,
-                      notificationSettings: { ...formData.notificationSettings, smsNotifications: v }
-                    })}
-                  />
-                  <ToggleItem
-                    title="Marketing"
-                    desc="News about new features and promotions"
-                    active={formData.notificationSettings?.marketing}
-                    onToggle={(v: boolean) => setFormData({
-                      ...formData,
-                      notificationSettings: { ...formData.notificationSettings, marketing: v }
-                    })}
-                  />
+              <div className="space-y-8">
+                <div>
+                  <h4 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-6">Alert Preferences</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <ToggleItem
+                      title="Email Notifications"
+                      desc="Receive daily business summaries via email"
+                      active={formData.operationalSettings?.notifications?.email}
+                      onToggle={(v: boolean) => setFormData({
+                        ...formData,
+                        operationalSettings: { 
+                          ...formData.operationalSettings, 
+                          notifications: { ...formData.operationalSettings.notifications, email: v }
+                        }
+                      })}
+                    />
+                    <ToggleItem
+                      title="SMS Alerts"
+                      desc="Get critical stock alerts on your phone"
+                      active={formData.operationalSettings?.notifications?.sms}
+                      onToggle={(v: boolean) => setFormData({
+                        ...formData,
+                        operationalSettings: { 
+                          ...formData.operationalSettings, 
+                          notifications: { ...formData.operationalSettings.notifications, sms: v }
+                        }
+                      })}
+                    />
+                  </div>
+                </div>
+                <div>
+                  <h4 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-6">Event Tracking</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <ToggleItem
+                      title="Sales Notifications"
+                      desc="Real-time alerts for every recorded sale"
+                      active={formData.operationalSettings?.notifications?.sales}
+                      onToggle={(v: boolean) => setFormData({
+                        ...formData,
+                        operationalSettings: { 
+                          ...formData.operationalSettings, 
+                          notifications: { ...formData.operationalSettings.notifications, sales: v }
+                        }
+                      })}
+                    />
+                    <ToggleItem
+                      title="Inventory Alerts"
+                      desc="Notify when stock falls below threshold"
+                      active={formData.operationalSettings?.notifications?.inventory}
+                      onToggle={(v: boolean) => setFormData({
+                        ...formData,
+                        operationalSettings: { 
+                          ...formData.operationalSettings, 
+                          notifications: { ...formData.operationalSettings.notifications, inventory: v }
+                        }
+                      })}
+                    />
+                  </div>
                 </div>
               </div>
             )}
-
 
             {activeTab === 'Security' && (
-              <div className="space-y-8">
-                <div className="space-y-6 max-w-md">
-                  <InputGroup
-                    label="Current Password"
-                    placeholder="••••••••"
-                    type="password"
-                    value={formData.currentPassword || ''}
-                    onChange={(v: string) => setFormData({ ...formData, currentPassword: v })}
-                  />
-                  <InputGroup
-                    label="New Password"
-                    placeholder="••••••••"
-                    type="password"
-                    value={formData.newPassword || ''}
-                    onChange={(v: string) => setFormData({ ...formData, newPassword: v })}
-                  />
-                  <InputGroup
-                    label="Confirm New Password"
-                    placeholder="••••••••"
-                    type="password"
-                    value={formData.confirmPassword || ''}
-                    onChange={(v: string) => setFormData({ ...formData, confirmPassword: v })}
-                  />
-                </div>
-
-                <div className="pt-8 border-t border-gray-50">
-                  <h4 className="text-xs font-black text-red-600 uppercase tracking-widest mb-4">Danger Zone</h4>
-                  <p className="text-xs text-gray-500 mb-6 font-medium">Once you delete your account, there is no going back. Please be certain.</p>
-                  <button
-                    onClick={() => setConfirmDeleteId('deactivate')}
-                    disabled={deactivateMutation.isPending}
-                    className="px-6 py-3 border-2 border-red-100 text-red-600 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-red-50 transition-all flex items-center gap-2"
-                  >
-                    {deactivateMutation.isPending ? <Loader2 className="animate-spin" size={14} /> : <Trash2 size={14} />}
-                    Delete My Account
-                  </button>
+              <div className="space-y-10">
+                <ActivityLogViewer />
+                <div className="pt-10 border-t border-gray-100">
+                  <h4 className="text-xs font-black text-red-500 uppercase tracking-widest mb-6">Danger Zone</h4>
+                  <div className="p-8 rounded-[20px] bg-red-50 border border-red-100 flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-black text-red-900">Deactivate Account</p>
+                      <p className="text-[10px] text-red-600 font-bold mt-1">This will immediately revoke access for all your staff.</p>
+                    </div>
+                    <button 
+                      onClick={() => setConfirmDeleteId('deactivate')}
+                      className="px-6 py-3 bg-red-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-red-700 transition-all shadow-lg shadow-red-900/10"
+                    >
+                      Deactivate
+                    </button>
+                  </div>
                 </div>
               </div>
             )}
 
-            {activeTab === 'Logs' && (
-              <FeatureGate feature="audit_logs">
-                <ActivityLogViewer />
-              </FeatureGate>
-            )}
+
           </div>
         </div>
       </div>

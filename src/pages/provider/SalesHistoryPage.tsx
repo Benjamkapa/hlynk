@@ -64,7 +64,11 @@ export default function SalesHistoryPage() {
 
   const sales = salesData?.items || []
   const pages = salesData?.pages || 1
-  const stats = salesData?.stats || { totalToday: 0, transactions: 0, avgSale: 0 }
+  const stats = {
+    totalToday: salesData?.stats?.totalToday || 0,
+    transactions: salesData?.stats?.transactions || 0,
+    avgSale: salesData?.stats?.avgSale || 0
+  }
 
   const exportToCSV = () => {
     if (sales.length === 0) return toast.error('No data to export')
@@ -118,13 +122,13 @@ export default function SalesHistoryPage() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <StatCard
           title={selectedDate === new Date().toISOString().split('T')[0] ? "Total Today" : `Total (${selectedDate})`}
-          value={`KES ${stats.totalToday.toLocaleString()}`}
+          value={`KES ${(stats.totalToday || 0).toLocaleString()}`}
           sub="Gross Revenue"
           icon={Receipt}
           variant="emerald"
         />
         <StatCard title="Transactions" value={stats.transactions.toString()} sub="Sales processed" icon={CreditCard} variant="blue" />
-        <StatCard title="Avg. Sale" value={`KES ${stats.avgSale.toLocaleString()}`} sub="Per customer" icon={User} variant="amber" />
+        <StatCard title="Avg. Sale" value={`KES ${(stats.avgSale || 0).toLocaleString()}`} sub="Per customer" icon={User} variant="amber" />
       </div>
 
       <div className="bg-white rounded-2xl border border-gray-100 shadow-xl shadow-gray-900/5 overflow-hidden">

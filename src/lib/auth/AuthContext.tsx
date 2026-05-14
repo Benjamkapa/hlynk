@@ -15,10 +15,24 @@ const AuthContext = createContext<AuthContextValue | null>(null)
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(() => {
-    const cached = storage.getItem('user_profile')
-    return cached ? JSON.parse(cached) : null
+    try {
+      const cached = storage.getItem('user_profile')
+      if (!cached || cached === 'undefined') return null
+      return JSON.parse(cached)
+    } catch (e) {
+      console.error('Failed to parse cached user profile', e)
+      return null
+    }
   })
-  const [isLoading, setIsLoading] = useState(!storage.getItem('user_profile'))
+  const [isLoading, setIsLoading] = useState(() => {
+    const token = storage.getItem('accessToken')
+    const cached = storage.getItem('user_profile')
+    // If we have a token but no cached user, we MUST load
+    if (token && (!cached || cached === 'undefined')) return true
+    // Even if we have a cached user, we might want to show loading to avoid stale gates
+    // but for "speed" we usually show cached. Let's force loading ONLY if we are in the initial mount
+    return !!token 
+  })
 
   useEffect(() => {
     const token = storage.getItem('accessToken')
@@ -26,8 +40,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const fetchUser = async () => {
       try {
         const res = await authApi.me()
-        setUser(res.data)
-        storage.setItem('user_profile', JSON.stringify(res.data))
+        if (res.success && res.data) {
+          setUser(res.data)
+          storage.setItem('user_profile', JSON.stringify(res.data))
+        } else {
+          throw new Error('Invalid user data received')
+        }
       } catch {
         storage.removeItem('accessToken')
         storage.removeItem('refreshToken')
@@ -51,6 +69,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     storage.setItem('accessToken', tokens.accessToken)
     storage.setItem('refreshToken', tokens.refreshToken)
     storage.setItem('user_profile', JSON.stringify(userData))
+    // Clear all queries to ensure no stale data from a previous session remains
+    queryClient.clear()
     setUser(userData)
   }
 
@@ -69,9 +89,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   const refreshUser = async () => {
-    const res = await authApi.me()
-    setUser(res.data)
-    storage.setItem('user_profile', JSON.stringify(res.data))
+    try {
+      const res = await authApi.me()
+      if (res.success && res.data) {
+        setUser(res.data)
+        storage.setItem('user_profile', JSON.stringify(res.data))
+        // Force re-fetch of all subscription-dependent queries
+        queryClient.invalidateQueries()
+      }
+    } catch (err) {
+      console.error('Failed to refresh user profile', err)
+    }
   }
 
   return (

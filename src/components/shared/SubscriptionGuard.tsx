@@ -15,7 +15,11 @@ export default function SubscriptionGuard({ children }: { children?: React.React
     retry: 1
   })
 
-  if (authLoading || subLoading) {
+  // Priority 1: Use the subscription data already present in the AuthUser object
+  // Priority 2: Use the data from the direct subscription API call
+  const subscription = user?.subscription || subResponse?.data
+  
+  if (authLoading || (subLoading && !user?.subscription)) {
     return (
       <div className="flex h-screen items-center justify-center bg-slate-50">
         <div className="flex flex-col items-center gap-4">
@@ -29,7 +33,8 @@ export default function SubscriptionGuard({ children }: { children?: React.React
   // Super Admins bypass everything
   if (user?.role === 'SUPER_ADMIN') return <>{children || <Outlet />}</>
 
-  const subscription = subResponse?.data
+  // Use the prioritized subscription object
+
   
   const now = new Date().getTime()
   const endDate = subscription?.endDate ? new Date(subscription.endDate).getTime() : null

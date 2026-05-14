@@ -43,5 +43,10 @@ export default defineConfig({
   resolve: {
     alias: { '@': path.resolve(__dirname, './src') },
   },
-  server: { port: 5173 },
+  server: { 
+    port: 5173,
+    headers: {
+      'Cross-Origin-Opener-Policy': 'same-origin-allow-popups',
+    }
+  },
 })

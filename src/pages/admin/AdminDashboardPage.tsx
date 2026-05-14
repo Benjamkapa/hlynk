@@ -70,7 +70,13 @@ export default function AdminDashboardPage() {
               {stats?.overview?.activeAvatars?.length > 0 ? (
                 stats.overview.activeAvatars.map((u: any, i: number) => (
                   <div key={i} className="relative group">
-                    <img src={u.photoUrl} className="h-8 w-8 rounded-full border-2 border-white bg-slate-100 object-cover" title={u.name} alt="" />
+                    <img 
+                      src={u.photoUrl} 
+                      className="h-8 w-8 rounded-full border-2 border-white bg-slate-100 object-cover" 
+                      title={u.name} 
+                      alt="" 
+                      referrerPolicy="no-referrer"
+                    />
                     <div className="absolute -bottom-1 -right-1 h-2.5 w-2.5 bg-emerald-500 border-2 border-white rounded-full" />
                   </div>
                 ))
@@ -124,7 +130,7 @@ export default function AdminDashboardPage() {
           </div>
           
           <div className="h-[400px] w-full relative z-10">
-            <ResponsiveContainer width="100%" height="100%" minWidth={0}>
+            <ResponsiveContainer width="100%" height="100%" minWidth={0} debounce={100}>
               <AreaChart data={revenueData}>
                 <defs>
                   <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">

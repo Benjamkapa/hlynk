@@ -8,10 +8,10 @@ export const providersApi = {
   deactivateAccount: () => api.post('/providers/me/security/deactivate').then(r => r.data),
   getActivityLogs: (params?: { page?: number; limit?: number }) => api.get('/providers/me/activity', { params }).then(r => r.data),
   getStats: () => api.get('/providers/stats').then(r => r.data),
-  getStaff: () => api.get('/providers/staff').then(r => r.data),
-  createStaff: (data: any) => api.post('/providers/staff', data).then(r => r.data),
-  updateStaff: (id: string, data: any) => api.put(`/providers/staff/${id}`, data).then(r => r.data),
-  deleteStaff: (id: string) => api.delete(`/providers/staff/${id}`).then(r => r.data),
+  getStaff: () => api.get('/staff').then(r => r.data),
+  createStaff: (data: any) => api.post('/staff', data).then(r => r.data),
+  updateStaff: (id: string, data: any) => api.put(`/staff/${id}`, data).then(r => r.data),
+  deleteStaff: (id: string) => api.delete(`/staff/${id}`).then(r => r.data),
   uploadPhoto: (file: File) => {
     const form = new FormData()
     form.append('file', file)

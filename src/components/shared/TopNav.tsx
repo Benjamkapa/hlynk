@@ -161,15 +161,12 @@ export default function TopNav({ onMobileMenuToggle, isCollapsed, onToggleCollap
             className={`p-1.5 rounded-2xl border flex items-center gap-3 transition-all ${showUserMenu ? 'bg-white border-emerald-200 shadow-xl ring-4 ring-emerald-500/5' : 'bg-transparent border-transparent hover:bg-white hover:border-slate-100 hover:shadow-lg'}`}
           >
             <div className="w-10 h-10 rounded-xl bg-emerald-600 overflow-hidden shadow-2xl shadow-emerald-900/20 border border-white/20 flex items-center justify-center">
-              {profileImageSrc ? (
-                <img
-                  src={profileImageSrc}
-                  alt={user?.name ? `${user.name} profile` : 'Profile'}
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <User size={20} className="text-white" />
-              )}
+              <img
+                src={user?.photoUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || '')}&background=0D4A3E&color=fff`}
+                alt={user?.name ? `${user.name} profile` : 'Profile'}
+                className="w-full h-full object-cover"
+                referrerPolicy="no-referrer"
+              />
             </div>
             <div className="text-left hidden xl:block pr-3">
               <p className="text-sm font-black text-slate-900 tracking-tight leading-none mb-1.5">{user?.name}</p>

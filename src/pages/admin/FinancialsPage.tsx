@@ -91,7 +91,7 @@ export default function FinancialsPage() {
             </div>
           </div>
           <div className="h-[400px] relative z-10">
-            <ResponsiveContainer width="100%" height="100%" minWidth={0}>
+            <ResponsiveContainer width="100%" height="100%" minWidth={0} debounce={100}>
               <BarChart data={revenueData}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F1F5F9" />
                 <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fontSize: 10, fill: '#94A3B8', fontFamily: 'JetBrains Mono'}} dy={15} />

@@ -3,7 +3,7 @@
 This guide outlines the exact steps to connect your hlynk account directly to your Safaricom M-Pesa Till or Paybill number. This allows you to push payment requests (STK Push) directly to your customers' phones at the Point of Sale.
 
 > [!IMPORTANT]
-> To use this feature, your account must have access to the **M-Pesa Gateway** feature (typically available on Pro or higher subscription tiers).
+> To use this feature, your account must have access to the **M-Pesa Gateway** feature (available on **Plus** or **Max** subscription tiers).
 
 ## Prerequisites: Safaricom Daraja Credentials
 

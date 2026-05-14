@@ -38,7 +38,17 @@ export default function ReportsPage() {
     </div>
   )
 
-  const chartData = stats?.salesChart || []
+  const chartData = stats?.salesChart && stats.salesChart.length > 0 
+    ? stats.salesChart 
+    : Array.from({ length: 7 }).map((_, i) => {
+        const d = new Date();
+        d.setDate(d.getDate() - (6 - i));
+        return {
+          name: d.toLocaleDateString('en-US', { weekday: 'short' }),
+          sales: 0,
+          profit: 0
+        };
+      });
 
   const handleExport = () => {
     if (!stats) return
@@ -52,31 +62,7 @@ export default function ReportsPage() {
     toast.success('Logs exported to CSV')
   }
 
-  const aiConfig = profile?.data?.operationalSettings?.ai
 
-  const generatePrompt = () => {
-    if (!stats || !stats.aiReportData) return ''
-    const { totalSales26Days, totalExpenses26Days, transactionCount26Days } = stats.aiReportData
-    
-    return `Act as an expert business consultant for my retail shop. Please analyze my performance over the last 26 days and give me actionable insights.
-
-PERFORMANCE DATA (Last 26 Days):
-- Gross Revenue: KES ${totalSales26Days.toLocaleString()}
-- Total Expenses: KES ${totalExpenses26Days.toLocaleString()}
-- Net Profit: KES ${(totalSales26Days - totalExpenses26Days).toLocaleString()}
-- Total Transactions: ${transactionCount26Days}
-- Out of Stock Items Currently: ${stats.outOfStockCount}
-
-Please provide a brief, actionable report detailing:
-1. Overall trend analysis (is my business healthy?)
-2. Critical warnings (inventory management, expense ratio)
-3. Three highly specific, actionable tips to increase my profit margin next month. Format the response beautifully using Markdown.`
-  }
-
-  const handleCopyPrompt = () => {
-    navigator.clipboard.writeText(generatePrompt())
-    toast.success('Prompt copied! Paste it into ChatGPT or Claude.')
-  }
 
   return (
     <FeatureGate feature="advanced_reports">
@@ -107,31 +93,31 @@ Please provide a brief, actionable report detailing:
                  </div>
               </div>
             </div>
-            <div className="h-[300px]">
-              <ResponsiveContainer width="100%" height="100%" minWidth={0}>
-                <AreaChart data={chartData}>
-                  <defs>
-                    <linearGradient id="colorSales" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#10B981" stopOpacity={0.1}/>
-                      <stop offset="95%" stopColor="#10B981" stopOpacity={0}/>
-                    </linearGradient>
-                    <linearGradient id="colorProfit" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.1}/>
-                      <stop offset="95%" stopColor="#3B82F6" stopOpacity={0}/>
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F3F4F6" />
-                  <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fontSize: 11, fill: '#9CA3AF', fontWeight: 600, fontFamily: 'JetBrains Mono'}} dy={10} />
-                  <YAxis axisLine={false} tickLine={false} tick={{fontSize: 11, fill: '#9CA3AF', fontWeight: 600, fontFamily: 'JetBrains Mono'}} />
-                  <Tooltip 
-                    cursor={{stroke: '#10B981', strokeWidth: 2}}
-                    contentStyle={{ borderRadius: '24px', border: 'none', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.1)', padding: '20px' }}
-                    itemStyle={{ fontFamily: 'JetBrains Mono', fontWeight: 800 }}
-                  />
-                  <Area type="monotone" dataKey="sales" stroke="#10B981" strokeWidth={4} fillOpacity={1} fill="url(#colorSales)" />
-                  <Area type="monotone" dataKey="profit" stroke="#3B82F6" strokeWidth={4} fillOpacity={1} fill="url(#colorProfit)" />
-                </AreaChart>
-              </ResponsiveContainer>
+            <div className="h-[300px] w-full min-h-[300px]">
+                <ResponsiveContainer width="100%" height="100%" minWidth={0} debounce={100}>
+                  <AreaChart data={chartData}>
+                    <defs>
+                      <linearGradient id="colorSales" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#10B981" stopOpacity={0.1}/>
+                        <stop offset="95%" stopColor="#10B981" stopOpacity={0}/>
+                      </linearGradient>
+                      <linearGradient id="colorProfit" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.1}/>
+                        <stop offset="95%" stopColor="#3B82F6" stopOpacity={0}/>
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F3F4F6" />
+                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fontSize: 11, fill: '#9CA3AF', fontWeight: 600, fontFamily: 'JetBrains Mono'}} dy={10} />
+                    <YAxis axisLine={false} tickLine={false} tick={{fontSize: 11, fill: '#9CA3AF', fontWeight: 600, fontFamily: 'JetBrains Mono'}} />
+                    <Tooltip 
+                      cursor={{stroke: '#10B981', strokeWidth: 2}}
+                      contentStyle={{ borderRadius: '24px', border: 'none', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.1)', padding: '20px' }}
+                      itemStyle={{ fontFamily: 'JetBrains Mono', fontWeight: 800 }}
+                    />
+                    <Area type="monotone" dataKey="sales" stroke="#10B981" strokeWidth={4} fillOpacity={1} fill="url(#colorSales)" />
+                    <Area type="monotone" dataKey="profit" stroke="#3B82F6" strokeWidth={4} fillOpacity={1} fill="url(#colorProfit)" />
+                  </AreaChart>
+                </ResponsiveContainer>
             </div>
           </div>
 

@@ -50,7 +50,7 @@ const pricingPlans = [
       "Premium Operational Tools",
       "Priority Technical Support"
     ],
-    buttonText: "Go Pro"
+    buttonText: "Go Max"
   }
 ]
 

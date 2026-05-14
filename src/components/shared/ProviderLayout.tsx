@@ -4,7 +4,7 @@ import {
   LayoutDashboard, Calendar, BarChart2, Users,
   Settings, LogOut, Package, ShoppingCart,
   Zap, PanelLeftClose, PanelLeftOpen, Clock, AlertTriangle,
-  Lock
+  Lock, Code, Shield, X, Star, Loader2, Terminal
 } from "lucide-react";
 import { useLocation, Outlet, NavLink, Link } from "react-router-dom";
 import TopNav from "./TopNav";
@@ -62,14 +62,21 @@ export default function ProviderLayout() {
     {
       label: 'Insights',
       items: [
-        { to: '/dashboard/reports', label: 'Business Reports', icon: BarChart2, permission: 'reports', plan: 'PLUS' },
-        { to: '/dashboard/subscription', label: 'Billing Plan', icon: Calendar, role: 'PROVIDER' },
+        { to: '/dashboard/reports', label: 'Business Reports', icon: BarChart2, permission: 'reports', plan: 'PLUS' }
       ],
     },
     {
       label: 'Team',
       items: [
-        { to: '/dashboard/staff', label: 'Staff Management', icon: Users, role: 'PROVIDER', plan: 'MAX' },
+        { to: '/dashboard/staff', label: 'Staff Management', icon: Users, permission: 'staff', plan: 'MAX' },
+      ],
+    },
+    {
+      label: 'System',
+      items: [
+        { to: '/dashboard/logs', label: 'Security Logs', icon: Shield, permission: 'logs', plan: 'MAX' },
+        { to: '/dashboard/subscription', label: 'Billing Plan', icon: Calendar, role: 'PROVIDER' },
+        { to: '/dashboard/developer', label: 'Developer', icon: Terminal, role: 'PROVIDER', plan: 'PLUS' },
       ],
     },
   ];
@@ -80,25 +87,45 @@ export default function ProviderLayout() {
       // Super admin sees everything as unlocked
       if (user?.role === 'SUPER_ADMIN') return { ...item, isLocked: false }
       
-      // If item is role-restricted (e.g. Billing for PROVIDER only)
-      if ((item as any).role && user?.role !== (item as any).role) return null
-
-      // Plan restrictions
-      const currentPlan = user?.subscription?.planName || 'LITE'
-      let isLocked = false
-      if (item.plan === 'MAX' && currentPlan !== 'MAX') isLocked = true
-      if (item.plan === 'PLUS' && !['PLUS', 'MAX'].includes(currentPlan)) isLocked = true
-
-      // If user is STAFF, check permissions
+      // If user is STAFF, we hide everything they don't have permission for
       if (user?.role === 'STAFF') {
-        if ((item as any).permission && !user.permissions?.includes((item as any).permission)) {
-          // If they don't have permission, they shouldn't even see the locked version if it's a security thing
-          // But for "missed utilities", we might want to show them?
-          // Let's hide if no permission, but lock if no plan.
-          return null
+        // Hlynk Rule: Staff ONLY see what they are allowed to use. 
+        // If they don't have the permission, hide it (return null).
+        if (item.permission && !user.permissions?.includes(item.permission)) {
+          return null;
+        }
+        
+        // Administrative/Owner-only areas are always hidden from staff
+        if (item.to.includes('subscription') || item.to.includes('developer') || (item as any).role === 'PROVIDER') {
+          return null;
         }
       }
+
+      // Default lock state for everyone else (Providers see everything but locked)
+      let isLocked = false
+
+      const currentPlanRaw = user?.subscription?.planName || 'LITE'
+      const currentPlan = currentPlanRaw.toUpperCase()
+      const isTrial = user?.subscription?.status === 'TRIAL'
       
+      const getPlanWeight = (p: string) => {
+        if (p.includes('MAX')) return 3
+        if (p.includes('PLUS')) return 2
+        return 1
+      }
+
+      const userWeight = getPlanWeight(currentPlan)
+      const requiredWeight = item.plan ? getPlanWeight(item.plan) : 1
+
+      if (!isTrial && userWeight < requiredWeight && user?.role !== 'STAFF') {
+        isLocked = true
+      }
+
+      // Role restrictions for non-staff (e.g. Providers seeing special roles)
+      if (user?.role !== 'STAFF' && (item as any).role && user?.role !== (item as any).role) {
+        isLocked = true
+      }
+
       return { ...item, isLocked }
     }).filter((item): item is any => item !== null)
   })).filter(group => group.items.length > 0);
@@ -113,7 +140,7 @@ export default function ProviderLayout() {
 
   useEffect(() => {
     if (isExpiringSoon && !localStorage.getItem('hlynk_has_reviewed')) {
-      const timer = setTimeout(() => setShowReviewModal(true), 3000);
+      const timer = setTimeout(() => setShowReviewModal(true), 10000); // 10s delay for better UX
       return () => clearTimeout(timer);
     }
   }, [isExpiringSoon]);
@@ -136,17 +163,17 @@ export default function ProviderLayout() {
   const SidebarContent = ({ collapsed }: { collapsed: boolean }) => (
     <div className={`flex flex-col h-full bg-white transition-all duration-300 ${collapsed ? 'w-[90px]' : 'w-[280px]'}`}>
       <div className={`pt-10 pb-12 flex items-center transition-all duration-300 ${collapsed ? 'justify-center' : 'px-8'}`}>
-        <Link to="/" className="flex items-center gap-3">
+        <div className="flex items-center gap-3">
           {collapsed ? (
             <img src="/fav.png" alt="hlynk" className="h-8 w-8" />
           ) : (
             <img src="/logo.png" alt="hlynk" className="h-10 w-auto" />
           )}
-        </Link>
+        </div>
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 px-4 space-y-8 overflow-y-auto overflow-x-hidden pt-4 custom-scrollbar">
+      <nav className="flex-1 px-4 space-y-4 overflow-y-auto overflow-x-hidden pt-4 custom-scrollbar">
         {filteredGroups.map((group) => (
           <div key={group.label}>
             <AnimatePresence mode="wait">
@@ -155,40 +182,62 @@ export default function ProviderLayout() {
                   initial={{ opacity: 0, x: -10 }}
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -10 }}
-                  className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 px-4 mb-4 whitespace-nowrap"
+                  className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400 px-4 mb-2 whitespace-nowrap"
                 >
                   {group.label}
                 </motion.p>
               )}
             </AnimatePresence>
-            <div className="space-y-1.5">
-              {group.items.map((item) => (
-                <NavLink
-                  key={item.label}
-                  to={item.to}
-                  end={item.end}
-                  className={({ isActive }) =>
-                    `hl-sidebar-item ${isActive ? 'active' : ''} ${collapsed ? 'justify-center px-0' : ''} ${item.isLocked ? 'opacity-60 grayscale-[0.5]' : ''}`
-                  }
-                >
-                  <div className="relative">
-                    <item.icon size={20} className={collapsed ? '' : 'shrink-0'} />
-                    {item.isLocked && (
-                      <div className="absolute -top-1 -right-1 h-3 w-3 bg-amber-500 rounded-full flex items-center justify-center border-2 border-white">
-                        <Lock size={6} className="text-white fill-white" />
-                      </div>
-                    )}
-                  </div>
-                  {!collapsed && (
-                    <div className="flex items-center justify-between flex-1 min-w-0">
-                      <span className="font-bold whitespace-nowrap truncate">{item.label}</span>
+            <div className="space-y-1">
+              {group.items.map((item) => {
+                const ItemContent = (
+                  <>
+                    <div className="relative">
+                      <item.icon size={20} className={collapsed ? '' : 'shrink-0'} />
                       {item.isLocked && (
-                        <span className="text-[7px] font-black bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-full uppercase tracking-widest ml-2">Pro</span>
+                        <div className="absolute -top-1 -right-1 h-3 w-3 bg-amber-500 rounded-full flex items-center justify-center border-2 border-white">
+                          <Lock size={6} className="text-white fill-white" />
+                        </div>
                       )}
                     </div>
-                  )}
-                </NavLink>
-              ))}
+                    {!collapsed && (
+                      <div className="flex items-center justify-between flex-1 min-w-0">
+                        <span className="font-bold whitespace-nowrap truncate">{item.label}</span>
+                        {item.isLocked && (
+                          <span className="text-[7px] font-black bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-full uppercase tracking-widest ml-2">
+                            {item.plan === 'MAX' ? 'Max' : 'Plus'}
+                          </span>
+                        )}
+                      </div>
+                    )}
+                  </>
+                );
+
+                if (item.isLocked) {
+                  return (
+                    <div
+                      key={item.label}
+                      className={`hl-sidebar-item opacity-60 grayscale-[0.8] cursor-not-allowed ${collapsed ? 'justify-center px-0' : ''}`}
+                      title={`${item.plan} required`}
+                    >
+                      {ItemContent}
+                    </div>
+                  );
+                }
+
+                return (
+                  <NavLink
+                    key={item.label}
+                    to={item.to}
+                    end={item.end}
+                    className={({ isActive }) =>
+                      `hl-sidebar-item ${isActive ? 'active' : ''} ${collapsed ? 'justify-center px-0' : ''}`
+                    }
+                  >
+                    {ItemContent}
+                  </NavLink>
+                );
+              })}
             </div>
           </div>
         ))}
@@ -202,20 +251,16 @@ export default function ProviderLayout() {
                initial={{ opacity: 0, y: 20 }}
                animate={{ opacity: 1, y: 0 }}
                exit={{ opacity: 0, y: 20 }}
-               className="bg-emerald-900 rounded-[8px] p-4 border border-emerald-800 shadow-2xl shadow-emerald-950/20 mb-4 relative overflow-hidden group"
+               className="bg-emerald-900 rounded-xl p-3 border border-emerald-800 shadow-2xl shadow-emerald-950/20 mb-3 relative overflow-hidden"
              >
-                <div className="absolute top-0 right-0 p-2 opacity-10 group-hover:opacity-20 transition-opacity">
-                  <Clock size={48} className="text-white" />
-                </div>
                 <div className="relative z-10">
-                    <div className="flex justify-between items-center mb-3">
-                       <p className="text-[10px] text-emerald-400 font-black uppercase tracking-[0.2em]">
-                         {user?.subscription?.planName} {user?.subscription?.isTrial ? '(TRIAL)' : 'STATUS'}
+                    <div className="flex justify-between items-center mb-2">
+                       <p className="text-[8px] text-emerald-400 font-black uppercase tracking-widest">
+                         {user?.subscription?.planName} Tier
                        </p>
-                       {isCritical && <AlertTriangle size={12} className="text-amber-400 animate-pulse" />}
+                       {isCritical && <AlertTriangle size={10} className="text-amber-400 animate-pulse" />}
                     </div>
                    <CountdownTimer expiryDate={user?.subscription?.endDate} />
-                   <p className="text-[8px] text-emerald-500/60 font-black uppercase tracking-[0.1em] mt-3 text-center">Remaining System Access</p>
                 </div>
              </motion.div>
            )}
@@ -383,30 +428,22 @@ export default function ProviderLayout() {
 }
 
 function CountdownTimer({ expiryDate }: { expiryDate: string | undefined }) {
-  const [timeLeft, setTimeLeft] = useState<{ d: number, h: number, m: number, s: number } | null>(null);
+  const calculate = (date: string) => {
+    const distance = new Date(date).getTime() - new Date().getTime();
+    if (distance < 0) return { d: 0, h: 0, m: 0, s: 0 };
+    return {
+      d: Math.floor(distance / (1000 * 60 * 60 * 24)),
+      h: Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
+      m: Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60)),
+      s: Math.floor((distance % (1000 * 60)) / 1000)
+    };
+  };
+
+  const [timeLeft, setTimeLeft] = useState(() => expiryDate ? calculate(expiryDate) : null);
 
   useEffect(() => {
     if (!expiryDate) return;
-
-    const calculate = () => {
-      const distance = new Date(expiryDate).getTime() - new Date().getTime();
-      
-      if (distance < 0) {
-        setTimeLeft({ d: 0, h: 0, m: 0, s: 0 });
-        return;
-      }
-
-      setTimeLeft({
-        d: Math.floor(distance / (1000 * 60 * 60 * 24)),
-        h: Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
-        m: Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60)),
-        s: Math.floor((distance % (1000 * 60)) / 1000)
-      });
-    };
-
-    calculate();
-    const timer = setInterval(calculate, 1000);
-
+    const timer = setInterval(() => setTimeLeft(calculate(expiryDate)), 1000);
     return () => clearInterval(timer);
   }, [expiryDate]);
 
@@ -419,16 +456,16 @@ function CountdownTimer({ expiryDate }: { expiryDate: string | undefined }) {
   );
 
   return (
-    <div className="grid grid-cols-4 gap-1.5">
+    <div className="flex justify-between gap-1">
       {[
-        { v: timeLeft.d, l: 'Days' },
-        { v: timeLeft.h, l: 'Hrs' },
-        { v: timeLeft.m, l: 'Min' },
-        { v: timeLeft.s, l: 'Sec' }
+        { v: timeLeft.d, l: 'd' },
+        { v: timeLeft.h, l: 'h' },
+        { v: timeLeft.m, l: 'm' },
+        { v: timeLeft.s, l: 's' }
       ].map((t, i) => (
-        <div key={i} className="flex flex-col items-center bg-emerald-950/40 rounded-xl py-2 border border-white/5 backdrop-blur-md">
-          <span className="text-[12px] font-black text-white hl-mono leading-none mb-1">{t.v.toString().padStart(2, '0')}</span>
-          <span className="text-[7px] font-black text-emerald-400 uppercase tracking-tighter opacity-70">{t.l}</span>
+        <div key={i} className="flex-1 flex flex-col items-center bg-white/5 rounded-lg py-1 border border-white/5">
+          <span className="text-[11px] font-black text-white hl-mono leading-none">{t.v.toString().padStart(2, '0')}</span>
+          <span className="text-[6px] font-black text-emerald-400 uppercase opacity-50">{t.l}</span>
         </div>
       ))}
     </div>

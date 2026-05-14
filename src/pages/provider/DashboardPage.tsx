@@ -38,7 +38,17 @@ export default function DashboardPage() {
     if (salesError) toast.error(getErrorMessage(salesError))
   }, [statsError, salesError])
 
-  const salesData = stats?.salesChart || []
+  const salesData = stats?.salesChart && stats.salesChart.length > 0 
+    ? stats.salesChart 
+    : Array.from({ length: 7 }).map((_, i) => {
+        const d = new Date();
+        d.setDate(d.getDate() - (6 - i));
+        return {
+          name: d.toLocaleDateString('en-US', { weekday: 'short' }),
+          sales: 0,
+          profit: 0
+        };
+      });
 
   if (statsLoading || salesLoading) return (
     <div className="flex h-96 items-center justify-center">
@@ -92,7 +102,7 @@ export default function DashboardPage() {
           </div>
           
           <div className="h-[350px] w-full">
-            <ResponsiveContainer width="100%" height="100%" minWidth={0}>
+            <ResponsiveContainer width="100%" height="100%" minWidth={0} debounce={100}>
               <AreaChart data={salesData}>
                 <defs>
                   <linearGradient id="colorSales" x1="0" y1="0" x2="0" y2="1">

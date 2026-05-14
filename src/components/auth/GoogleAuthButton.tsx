@@ -70,8 +70,8 @@ export default function GoogleAuthButton({
             }
           },
           auto_select: false,
-          ux_mode: 'popup',
-        })
+          ux_mode: 'popup'
+        });
 
         renderGoogleButton()
         setIsReady(true)
@@ -134,10 +134,10 @@ export default function GoogleAuthButton({
       {/* Invisible Google iframe wrapper to handle real authentication clicks securely */}
       <div
         className={`absolute inset-0 z-10 flex items-center justify-center overflow-hidden pointer-events-auto ${isButtonDisabled ? 'hidden' : ''}`}
-        style={{ opacity: 0.001 }}
+        style={{ opacity: 0.01 }}
         title=""
       >
-        <div ref={containerRef} className="w-[120%] h-[150%] transform scale-150 flex items-center justify-center" />
+        <div ref={containerRef} className="w-[120%] h-[150%] transform scale-150 flex items-center justify-center" data-auto_select="false" />
       </div>
     </div>
   )

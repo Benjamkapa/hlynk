@@ -43,8 +43,11 @@ export default function ExpensesPage() {
 
   const expenses = expensesData?.items || []
   const pages = expensesData?.pages || 1
-  const stats =
-    expensesData?.stats || ({ totalExpenses: 0, highestCategory: 'N/A', burnRate: 0 } as any)
+  const stats = {
+    totalExpenses: expensesData?.stats?.totalExpenses || 0,
+    highestCategory: expensesData?.stats?.highestCategory || 'N/A',
+    burnRate: expensesData?.stats?.burnRate || 0,
+  }
 
   const handleExport = () => {
     if (!expenses.length) return
@@ -89,7 +92,7 @@ export default function ExpensesPage() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <KpiCard title="Total Expenses" value={`KES ${stats.totalExpenses.toLocaleString()}`} sub="Month to Date" icon={Wallet} variant="red" />
         <KpiCard title="Highest Category" value={stats.highestCategory} sub="Top spending area" icon={TrendingUp} variant="amber" />
-        <BurnRateGauge value={stats.burnRate} target={50000} />
+        <BurnRateGauge value={stats.totalExpenses} target={250000} />
       </div>
 
       {/* Expenses Table */}
@@ -190,76 +193,147 @@ function BurnRateGauge({ value, target }: { value: number; target: number }) {
   const pct = Math.min(Math.round((value / target) * 100), 100)
 
   const zone =
-    pct < 40 ? { color: '#10b981', track: '#d1fae5', label: 'Safe', labelColor: '#065f46' }
-    : pct < 70 ? { color: '#f59e0b', track: '#fef3c7', label: 'Moderate', labelColor: '#92400e' }
-    : pct < 90 ? { color: '#f97316', track: '#ffedd5', label: 'Elevated', labelColor: '#9a3412' }
-    : { color: '#ef4444', track: '#fee2e2', label: 'Critical', labelColor: '#991b1b' }
+    pct < 40
+      ? { label: 'Healthy',  color: '#10b981', glow: '#34d399' }
+      : pct < 70
+      ? { label: 'Moderate', color: '#f59e0b', glow: '#fbbf24' }
+      : pct < 90
+      ? { label: 'High',     color: '#f43f5e', glow: '#fb7185' }
+      : { label: 'Critical', color: '#e11d48', glow: '#f43f5e' }
 
-  const cx = 110
-  const cy = 110
-  const R = 84
-  const strokeW = 14
-  const circumference = Math.PI * R
+  // ── Geometry ──────────────────────────────────────────────────────────────
+  const cx = 110, cy = 108, R = 80
+  const startDeg = 225   
+  const totalSweep = 270 
 
-  const pctToPoint = (p: number) => {
-    const angle = Math.PI - (p / 100) * Math.PI
+  const toRad = (d: number) => (d * Math.PI) / 180
+  const polar = (angleDeg: number, r = R) => ({
+    x: cx + r * Math.cos(toRad(angleDeg)),
+    y: cy - r * Math.sin(toRad(angleDeg)),
+  })
+
+  const a0 = polar(startDeg)
+  const a1 = polar(startDeg - totalSweep)
+  const arcPath = `M ${a0.x.toFixed(2)},${a0.y.toFixed(2)} A ${R},${R} 0 1,1 ${a1.x.toFixed(2)},${a1.y.toFixed(2)}`
+
+  const arcLen = (totalSweep / 360) * 2 * Math.PI * R 
+  const filled = (pct / 100) * arcLen
+
+  const needlePt = polar(startDeg - (pct / 100) * totalSweep)
+
+  // ── Ticks ─────────────────────────────────────────────────────────────────
+  const NUM_TICKS = 48
+  const ticks = Array.from({ length: NUM_TICKS + 1 }, (_, i) => {
+    const a = startDeg - (i / NUM_TICKS) * totalSweep
+    const major = i % 8 === 0
     return {
-      x: cx + R * Math.cos(angle),
-      y: cy - R * Math.sin(angle),
+      p1: polar(a, major ? R - 8  : R - 4),
+      p2: polar(a, major ? R + 10 : R + 6),
+      major,
     }
-  }
-
-  const needle = pctToPoint(pct)
-  const dashOffset = circumference - (pct / 100) * circumference
+  })
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-xl shadow-gray-900/5 hover:shadow-2xl hover:shadow-gray-900/10 transition-all p-6 flex flex-col items-center justify-between h-full group">
-      <div className="w-full flex items-start justify-between mb-1">
+    <div className="bg-white rounded-2xl border border-gray-100 shadow-xl shadow-gray-900/5 hover:shadow-2xl hover:shadow-gray-900/10 transition-all p-6 flex flex-col items-center h-full">
+      {/* ── Header row ─────────────────────────────────────────────────── */}
+      <div className="w-full flex justify-between items-start mb-4">
         <div>
-          <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Avg. Daily Burn</p>
-          <p className="text-[10px] font-black uppercase tracking-widest mt-0.5" style={{ color: zone.labelColor }}>{zone.label}</p>
+          <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Monthly Budget</p>
+          <p className="text-[10px] font-black uppercase tracking-widest mt-1" style={{ color: zone.color }}>{zone.label}</p>
         </div>
-        <span className="text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-widest transition-colors duration-500" style={{ background: zone.track, color: zone.labelColor }}>{pct}%</span>
+        <span className="text-[10px] font-black px-2.5 py-1 rounded-full bg-gray-50 text-gray-500 uppercase tracking-widest">{pct}%</span>
       </div>
 
-      <div className="relative w-full flex items-center justify-center">
-        <svg width="100%" viewBox="0 0 220 120" className="overflow-visible max-w-[240px]">
-          <defs><filter id="gaugeGlow"><feGaussianBlur stdDeviation="2" result="blur" /><feComposite in="SourceGraphic" in2="blur" operator="over" /></filter></defs>
-          <path d={`M ${cx - R},${cy} A ${R},${R} 0 0,1 ${cx + R},${cy}`} stroke={zone.track} strokeWidth={strokeW} strokeLinecap="round" fill="none" />
-          <path d={`M ${cx - R},${cy} A ${R},${R} 0 0,1 ${cx + R},${cy}`} stroke={zone.color} strokeWidth={strokeW} strokeLinecap="round" fill="none" strokeDasharray={circumference} strokeDashoffset={dashOffset} filter="url(#gaugeGlow)" className="transition-all duration-1000 ease-out" />
-          {[25, 50, 75].map((tick) => {
-            const inner = pctToPoint(tick)
-            const angle = Math.PI - (tick / 100) * Math.PI
-            const outer = {
-              x: cx + (R + strokeW * 0.5 + 4) * Math.cos(angle),
-              y: cy - (R + strokeW * 0.5 + 4) * Math.sin(angle),
-            }
-            return <line key={tick} x1={inner.x} y1={inner.y} x2={outer.x} y2={outer.y} stroke="#e2e8f0" strokeWidth={1.5} strokeLinecap="round" />
-          })}
+      {/* ── SVG Gauge ──────────────────────────────────────────────────── */}
+      <div className="w-full flex justify-center">
+        <svg width="100%" viewBox="0 0 220 200" className="overflow-visible max-w-[240px]">
+          <defs>
+            <linearGradient id="brGaugeGrad" x1="0%" y1="50%" x2="100%" y2="50%">
+              <stop offset="0%"   stopColor="#10b981" />
+              <stop offset="40%"  stopColor="#f59e0b" />
+              <stop offset="100%" stopColor="#f43f5e" />
+            </linearGradient>
+
+            <filter id="brArcGlow" x="-20%" y="-20%" width="140%" height="140%">
+              <feGaussianBlur stdDeviation="3" result="blur" />
+              <feMerge>
+                <feMergeNode in="blur" />
+                <feMergeNode in="SourceGraphic" />
+              </feMerge>
+            </filter>
+          </defs>
+
+          {/* Tick marks */}
+          {ticks.map((t, i) => (
+            <line
+              key={i}
+              x1={t.p1.x} y1={t.p1.y}
+              x2={t.p2.x} y2={t.p2.y}
+              stroke={t.major ? '#cbd5e1' : '#f1f5f9'}
+              strokeWidth={t.major ? 2 : 1}
+              strokeLinecap="round"
+            />
+          ))}
+
+          {/* Background track */}
+          <path d={arcPath} stroke="#f8fafc" strokeWidth={16} strokeLinecap="round" fill="none" />
+          
+          {/* Gradient filled arc */}
+          <path
+            d={arcPath}
+            stroke="url(#brGaugeGrad)"
+            strokeWidth={12}
+            strokeLinecap="round"
+            fill="none"
+            strokeDasharray={`${filled.toFixed(2)} ${arcLen.toFixed(2)}`}
+            filter="url(#brArcGlow)"
+            className="transition-all duration-1000 ease-out"
+          />
+
+          {/* Needle dot */}
           <circle
-            cx={needle.x}
-            cy={needle.y}
-            r={7}
+            cx={needlePt.x}
+            cy={needlePt.y}
+            r={6}
             fill="white"
             stroke={zone.color}
-            strokeWidth={3}
-            style={{ transition: 'cx 0.8s ease, cy 0.8s ease, stroke 0.6s ease' }}
+            strokeWidth={2.5}
+            className="transition-all duration-1000"
           />
-          <text x={cx} y={cy + 10} textAnchor="middle" fontSize="26" fontWeight="800" fontFamily="monospace" fill="#0f172a">{value.toLocaleString()}</text>
-          <text x={cx} y={cy + 28} textAnchor="middle" fontSize="9" fontWeight="700" fontFamily="sans-serif" fill="#94a3b8" letterSpacing="1.5">KES / DAY</text>
-          <text x={cx - R - 4} y={cy + 20} textAnchor="middle" fontSize="9" fill="#cbd5e1" fontFamily="monospace">0</text>
-          <text x={cx + R + 4} y={cy + 20} textAnchor="middle" fontSize="9" fill="#cbd5e1" fontFamily="monospace">{(target / 1000).toFixed(0)}k</text>
+          <circle
+            cx={needlePt.x}
+            cy={needlePt.y}
+            r={2}
+            fill={zone.color}
+            className="transition-all duration-1000"
+          />
+
+          {/* Center value */}
+          <text x={cx} y={cy + 10} textAnchor="middle" fontSize="38" fontWeight="900" className="hl-mono" fill="#0f172a">
+            {(value || 0).toLocaleString()}
+          </text>
+          
+          <text x={cx} y={cy + 32} textAnchor="middle" fontSize="10" fontWeight="800" className="uppercase tracking-widest" fill={zone.color}>
+            {zone.label}
+          </text>
+
+          {/* Min / Max labels */}
+          <text x={a0.x - 10} y={a0.y + 16} textAnchor="middle" fontSize="8" fontWeight="900" fill="#cbd5e1" className="hl-mono">0</text>
+          <text x={a1.x + 10} y={a1.y + 16} textAnchor="middle" fontSize="8" fontWeight="900" fill="#cbd5e1" className="hl-mono">
+            {(target / 1000).toFixed(0)}K
+          </text>
         </svg>
       </div>
 
-      <div className="w-full flex justify-between items-end pt-3 border-t border-gray-50">
+      {/* ── Footer row ─────────────────────────────────────────────────── */}
+      <div className="w-full flex justify-between items-end pt-4 border-t border-gray-50 mt-auto">
         <div>
-          <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Rolling Avg</p>
-          <p className="text-sm font-black text-slate-900 hl-mono">KES {value.toLocaleString()}</p>
+          <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Total Spent</p>
+          <p className="text-sm font-black text-gray-900 hl-mono">KES {(value || 0).toLocaleString()}</p>
         </div>
         <div className="text-right">
-          <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Daily Cap</p>
-          <p className="text-sm font-black text-slate-400 hl-mono">KES {target.toLocaleString()}</p>
+          <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Monthly Budget</p>
+          <p className="text-sm font-black text-gray-400 hl-mono">KES {(target || 0).toLocaleString()}</p>
         </div>
       </div>
     </div>

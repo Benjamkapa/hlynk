@@ -137,7 +137,12 @@ export default function StaffManagementPage() {
                       <td className="px-8 py-5">
                         <div className="flex items-center gap-4">
                           {s.photoUrl ? (
-                            <img src={s.photoUrl} alt={s.name} className="h-10 w-10 rounded-full object-cover border border-slate-100 shadow-sm" />
+                            <img 
+                              src={s.photoUrl} 
+                              alt={s.name} 
+                              className="h-10 w-10 rounded-full object-cover border border-slate-100 shadow-sm" 
+                              referrerPolicy="no-referrer"
+                            />
                           ) : (
                             <div className="h-10 w-10 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center font-black border border-emerald-100 text-[10px]">
                               {s.name.charAt(0).toUpperCase()}
@@ -269,6 +274,8 @@ function StaffForm({ staff, onClose }: { staff?: any; onClose: () => void }) {
     { id: 'products', label: 'Manage Inventory' },
     { id: 'customers', label: 'Manage Customers' },
     { id: 'reports', label: 'View Reports' },
+    { id: 'staff', label: 'Manage Team' },
+    { id: 'logs', label: 'Audit Logs' },
   ]
 
   return (

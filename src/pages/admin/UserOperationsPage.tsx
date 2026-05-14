@@ -133,6 +133,7 @@ export default function UserOperationsPage() {
                             src={s.user?.photoUrl || `https://api.dicebear.com/7.x/initials/svg?seed=${s.user?.name}`} 
                             className="h-12 w-12 rounded-xl object-cover border border-slate-100 shadow-sm group-hover:scale-110 transition-transform" 
                             alt="" 
+                            referrerPolicy="no-referrer"
                           />
                           <div>
                             <p className="font-black text-gray-900 text-sm tracking-tight">{s.user?.name}</p>
@@ -229,6 +230,7 @@ export default function UserOperationsPage() {
                             src={u.photoUrl || `https://api.dicebear.com/7.x/initials/svg?seed=${u.name}`} 
                             className="h-10 w-10 rounded-xl object-cover border border-slate-100 shadow-sm" 
                             alt="" 
+                            referrerPolicy="no-referrer"
                           />
                           <div>
                             <p className="font-black text-gray-900 text-sm tracking-tight">{u.name}</p>

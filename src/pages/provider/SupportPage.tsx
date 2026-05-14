@@ -82,66 +82,7 @@ export default function SupportPage() {
         </div>
       </div>
 
-      {user?.role === 'PROVIDER' && (
-        <div className="bg-white rounded-[14px] border border-gray-100 shadow-sm p-8">
-          <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
-            <div>
-              <p className="text-[10px] font-black uppercase tracking-widest text-emerald-600">Public Testimonial</p>
-              <h3 className="mt-2 text-xl font-black text-gray-900">Share how the portal is working for you</h3>
-              <p className="mt-2 max-w-2xl text-sm font-medium leading-6 text-gray-500">
-                This review is stored centrally and can appear in the sign-in and sign-up sections for new providers to see.
-              </p>
-            </div>
-            {reviewLoading && <Loader2 className="h-5 w-5 animate-spin text-emerald-600" />}
-          </div>
-
-          <div className="mt-8 space-y-6">
-            <div>
-              <p className="mb-3 text-[10px] font-black uppercase tracking-widest text-gray-400">Your Rating</p>
-              <div className="flex items-center gap-2">
-                {Array.from({ length: 5 }).map((_, index) => {
-                  const value = index + 1
-                  return (
-                    <button
-                      key={value}
-                      type="button"
-                      onClick={() => setRating(value)}
-                      className="rounded-xl p-2 transition hover:bg-amber-50"
-                    >
-                      <Star
-                        size={22}
-                        className={value <= rating ? 'fill-amber-400 text-amber-400' : 'text-slate-200'}
-                      />
-                    </button>
-                  )
-                })}
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Your Comment</label>
-              <textarea
-                value={comment}
-                onChange={(e) => setComment(e.target.value)}
-                placeholder="Share what the portal has helped you do better in your business."
-                rows={5}
-                className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 text-sm font-medium text-slate-700 outline-none transition focus:border-emerald-200 focus:bg-white focus:ring-4 focus:ring-emerald-500/5"
-              />
-              <p className="text-xs text-gray-400">Between 12 and 280 characters.</p>
-            </div>
-
-            <button
-              type="button"
-              onClick={() => submitReviewMutation.mutate({ rating, comment })}
-              disabled={submitReviewMutation.isPending || comment.trim().length < 12}
-              className="inline-flex items-center gap-2 rounded-xl bg-[#0D4A3E] px-6 py-3 text-xs font-black uppercase tracking-widest text-white transition hover:bg-[#0A3D33] disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              {submitReviewMutation.isPending ? <Loader2 size={16} className="animate-spin" /> : null}
-              {myReview?.data ? 'Update Public Review' : 'Publish Public Review'}
-            </button>
-          </div>
-        </div>
-      )}
+      {/* Reviews are managed centrally and visible to new users */}
     </div>
   )
 }

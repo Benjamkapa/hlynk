@@ -71,7 +71,7 @@ export default function ProvidersPage() {
                </div>
             </div>
             <div className="h-[250px] w-full">
-               <ResponsiveContainer width="100%" height="100%">
+               <ResponsiveContainer width="100%" height="100%" minWidth={0}>
                   <LineChart data={weeklyGrowth}>
                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F1F5F9" />
                      <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fontSize: 10, fill: '#94A3B8', fontWeight: 700, fontFamily: 'JetBrains Mono'}} dy={15} />
