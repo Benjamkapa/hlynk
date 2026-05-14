@@ -218,7 +218,7 @@ export default function SalesHistoryPage() {
                 >
                   Status {sortBy === 'status' && (sortOrder === 'asc' ? '↑' : '↓')}
                 </th>
-                <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Action</th>
+                <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest text-left">Action</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
@@ -247,9 +247,9 @@ export default function SalesHistoryPage() {
                     <div className="p-2 bg-slate-50 group-hover:bg-white group-hover:shadow-lg group-hover:shadow-emerald-900/10 rounded-lg transition-all text-gray-300 group-hover:text-emerald-600 inline-block">
                       <Eye size={18} />
                     </div>
-                    <div className="p-2 bg-slate-50 group-hover:bg-white group-hover:shadow-lg group-hover:shadow-emerald-900/10 rounded-lg transition-all text-gray-300 group-hover:text-emerald-600 inline-block">
+                    {/* <div className="p-2 bg-slate-50 group-hover:bg-white group-hover:shadow-lg group-hover:shadow-emerald-900/10 rounded-lg transition-all text-gray-300 group-hover:text-emerald-600 inline-block">
                       <Receipt size={18} />
-                    </div>
+                    </div> */}
                   </td>
                 </tr>
               )) : (
