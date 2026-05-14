@@ -99,10 +99,16 @@ export default function SettingsPage() {
     }
   }
 
-  const allTabs = [
+  interface SettingsTab {
+    name: string
+    icon: any
+    role?: string[]
+  }
+
+  const allTabs: SettingsTab[] = [
     { name: 'Profile', icon: User },
-    { name: 'Business', icon: Store },
-    { name: 'Notifications', icon: Bell },
+    { name: 'Business', icon: Store, role: ['PROVIDER', 'SUPER_ADMIN'] },
+    { name: 'Notifications', icon: Bell, role: ['PROVIDER', 'SUPER_ADMIN'] },
     { name: 'Security', icon: Lock },
   ]
 
