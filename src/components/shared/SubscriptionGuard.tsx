@@ -43,11 +43,11 @@ export default function SubscriptionGuard({ children }: { children?: React.React
   const isPastEndDate = endDate ? endDate < now : false
   const isPastGracePeriod = endDate ? (endDate + (24 * 60 * 60 * 1000)) < now : false
 
-  const isTrial = subscription?.status === 'TRIAL'
+  const isTrial = subscription?.status === 2
   const isTrialExpired = trialEndDate ? trialEndDate < now : false
 
   // Account is completely locked if past grace period (or trial expired)
-  const lockedOut = (subscription?.status === 'EXPIRED') || isPastGracePeriod || (isTrial && isTrialExpired)
+  const lockedOut = (subscription?.status === 1) || isPastGracePeriod || (isTrial && isTrialExpired)
   
   // They are in grace period if past end date but NOT past grace period
   const inGracePeriod = isPastEndDate && !isPastGracePeriod && !isTrial

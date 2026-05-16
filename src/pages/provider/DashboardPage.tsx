@@ -66,10 +66,10 @@ export default function DashboardPage() {
           <p className="text-slate-500 font-medium text-xl">Overview of your store performance today</p>
         </div>
         <div className="flex items-center gap-4 bg-white p-3 rounded-lg border border-slate-100 shadow-sm">
-           <div className="h-10 w-10 bg-emerald-100 text-emerald-600 rounded-md flex items-center justify-center">
+           {/* <div className="h-10 w-10 bg-emerald-100 text-emerald-600 rounded-md flex items-center justify-center">
               <Star size={20} className="fill-emerald-600" />
-           </div>
-           <div>
+           </div> */}
+           {/* <div>
               <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Store Rating</p>
               <StarRating 
                 rating={Number(stats?.rating || 0)} 
@@ -77,7 +77,7 @@ export default function DashboardPage() {
                 showText 
                 size={14} 
               />
-           </div>
+           </div> */}
         </div>
       </div>
 

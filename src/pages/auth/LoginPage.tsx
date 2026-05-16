@@ -38,13 +38,34 @@ type RegisterFormState = {
 
 function ReviewCard({ review }: { review: any }) {
   return (
-    <div className="flex flex-col gap-3">
-      <StarRating rating={review.rating || 5} size={11} />
-      <p className="text-[13px] text-white leading-relaxed font-light italic opacity-90 drop-shadow-sm">
-        "{review.comment}"
-      </p>
-      <div className="text-[11px] font-semibold text-white/50">
-        {review.name} {review.businessName ? `· ${review.businessName}` : ''}
+    <div className="flex items-start gap-4 p-2">
+      <div className="shrink-0">
+        {review.photoUrl ? (
+          <img
+            src={review.photoUrl}
+            alt={review.name}
+            className="w-12 h-12 rounded-full object-cover shadow-lg"
+          />
+        ) : (
+          <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center border-2 border-white/20">
+            <span className="text-xs font-bold text-white/50">{review.name?.charAt(0)}</span>
+          </div>
+        )}
+      </div>
+      <div className="flex flex-col gap-2 min-w-0">
+        <StarRating rating={review.rating || 5} size={10} />
+        <p className="text-[14px] text-white leading-relaxed font-medium italic opacity-90 drop-shadow-sm line-clamp-3">
+          "{review.comment}"
+        </p>
+        <div className="text-[11px] font-bold text-white/60 flex items-center gap-2">
+          <span className="text-white font-black uppercase tracking-tighter">{review.name}</span>
+          {review.businessName && (
+            <>
+              <div className="w-1 h-1 rounded-full bg-white/20" />
+              <span className="opacity-70 truncate">{review.businessName}</span>
+            </>
+          )}
+        </div>
       </div>
     </div>
   )
@@ -82,7 +103,7 @@ function ReviewPanel() {
   if (reviews.length === 0) return null
 
   return (
-    <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-[1.5rem] p-6 shadow-2xl transition-all duration-700 animate-in fade-in slide-in-from-bottom-4">
+    <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-br-[.5rem] rounded-tl-[.5rem] rounded-tr-[.5rem] rounded-bl-[1.5rem] p-6 shadow-2xl transition-all duration-700 animate-in fade-in slide-in-from-bottom-4">
       <div className="flex items-center gap-3 mb-4">
         <span className="text-[9px] tracking-[0.3em] uppercase font-bold text-white/40">From the Community</span>
         <div className="h-[1px] flex-1 bg-white/10" />
@@ -207,7 +228,7 @@ export default function LoginPage() {
 
         .lp-left {
           flex: 1;
-          margin: 2px;
+          margin: .5em;
           // filter: brightness(0.7);
           position: relative;
           border-radius: 2rem;
@@ -306,7 +327,7 @@ export default function LoginPage() {
               </h1>
 
               <p className="text-xl text-white font-light opacity-90 leading-relaxed max-w-sm drop-shadow-lg mb-10">
-                Stop the guesswork. Join 1,000+ owners using modern tracking to manage stock and double their profits.
+                Stop the guesswork. Use modern tracking to manage stock and double your business profits.
               </p>
 
               <div className="flex flex-col gap-5">
@@ -364,14 +385,10 @@ export default function LoginPage() {
                       <div className="h-[1px] flex-1 bg-[#f1f5f9]" />
                     </div>
 
-                    <div className="bg-[#f8fafc] border border-[#f1f5f9] rounded-2xl p-5 mb-8 flex items-center gap-4">
-                      <div className="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center text-black border border-gray-100">
-                        <ShieldCheck size={20} strokeWidth={2} />
-                      </div>
-                      <div>
-                        <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1 leading-none">Security Guaranteed</div>
-                        <div className="text-[13px] text-gray-500 font-light leading-none">Your business data is 100% private.</div>
-                      </div>
+                    <div className="my-8 px-2">
+                      <p className="text-[12px] text-gray-400 font-medium leading-relaxed italic">
+                        "Your records are protected by bank-grade encryption and stored securely in the cloud. You alone have access to your financial data."
+                      </p>
                     </div>
 
                     <label className="flex items-start gap-4 mb-10 cursor-pointer group">
@@ -386,11 +403,6 @@ export default function LoginPage() {
                       </span>
                     </label>
 
-                    <div className="mt-auto pt-8 border-t border-gray-50">
-                      <p className="text-[11px] text-[#cbd5e1] tracking-[0.1em] font-bold uppercase text-center">
-                        Join {platformStats.totalBusinesses?.toLocaleString()}+ Kenyan businesses growing today.
-                      </p>
-                    </div>
                   </motion.div>
                 ) : (
                   <motion.div
@@ -459,6 +471,18 @@ export default function LoginPage() {
 
             </div>
           </div>
+        </motion.div>
+
+        {/* ── Realistic Footer Counter ── */}
+        <motion.div
+          className="absolute bottom-8 left-0 w-full text-center z-20 pointer-events-none"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 0.6 }}
+          transition={{ delay: 1, duration: 1 }}
+        >
+          <p className="text-[15px] tracking-[0.3em] font-black drop-shadow-md">
+            Join {platformStats.totalBusinesses?.toLocaleString()}+ Kenyan businesses growing today.
+          </p>
         </motion.div>
       </motion.div>
     </>

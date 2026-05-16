@@ -50,7 +50,7 @@ const SupportPageProvider = lazy(() => import('./pages/provider/SupportPage'))
 const SettingsPageProvider = lazy(() => import('./pages/provider/SettingsPage'))
 const HelpPageProvider = lazy(() => import('./pages/provider/HelpPage'))
 const DeveloperPage = lazy(() => import('./pages/provider/DeveloperPage'))
-const LogsPage = lazy(() => import('./pages/provider/LogsPage'))
+const LogsPage = lazy(() => import('./pages/provider/MpesaLogsPage'))
 
 function LoadingScreen() {
   return (

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Search, Plus, Minus, Trash2, CreditCard, Wallet, Banknote, Zap, CheckCircle2, Package, Scan, ArrowRight, ShoppingCart, Loader2, LayoutGrid, List, ChevronLeft, ChevronRight, Lock, Smartphone } from 'lucide-react'
+import { Search, Plus, Minus, Trash2, CreditCard, Wallet, Banknote, Zap, CheckCircle2, Package, Scan, ArrowRight, ShoppingCart, Loader2, LayoutGrid, List, ChevronLeft, ChevronRight, Lock, Smartphone, AlertTriangle } from 'lucide-react'
 import FeatureGate, { FEATURE_PLANS } from '../../components/shared/FeatureGate'
 import { toast } from 'sonner'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
@@ -19,7 +19,10 @@ export default function RecordSalePage() {
   const [mpesaPhone, setMpesaPhone] = useState('')
   const [isProcessingMpesa, setIsProcessingMpesa] = useState(false)
   const [waitingMpesaSaleId, setWaitingMpesaSaleId] = useState<string | null>(null)
+  const [activeTab, setActiveTab] = useState<'products' | 'cart'>('products')
   const queryClient = useQueryClient()
+
+  // console.log('[RENDER] Current waitingMpesaSaleId:', waitingMpesaSaleId);
 
   const { data: productsData, isLoading: productsLoading, error: productsError } = useQuery<PaginatedResponse<any>>({
     queryKey: ['inventory-pos', search, page],
@@ -88,7 +91,7 @@ export default function RecordSalePage() {
   const total = subtotal - discount
 
   const handleCompleteSale = useMutation({
-    mutationFn: (args?: { status?: string, mpesaRequestId?: string }) => salesApi.create({
+    mutationFn: (args?: { status?: string | number, mpesaRequestId?: string }) => salesApi.create({
       items: cart.map(i => ({
         productId: i.id,
         name: i.name,
@@ -100,14 +103,19 @@ export default function RecordSalePage() {
       customerId: selectedCustomerId,
       customerName: selectedCustomer?.name || null,
       customerPhone: mpesaPhone || undefined,
-      status: args?.status || 'COMPLETED',
+      status: args?.status !== undefined ? args.status : 0,
       mpesaRequestId: args?.mpesaRequestId
     }),
     onSuccess: (data: any, variables: any) => {
-      const saleId = data.data?.sale?.id || data.data?.id || data.id;
-      
-      if (variables?.status === 'PENDING') {
-        setWaitingMpesaSaleId(saleId)
+      const saleId = data.data?.saleId || data.data?.sale?.id || data.data?.id || data.id;
+      console.log('[MUTATION SUCCESS] Got saleId:', saleId);
+
+      if (variables?.status === 2) {
+        if (saleId) {
+          setWaitingMpesaSaleId(saleId)
+        } else {
+          console.error('[MUTATION ERROR] No saleId found in response:', data);
+        }
         setTimeout(() => {
           setWaitingMpesaSaleId((prev) => {
             if (prev === saleId) {
@@ -142,19 +150,31 @@ export default function RecordSalePage() {
     if (handleCompleteSale.error) toast.error(getErrorMessage(handleCompleteSale.error))
   }, [handleCompleteSale.error])
 
-  const { data: pendingSaleData } = useQuery({
+  const { data: pendingSaleData, error: pollingError } = useQuery({
     queryKey: ['sale-details', waitingMpesaSaleId],
-    queryFn: () => salesApi.getDetails(waitingMpesaSaleId!),
+    queryFn: () => {
+      console.log('[QUERY] Polling for sale:', waitingMpesaSaleId);
+      return salesApi.getDetails(waitingMpesaSaleId!);
+    },
     enabled: !!waitingMpesaSaleId,
-    refetchInterval: waitingMpesaSaleId ? 2000 : false,
+    refetchInterval: (query) => {
+      const sale = query.state.data?.data;
+      if (sale && (sale.status === 0 || sale.status === 3 || sale.status === 1)) {
+        return false;
+      }
+      return 2000;
+    },
     refetchIntervalInBackground: true,
-    staleTime: 0
+    staleTime: 0,
+    retry: 3
   })
 
   useEffect(() => {
     if (waitingMpesaSaleId && pendingSaleData?.data) {
       const sale = pendingSaleData.data;
-      if (sale.status === 'COMPLETED' || sale.status === 'PAID') {
+      console.log('[POLLING] Current Sale Status:', sale.status);
+
+      if (sale.status === 0) {
         setWaitingMpesaSaleId(null)
         setIsProcessingMpesa(false)
         toast.success('Transaction Finalized', {
@@ -170,11 +190,16 @@ export default function RecordSalePage() {
         queryClient.invalidateQueries({ queryKey: ['recent-sales'] })
         queryClient.invalidateQueries({ queryKey: ['provider-stats'] })
         queryClient.invalidateQueries({ queryKey: ['pos-customers'] })
-      } else if (sale.status === 'FAILED' || sale.status === 'CANCELLED') {
+      }
+      else if (sale.status === 1 || sale.status === 3) {
         setWaitingMpesaSaleId(null)
         setIsProcessingMpesa(false)
-        toast.error('Payment Failed', {
-          description: 'The M-Pesa transaction was declined or failed.'
+        const isCancelled = sale.status === 3;
+        toast.error(isCancelled ? 'Transaction Cancelled' : 'Payment Failed', {
+          description: isCancelled
+            ? 'The customer cancelled the request on their phone.'
+            : 'M-Pesa could not process the payment at this time.',
+          icon: <AlertTriangle className="text-red-500" />
         })
       }
     }
@@ -198,7 +223,7 @@ export default function RecordSalePage() {
         description: 'Waiting for customer to enter PIN on their phone...',
       })
 
-      handleCompleteSale.mutate({ status: 'PENDING', mpesaRequestId: res?.data?.CheckoutRequestID || res?.CheckoutRequestID })
+      handleCompleteSale.mutate({ status: 2, mpesaRequestId: res?.data?.CheckoutRequestID || res?.CheckoutRequestID })
     } catch (err: any) {
       toast.error(getErrorMessage(err))
       setIsProcessingMpesa(false)
@@ -206,16 +231,17 @@ export default function RecordSalePage() {
   }
 
   return (
-    <div className="flex flex-col xl:flex-row gap-12 mx-auto items-start animate-in fade-in slide-in-from-bottom-4 duration-700">
+    <div className="relative min-h-[calc(100vh-100px)] pb-32 xl:pb-0">
+      <div className="flex flex-col xl:flex-row gap-6 lg:gap-12 mx-auto items-start animate-in fade-in slide-in-from-bottom-4 duration-700">
 
       {/* Left: Product Selection */}
-      <div className="flex-1 space-y-10 min-w-0">
+      <div className={`flex-1 space-y-6 md:space-y-10 min-w-0 w-full ${activeTab === 'cart' ? 'hidden xl:block' : 'block'}`}>
         {/* Sticky Header and Search */}
         <div className="sticky top-0 z-30 bg-white/80 backdrop-blur-md pt-4 pb-8 space-y-8">
-          <div className="flex flex-col md:flex-row P-4 justify-between items-start md:items-center gap-2">
-            <div className="space-y-1">
-              <h1 className="text-4xl font-black text-slate-900 tracking-tighter">Point of Sale</h1>
-              <p className="text-slate-500 font-medium text-sm">Select items or scan barcode to add to cart</p>
+          <div className="flex justify-between items-center gap-2">
+            <div className="space-y-0.5">
+              {/* <h1 className="text-2xl md:text-4xl font-black text-slate-900 tracking-tighter">Biashara POS</h1> */}
+              <p className="text-slate-500 font-medium text-[10px] md:text-sm uppercase tracking-widest opacity-60">Tap items to add to cart</p>
             </div>
             <div className="flex items-center gap-3 self-stretch md:self-auto">
               <div className="flex bg-slate-100 p-1 rounded-lg">
@@ -239,10 +265,10 @@ export default function RecordSalePage() {
           </div>
 
           <div className="relative group">
-            <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-emerald-500 transition-colors" size={24} />
+            <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-emerald-500 transition-colors" size={20} />
             <input
               type="text"
-              placeholder="Search by name, category, or scan barcode..."
+              placeholder="Search items..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               onKeyDown={(e) => {
@@ -251,7 +277,7 @@ export default function RecordSalePage() {
                   setSearch('')
                 }
               }}
-              className="w-full bg-white border border-slate-200 shadow-xl shadow-slate-900/5 rounded-2xl py-5 pl-16 pr-8 text-lg font-bold focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all placeholder:text-slate-300"
+              className="w-full bg-white border border-slate-200 shadow-lg shadow-slate-900/5 rounded-2xl py-4 pl-14 pr-6 text-base font-bold focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all placeholder:text-slate-300"
             />
           </div>
         </div>
@@ -270,12 +296,12 @@ export default function RecordSalePage() {
             <p className="font-black uppercase tracking-widest text-xs">No products found matching "{search}"</p>
           </div>
         ) : viewMode === 'grid' ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 2xl:grid-cols-3 gap-8">
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-8">
             {filteredProducts.map(product => (
               <div
                 key={product.id}
                 onClick={() => addToCart(product)}
-                className="group relative bg-white rounded-3xl cursor-pointer transition-all hover:shadow-2xl hover:shadow-emerald-900/20 overflow-hidden border border-slate-100 h-[380px]"
+                className="group relative bg-white rounded-2xl md:rounded-3xl cursor-pointer transition-all hover:shadow-2xl hover:shadow-emerald-900/20 overflow-hidden border border-slate-100 h-[240px] md:h-[380px]"
               >
                 {/* Image Region */}
                 {product.imageUrl ? (
@@ -294,13 +320,13 @@ export default function RecordSalePage() {
                 </div>
 
                 {/* Faded Detail Overlay */}
-                <div className="absolute inset-x-0 bottom-0 p-8 bg-gradient-to-t from-slate-900 via-slate-900/60 to-transparent pt-20">
-                  <p className="text-[10px] text-emerald-400 font-black uppercase tracking-widest mb-1">{product.category}</p>
-                  <h4 className="text-xl font-black text-white mb-2 line-clamp-1">{product.name}</h4>
+                <div className="absolute inset-x-0 bottom-0 p-4 md:p-8 bg-gradient-to-t from-slate-900 via-slate-900/60 to-transparent pt-12 md:pt-20">
+                  <p className="text-[8px] md:text-[10px] text-emerald-400 font-black uppercase tracking-widest mb-0.5 md:mb-1">{product.category}</p>
+                  <h4 className="text-sm md:text-xl font-black text-white mb-1 md:mb-2 line-clamp-1">{product.name}</h4>
                   <div className="flex justify-between items-center">
-                    <span className="text-2xl font-black text-white hl-mono">KES {Number(product.price).toLocaleString()}</span>
-                    <div className="h-12 w-12 rounded-2xl bg-emerald-500 text-white flex items-center justify-center shadow-lg shadow-emerald-500/40 opacity-0 group-hover:opacity-100 transition-all transform translate-y-2 group-hover:translate-y-0">
-                      <Plus size={24} />
+                    <span className="text-sm md:text-2xl font-black text-white hl-mono">KES {Number(product.price).toLocaleString()}</span>
+                    <div className="h-8 w-8 md:h-12 md:w-12 rounded-xl md:rounded-2xl bg-emerald-500 text-white flex items-center justify-center shadow-lg shadow-emerald-500/40 opacity-0 md:group-hover:opacity-100 transition-all transform translate-y-2 group-hover:translate-y-0">
+                      <Plus size={16} />
                     </div>
                   </div>
                 </div>
@@ -386,7 +412,14 @@ export default function RecordSalePage() {
       </div>
 
       {/* Right: Cart & Payment (Sticky) */}
-      <div className="w-full xl:w-[500px] flex flex-col gap-8 sticky top-8">
+      <div className={`w-full xl:w-[450px] flex flex-col gap-6 lg:gap-8 sticky top-8 ${activeTab === 'products' ? 'hidden xl:flex' : 'flex'}`}>
+        {/* Back button for mobile cart view */}
+        <button 
+          onClick={() => setActiveTab('products')}
+          className="xl:hidden flex items-center gap-2 text-slate-400 font-black text-[10px] uppercase tracking-widest mb-2"
+        >
+          <ChevronLeft size={16} /> Back to Products
+        </button>
         <div className="bg-white p-10 rounded-3xl border border-slate-100 shadow-xl shadow-slate-900/5 flex-1 flex flex-col min-h-[500px] max-h-[calc(100vh-200px)] relative overflow-hidden">
           <div className="flex items-center justify-between mb-10 relative z-10">
             <h3 className="text-2xl font-black text-slate-900 tracking-tighter">Cart Summary</h3>
@@ -503,9 +536,9 @@ export default function RecordSalePage() {
               { id: 'CASH', label: 'Cash', icon: Banknote, feature: null },
               { id: 'MPESA', label: 'M-Pesa', icon: Wallet, feature: 'mpesa_stk' },
             ].map(method => (
-              <FeatureGate 
+              <FeatureGate
                 key={method.id}
-                feature={method.feature as any} 
+                feature={method.feature as any}
                 fallback={
                   method.feature ? (
                     <button
@@ -517,7 +550,7 @@ export default function RecordSalePage() {
                         <span className="text-[10px] font-black uppercase tracking-widest">{method.label}</span>
                       </div>
                       <span className="text-[8px] font-black bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full uppercase tracking-tighter">
-                         Requires {(FEATURE_PLANS as any)[method.feature as string][0]}
+                        Requires {(FEATURE_PLANS as any)[method.feature as string][0]}
                       </span>
                       <div className="absolute top-0 right-0 p-2 opacity-20">
                         <Lock size={12} />
@@ -540,16 +573,33 @@ export default function RecordSalePage() {
             ))}
           </div>
 
-          {paymentMethod === 'MPESA' && (
-            <div className="space-y-2 animate-in slide-in-from-top-2 duration-300">
-              <input
-                type="text"
-                placeholder="M-Pesa Phone (07...)"
-                value={mpesaPhone}
-                onChange={(e) => setMpesaPhone(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-100 rounded-xl py-4 px-6 text-sm font-bold focus:ring-4 focus:ring-emerald-500/5 outline-none transition-all hl-mono"
-              />
+
+          {paymentMethod === 'MPESA' ? (
+            <div className="space-y-4 animate-in slide-in-from-top-2 duration-300">
+              <div className="bg-emerald-50 border border-emerald-100 rounded-2xl p-4 flex items-center gap-4">
+                <Smartphone size={20} className="text-[#0D4A3E]" />
+                <p className="text-[10px] font-medium text-emerald-800 leading-tight">
+                  STK Push will be sent to the customer's phone for instant verification.
+                </p>
+              </div>
+              <div className="space-y-2">
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1 block mb-2">Customer M-Pesa Number</label>
+                <input
+                  type="text"
+                  placeholder="07..."
+                  value={mpesaPhone}
+                  onChange={(e) => setMpesaPhone(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-100 rounded-xl py-4 px-6 text-sm font-bold focus:ring-4 focus:ring-emerald-500/5 outline-none transition-all hl-mono"
+                />
+              </div>
             </div>
+          ) : (
+             <div className="bg-amber-50 border border-amber-100 rounded-2xl p-4 flex items-center gap-4 animate-in slide-in-from-top-2 duration-300">
+                <Banknote size={20} className="text-amber-700" />
+                <p className="text-[10px] font-medium text-amber-800 leading-tight">
+                  Recording as Cash. Ensure you have received the funds physically before completing.
+                </p>
+             </div>
           )}
 
           <button
@@ -570,6 +620,33 @@ export default function RecordSalePage() {
           </button>
         </div>
       </div>
+    </div>
+
+      {/* ── Mobile Cart Floating Bar ── */}
+      {cart.length > 0 && activeTab === 'products' && (
+        <div className="fixed bottom-6 left-6 right-6 z-[100] xl:hidden animate-in slide-in-from-bottom-8 duration-500">
+          <button 
+            onClick={() => setActiveTab('cart')}
+            className="w-full bg-[#0D4A3E] text-white p-5 rounded-[24px] shadow-2xl shadow-emerald-900/40 flex items-center justify-between border-4 border-white/10 backdrop-blur-md"
+          >
+            <div className="flex items-center gap-4">
+              <div className="h-10 w-10 bg-white/20 rounded-xl flex items-center justify-center relative">
+                <ShoppingCart size={20} />
+                <span className="absolute -top-2 -right-2 h-5 w-5 bg-red-500 text-white text-[10px] font-black rounded-full flex items-center justify-center border-2 border-[#0D4A3E]">
+                  {cart.length}
+                </span>
+              </div>
+              <div className="text-left">
+                <p className="text-[9px] font-black uppercase tracking-[0.2em] opacity-60">Ready to Checkout</p>
+                <p className="text-lg font-black hl-mono leading-none">KES {total.toLocaleString()}</p>
+              </div>
+            </div>
+            <div className="h-10 w-10 bg-white text-[#0D4A3E] rounded-xl flex items-center justify-center">
+              <ArrowRight size={20} />
+            </div>
+          </button>
+        </div>
+      )}
     </div>
   )
 }

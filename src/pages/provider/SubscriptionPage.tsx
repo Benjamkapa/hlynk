@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Calendar, CreditCard, CheckCircle2, Zap, AlertTriangle, ChevronRight, Loader2, Phone, Star, RefreshCcw, Shield } from 'lucide-react'
+import { Calendar, CreditCard, CheckCircle2, Zap, AlertTriangle, ChevronRight, Loader2, Phone, Star, RefreshCcw, Shield, Smartphone, Eye, Download, Info } from 'lucide-react'
 import { subscriptionsApi } from '../../lib/api/providers'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
@@ -66,6 +66,8 @@ export default function SubscriptionPage() {
   const [selectedPlan, setSelectedPlan] = useState<any>(null)
   const [activeTab, setActiveTab] = useState<'current' | 'history'>('current')
   const [isWaitingForPayment, setIsWaitingForPayment] = useState(false)
+  const [waitingPaymentId, setWaitingPaymentId] = useState<string | null>(null)
+  const [selectedTransaction, setSelectedTransaction] = useState<any>(null)
 
   // ── STAFF ACCESS LOCK ──
   if (user?.role === 'STAFF') {
@@ -117,41 +119,77 @@ export default function SubscriptionPage() {
   const [paymentResultMessage, setPaymentResultMessage] = useState<string | null>(null)
   const [initialPlan, setInitialPlan] = useState<string | null>(null)
 
+  const subscription = subResponse?.data
+  const history = historyResponse?.data?.payments || []
+  const pagination = historyResponse?.data?.pagination
+
+  const isTrial = subscription?.status === 2
+  const isExpired = subscription?.status === 1 || (subscription?.endDate && new Date(subscription.endDate) < new Date())
+
   // Watch for payment status change
   useEffect(() => {
-    if (isWaitingForPayment && historyResponse?.payments) {
-      const latestPayment = historyResponse.payments[0];
-      if (latestPayment && latestPayment.status !== 'PENDING') {
-        const msg = latestPayment.message || (latestPayment.status === 'PAID' ? 'Payment successful!' : 'Transaction failed.');
-        setPaymentResultMessage(msg);
+    if (!isWaitingForPayment) return;
 
-        if (latestPayment.status === 'PAID') {
-          setIsWaitingForPayment(false);
-          setPaymentResultMessage(null);
-          toast.success(msg);
-          queryClient.invalidateQueries({ queryKey: ['my-subscription'] });
-          queryClient.invalidateQueries({ queryKey: ['billing-history'] });
-          refreshUser();
-          setShowSuccessModal(true);
-        } else {
-          setIsWaitingForPayment(false); // Stop spinning immediately on failure too
-          setPaymentResultMessage(msg);
-          toast.error(msg);
-          // Keep the message visible in the banner for 8 seconds then hide banner
-          setTimeout(() => {
-            setPaymentResultMessage(null);
-          }, 8000);
-        }
-      }
+    const currentPlan = subResponse?.data?.planName;
+    const currentStatus = subResponse?.data?.status;
+
+    // SUCCESS DETECTION 1: History Record updated
+    const historyLatest = historyResponse?.data?.payments?.[0];
+    const specificPayment = waitingPaymentId 
+      ? historyResponse?.data?.payments?.find((p: any) => p.id === waitingPaymentId)
+      : null;
+    
+    const paymentToTrack = specificPayment || historyLatest;
+    
+    const isPaid = paymentToTrack?.status === 0;
+    const isCancelled = paymentToTrack?.status === 3;
+    const isFailed = paymentToTrack?.status === 1 || paymentToTrack?.status === 4;
+
+    // SUCCESS DETECTION 2: Subscription status or plan changed (Fallback)
+    const planChanged = initialPlan && currentPlan && initialPlan !== currentPlan;
+    const statusActivated = (isExpired || isTrial) && currentStatus === 0;
+    
+    if (isPaid || planChanged || statusActivated) {
+      setWaitingPaymentId(null);
+      setIsWaitingForPayment(false);
+      setPaymentResultMessage(null);
+      
+      toast.success('Payment Successful', {
+        description: `Your ${currentPlan || 'new'} plan is now active. All features are unlocked.`,
+        icon: <CheckCircle2 className="text-emerald-500" />
+      });
+
+      queryClient.invalidateQueries({ queryKey: ['my-subscription'] });
+      queryClient.invalidateQueries({ queryKey: ['billing-history'] });
+      refreshUser();
+      
+      // Delay modal slightly for smoother transition
+      setTimeout(() => setShowSuccessModal(true), 500);
+      return;
     }
-  }, [historyResponse, isWaitingForPayment, queryClient, refreshUser]);
 
-  const subscription = subResponse?.data
-  const history = historyResponse?.payments || []
-  const pagination = historyResponse?.pagination
+    // FAILURE DETECTION
+    if (isCancelled || isFailed) {
+      console.log('[SUBSCRIPTION] Failure detected:', { isCancelled, isFailed });
+      
+      setWaitingPaymentId(null);
+      setIsWaitingForPayment(false);
+      
+      const failureMsg = isCancelled ? 'Transaction Cancelled' : 'Payment Failed';
+      const description = isCancelled 
+        ? 'The STK push request was cancelled on the phone.'
+        : (paymentToTrack?.message || 'M-Pesa could not process the payment. Please try again.');
 
-  const isTrial = subscription?.status === 'TRIAL'
-  const isExpired = subscription?.status === 'EXPIRED' || (subscription?.endDate && new Date(subscription.endDate) < new Date())
+      setPaymentResultMessage(failureMsg);
+      toast.error(failureMsg, {
+        description,
+        icon: <AlertTriangle className="text-red-500" />
+      });
+
+      setTimeout(() => setPaymentResultMessage(null), 8000);
+    }
+  }, [historyResponse, subResponse, isWaitingForPayment, waitingPaymentId, initialPlan, isExpired, isTrial, queryClient, refreshUser]);
+
 
   const renewMutation = useMutation({
     mutationFn: (phone: string) => subscriptionsApi.renew(phone),
@@ -160,8 +198,15 @@ export default function SubscriptionPage() {
       toast.success(data.message || 'STK Push sent!')
       setShowRenewModal(false)
       setIsWaitingForPayment(true)
+      // Store the specific payment ID if returned, or we'll fallback to latest in history
+      if (data.data?.id || data.id) {
+        setWaitingPaymentId(data.data?.id || data.id)
+      }
       // Safety timeout: stop waiting if no response after 60 seconds
-      setTimeout(() => setIsWaitingForPayment(false), 60000)
+      setTimeout(() => {
+        setIsWaitingForPayment(false)
+        setWaitingPaymentId(null)
+      }, 60000)
     },
     onError: (err) => toast.error(getErrorMessage(err))
   })
@@ -173,8 +218,14 @@ export default function SubscriptionPage() {
       toast.success(data.message || 'Payment initiated for plan upgrade!')
       setShowChangeModal(false)
       setIsWaitingForPayment(true)
+      if (data.data?.id || data.id) {
+        setWaitingPaymentId(data.data?.id || data.id)
+      }
       // Safety timeout: stop waiting if no response after 60 seconds
-      setTimeout(() => setIsWaitingForPayment(false), 60000)
+      setTimeout(() => {
+        setIsWaitingForPayment(false)
+        setWaitingPaymentId(null)
+      }, 60000)
     },
     onError: (err) => toast.error(getErrorMessage(err))
   })
@@ -220,10 +271,15 @@ export default function SubscriptionPage() {
             )}
             <div>
               <h4 className="font-black text-sm tracking-tight">
-                {paymentResultMessage ? 'Transaction Result' : 'Waiting for Payment...'}
+                {paymentResultMessage ? 'Transaction Finalized' : 
+                 (historyResponse?.payments?.[0]?.status === 2 ? 'Awaiting Your PIN...' : 'Waiting for M-Pesa...')}
               </h4>
               <p className={`text-xs font-medium ${paymentResultMessage ? '' : 'text-emerald-600/80'}`}>
-                {paymentResultMessage || "Please check your phone and enter your M-Pesa PIN. The page will refresh automatically."}
+                {paymentResultMessage || 
+                 (historyResponse?.payments?.[0]?.status === 2 
+                   ? "We've sent the prompt. Please enter your M-Pesa PIN on your phone to complete the activation." 
+                   : "Requesting an STK prompt from Safaricom... Please keep your phone unlocked.")
+                }
               </p>
             </div>
           </div>
@@ -245,18 +301,18 @@ export default function SubscriptionPage() {
 
       {/* ── SUCCESS CELEBRATION MODAL ── */}
       {showSuccessModal && (
-        <div className="fixed inset-0 z-[110] flex items-center justify-center bg-emerald-950/90 backdrop-blur-xl p-4 animate-in fade-in duration-500">
+        <div className="fixed inset-0 z-[130] flex items-center justify-center bg-emerald-950/90 backdrop-blur-xl p-4 animate-in fade-in duration-500">
           <div className="bg-white rounded-[40px] w-full max-w-xl p-12 text-center relative overflow-hidden shadow-[0_0_100px_rgba(16,185,129,0.3)] animate-in zoom-in-95 duration-500">
-            {/* Confetti-like decoration */}
+           
             <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-emerald-400 via-amber-400 to-blue-400" />
             <div className="absolute -top-24 -left-24 w-64 h-64 bg-emerald-400/10 rounded-full blur-[80px]" />
             <div className="absolute -bottom-24 -right-24 w-64 h-64 bg-amber-400/10 rounded-full blur-[80px]" />
 
             <div className="relative z-10">
-              <div className="h-24 w-24 bg-emerald-100 text-emerald-600 rounded-[32px] flex items-center justify-center mx-auto mb-8 animate-bounce">
+              <div className="h-24 w-24 bg-transparent text-emerald-600 rounded-[32px] flex items-center justify-center mx-auto mb-8 animate-bounce">
                 <Zap size={48} fill="currentColor" />
               </div>
-              <h2 className="text-4xl font-black text-slate-900 tracking-tighter mb-4">Upgrade Successful!</h2>
+              <h2 className="text-4xl font-black text-slate-900 tracking-tighter mb-4 text-center">Plan Activated!</h2>
               <p className="text-lg text-slate-500 font-medium mb-10 leading-relaxed">
                 Welcome to the <span className="text-emerald-600 font-black">{subscription?.planName}</span> tier.
                 Your business control has been elevated and all premium features are now active.
@@ -264,12 +320,12 @@ export default function SubscriptionPage() {
 
               <div className="grid grid-cols-2 gap-4 mb-10">
                 <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">New Plan</p>
-                  <p className="text-lg font-black text-slate-900 hl-mono">{subscription?.planName}</p>
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 text-center">New Plan</p>
+                  <p className="text-lg font-black text-slate-900 hl-mono text-center">{subscription?.planName}</p>
                 </div>
                 <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Status</p>
-                  <p className="text-lg font-black text-emerald-600 hl-mono uppercase">Active</p>
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 text-center">Status</p>
+                  <p className="text-lg font-black text-emerald-600 hl-mono uppercase text-center">Active</p>
                 </div>
               </div>
 
@@ -283,7 +339,7 @@ export default function SubscriptionPage() {
           </div>
         </div>
       )}
-
+      
       <div className="flex justify-between items-end">
         <div>
           <h1 className="text-3xl font-black text-gray-900 tracking-tight">Subscription</h1>
@@ -322,6 +378,22 @@ export default function SubscriptionPage() {
               </div>
             </div>
           )}
+
+          <div className="bg-emerald-50 border border-emerald-100 p-6 rounded-3xl flex flex-col md:flex-row justify-between items-center gap-6">
+            <div className="flex items-center gap-4">
+              <div className="h-12 w-12 bg-white rounded-2xl flex items-center justify-center text-[#0D4A3E] shadow-sm">
+                <Smartphone size={24} />
+              </div>
+              <div>
+                <h3 className="text-sm font-black text-[#0D4A3E] uppercase tracking-widest">M-Pesa STK Push Only</h3>
+                <p className="text-xs font-medium text-emerald-800/60">We only deal in automated STK prompts. No cash or manual payments are allowed.</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 px-4 py-2 bg-white/50 rounded-xl border border-emerald-100">
+              <Zap size={14} className="text-amber-500" />
+              <span className="text-[10px] font-black uppercase tracking-widest text-[#0D4A3E]">Instant Activation</span>
+            </div>
+          </div>
 
           <div className="bg-white p-10 rounded-[28px] border border-gray-100 shadow-sm overflow-hidden relative">
             <div className="absolute top-0 right-0 p-10 opacity-10">
@@ -456,9 +528,10 @@ export default function SubscriptionPage() {
                 <tr className="bg-gray-50/50 border-b border-gray-100">
                   <th className="p-8 text-[10px] font-black text-gray-400 uppercase tracking-widest">Date</th>
                   <th className="p-8 text-[10px] font-black text-gray-400 uppercase tracking-widest">Reference</th>
-                  <th className="p-8 text-[10px] font-black text-gray-400 uppercase tracking-widest">Plan</th>
-                  <th className="p-8 text-[10px] font-black text-gray-400 uppercase tracking-widest">Amount</th>
+                  <th className="p-8 text-[10px] font-black text-gray-400 uppercase tracking-widest">Receipt</th>
+                  <th className="p-8 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Amount</th>
                   <th className="p-8 text-[10px] font-black text-gray-400 uppercase tracking-widest">Status</th>
+                  <th className="p-8 text-right"></th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50">
@@ -469,37 +542,51 @@ export default function SubscriptionPage() {
                 ) : (
                   history.map((inv: any) => (
                     <tr key={inv.id} className="hover:bg-gray-50/50 transition-all group">
-                      <td className="p-8 font-bold text-gray-900 text-sm">{new Date(inv.createdAt).toLocaleDateString()}</td>
-                      <td className="p-8 font-medium text-gray-400 text-xs hl-mono">{inv.reference}</td>
+                      <td className="p-8 font-bold text-gray-900 text-sm">{new Date(inv.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: 'numeric' })}</td>
                       <td className="p-8">
-                        <span className="px-3 py-1 rounded-full bg-slate-100 text-slate-600 text-[10px] font-black uppercase tracking-widest">
-                          {inv.plan}
-                        </span>
+                        <p className="font-medium text-gray-400 text-[10px] hl-mono uppercase tracking-tighter">{inv.reference}</p>
+                        <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest mt-1">{inv.plan}</p>
                       </td>
-                      <td className="p-8 font-black text-emerald-800 hl-mono">KES {Number(inv.amount).toLocaleString()}</td>
                       <td className="p-8">
-                        <span className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${inv.status === 'PAID' ? 'bg-emerald-100 text-emerald-700' :
-                          inv.status === 'FAILED' ? 'bg-red-100 text-red-700' :
-                            inv.status === 'CANCELLED' ? 'bg-amber-100 text-amber-700' :
-                              'bg-gray-100 text-gray-700'
-                          }`}>
-                          {inv.status}
-                        </span>
-                        {inv.message && inv.message !== 'Success' && (
-                          <p className="mt-2 text-[10px] text-gray-400 font-medium max-w-[200px] leading-tight">
-                            {inv.message}
-                          </p>
+                        {inv.mpesaReceipt ? (
+                          <span className="font-black text-[10px] hl-mono text-emerald-600 bg-emerald-50 px-2 py-1 rounded-md">{inv.mpesaReceipt}</span>
+                        ) : (
+                          <span className="text-[10px] font-medium text-slate-300 italic">No receipt</span>
                         )}
-                        {inv.status === 'PENDING' && (
+                      </td>
+                      <td className="p-8 font-black text-emerald-800 hl-mono text-right text-sm">KES {Number(inv.amount).toLocaleString()}</td>
+                      <td className="p-8">
+                        <div className="flex items-center gap-2">
+                          <span className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${inv.status === 0 ? 'bg-emerald-100 text-emerald-700' :
+                            inv.status === 1 ? 'bg-red-100 text-red-700' :
+                              inv.status === 3 ? 'bg-amber-100 text-amber-700' :
+                              inv.status === 4 ? 'bg-red-100 text-red-700' :
+                                'bg-gray-100 text-gray-700'
+                            }`}>
+                            {inv.status === 0 ? 'PAID' : inv.status === 1 ? 'FAILED' : inv.status === 3 ? 'CANCELLED' : inv.status === 4 ? 'ERROR' : 'PENDING'}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="p-8 text-right">
+                        <div className="flex justify-end items-center gap-2">
+                          {inv.status === 2 && (
+                            <button
+                              onClick={() => verifyMutation.mutate(inv.id)}
+                              disabled={verifyMutation.isPending}
+                              title="Verify Payment"
+                              className="h-8 w-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center hover:bg-emerald-100 transition-all"
+                            >
+                              {verifyMutation.isPending ? <Loader2 size={14} className="animate-spin" /> : <RefreshCcw size={14} />}
+                            </button>
+                          )}
                           <button
-                            onClick={() => verifyMutation.mutate(inv.id)}
-                            disabled={verifyMutation.isPending}
-                            className="ml-3 text-[10px] font-black text-emerald-600 hover:text-emerald-700 uppercase tracking-widest flex items-center gap-1 group/v"
+                            onClick={() => setSelectedTransaction(inv)}
+                            className="h-8 w-8 rounded-lg bg-slate-50 text-slate-400 flex items-center justify-center hover:bg-slate-100 hover:text-slate-900 transition-all"
+                            title="View Details"
                           >
-                            {verifyMutation.isPending ? <Loader2 size={10} className="animate-spin" /> : <RefreshCcw size={10} className="group-hover/v:rotate-180 transition-transform duration-500" />}
-                            Verify
+                            <Eye size={14} />
                           </button>
-                        )}
+                        </div>
                       </td>
                     </tr>
                   ))
@@ -673,6 +760,131 @@ export default function SubscriptionPage() {
         }}
         onCancel={() => setShowConfirmRenew(false)}
       />
+
+      {/* ── TRANSACTION DETAIL MODAL ── */}
+      {selectedTransaction && (
+        <div className="fixed inset-0 z-[120] flex items-center justify-center bg-slate-900/60 backdrop-blur-md p-4 animate-in fade-in duration-300">
+          <div className="bg-white rounded-[40px] shadow-2xl w-full max-w-2xl overflow-hidden animate-in zoom-in-95 duration-300">
+            <div className="bg-slate-50 p-8 flex justify-between items-center border-b border-slate-100">
+              <div className="flex items-center gap-4">
+                <div className={`h-12 w-12 rounded-2xl flex items-center justify-center shadow-sm ${
+                  selectedTransaction.status === 0 ? 'bg-emerald-50 text-emerald-600' :
+                  selectedTransaction.status === 1 ? 'bg-red-50 text-red-600' : 'bg-amber-50 text-amber-600'
+                }`}>
+                  <CreditCard size={24} />
+                </div>
+                <div>
+                  <h3 className="text-xl font-black text-slate-900 tracking-tight">Transaction Details</h3>
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">View comprehensive billing data</p>
+                </div>
+              </div>
+              <button 
+                onClick={() => setSelectedTransaction(null)}
+                className="h-10 w-10 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-400 hover:text-slate-900 transition-all shadow-sm"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="p-10 space-y-8">
+              <div className="grid grid-cols-2 gap-8">
+                <div className="space-y-1">
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Date & Time</p>
+                  <p className="text-sm font-bold text-slate-900">{new Date(selectedTransaction.createdAt).toLocaleString()}</p>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Internal Reference</p>
+                  <p className="text-sm font-black text-emerald-600 hl-mono">{selectedTransaction.reference}</p>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">M-Pesa Receipt</p>
+                  <p className="text-sm font-black text-slate-900 hl-mono">{selectedTransaction.mpesaReceipt || 'N/A'}</p>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">M-Pesa Number</p>
+                  <p className="text-sm font-black text-slate-900 hl-mono">{selectedTransaction.phone || 'N/A'}</p>
+                </div>
+              </div>
+
+              <div className="bg-slate-50 rounded-3xl p-8 border border-slate-100 flex justify-between items-center">
+                <div>
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Subscription Plan</p>
+                  <p className="text-lg font-black text-slate-900">{selectedTransaction.plan} Tier</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Amount Paid</p>
+                  <p className="text-2xl font-black text-emerald-900 hl-mono">KES {Number(selectedTransaction.amount).toLocaleString()}</p>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <span className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${
+                    selectedTransaction.status === 0 ? 'bg-emerald-100 text-emerald-700' :
+                    selectedTransaction.status === 1 ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'
+                  }`}>
+                    {selectedTransaction.status === 0 ? 'Transaction Successful' : 
+                     selectedTransaction.status === 1 ? 'Transaction Failed' : 
+                     selectedTransaction.status === 3 ? 'Transaction Cancelled' : 'Payment Pending'}
+                  </span>
+                </div>
+                
+                {selectedTransaction.message && (
+                  <div className="bg-slate-50/50 p-4 rounded-2xl border border-dashed border-slate-200">
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 flex items-center gap-2">
+                      <Info size={12} /> Gateway Response
+                    </p>
+                    <p className="text-xs font-medium text-slate-600 leading-relaxed italic">
+                      "{selectedTransaction.message}"
+                    </p>
+                  </div>
+                )}
+
+                {/* RAW SAFARICOM JSON AUDIT */}
+                {selectedTransaction.rawResponse && (
+                  <div className="bg-slate-900 rounded-2xl p-6 shadow-inner overflow-hidden border border-slate-800">
+                    <div className="flex justify-between items-center mb-4">
+                      <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-2">
+                        <Zap size={12} className="text-amber-400" /> Raw Safaricom Payload
+                      </p>
+                      <span className="text-[10px] font-black text-slate-600 uppercase tracking-widest hl-mono">JSON Audit</span>
+                    </div>
+                    <div className="max-h-48 overflow-y-auto custom-scrollbar">
+                      <pre className="text-[10px] font-medium text-emerald-400/90 hl-mono leading-relaxed whitespace-pre-wrap">
+                        {(() => {
+                          try {
+                            const parsed = typeof selectedTransaction.rawResponse === 'string' 
+                              ? JSON.parse(selectedTransaction.rawResponse) 
+                              : selectedTransaction.rawResponse;
+                            return JSON.stringify(parsed, null, 2);
+                          } catch (e) {
+                            return selectedTransaction.rawResponse;
+                          }
+                        })()}
+                      </pre>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex gap-4 pt-4">
+                <button
+                  onClick={() => window.print()}
+                  className="flex-1 py-4 bg-slate-900 text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-black transition-all flex items-center justify-center gap-2"
+                >
+                  <Download size={14} /> Download Receipt
+                </button>
+                <button
+                  onClick={() => setSelectedTransaction(null)}
+                  className="flex-1 py-4 bg-white border border-slate-200 text-slate-500 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-slate-50 transition-all"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

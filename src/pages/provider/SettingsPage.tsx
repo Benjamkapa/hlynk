@@ -340,7 +340,7 @@ export default function SettingsPage() {
                   <div className="p-8 rounded-[20px] bg-red-50 border border-red-100 flex items-center justify-between">
                     <div>
                       <p className="text-sm font-black text-red-900">Deactivate Account</p>
-                      <p className="text-[10px] text-red-600 font-bold mt-1">This will immediately revoke access for all your staff.</p>
+                      <p className="text-[10px] text-red-600 font-bold mt-1">This will immediately revoke access for all your stuffs.</p>
                     </div>
                     <button 
                       onClick={() => setConfirmDeleteId('deactivate')}
@@ -421,10 +421,10 @@ function ActivityLogViewer() {
   })
 
   const handleExport = () => {
-    if (!logsData?.items) return
+    if (!logsData?.data?.items) return
     const csvContent = [
       ['Date', 'User', 'Action', 'Details', 'IP Address'],
-      ...logsData.items.map((log: any) => [
+      ...logsData.data.items.map((log: any) => [
         new Date(log.createdAt).toLocaleString(),
         log.user?.name || 'System',
         log.logName || log.action,
@@ -447,7 +447,7 @@ function ActivityLogViewer() {
         <div>
           <h3 className="text-xl font-black text-slate-900 tracking-tight mb-1">System Security Logs</h3>
           <p className="text-[11px] text-slate-400 font-medium italic lowercase tracking-wider">
-            {logsData?.pagination?.total || 0} secure events recorded in this audit period
+            {logsData?.data?.pagination?.total || 0} secure events recorded in this audit period
           </p>
         </div>
         <div className="flex gap-2">
@@ -480,10 +480,10 @@ function ActivityLogViewer() {
             <tbody className="divide-y divide-slate-50">
               {logsLoading ? (
                 <tr><td colSpan={4} className="p-20 text-center"><Loader2 className="animate-spin mx-auto text-emerald-600" /></td></tr>
-              ) : logsData?.items.length === 0 ? (
+              ) : !logsData?.data?.items || logsData.data.items.length === 0 ? (
                 <tr><td colSpan={4} className="p-20 text-center text-slate-300 italic font-medium">No activity recorded for this period.</td></tr>
               ) : (
-                logsData.items.map((log: any) => (
+                logsData.data.items.map((log: any) => (
                   <tr key={log.id} className="hover:bg-emerald-50/30 transition-all group">
                     <td className="px-8 py-5">
                       <p className="text-xs font-black text-slate-900 leading-none mb-1">{new Date(log.createdAt).toLocaleDateString('en-US', { day: 'numeric', month: 'short' })}</p>
@@ -523,10 +523,10 @@ function ActivityLogViewer() {
           </table>
         </div>
 
-        {logsData?.pagination && logsData.pagination.pages > 1 && (
+        {logsData?.data?.pagination && logsData.data.pagination.totalPages > 1 && (
           <div className="p-6 border-t border-slate-50 flex items-center justify-between bg-slate-50/20">
             <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-              Page {page} of {logsData.pagination.pages}
+              Page {page} of {logsData.data.pagination.totalPages}
             </p>
             <div className="flex gap-2">
               <button
@@ -537,8 +537,8 @@ function ActivityLogViewer() {
                 Prev
               </button>
               <button
-                onClick={() => setPage(p => Math.min(logsData.pagination.pages, p + 1))}
-                disabled={page === logsData.pagination.pages}
+                onClick={() => setPage(p => Math.min(logsData.data.pagination.totalPages, p + 1))}
+                disabled={page === logsData.data.pagination.totalPages}
                 className="h-10 px-4 bg-white border border-slate-100 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-emerald-600 disabled:opacity-30"
               >
                 Next

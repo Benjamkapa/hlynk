@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Code, Sparkles, Loader2, Save, Terminal } from 'lucide-react'
+import { Code, Sparkles, Loader2, Save, Terminal, Wallet, CheckCircle2, AlertTriangle } from 'lucide-react'
 import { useAuth } from '../../lib/auth/AuthContext'
 import { providersApi } from '../../lib/api/providers'
 import { getErrorMessage } from '../../lib/utils/error'
@@ -9,7 +9,7 @@ import FeatureGate from '../../components/shared/FeatureGate'
 export default function DeveloperPage() {
   const { user, refreshUser } = useAuth()
   const queryClient = useQueryClient()
-  
+
   const { data: profile, isLoading } = useQuery({
     queryKey: ['my-profile'],
     queryFn: providersApi.getMyProfile
@@ -47,124 +47,135 @@ export default function DeveloperPage() {
         <div className="flex justify-between items-end">
           <div>
             <h1 className="text-3xl font-black text-gray-900 tracking-tight flex items-center gap-3">
-               <Terminal className="text-emerald-600" size={32} />
-               Developer Console
+              <Terminal className="text-emerald-600" size={32} />
+              Developer Console
             </h1>
             <p className="text-gray-500 font-medium">Configure API integrations and advanced business logic</p>
           </div>
           <button
             onClick={handleSave}
             disabled={updateMutation.isPending}
-            className="bg-[#0D4A3E] text-white h-12 px-8 rounded-xl font-black text-sm hover:bg-[#0A3D33] transition-all flex items-center gap-2 disabled:opacity-50 shadow-xl shadow-emerald-900/10"
+            className="group bg-[#0D4A3E] text-white h-14 px-10 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-black transition-all flex items-center gap-3 disabled:opacity-50 shadow-2xl shadow-emerald-900/20 active:scale-95"
           >
-            {updateMutation.isPending ? <Loader2 className="animate-spin" size={18} /> : <Save size={18} />}
-            Apply Changes
+            {updateMutation.isPending ? <Loader2 className="animate-spin" size={18} /> : <Save size={18} className="group-hover:rotate-12 transition-transform" />}
+            Save Integration
           </button>
         </div>
 
-        <div className="bg-white rounded-[32px] border border-gray-100 shadow-sm p-10">
-          <div className="space-y-12">
-            <div>
-              <h4 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-6 flex items-center gap-2">
-                <div className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                Vendor M-Pesa Gateway
-              </h4>
-              <p className="text-[11px] text-gray-500 mb-8 font-medium max-w-lg leading-relaxed">
-                Enter your Daraja API credentials to receive payments directly to your Till or Paybill number via STK Push. 
-                Ensure your callback URL is correctly configured in the Daraja portal.
-              </p>
-              
-              <div className="space-y-6 max-w-2xl bg-slate-50 p-8 rounded-3xl border border-slate-100">
-                <div className="flex gap-4 mb-6">
-                  <button
-                    onClick={() => setFormData({ ...formData, operationalSettings: { ...formData.operationalSettings, mpesa: { ...formData.operationalSettings?.mpesa, env: 'sandbox' } } })}
-                    className={`flex-1 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all ${formData.operationalSettings?.mpesa?.env !== 'production' ? 'bg-slate-900 text-white shadow-xl' : 'bg-white border border-slate-200 text-slate-400'}`}
-                  >Sandbox</button>
-                  <button
-                    onClick={() => setFormData({ ...formData, operationalSettings: { ...formData.operationalSettings, mpesa: { ...formData.operationalSettings?.mpesa, env: 'production' } } })}
-                    className={`flex-1 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all ${formData.operationalSettings?.mpesa?.env === 'production' ? 'bg-emerald-600 text-white shadow-xl shadow-emerald-900/20' : 'bg-white border border-slate-200 text-slate-400'}`}
-                  >Production</button>
-                </div>
-                
-                <div className="grid grid-cols-1 gap-6">
-                   <InputGroup
-                    label="Consumer Key"
-                    value={formData.operationalSettings?.mpesa?.consumerKey || ''}
-                    onChange={(v: string) => setFormData({ ...formData, operationalSettings: { ...formData.operationalSettings, mpesa: { ...formData.operationalSettings?.mpesa, consumerKey: v } } })}
-                  />
-                  <InputGroup
-                    label="Consumer Secret"
-                    type="password"
-                    value={formData.operationalSettings?.mpesa?.consumerSecret || ''}
-                    onChange={(v: string) => setFormData({ ...formData, operationalSettings: { ...formData.operationalSettings, mpesa: { ...formData.operationalSettings?.mpesa, consumerSecret: v } } })}
-                  />
-                  <div className="grid grid-cols-2 gap-6">
-                    <InputGroup
-                      label="Shortcode"
-                      value={formData.operationalSettings?.mpesa?.shortcode || ''}
-                      onChange={(v: string) => setFormData({ ...formData, operationalSettings: { ...formData.operationalSettings, mpesa: { ...formData.operationalSettings?.mpesa, shortcode: v } } })}
-                    />
-                    <InputGroup
-                      label="Passkey"
-                      type="password"
-                      value={formData.operationalSettings?.mpesa?.passkey || ''}
-                      onChange={(v: string) => setFormData({ ...formData, operationalSettings: { ...formData.operationalSettings, mpesa: { ...formData.operationalSettings?.mpesa, passkey: v } } })}
-                    />
+        <div className="bg-white rounded-[40px] border border-slate-100 shadow-2xl shadow-slate-900/5 overflow-hidden">
+          <div className="grid grid-cols-1 lg:grid-cols-12">
+            {/* Sidebar info */}
+            <div className="lg:col-span-4 bg-slate-50/50 p-12 border-r border-slate-100">
+              <div className="sticky top-12 space-y-10">
+                <div>
+                  <div className="h-14 w-14 bg-white rounded-2xl shadow-lg flex items-center justify-center text-emerald-600 mb-6">
+                    <Wallet size={28} />
                   </div>
+                  <h3 className="text-xl font-black text-slate-900 mb-4">Direct M-Pesa Gateway</h3>
+                  <p className="text-sm text-slate-500 font-medium leading-relaxed">
+                    Bypass our system's default payment collection and receive funds directly into your own Paybill or Till number.
+                  </p>
+                </div>
+
+                <div className="space-y-6">
+                  <div className="flex gap-4">
+                    <div className="h-6 w-6 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0">
+                      <CheckCircle2 size={12} />
+                    </div>
+                    <p className="text-[11px] font-bold text-slate-600 uppercase tracking-wide">Instant Settlement</p>
+                  </div>
+                  <div className="flex gap-4">
+                    <div className="h-6 w-6 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0">
+                      <CheckCircle2 size={12} />
+                    </div>
+                    <p className="text-[11px] font-bold text-slate-600 uppercase tracking-wide">Custom Branding on STK</p>
+                  </div>
+                  <div className="flex gap-4">
+                    <div className="h-6 w-6 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0">
+                      <CheckCircle2 size={12} />
+                    </div>
+                    <p className="text-[11px] font-bold text-slate-600 uppercase tracking-wide">Automated Reconciliation</p>
+                  </div>
+                </div>
+
+                <div className="p-6 bg-white rounded-3xl border border-slate-100 shadow-sm">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="h-2 w-2 rounded-full bg-amber-500 animate-pulse" />
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Security Protocol</p>
+                  </div>
+                  <p className="text-[10px] text-slate-500 font-medium leading-normal">
+                    Your Consumer Secret and Passkey are encrypted using AES-256 before storage. Not even our developers can view your raw keys.
+                  </p>
                 </div>
               </div>
             </div>
 
-            {/* <FeatureGate feature="ai_analyst">
-              <div className="pt-12 border-t border-gray-100">
-                <h4 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-6 flex items-center gap-2">
-                  <div className="h-1.5 w-1.5 rounded-full bg-blue-500" />
-                  AI Intelligence Engine
-                </h4>
-                <p className="text-[11px] text-gray-500 mb-8 font-medium max-w-lg leading-relaxed">
-                  Configure your preferred AI model to power the business analyst workspace. 
-                  We support OpenAI, Anthropic, and Google Gemini models.
-                </p>
-                
-                <div className="space-y-6 max-w-2xl bg-emerald-50/20 p-10 rounded-[40px] border border-emerald-100/50">
-                  <div className="flex flex-wrap gap-3 mb-8">
-                    {['none', 'openai', 'anthropic', 'gemini'].map(p => (
-                      <button
-                        key={p}
-                        onClick={() => setFormData({ ...formData, operationalSettings: { ...formData.operationalSettings, ai: { ...formData.operationalSettings?.ai, provider: p } } })}
-                        className={`px-6 py-3 rounded-xl font-black text-[10px] uppercase tracking-[0.2em] transition-all ${
-                          (formData.operationalSettings?.ai?.provider || 'none') === p 
-                          ? 'bg-[#0D4A3E] text-white shadow-xl shadow-emerald-900/20' 
-                          : 'bg-white border border-slate-100 text-slate-400 hover:text-slate-600'
-                        }`}
-                      >
-                        {p}
-                      </button>
-                    ))}
+            {/* Form area */}
+            <div className="lg:col-span-8 p-12">
+              <div className="max-w-2xl space-y-12">
+                <div>
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-6 block">Environment Selection</label>
+                  <div className="flex bg-slate-100 p-1.5 rounded-2xl gap-1.5">
+                    <button
+                      onClick={() => setFormData({ ...formData, operationalSettings: { ...formData.operationalSettings, mpesa: { ...formData.operationalSettings?.mpesa, env: 'sandbox' } } })}
+                      className={`flex-1 py-4 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all ${formData.operationalSettings?.mpesa?.env !== 'production' ? 'bg-white text-slate-900 shadow-xl' : 'text-slate-400 hover:text-slate-600'}`}
+                    >
+                      Testing (Sandbox)
+                    </button>
+                    <button
+                      onClick={() => setFormData({ ...formData, operationalSettings: { ...formData.operationalSettings, mpesa: { ...formData.operationalSettings?.mpesa, env: 'production' } } })}
+                      className={`flex-1 py-4 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all ${formData.operationalSettings?.mpesa?.env === 'production' ? 'bg-[#0D4A3E] text-white shadow-xl' : 'text-slate-400 hover:text-slate-600'}`}
+                    >
+                      Live (Production)
+                    </button>
                   </div>
+                </div>
 
-                  {(formData.operationalSettings?.ai?.provider && formData.operationalSettings?.ai?.provider !== 'none') && (
-                    <div className="space-y-6 animate-in slide-in-from-top-4 duration-700">
-                      <InputGroup
-                        label={`${formData.operationalSettings.ai.provider.toUpperCase()} API Key`}
-                        type="password"
-                        placeholder="sk-..."
-                        value={formData.operationalSettings?.ai?.apiKey || ''}
-                        onChange={(v: string) => setFormData({ ...formData, operationalSettings: { ...formData.operationalSettings, ai: { ...formData.operationalSettings?.ai, apiKey: v } } })}
-                      />
-                      <div className="flex items-center gap-3 p-4 bg-white/50 rounded-2xl border border-white">
-                         <div className="h-8 w-8 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center">
-                            <Sparkles size={14} />
-                         </div>
-                         <p className="text-[10px] text-emerald-700 font-bold uppercase tracking-widest">
-                            Enterprise-grade encryption active. Your keys are never visible to system admins.
-                         </p>
-                      </div>
-                    </div>
-                  )}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <div className="md:col-span-2">
+                    <InputGroup
+                      label="Consumer Key"
+                      placeholder="Enter Daraja Consumer Key"
+                      value={formData.operationalSettings?.mpesa?.consumerKey || ''}
+                      onChange={(v: string) => setFormData({ ...formData, operationalSettings: { ...formData.operationalSettings, mpesa: { ...formData.operationalSettings?.mpesa, consumerKey: v } } })}
+                    />
+                  </div>
+                  <div className="md:col-span-2">
+                    <InputGroup
+                      label="Consumer Secret"
+                      type="password"
+                      placeholder="Enter Daraja Consumer Secret"
+                      value={formData.operationalSettings?.mpesa?.consumerSecret || ''}
+                      onChange={(v: string) => setFormData({ ...formData, operationalSettings: { ...formData.operationalSettings, mpesa: { ...formData.operationalSettings?.mpesa, consumerSecret: v } } })}
+                    />
+                  </div>
+                  <InputGroup
+                    label="Business Shortcode"
+                    placeholder="Paybill or Till Number"
+                    value={formData.operationalSettings?.mpesa?.shortcode || ''}
+                    onChange={(v: string) => setFormData({ ...formData, operationalSettings: { ...formData.operationalSettings, mpesa: { ...formData.operationalSettings?.mpesa, shortcode: v } } })}
+                  />
+                  <InputGroup
+                    label="Passkey / Online Password"
+                    type="password"
+                    placeholder="LNM Online Passkey"
+                    value={formData.operationalSettings?.mpesa?.passkey || ''}
+                    onChange={(v: string) => setFormData({ ...formData, operationalSettings: { ...formData.operationalSettings, mpesa: { ...formData.operationalSettings?.mpesa, passkey: v } } })}
+                  />
+                </div>
+
+                <div className="bg-amber-50 border border-amber-100 p-6 rounded-3xl flex items-start gap-4">
+                  <AlertTriangle className="text-amber-600 shrink-0" size={20} />
+                  <div>
+                    <h5 className="text-[10px] font-black text-amber-900 uppercase tracking-widest mb-1">Important Configuration</h5>
+                    <p className="text-[11px] text-amber-800/80 font-medium leading-relaxed">
+                      Ensure your Daraja App has the <strong>Lipa Na M-Pesa Online</strong> API enabled.
+                      Transactions will use the Callback URL provided by HudumaLynk automatically.
+                    </p>
+                  </div>
                 </div>
               </div>
-            </FeatureGate> */}
+            </div>
           </div>
         </div>
       </div>

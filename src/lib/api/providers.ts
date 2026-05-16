@@ -96,6 +96,8 @@ export const requestsApi = {
 export const paymentsApi = {
   stkPush: (data: { phone: string; amount: number; reference: string }) => 
     api.post('/payments/mpesa/stk-push', data).then(r => r.data),
+  getMpesaLogs: (params?: { page?: number; limit?: number }) =>
+    api.get('/payments/mpesa/logs', { params }).then(r => r.data),
 }
 
 export const adminApi = {
