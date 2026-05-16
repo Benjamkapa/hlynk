@@ -54,7 +54,7 @@ export default function MpesaLogsPage() {
              <ShieldCheck className="text-emerald-600" size={32} />
              Transaction Audit Logs
           </h1>
-          <p className="text-gray-500 font-medium">Real-time M-Pesa STK Push lifecycle tracking</p>
+          <p className="text-gray-500 font-medium">M-Pesa STK Push lifecycle tracking</p>
         </div>
       </div>
 
