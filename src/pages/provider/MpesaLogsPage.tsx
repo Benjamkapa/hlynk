@@ -3,7 +3,6 @@ import { useQuery } from '@tanstack/react-query'
 import { paymentsApi } from '../../lib/api/providers'
 import { Loader2, Smartphone, Calendar, User, Building2, CheckCircle2, XCircle, Clock, Search, ChevronLeft, ChevronRight, AlertTriangle, ShieldCheck } from 'lucide-react'
 import Pagination from '../../components/shared/Pagination'
-import { format } from 'date-fns'
 
 export default function MpesaLogsPage() {
   const [page, setPage] = useState(1)
@@ -18,7 +17,7 @@ export default function MpesaLogsPage() {
 
   // Group logs by day
   const groupedLogs = logs.reduce((acc: any, log: any) => {
-    const day = format(new Date(log.createdAt), 'MMMM dd, yyyy')
+    const day = new Date(log.createdAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
     if (!acc[day]) acc[day] = []
     acc[day].push(log)
     return acc
@@ -99,7 +98,7 @@ export default function MpesaLogsPage() {
                     {groupedLogs[day].map((log: any) => (
                       <tr key={log.id} className="hover:bg-slate-50/50 transition-colors group">
                         <td className="px-8 py-6">
-                          <span className="text-xs font-black text-slate-900 hl-mono">{format(new Date(log.createdAt), 'HH:mm:ss')}</span>
+                          <span className="text-xs font-black text-slate-900 hl-mono">{new Date(log.createdAt).toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
                         </td>
                         <td className="px-8 py-6">
                           <div className="flex items-center gap-3">
