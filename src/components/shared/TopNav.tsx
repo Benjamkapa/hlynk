@@ -104,9 +104,9 @@ export default function TopNav({ onMobileMenuToggle, isCollapsed, onToggleCollap
             </button>
 
             {showNotifications && (
-              <div className="absolute top-16 right-0 w-[340px] bg-white border border-slate-100 rounded-[.5rem] shadow-2xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200 z-[200]">
+              <div className="fixed sm:absolute top-20 sm:top-16 right-4 sm:right-0 w-[calc(100vw-2rem)] sm:w-[340px] bg-white border border-slate-100 rounded-[.5rem] shadow-2xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200 z-[200]">
                 <div className="p-5 bg-slate-50/50 border-b border-slate-100 flex justify-between items-center">
-                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Activity Stream</span>
+                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">System Notifications</span>
                   {unreadCount > 0 && (
                     <button 
                       onClick={() => markAllReadMutation.mutate()}

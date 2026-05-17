@@ -4,7 +4,7 @@ import {
   LayoutDashboard, Calendar, BarChart2, Users,
   Settings, LogOut, Package, ShoppingCart,
   Zap, PanelLeftClose, PanelLeftOpen, Clock, AlertTriangle,
-  Lock, Code, Shield, X, Star, Loader2, Terminal
+  Lock, Code, Shield, X, Star, Loader2, Terminal, ShieldCheck
 } from "lucide-react";
 import { useLocation, Outlet, NavLink, Link } from "react-router-dom";
 import TopNav from "./TopNav";
@@ -44,15 +44,15 @@ export default function ProviderLayout() {
 
   const navGroups: NavGroup[] = [
     {
-      label: 'Storefront',
+      label: 'My Shop',
       items: [
-        { to: '/dashboard/sales/new', label: 'Record Sale', icon: Zap, permission: 'sales' },
+        { to: '/dashboard/sales/new', label: 'New Sale', icon: Zap, permission: 'sales' },
         { to: '/dashboard/sales', label: 'Sales History', icon: Package, end: true, permission: 'sales' },
-        { to: '/dashboard/expenses', label: 'Expenses', icon: ShoppingCart, permission: 'sales' },
+        { to: '/dashboard/expenses', label: 'Track Expenses', icon: ShoppingCart, permission: 'sales' },
       ],
     },
     {
-      label: 'Inventory',
+      label: 'Stock & People',
       items: [
         { to: '/dashboard', label: 'Overview', icon: LayoutDashboard, end: true, permission: 'overview' },
         { to: '/dashboard/products', label: 'Products & Stock', icon: Package, permission: 'products' },
@@ -60,7 +60,7 @@ export default function ProviderLayout() {
       ],
     },
     {
-      label: 'Insights',
+      label: 'Reports',
       items: [
         { to: '/dashboard/reports', label: 'Business Reports', icon: BarChart2, permission: 'reports', plan: 'PLUS' }
       ],
@@ -68,15 +68,15 @@ export default function ProviderLayout() {
     {
       label: 'Team',
       items: [
-        { to: '/dashboard/staff', label: 'Staff Management', icon: Users, permission: 'staff', plan: 'MAX' },
+        { to: '/dashboard/staff', label: 'Staff Management', icon: Users, permission: 'staff', plan: 'PLUS' },
       ],
     },
     {
       label: 'System',
       items: [
-        { to: '/dashboard/logs', label: 'Forensic Audit', icon: Terminal, permission: 'logs' },
+        { to: '/dashboard/logs', label: 'Staff Activity Log', icon: ShieldCheck, permission: 'logs', plan: 'MAX' },
         { to: '/dashboard/subscription', label: 'Billing Plan', icon: Calendar, role: 'PROVIDER' },
-        { to: '/dashboard/developer', label: 'Developer Console', icon: Terminal, role: 'PROVIDER', plan: 'PLUS' },
+        { to: '/dashboard/developer', label: 'M-Pesa Setup', icon: Terminal, role: 'PROVIDER', plan: 'PLUS' },
       ],
     },
   ];
@@ -202,10 +202,10 @@ export default function ProviderLayout() {
                     </div>
                     {!collapsed && (
                       <div className="flex items-center justify-between flex-1 min-w-0">
-                        <span className="font-bold whitespace-nowrap truncate">{item.label}</span>
+                        <span className="text-sm font-bold whitespace-nowrap truncate">{item.label}</span>
                         {item.isLocked && (
                           <span className="text-[7px] font-black bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-full uppercase tracking-widest ml-2">
-                            {item.plan === 'MAX' ? 'Max' : 'Plus'}
+                            {item.plan === 'MAX' ? 'Business Pro' : 'Growth'}
                           </span>
                         )}
                       </div>
@@ -253,7 +253,7 @@ export default function ProviderLayout() {
               <div className="relative z-10">
                 <div className="flex justify-between items-center mb-2">
                   <p className="text-[8px] text-emerald-400 font-black uppercase tracking-widest">
-                    {user?.subscription?.planName} Tier 
+                    {user?.subscription?.planName === 'MAX' ? 'Business Pro' : user?.subscription?.planName === 'PLUS' ? 'Growth' : 'Starter'} Tier
                   </p>
                   {isCritical && <AlertTriangle size={10} className="text-amber-400 animate-pulse" />}
                 </div>

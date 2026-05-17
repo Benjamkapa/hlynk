@@ -33,7 +33,7 @@ const CATEGORIES = [
 
 type RegisterFormState = {
   businessName: string; ownerName: string; phone: string
-  category: string; county: string; location: string; planName: 'LITE'
+  category: string; county: string; location: string; planName: 'LITE' | 'PLUS' | 'MAX'
 }
 
 function ReviewCard({ review }: { review: any }) {
@@ -54,11 +54,11 @@ function ReviewCard({ review }: { review: any }) {
       </div>
       <div className="flex flex-col gap-2 min-w-0">
         <StarRating rating={review.rating || 5} size={10} />
-        <p className="text-[14px] text-white leading-relaxed font-medium italic opacity-90 drop-shadow-sm line-clamp-3">
+        <p className="text-[14px] text-white leading-relaxed font-light italic opacity-90 drop-shadow-sm line-clamp-3">
           "{review.comment}"
         </p>
         <div className="text-[11px] font-bold text-white/60 flex items-center gap-2">
-          <span className="text-white font-black uppercase tracking-tighter">{review.name}</span>
+          <span className="text-white font-black font-light uppercase tracking-tighter">{review.name}</span>
           {review.businessName && (
             <>
               <div className="w-1 h-1 rounded-full bg-white/20" />
@@ -155,8 +155,11 @@ export default function LoginPage() {
       .catch(() => { })
   }, [])
 
+  const urlParams = new URLSearchParams(window.location.search);
+  const requestedPlan = (urlParams.get('plan') as 'LITE' | 'PLUS' | 'MAX') || 'LITE';
+
   const [formData, setFormData] = useState<RegisterFormState>({
-    businessName: '', ownerName: '', phone: '', category: '', county: '', location: '', planName: 'LITE',
+    businessName: '', ownerName: '', phone: '', category: '', county: '', location: '', planName: requestedPlan,
   })
 
   const handleGoogleAuth = async (credential: string) => {
@@ -419,7 +422,7 @@ export default function LoginPage() {
                       </div>
 
                       <div className="bg-[#f8fafc] rounded-2xl p-4 mb-6 flex items-center gap-4 border border-[#f1f5f9]">
-                        {googleProfile?.picture && <img src={googleProfile.picture} alt="" className="w-11 h-11 rounded-full border-2 border-white shadow-md" />}
+                        {googleProfile?.picture && <img src={googleProfile.picture} alt="" className="w-11 h-11 rounded-full shadow-md" />}
                         <div className="flex-1 min-w-0">
                           <div className="text-[9px] text-[#94a3b8] font-bold uppercase tracking-widest mb-1">Verify Ownership</div>
                           <div className="text-[14px] text-black font-bold truncate">{googleProfile?.email}</div>
@@ -459,11 +462,7 @@ export default function LoginPage() {
                         {formLoading ? <Loader2 size={18} className="animate-spin" /> : 'Launch My biashara'}
                       </button>
 
-                      <div className="mt-8 text-center">
-                        <p className="text-[10px] text-gray-200 tracking-widest font-bold uppercase">
-                          Instant Setup · No Credit Card Required · Fully Automated
-                        </p>
-                      </div>
+                      {/* <div   */}
                     </form>
                   </motion.div>
                 )}
@@ -480,9 +479,9 @@ export default function LoginPage() {
           animate={{ opacity: 0.6 }}
           transition={{ delay: 1, duration: 1 }}
         >
-          <p className="text-[15px] tracking-[0.3em] font-black drop-shadow-md">
+          {/* <p className="text-[15px] tracking-[0.3em] font-black drop-shadow-md">
             Join {platformStats.totalBusinesses?.toLocaleString()}+ Kenyan businesses growing today.
-          </p>
+          </p> */}
         </motion.div>
       </motion.div>
     </>

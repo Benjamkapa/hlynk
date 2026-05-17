@@ -108,7 +108,7 @@ export default function SettingsPage() {
   const allTabs: SettingsTab[] = [
     { name: 'Profile', icon: User },
     { name: 'Business', icon: Store, role: ['PROVIDER', 'SUPER_ADMIN'] },
-    { name: 'Notifications', icon: Bell, role: ['PROVIDER', 'SUPER_ADMIN'] },
+    // { name: 'Notifications', icon: Bell, role: ['PROVIDER', 'SUPER_ADMIN'] },
     { name: 'Security', icon: Lock },
   ]
 
@@ -132,7 +132,7 @@ export default function SettingsPage() {
         <button
           onClick={handleSave}
           disabled={updateMutation.isPending || passwordMutation.isPending}
-          className="bg-[#0D4A3E] text-white h-12 px-8 rounded-xl font-black text-sm hover:bg-[#0A3D33] transition-all flex items-center gap-2 disabled:opacity-50"
+          className="bg-[#0D4A3E] text-white h-12 px-8 rounded-[.5rem] font-black text-sm hover:bg-[#0A3D33] transition-all flex items-center gap-2 disabled:opacity-50"
         >
           {updateMutation.isPending || passwordMutation.isPending ? (
             <Loader2 className="animate-spin" size={18} />
@@ -149,8 +149,8 @@ export default function SettingsPage() {
             <button
               key={tab.name}
               onClick={() => setActiveTab(tab.name)}
-              className={`w-full flex items-center gap-3 px-6 py-4 rounded-xl font-bold text-sm transition-all ${activeTab === tab.name
-                  ? 'bg-white text-emerald-600 shadow-sm border border-emerald-50'
+              className={`w-full flex items-center gap-3 px-6 py-4 rounded-[.5rem] font-bold text-sm hover:shadow hover:bg-emerald-100/40 transition-all ${activeTab === tab.name
+                  ? 'bg-white text-emerald-600 shadow-sm'
                   : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'
                 }`}
             >
@@ -161,14 +161,14 @@ export default function SettingsPage() {
         </div>
 
         <div className="lg:col-span-3">
-          <div className="bg-white rounded-[14px] border border-gray-100 shadow-sm p-8">
+          <div className="bg-white rounded-[.5rem] border border-gray-100 shadow-sm p-8">
             <h3 className="text-xl font-black text-gray-900 mb-8 border-b border-gray-50 pb-4">{activeTab} Details</h3>
 
             {activeTab === 'Profile' && (
               <div className="space-y-8">
                 <div className="flex items-center gap-6">
                   <div className="relative group">
-                    <div className="h-24 w-24 rounded-3xl bg-gray-100 flex items-center justify-center overflow-hidden border-2 border-slate-200 shadow-inner">
+                    <div className="h-24 w-24 rounded-[.5rem] bg-gray-100 flex items-center justify-center overflow-hidden border-2 border-slate-200 shadow-inner">
                       <img 
                         src={user?.photoUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(formData?.name || user?.name || '')}&background=0D4A3E&color=fff`} 
                         className="h-full w-full object-cover" 
@@ -191,7 +191,7 @@ export default function SettingsPage() {
                     <button
                       onClick={() => fileInputRef.current?.click()}
                       disabled={uploading}
-                      className="absolute -bottom-2 -right-2 bg-emerald-600 text-white p-2 rounded-xl shadow-lg hover:bg-emerald-700 transition-all hover:scale-110 active:scale-95 disabled:opacity-50"
+                      className="absolute -bottom-2 -right-2 bg-emerald-600 text-white p-2 rounded-[.5rem] shadow-lg hover:bg-emerald-700 transition-all hover:scale-110 active:scale-95 disabled:opacity-50"
                     >
                       <Camera size={16} />
                     </button>
@@ -337,14 +337,14 @@ export default function SettingsPage() {
                 <ActivityLogViewer />
                 <div className="pt-10 border-t border-gray-100">
                   <h4 className="text-xs font-black text-red-500 uppercase tracking-widest mb-6">Danger Zone</h4>
-                  <div className="p-8 rounded-[20px] bg-red-50 border border-red-100 flex items-center justify-between">
+                  <div className="p-8 rounded-[.5rem] bg-red-50 border border-red-100 flex items-center justify-between">
                     <div>
                       <p className="text-sm font-black text-red-900">Deactivate Account</p>
                       <p className="text-[10px] text-red-600 font-bold mt-1">This will immediately revoke access for all your stuffs.</p>
                     </div>
                     <button 
                       onClick={() => setConfirmDeleteId('deactivate')}
-                      className="px-6 py-3 bg-red-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-red-700 transition-all shadow-lg shadow-red-900/10"
+                      className="px-6 py-3 bg-red-600 text-white rounded-[.5rem] text-[10px] font-black uppercase tracking-widest hover:bg-red-700 transition-all shadow-lg shadow-red-900/10"
                     >
                       Deactivate
                     </button>
@@ -383,7 +383,7 @@ function InputGroup({ label, value, onChange, placeholder, type = "text", mono =
         value={value}
         onChange={(e) => onChange?.(e.target.value)}
         placeholder={placeholder}
-        className={`w-full bg-gray-50 border-none rounded-xl py-3.5 px-4 outline-none focus:ring-2 focus:ring-emerald-500/10 transition-all text-sm font-bold ${mono ? 'hl-mono' : ''}`}
+        className={`w-full bg-gray-50 border-none rounded-[.5rem] py-3.5 px-4 outline-none focus:ring-2 focus:ring-emerald-500/10 transition-all text-sm font-bold ${mono ? 'hl-mono' : ''}`}
       />
     </div>
   )
@@ -391,7 +391,7 @@ function InputGroup({ label, value, onChange, placeholder, type = "text", mono =
 
 function ToggleItem({ title, desc, active, onToggle }: any) {
   return (
-    <div className="flex items-center justify-between p-4 rounded-xl bg-gray-50 border border-gray-100">
+    <div className="flex items-center justify-between p-4 rounded-[.5rem] bg-gray-50 border border-gray-100">
       <div>
         <p className="text-sm font-bold text-gray-900">{title}</p>
         <p className="text-[10px] text-gray-500 font-medium">{desc}</p>
@@ -453,20 +453,20 @@ function ActivityLogViewer() {
         <div className="flex gap-2">
           <button
             onClick={() => refetch()}
-            className="p-3 bg-white border border-slate-100 rounded-xl text-slate-400 hover:text-emerald-600 transition-all shadow-sm"
+            className="p-3 bg-white border border-slate-100 rounded-[.5rem] text-slate-400 hover:text-emerald-600 transition-all shadow-sm"
           >
             <RefreshCcw size={18} />
           </button>
           <button
             onClick={handleExport}
-            className="flex items-center gap-2 px-6 bg-[#0D4A3E] text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-xl shadow-emerald-900/10 hover:-translate-y-0.5 transition-all"
+            className="flex items-center gap-2 px-6 bg-[#0D4A3E] text-white rounded-[.5rem] text-[10px] font-black uppercase tracking-widest shadow-xl shadow-emerald-900/10 hover:-translate-y-0.5 transition-all"
           >
             <FileText size={16} /> Export Audit
           </button>
         </div>
       </div>
 
-      <div className="bg-white rounded-[12px] border border-slate-100 overflow-hidden shadow-sm">
+      <div className="bg-white rounded-[.5rem] border border-slate-100 overflow-hidden shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
@@ -491,7 +491,7 @@ function ActivityLogViewer() {
                     </td>
                     <td className="px-8 py-5">
                       <div className="flex items-center gap-3">
-                        <div className="h-8 w-8 rounded-lg bg-slate-50 flex items-center justify-center text-[10px] font-black text-slate-400 group-hover:bg-white transition-all">
+                        <div className="h-8 w-8 rounded-[.5rem] bg-slate-50 flex items-center justify-center text-[10px] font-black text-slate-400 group-hover:bg-white transition-all">
                           {log.user?.name?.charAt(0).toUpperCase() || 'S'}
                         </div>
                         <div>
@@ -501,7 +501,7 @@ function ActivityLogViewer() {
                       </div>
                     </td>
                     <td className="px-8 py-5">
-                      <span className="px-3 py-1 bg-emerald-50 text-emerald-700 rounded-lg text-[9px] font-black uppercase tracking-widest border border-emerald-100/50">
+                      <span className="px-3 py-1 bg-emerald-50 text-emerald-700 rounded-[.5rem] text-[9px] font-black uppercase tracking-widest border border-emerald-100/50">
                         {log.logName || log.action}
                       </span>
                     </td>
@@ -532,14 +532,14 @@ function ActivityLogViewer() {
               <button
                 onClick={() => setPage(p => Math.max(1, p - 1))}
                 disabled={page === 1}
-                className="h-10 px-4 bg-white border border-slate-100 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-emerald-600 disabled:opacity-30"
+                className="h-10 px-4 bg-white border border-slate-100 rounded-[.5rem] text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-emerald-600 disabled:opacity-30"
               >
                 Prev
               </button>
               <button
                 onClick={() => setPage(p => Math.min(logsData.data.pagination.totalPages, p + 1))}
                 disabled={page === logsData.data.pagination.totalPages}
-                className="h-10 px-4 bg-white border border-slate-100 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-emerald-600 disabled:opacity-30"
+                className="h-10 px-4 bg-white border border-slate-100 rounded-[.5rem] text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-emerald-600 disabled:opacity-30"
               >
                 Next
               </button>

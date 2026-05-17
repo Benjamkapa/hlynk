@@ -148,9 +148,9 @@ export default function ProvidersPage() {
               className="bg-slate-50 border-none rounded-xl px-4 py-3.5 text-sm font-bold outline-none focus:ring-2 focus:ring-emerald-500/10 min-w-[140px] transition-all"
             >
               <option value="">All Plans</option>
-              <option value="LITE">Lite</option>
-              <option value="PLUS">Plus</option>
-              <option value="MAX">Max</option>
+              <option value="LITE">Starter</option>
+              <option value="PLUS">Growth</option>
+              <option value="MAX">Business Pro</option>
             </select>
           </div>
         </div>
@@ -188,7 +188,7 @@ export default function ProvidersPage() {
                     </div>
                   </td>
                   <td className="px-8 py-5">
-                    <span className="text-[10px] font-black text-gray-600 bg-gray-100 px-2 py-0.5 rounded uppercase tracking-widest">{p.planName || 'TRIAL'}</span>
+                    <span className="text-[10px] font-black text-gray-600 bg-gray-100 px-2 py-0.5 rounded uppercase tracking-widest">{p.planName === 'MAX' ? 'Business Pro' : p.planName === 'PLUS' ? 'Growth' : p.planName === 'LITE' ? 'Starter' : 'TRIAL'}</span>
                   </td>
                   <td className="px-8 py-5 text-center">
                     <span className="text-[10px] font-black hl-mono text-gray-500">

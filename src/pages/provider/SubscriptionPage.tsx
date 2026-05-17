@@ -11,44 +11,44 @@ import { Filter, Search } from 'lucide-react'
 const PLANS = [
   {
     id: 'LITE',
-    name: 'Lite Plan',
-    price: 1999,
-    desc: 'Simple digital control for everyday businesses like kiosks, salons, and mini shops.',
+    name: 'Starter',
+    price: 2999,
+    desc: 'For small businesses that want better control of daily sales and expenses.',
     color: 'emerald',
-    features: ['POS Checkout', 'Product & Service Sales', 'Cash & M-Pesa Tracking', 'Basic Inventory tracking'],
-    notIncluded: ['Net Profit Tracking', 'Expense Tracking', 'Advanced Reports', 'Multi-User']
+    features: ['Record Sales', 'Track Expenses', 'Manage Stock', 'Save Customer Records', 'Track Cash & M-Pesa', 'Daily Profit Reports', 'Standard Support'],
+    notIncluded: ['Profit Analytics', 'M-Pesa Paybill Integration', 'Staff Accounts']
   },
   {
     id: 'PLUS',
-    name: 'Plus Plan',
-    price: 4999,
-    desc: 'Built for growing businesses like minimarts, pharmacies, and hardware shops.',
+    name: 'Growth',
+    price: 6999,
+    desc: 'For growing businesses that need deeper reports and better business tracking.',
     color: 'blue',
-    features: ['Everything in Lite', 'Net Profit Tracking', 'Expense Tracking', 'Revenue Trend Charts', 'Staff Salaries'],
-    notIncluded: ['Unlimited Staff Accounts', 'Advanced Audit Logs']
+    features: ['Everything in Starter', 'Profit Analytics', 'Sales Reports & Graphs', 'M-Pesa Paybill Integration', '1 Staff Account', 'Priority Support'],
+    notIncluded: ['Unlimited Staff Accounts', 'Roles & Permissions']
   },
   {
     id: 'MAX',
-    name: 'Max Plan',
-    price: 11999,
-    desc: 'Full operational management for large retail, distributors, and institutions.',
+    name: 'Business Pro',
+    price: 16999,
+    desc: 'For businesses that need complete operational and staff management.',
     color: 'purple',
-    features: ['Everything in Plus', 'Unlimited Staff Accounts', 'Advanced Audit Logs', 'Full KPI Dashboard Access', 'Priority Support'],
+    features: ['Everything in Growth', 'Unlimited Staff Accounts', 'Staff Activity Tracking', 'Roles & Permissions', 'Multi-Branch Management', 'Advanced Business Controls'],
     notIncluded: []
   },
 ]
 
 const FEATURE_COMPARISON = [
-  { name: 'POS Checkout', lite: true, plus: true, max: true },
-  { name: 'Inventory Tracking', lite: true, plus: true, max: true },
-  { name: 'M-Pesa Tracking', lite: true, plus: true, max: true },
-  { name: 'Net Profit Tracking', lite: false, plus: true, max: true },
-  { name: 'Expense Tracking', lite: false, plus: true, max: true },
-  { name: 'Staff Salaries', lite: false, plus: true, max: true },
-  { name: 'Security Activity Logs', lite: false, plus: true, max: true },
-  { name: 'Unlimited Staff', lite: false, plus: false, max: true },
-  { name: 'Advanced Audit Logs', lite: false, plus: false, max: true },
-  { name: 'Priority Support', lite: false, plus: false, max: true },
+  { name: 'Record & View Sales', lite: true, plus: true, max: true },
+  { name: 'Manage Stock & Customers', lite: true, plus: true, max: true },
+  { name: 'Track Daily Expenses', lite: true, plus: true, max: true },
+  { name: 'Profit Analytics', lite: false, plus: true, max: true },
+  { name: 'M-Pesa Paybill Integration', lite: false, plus: true, max: true },
+  { name: '1 Staff Account', lite: false, plus: true, max: true },
+  { name: 'Unlimited Staff Accounts', lite: false, plus: false, max: true },
+  { name: 'Staff Activity Tracking', lite: false, plus: false, max: true },
+  { name: 'Roles & Permissions', lite: false, plus: false, max: true },
+  { name: 'Priority Support', lite: false, plus: true, max: true },
 ]
 
 import { SubscriptionExpiredBanner } from '../../components/shared/SubscriptionGuard'
@@ -652,7 +652,7 @@ export default function SubscriptionPage() {
                   <h4 className="text-xl font-black text-slate-900 mb-2">{plan.name}</h4>
                   <div className="flex items-baseline gap-1 mb-6">
                     <span className="text-2xl font-black text-slate-900 hl-mono">KES {plan.price.toLocaleString()}</span>
-                    <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">/mo</span>
+                    <span className="text-xs font-bold text-slate-400 uppercase tracking-widest hl-mono">/28 days</span>
                   </div>
                   <p className="text-xs text-slate-500 font-medium leading-relaxed mb-8 flex-1">{plan.desc}</p>
                   <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${selectedPlan?.id === plan.id ? 'bg-emerald-500 border-emerald-500 text-white' : 'border-slate-200'}`}>

@@ -103,9 +103,9 @@ export default function SubscriptionsPage() {
               className="bg-slate-50 border-none rounded-xl px-4 py-3.5 text-sm font-bold outline-none focus:ring-2 focus:ring-emerald-500/10 min-w-[140px] transition-all"
             >
               <option value="">All Plans</option>
-              <option value="LITE">Lite</option>
-              <option value="PLUS">Plus</option>
-              <option value="MAX">Max</option>
+              <option value="LITE">Starter</option>
+              <option value="PLUS">Growth</option>
+              <option value="MAX">Business Pro</option>
             </select>
           </div>
         </div>
@@ -138,7 +138,7 @@ export default function SubscriptionsPage() {
                   </td>
                   <td className="px-8 py-5">
                     <span className={`text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-md ${s.planName === 'MAX' ? 'bg-purple-50 text-purple-600' : s.planName === 'PLUS' ? 'bg-blue-50 text-blue-600' : 'bg-gray-100 text-gray-600'}`}>
-                      {s.planName}
+                      {s.planName === 'MAX' ? 'Business Pro' : s.planName === 'PLUS' ? 'Growth' : 'Starter'}
                     </span>
                   </td>
                   <td className="px-8 py-5 text-center">
@@ -160,7 +160,7 @@ export default function SubscriptionsPage() {
                            onClick={() => { if(window.confirm(`Switch to ${p}?`)) upgradeMutation.mutate({ id: s.tenantId, plan: p }) }} 
                            className="text-[9px] font-black uppercase tracking-widest hover:bg-slate-50 px-2 py-1.5 rounded border border-slate-100 transition-all"
                          >
-                           {p}
+                           {p === 'MAX' ? 'Business Pro' : p === 'PLUS' ? 'Growth' : 'Starter'}
                          </button>
                        ))}
                     </div>

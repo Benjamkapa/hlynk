@@ -4,8 +4,8 @@ import { FadeUp } from './Animations'
 
 const faqs = [
   {
-    question: "Do I need a Paybill or Till number to use hlynk?",
-    answer: "No, you don't necessarily need one immediately to start tracking your cash sales. However, on our Plus and Max plans, you can integrate your Till or Paybill number with our M-Pesa STK push for automatic payment recording."
+    question: "Do I need a Paybill number to use hlynk?",
+    answer: "No, you don't necessarily need one immediately to start tracking your cash sales. However, on our Plus and Max plans, you can integrate your Paybill number with our M-Pesa STK push for automatic payment recording."
   },
   {
     question: "Can I use the system on my phone?",
@@ -15,10 +15,10 @@ const faqs = [
     question: "Is my data safe in case I lose my phone or computer?",
     answer: "Absolutely. All your business data is securely stored in the cloud. If you lose your phone, simply log into your account on a new device, and all your records, sales, and inventory will be right there."
   },
-  {
-    question: "How do the digital receipts work?",
-    answer: "Instead of printing paper receipts, hlynk generates a digital receipt link or a customized SMS that you can send directly to your customer's WhatsApp or standard SMS inbox after a sale."
-  },
+  // {
+  //   question: "How do the digital receipts work?",
+  //   answer: "Instead of printing paper receipts, hlynk generates a digital receipt link or a customized SMS that you can send directly to your customer's WhatsApp or standard SMS inbox after a sale."
+  // },
   {
     question: "Can I track my daily expenses as well?",
     answer: "Yes, our platform allows you to record daily expenses like rent, tokens, supplier payments, and transport. The system then calculates your actual net profit at the end of the day."

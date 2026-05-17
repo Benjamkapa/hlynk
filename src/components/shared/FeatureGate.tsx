@@ -38,6 +38,8 @@ export default function FeatureGate({ feature, children, fallback, variant = 'ca
   if (!feature) return <>{children}</>
   if (user?.role === 'SUPER_ADMIN') return <>{children}</>
 
+  const getPlanName = (p: string) => p === 'MAX' ? 'Business Pro' : p === 'PLUS' ? 'Growth' : 'Starter';
+
   const planRaw = user?.subscription?.planName || 'LITE'
   const plan = planRaw.toUpperCase()
   const isTrial = user?.subscription?.status === 'TRIAL'
@@ -75,7 +77,7 @@ export default function FeatureGate({ feature, children, fallback, variant = 'ca
       >
         <Zap size={12} className="text-amber-600 fill-amber-600 animate-pulse" />
         <span className="text-[10px] font-black uppercase tracking-widest text-amber-700">
-          {FEATURE_PLANS[feature][0]} PREVIEW
+          {getPlanName(FEATURE_PLANS[feature][0])} PREVIEW
         </span>
         <ArrowRight size={10} className="text-amber-400 group-hover:translate-x-1 transition-transform" />
       </Link>
@@ -109,7 +111,7 @@ export default function FeatureGate({ feature, children, fallback, variant = 'ca
             <div className="h-10 w-10 rounded-full bg-slate-900 text-white flex items-center justify-center shadow-lg">
               <Lock size={18} className="text-emerald-400" />
             </div>
-            <p className="text-[10px] font-black uppercase tracking-widest text-slate-900">Unlock {FEATURE_PLANS[feature][0]} Feature</p>
+            <p className="text-[10px] font-black uppercase tracking-widest text-slate-900">Unlock {getPlanName(FEATURE_PLANS[feature][0])} Feature</p>
           </Link>
         </div>
       </div>
@@ -138,12 +140,12 @@ export default function FeatureGate({ feature, children, fallback, variant = 'ca
 
           <div className="inline-flex items-center gap-3 px-5 py-2 bg-slate-900 text-white rounded-full mb-8 border border-white/10 shadow-2xl">
             <Lock size={14} className="text-emerald-400" />
-            <span className="text-[10px] font-black uppercase tracking-[0.4em]">{FEATURE_PLANS[feature][0]} EDITION</span>
+            <span className="text-[10px] font-black uppercase tracking-[0.4em]">{getPlanName(FEATURE_PLANS[feature][0])} EDITION</span>
           </div>
 
           <h4 className="text-2xl font-black text-slate-900 mb-4 tracking-tighter">Premium Business Utility</h4>
           <p className="text-sm text-slate-500 font-medium mb-12 leading-relaxed opacity-80">
-            This advanced tool is reserved for <span className="text-slate-900 font-black">{FEATURE_PLANS[feature][0]}</span> subscribers. Upgrade now to activate full operational control.
+            This advanced tool is reserved for <span className="text-slate-900 font-black">{getPlanName(FEATURE_PLANS[feature][0])}</span> subscribers. Upgrade now to activate full operational control.
           </p>
 
           <Link
@@ -151,7 +153,7 @@ export default function FeatureGate({ feature, children, fallback, variant = 'ca
             className="group/btn relative h-16 w-full bg-[#0D4A3E] text-white rounded-[20px] font-black text-xs uppercase tracking-[0.2em] hover:bg-black hover:scale-[1.02] transition-all shadow-2xl shadow-emerald-900/30 flex items-center justify-center overflow-hidden"
           >
             <span className="relative z-10 flex items-center gap-4">
-              Unlock {FEATURE_PLANS[feature][0]} Package <ArrowRight size={20} className="group-hover/btn:translate-x-2 transition-transform" />
+              Unlock {getPlanName(FEATURE_PLANS[feature][0])} Package <ArrowRight size={20} className="group-hover/btn:translate-x-2 transition-transform" />
             </span>
             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover/btn:translate-x-full transition-transform duration-1000" />
           </Link>

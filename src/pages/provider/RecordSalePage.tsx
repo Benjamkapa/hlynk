@@ -139,6 +139,7 @@ export default function RecordSalePage() {
         setSelectedCustomerId(null)
         setCustomerSearch('')
         queryClient.invalidateQueries({ queryKey: ['inventory-pos'] })
+        queryClient.invalidateQueries({ queryKey: ['inventory'] })
         queryClient.invalidateQueries({ queryKey: ['recent-sales'] })
         queryClient.invalidateQueries({ queryKey: ['provider-stats'] })
         queryClient.invalidateQueries({ queryKey: ['pos-customers'] })
@@ -202,6 +203,7 @@ export default function RecordSalePage() {
           setSelectedCustomerId(null)
           setCustomerSearch('')
           queryClient.invalidateQueries({ queryKey: ['inventory-pos'] })
+          queryClient.invalidateQueries({ queryKey: ['inventory'] })
           queryClient.invalidateQueries({ queryKey: ['recent-sales'] })
           queryClient.invalidateQueries({ queryKey: ['provider-stats'] })
           queryClient.invalidateQueries({ queryKey: ['pos-customers'] })
@@ -250,17 +252,16 @@ export default function RecordSalePage() {
       {/* Left: Product Selection */}
       <div className={`flex-1 space-y-6 md:space-y-10 min-w-0 w-full ${activeTab === 'cart' ? 'hidden xl:block' : 'block'}`}>
         {/* Sticky Header and Search */}
-        <div className="sticky top-0 z-30 bg-white/80 backdrop-blur-md pt-4 pb-8 space-y-8">
-          <div className="flex justify-between items-center gap-2">
+        <div className="sticky top-0 z-30 bg-white/80 backdrop-blur-md p-2 pb-8 space-y-8">
+          <div className="flex justify-between items-center gap-1 px-2">
             <div className="space-y-0.5">
-              {/* <h1 className="text-2xl md:text-4xl font-black text-slate-900 tracking-tighter">Biashara POS</h1> */}
               <p className="text-slate-500 font-medium text-[10px] md:text-sm uppercase tracking-widest opacity-60">Tap items to add to cart</p>
             </div>
             <div className="flex items-center gap-3 self-stretch md:self-auto">
               <div className="flex bg-slate-100 p-1 rounded-[.5rem]">
                 <button
                   onClick={() => setViewMode('grid')}
-                  className={`p-2 rounded-[.5rem] transition-all ${viewMode === 'grid' ? 'bg-white shadow-sm text-emerald-600' : 'text-slate-400 hover:text-slate-600'}`}
+                  className={`p-1 rounded-[.5rem] transition-all ${viewMode === 'grid' ? 'bg-white shadow-sm text-emerald-600' : 'text-slate-400 hover:text-slate-600'}`}
                 >
                   <LayoutGrid size={20} />
                 </button>
@@ -290,7 +291,7 @@ export default function RecordSalePage() {
                   setSearch('')
                 }
               }}
-              className="w-full bg-white border border-slate-200 shadow-lg shadow-slate-900/5 rounded-[.5rem] py-4 pl-14 pr-6 text-base font-bold focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all placeholder:text-slate-300"
+              className="w-1/2 ml-auto mr-auto bg-slate-50 border border-slate-200 shadow-lg shadow-slate-900/5 rounded-full py-4 pl-14 pr-6 text-base font-bold focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all placeholder:text-slate-300"
             />
           </div>
         </div>
@@ -306,7 +307,7 @@ export default function RecordSalePage() {
             <div className="h-20 w-20 rounded-full bg-slate-100 flex items-center justify-center">
               <Package size={40} className="opacity-20" />
             </div>
-            <p className="font-black uppercase tracking-widest text-xs">No products found matching "{search}"</p>
+            <p className="font-black uppercase tracking-widest text-xs">No products found matching</p>
           </div>
         ) : viewMode === 'grid' ? (
           <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-8">

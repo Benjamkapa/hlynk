@@ -32,7 +32,7 @@ export interface RegisterPayload {
   category: string
   county: string
   location: string
-  planName: 'LITE'
+  planName: 'LITE' | 'PLUS' | 'MAX'
 }
 
 export interface GoogleRegistrationPayload {
@@ -42,7 +42,7 @@ export interface GoogleRegistrationPayload {
   category: string
   county: string
   location: string
-  planName: 'LITE'
+  planName: 'LITE' | 'PLUS' | 'MAX'
 }
 
 export const authApi = {
