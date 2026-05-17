@@ -106,11 +106,11 @@ export default function SubscriptionPage() {
 
   const { data: historyResponse, isLoading: historyLoading } = useQuery({
     queryKey: ['billing-history', historyPage, statusFilter, planFilter],
-    queryFn: () => subscriptionsApi.getHistory({
+    queryFn: () => subscriptionsApi.getBillingHistory({
       page: historyPage,
       status: statusFilter || undefined,
       plan: planFilter || undefined,
-      limit: 10
+      limit: 5
     }),
     enabled: activeTab === 'history' || isWaitingForPayment,
     refetchInterval: isWaitingForPayment ? 1500 : false
@@ -154,17 +154,18 @@ export default function SubscriptionPage() {
       setIsWaitingForPayment(false);
       setPaymentResultMessage(null);
       
+      // Force refresh everything
+      queryClient.invalidateQueries({ queryKey: ['subscriptions-me'] });
+      queryClient.invalidateQueries({ queryKey: ['billing-history'] });
+      refreshUser();
+      
+      // Switch back to current plan tab to show the update
+      setActiveTab('current');
+      
       toast.success('Payment Successful', {
         description: `Your ${currentPlan || 'new'} plan is now active. All features are unlocked.`,
         icon: <CheckCircle2 className="text-emerald-500" />
       });
-
-      queryClient.invalidateQueries({ queryKey: ['my-subscription'] });
-      queryClient.invalidateQueries({ queryKey: ['billing-history'] });
-      refreshUser();
-      
-      // Delay modal slightly for smoother transition
-      setTimeout(() => setShowSuccessModal(true), 500);
       return;
     }
 
@@ -262,83 +263,47 @@ export default function SubscriptionPage() {
     <div className="space-y-8 animate-in fade-in duration-500 pt-6">
 
       {isWaitingForPayment && (
-        <div className={`${paymentResultMessage ? (paymentResultMessage.includes('Success') || paymentResultMessage.includes('active') ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-red-50 border-red-200 text-red-800') : 'bg-emerald-50 border-emerald-200 text-emerald-800'} border px-6 py-4 rounded-2xl flex items-center justify-between gap-4 shadow-sm ${!paymentResultMessage && 'animate-pulse'}`}>
-          <div className="flex items-center gap-4">
-            {paymentResultMessage ? (
-              (paymentResultMessage.includes('Success') || paymentResultMessage.includes('active') ? <CheckCircle2 size={24} className="text-emerald-600" /> : <AlertTriangle size={24} className="text-red-600" />)
-            ) : (
-              <Loader2 className="animate-spin text-emerald-600" size={24} />
-            )}
-            <div>
-              <h4 className="font-black text-sm tracking-tight">
-                {paymentResultMessage ? 'Transaction Finalized' : 
-                 (historyResponse?.payments?.[0]?.status === 2 ? 'Awaiting Your PIN...' : 'Waiting for M-Pesa...')}
-              </h4>
-              <p className={`text-xs font-medium ${paymentResultMessage ? '' : 'text-emerald-600/80'}`}>
-                {paymentResultMessage || 
-                 (historyResponse?.payments?.[0]?.status === 2 
-                   ? "We've sent the prompt. Please enter your M-Pesa PIN on your phone to complete the activation." 
-                   : "Requesting an STK prompt from Safaricom... Please keep your phone unlocked.")
-                }
-              </p>
+        <div className="space-y-4">
+          <div className={`${paymentResultMessage ? (paymentResultMessage.includes('Success') || paymentResultMessage.includes('active') ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-red-50 border-red-200 text-red-800') : 'bg-emerald-50 border-emerald-200 text-emerald-800'} border px-6 py-4 rounded-2xl flex items-center justify-between gap-4 shadow-sm ${!paymentResultMessage && 'animate-pulse'}`}>
+            <div className="flex items-center gap-4">
+              {paymentResultMessage ? (
+                (paymentResultMessage.includes('Success') || paymentResultMessage.includes('active') ? <CheckCircle2 size={24} className="text-emerald-600" /> : <AlertTriangle size={24} className="text-red-600" />)
+              ) : (
+                <Loader2 className="animate-spin text-emerald-600" size={24} />
+              )}
+              <div>
+                <h4 className="font-black text-sm tracking-tight">
+                  {paymentResultMessage ? 'Transaction Finalized' : 
+                   (historyResponse?.data?.payments?.[0]?.status === 2 ? 'Awaiting Your PIN...' : 'Waiting for M-Pesa...')}
+                </h4>
+                <p className={`text-xs font-medium ${paymentResultMessage ? '' : 'text-emerald-600/80'}`}>
+                  {paymentResultMessage || 
+                   (historyResponse?.data?.payments?.[0]?.status === 2 
+                     ? "We've sent the prompt. Please enter your M-Pesa PIN on your phone to complete the activation." 
+                     : "Requesting an STK prompt from Safaricom... Please keep your phone unlocked.")
+                  }
+                </p>
+              </div>
             </div>
+
+            {!paymentResultMessage && historyResponse?.data?.payments?.[0]?.id && (
+              <button
+                onClick={() => verifyMutation.mutate(historyResponse.data.payments[0].id)}
+                disabled={verifyMutation.isPending}
+                className="px-4 py-2 bg-white border border-emerald-100 rounded-xl text-[10px] font-black text-emerald-600 uppercase tracking-widest hover:bg-emerald-50 transition-all flex items-center gap-2 shadow-sm"
+              >
+                {verifyMutation.isPending ? <Loader2 size={12} className="animate-spin" /> : <RefreshCcw size={12} />}
+                Check Status
+              </button>
+            )}
           </div>
 
-          {!paymentResultMessage && historyResponse?.payments?.[0]?.id && (
-            <button
-              onClick={() => verifyMutation.mutate(historyResponse.payments[0].id)}
-              disabled={verifyMutation.isPending}
-              className="px-4 py-2 bg-white border border-emerald-100 rounded-xl text-[10px] font-black text-emerald-600 uppercase tracking-widest hover:bg-emerald-50 transition-all flex items-center gap-2 shadow-sm"
-            >
-              {verifyMutation.isPending ? <Loader2 size={12} className="animate-spin" /> : <RefreshCcw size={12} />}
-              Check Status
-            </button>
-          )}
         </div>
       )}
 
       <SubscriptionExpiredBanner expired={isExpired} />
 
-      {/* ── SUCCESS CELEBRATION MODAL ── */}
-      {showSuccessModal && (
-        <div className="fixed inset-0 z-[130] flex items-center justify-center bg-emerald-950/90 backdrop-blur-xl p-4 animate-in fade-in duration-500">
-          <div className="bg-white rounded-[40px] w-full max-w-xl p-12 text-center relative overflow-hidden shadow-[0_0_100px_rgba(16,185,129,0.3)] animate-in zoom-in-95 duration-500">
-           
-            <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-emerald-400 via-amber-400 to-blue-400" />
-            <div className="absolute -top-24 -left-24 w-64 h-64 bg-emerald-400/10 rounded-full blur-[80px]" />
-            <div className="absolute -bottom-24 -right-24 w-64 h-64 bg-amber-400/10 rounded-full blur-[80px]" />
 
-            <div className="relative z-10">
-              <div className="h-24 w-24 bg-transparent text-emerald-600 rounded-[32px] flex items-center justify-center mx-auto mb-8 animate-bounce">
-                <Zap size={48} fill="currentColor" />
-              </div>
-              <h2 className="text-4xl font-black text-slate-900 tracking-tighter mb-4 text-center">Plan Activated!</h2>
-              <p className="text-lg text-slate-500 font-medium mb-10 leading-relaxed">
-                Welcome to the <span className="text-emerald-600 font-black">{subscription?.planName}</span> tier.
-                Your business control has been elevated and all premium features are now active.
-              </p>
-
-              <div className="grid grid-cols-2 gap-4 mb-10">
-                <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 text-center">New Plan</p>
-                  <p className="text-lg font-black text-slate-900 hl-mono text-center">{subscription?.planName}</p>
-                </div>
-                <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 text-center">Status</p>
-                  <p className="text-lg font-black text-emerald-600 hl-mono uppercase text-center">Active</p>
-                </div>
-              </div>
-
-              <button
-                onClick={() => setShowSuccessModal(false)}
-                className="w-full py-6 bg-[#0D4A3E] text-white rounded-[24px] font-black text-sm uppercase tracking-[0.2em] hover:bg-black transition-all shadow-2xl shadow-emerald-900/30 active:scale-95"
-              >
-                Start Exploring Features
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
       
       <div className="flex justify-between items-end">
         <div>
@@ -346,16 +311,16 @@ export default function SubscriptionPage() {
           <p className="text-gray-500 font-medium italic">"Know your real profit. Not just what came in — what stayed."</p>
         </div>
 
-        <div className="flex bg-gray-100 p-1 rounded-xl">
+        <div className="flex bg-gray-100 p-1 rounded-[.5em]">
           <button
             onClick={() => setActiveTab('current')}
-            className={`px-6 py-2 rounded-lg text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'current' ? 'bg-white text-emerald-600 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
+            className={`px-6 py-2 rounded-[.5em]lg text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'current' ? 'bg-white text-emerald-600 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
           >
             Manage Plan
           </button>
           <button
             onClick={() => setActiveTab('history')}
-            className={`px-6 py-2 rounded-lg text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'history' ? 'bg-white text-emerald-600 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
+            className={`px-6 py-2 rounded-[.5em]lg text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'history' ? 'bg-white text-emerald-600 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
           >
             Billing History
           </button>
@@ -365,12 +330,12 @@ export default function SubscriptionPage() {
       {activeTab === 'current' ? (
         <>
           {isTrial && !isExpired && (
-            <div className="bg-emerald-900 text-white p-8 rounded-3xl shadow-2xl shadow-emerald-900/20 flex flex-col md:flex-row justify-between items-center gap-6">
+            <div className="bg-emerald-900 text-white p-8 rounded-[.5em] shadow-2xl shadow-emerald-900/20 flex flex-col md:flex-row justify-between items-center gap-6">
               <div>
                 <h3 className="text-xl font-black tracking-tight">You're exploring HudumaLynk on a 7-Day Free Trial</h3>
                 <p className="text-emerald-200 text-sm font-medium">No payment required. See your real profit before you pay.</p>
               </div>
-              <div className="bg-emerald-800 px-6 py-3 rounded-xl border border-emerald-700/50 flex flex-col items-center">
+              <div className="bg-emerald-800 px-6 py-3 rounded-[.5em] border border-emerald-700/50 flex flex-col items-center">
                 <p className="text-[10px] font-black uppercase tracking-widest opacity-60 mb-1">Trial Ends In</p>
                 <p className="text-2xl font-black hl-mono">
                   {subscription?.endDate ? Math.ceil((new Date(subscription.endDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)) : 0} Days
@@ -379,9 +344,9 @@ export default function SubscriptionPage() {
             </div>
           )}
 
-          <div className="bg-emerald-50 border border-emerald-100 p-6 rounded-3xl flex flex-col md:flex-row justify-between items-center gap-6">
+          <div className="bg-emerald-50 border border-emerald-100 p-6 rounded-[.5em] flex flex-col md:flex-row justify-between items-center gap-6">
             <div className="flex items-center gap-4">
-              <div className="h-12 w-12 bg-white rounded-2xl flex items-center justify-center text-[#0D4A3E] shadow-sm">
+              <div className="h-12 w-12 bg-white rounded-[.5em] flex items-center justify-center text-[#0D4A3E] shadow-sm">
                 <Smartphone size={24} />
               </div>
               <div>
@@ -389,13 +354,13 @@ export default function SubscriptionPage() {
                 <p className="text-xs font-medium text-emerald-800/60">We only deal in automated STK prompts. No cash or manual payments are allowed.</p>
               </div>
             </div>
-            <div className="flex items-center gap-2 px-4 py-2 bg-white/50 rounded-xl border border-emerald-100">
+            <div className="flex items-center gap-2 px-4 py-2 bg-white/50 rounded-[.5em] border border-emerald-100">
               <Zap size={14} className="text-amber-500" />
               <span className="text-[10px] font-black uppercase tracking-widest text-[#0D4A3E]">Instant Activation</span>
             </div>
           </div>
 
-          <div className="bg-white p-10 rounded-[28px] border border-gray-100 shadow-sm overflow-hidden relative">
+          <div className="bg-white p-10 rounded-[.5em] border border-gray-100 shadow-sm overflow-hidden relative">
             <div className="absolute top-0 right-0 p-10 opacity-10">
               <Zap size={160} className="text-emerald-900" />
             </div>
@@ -436,13 +401,13 @@ export default function SubscriptionPage() {
                     setMpesaPhone('')
                     setShowRenewModal(true)
                   }}
-                  className="px-12 py-5 rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-xl active:scale-95 bg-[#0D4A3E] text-white hover:bg-[#0A3D33] shadow-emerald-900/20"
+                  className="px-12 py-5 rounded-[.5em] font-black text-xs uppercase tracking-widest transition-all shadow-xl active:scale-95 bg-[#0D4A3E] text-white hover:bg-[#0A3D33] shadow-emerald-900/20"
                 >
                   Renew Subscription
                 </button>
                 <button
                   onClick={() => setShowChangeModal(true)}
-                  className="bg-white text-gray-600 px-12 py-5 rounded-2xl font-black text-xs uppercase tracking-widest border border-gray-100 hover:bg-gray-50 transition-all active:scale-95"
+                  className="bg-white text-gray-600 px-12 py-5 rounded-[.5em] font-black text-xs uppercase tracking-widest border border-gray-100 hover:bg-gray-50 transition-all active:scale-95"
                 >
                   Change My Plan
                 </button>
@@ -450,7 +415,7 @@ export default function SubscriptionPage() {
             </div>
           </div>
 
-          <div className="bg-white p-12 rounded-[28px] border border-gray-100 shadow-sm">
+          <div className="bg-white p-12 rounded-[.5em] border border-gray-100 shadow-sm">
             <div className="mb-12">
               <h3 className="text-2xl font-black text-gray-900 tracking-tight mb-2">Compare hlynk Packages</h3>
               <p className="text-gray-500 font-medium italic">Choose the level of control your business needs.</p>
@@ -489,7 +454,7 @@ export default function SubscriptionPage() {
       ) : (
         <div className="space-y-6">
           {/* Filters */}
-          <div className="flex flex-wrap gap-4 items-center bg-white p-6 rounded-[24px] border border-gray-100">
+          <div className="flex flex-wrap gap-4 items-center bg-white p-6 rounded-[.5em] border border-gray-100">
             <div className="flex items-center gap-2 text-slate-400 mr-2">
               <Filter size={16} />
               <span className="text-[10px] font-black uppercase tracking-widest">Filter By:</span>
@@ -498,7 +463,7 @@ export default function SubscriptionPage() {
             <select
               value={statusFilter}
               onChange={(e) => { setStatusFilter(e.target.value); setHistoryPage(1); }}
-              className="bg-slate-50 border-none rounded-xl px-4 py-2 text-xs font-black text-slate-600 outline-none focus:ring-2 focus:ring-emerald-500/10 min-w-[140px]"
+              className="bg-slate-50 border-none rounded-[.5em] px-4 py-2 text-xs font-black text-slate-600 outline-none focus:ring-2 focus:ring-emerald-500/10 min-w-[140px]"
             >
               <option value="">All Statuses</option>
               <option value="PAID">Paid Only</option>
@@ -509,7 +474,7 @@ export default function SubscriptionPage() {
             <select
               value={planFilter}
               onChange={(e) => { setPlanFilter(e.target.value); setHistoryPage(1); }}
-              className="bg-slate-50 border-none rounded-xl px-4 py-2 text-xs font-black text-slate-600 outline-none focus:ring-2 focus:ring-emerald-500/10 min-w-[140px]"
+              className="bg-slate-50 border-none rounded-[.5em] px-4 py-2 text-xs font-black text-slate-600 outline-none focus:ring-2 focus:ring-emerald-500/10 min-w-[140px]"
             >
               <option value="">All Plans</option>
               <option value="LITE">Lite Plan</option>
@@ -522,7 +487,7 @@ export default function SubscriptionPage() {
             </div>
           </div>
 
-          <div className="bg-white rounded-[28px] border border-gray-100 shadow-sm overflow-hidden">
+          <div className="bg-white rounded-[.5em] border border-gray-100 shadow-sm overflow-hidden">
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="bg-gray-50/50 border-b border-gray-100">
@@ -549,7 +514,7 @@ export default function SubscriptionPage() {
                       </td>
                       <td className="p-8">
                         {inv.mpesaReceipt ? (
-                          <span className="font-black text-[10px] hl-mono text-emerald-600 bg-emerald-50 px-2 py-1 rounded-md">{inv.mpesaReceipt}</span>
+                          <span className="font-black text-[10px] hl-mono text-emerald-600 bg-emerald-50 px-2 py-1 rounded-[.5em]">{inv.mpesaReceipt}</span>
                         ) : (
                           <span className="text-[10px] font-medium text-slate-300 italic">No receipt</span>
                         )}
@@ -574,14 +539,14 @@ export default function SubscriptionPage() {
                               onClick={() => verifyMutation.mutate(inv.id)}
                               disabled={verifyMutation.isPending}
                               title="Verify Payment"
-                              className="h-8 w-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center hover:bg-emerald-100 transition-all"
+                              className="h-8 w-8 rounded-[.5em] bg-emerald-50 text-emerald-600 flex items-center justify-center hover:bg-emerald-100 transition-all"
                             >
                               {verifyMutation.isPending ? <Loader2 size={14} className="animate-spin" /> : <RefreshCcw size={14} />}
                             </button>
                           )}
                           <button
                             onClick={() => setSelectedTransaction(inv)}
-                            className="h-8 w-8 rounded-lg bg-slate-50 text-slate-400 flex items-center justify-center hover:bg-slate-100 hover:text-slate-900 transition-all"
+                            className="h-8 w-8 rounded-[.5em] bg-slate-50 text-slate-400 flex items-center justify-center hover:bg-slate-100 hover:text-slate-900 transition-all"
                             title="View Details"
                           >
                             <Eye size={14} />
@@ -612,9 +577,9 @@ export default function SubscriptionPage() {
       {/* Renew Modal */}
       {showRenewModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md p-8 animate-in zoom-in duration-300">
+          <div className="bg-white rounded-[.5em] shadow-2xl w-full max-w-md p-8 animate-in zoom-in duration-300">
             <div className="flex justify-between items-start mb-6">
-              <div className="h-12 w-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+              <div className="h-12 w-12 rounded-[.5em] bg-emerald-50 text-emerald-600 flex items-center justify-center">
                 <CreditCard size={24} />
               </div>
               <button onClick={() => setShowRenewModal(false)} className="text-gray-400 hover:text-gray-600">✕</button>
@@ -633,12 +598,12 @@ export default function SubscriptionPage() {
                     placeholder="0712345678"
                     value={mpesaPhone}
                     onChange={(e) => setMpesaPhone(e.target.value)}
-                    className="w-full bg-gray-50 border-none rounded-xl py-4 pl-12 pr-4 outline-none focus:ring-2 focus:ring-emerald-500/10 text-lg font-black hl-mono"
+                    className="w-full bg-gray-50 border-none rounded-[.5em] py-4 pl-12 pr-4 outline-none focus:ring-2 focus:ring-emerald-500/10 text-lg font-black hl-mono"
                   />
                 </div>
               </div>
 
-              <div className="bg-gray-50 p-4 rounded-xl flex justify-between items-center">
+              <div className="bg-gray-50 p-4 rounded-[.5em] flex justify-between items-center">
                 <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Amount to Pay</span>
                 <span className="text-xl font-black text-emerald-900 hl-mono">KES {PLANS.find(p => p.id === subscription?.planName)?.price.toLocaleString() || '0'}</span>
               </div>
@@ -653,7 +618,7 @@ export default function SubscriptionPage() {
                   }
                 }}
                 disabled={renewMutation.isPending || !mpesaPhone}
-                className="w-full bg-[#0D4A3E] text-white py-4 rounded-xl font-black text-xs uppercase tracking-widest hover:bg-[#0A3D33] transition-all flex items-center justify-center gap-2 shadow-lg shadow-emerald-900/20 disabled:opacity-50"
+                className="w-full bg-[#0D4A3E] text-white py-4 rounded-[.5em] font-black text-xs uppercase tracking-widest hover:bg-[#0A3D33] transition-all flex items-center justify-center gap-2 shadow-lg shadow-emerald-900/20 disabled:opacity-50"
               >
                 {renewMutation.isPending ? <Loader2 className="animate-spin" size={18} /> : 'Pay via M-Pesa'}
               </button>
@@ -665,7 +630,7 @@ export default function SubscriptionPage() {
       {/* Change Plan Modal */}
       {showChangeModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-md p-4">
-          <div className="bg-slate-50 rounded-[40px] shadow-2xl w-full max-w-4xl p-12 animate-in zoom-in duration-300 max-h-[90vh] overflow-y-auto">
+          <div className="bg-slate-50 rounded-[.5em] shadow-2xl w-full max-w-4xl p-12 animate-in zoom-in duration-300 max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-start mb-12">
               <div>
                 <h3 className="text-3xl font-black text-slate-900 mb-2">Upgrade Your Business</h3>
@@ -679,9 +644,9 @@ export default function SubscriptionPage() {
                 <div
                   key={plan.id}
                   onClick={() => setSelectedPlan(plan)}
-                  className={`p-8 rounded-[32px] cursor-pointer transition-all border-2 flex flex-col ${selectedPlan?.id === plan.id ? 'bg-white border-emerald-500 shadow-xl ring-8 ring-emerald-500/5' : 'bg-white border-white hover:border-slate-200 shadow-sm'}`}
+                  className={`p-8 rounded-[.5em] cursor-pointer transition-all border-2 flex flex-col ${selectedPlan?.id === plan.id ? 'bg-white border-emerald-500 shadow-xl ring-8 ring-emerald-500/5' : 'bg-white border-white hover:border-slate-200 shadow-sm'}`}
                 >
-                  <div className={`h-12 w-12 rounded-2xl bg-${plan.color}-50 text-${plan.color}-600 flex items-center justify-center mb-6`}>
+                  <div className={`h-12 w-12 rounded-[.5em] bg-${plan.color}-50 text-${plan.color}-600 flex items-center justify-center mb-6`}>
                     <Star size={24} />
                   </div>
                   <h4 className="text-xl font-black text-slate-900 mb-2">{plan.name}</h4>
@@ -698,7 +663,7 @@ export default function SubscriptionPage() {
             </div>
 
             {selectedPlan && (
-              <div className="bg-white p-8 rounded-[32px] border border-slate-100 animate-in slide-in-from-bottom-4">
+              <div className="bg-white p-8 rounded-[.5em] border border-slate-100 animate-in slide-in-from-bottom-4">
                 {/* The warning was moved to ConfirmModal */}
                 <div className="flex flex-col md:flex-row items-center gap-8">
                   <div className="flex-1 w-full space-y-2">
@@ -710,7 +675,7 @@ export default function SubscriptionPage() {
                         placeholder="0712345678"
                         value={mpesaPhone}
                         onChange={(e) => setMpesaPhone(e.target.value)}
-                        className="w-full bg-slate-50 border-none rounded-2xl py-4 pl-12 pr-4 outline-none focus:ring-4 focus:ring-emerald-500/5 text-lg font-black hl-mono"
+                        className="w-full bg-slate-50 border-none rounded-[.5em] py-4 pl-12 pr-4 outline-none focus:ring-4 focus:ring-emerald-500/5 text-lg font-black hl-mono"
                       />
                     </div>
                   </div>
@@ -724,7 +689,7 @@ export default function SubscriptionPage() {
                       }
                     }}
                     disabled={changePlanMutation.isPending || !mpesaPhone}
-                    className="w-full md:w-auto bg-emerald-600 text-white px-12 py-5 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-emerald-700 transition-all flex items-center justify-center gap-3 shadow-xl shadow-emerald-900/20 disabled:opacity-50"
+                    className="w-full md:w-auto bg-emerald-600 text-white px-12 py-5 rounded-[.5em] font-black text-xs uppercase tracking-widest hover:bg-emerald-700 transition-all flex items-center justify-center gap-3 shadow-xl shadow-emerald-900/20 disabled:opacity-50"
                   >
                     {changePlanMutation.isPending ? <Loader2 className="animate-spin" size={18} /> : <>Upgrade to {selectedPlan.name}</>}
                   </button>
@@ -764,10 +729,10 @@ export default function SubscriptionPage() {
       {/* ── TRANSACTION DETAIL MODAL ── */}
       {selectedTransaction && (
         <div className="fixed inset-0 z-[120] flex items-center justify-center bg-slate-900/60 backdrop-blur-md p-4 animate-in fade-in duration-300">
-          <div className="bg-white rounded-[40px] shadow-2xl w-full max-w-2xl overflow-hidden animate-in zoom-in-95 duration-300">
+          <div className="bg-white rounded-[.5em] shadow-2xl w-full max-w-2xl overflow-hidden animate-in zoom-in-95 duration-300">
             <div className="bg-slate-50 p-8 flex justify-between items-center border-b border-slate-100">
               <div className="flex items-center gap-4">
-                <div className={`h-12 w-12 rounded-2xl flex items-center justify-center shadow-sm ${
+                <div className={`h-12 w-12 rounded-[.5em] flex items-center justify-center shadow-sm ${
                   selectedTransaction.status === 0 ? 'bg-emerald-50 text-emerald-600' :
                   selectedTransaction.status === 1 ? 'bg-red-50 text-red-600' : 'bg-amber-50 text-amber-600'
                 }`}>
@@ -806,7 +771,7 @@ export default function SubscriptionPage() {
                 </div>
               </div>
 
-              <div className="bg-slate-50 rounded-3xl p-8 border border-slate-100 flex justify-between items-center">
+              <div className="bg-slate-50 rounded-[.5em] p-8 border border-slate-100 flex justify-between items-center">
                 <div>
                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Subscription Plan</p>
                   <p className="text-lg font-black text-slate-900">{selectedTransaction.plan} Tier</p>
@@ -830,7 +795,7 @@ export default function SubscriptionPage() {
                 </div>
                 
                 {selectedTransaction.message && (
-                  <div className="bg-slate-50/50 p-4 rounded-2xl border border-dashed border-slate-200">
+                  <div className="bg-slate-50/50 p-4 rounded-[.5em] border border-dashed border-slate-200">
                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 flex items-center gap-2">
                       <Info size={12} /> Gateway Response
                     </p>
@@ -841,24 +806,25 @@ export default function SubscriptionPage() {
                 )}
 
                 {/* RAW SAFARICOM JSON AUDIT */}
-                {selectedTransaction.rawResponse && (
-                  <div className="bg-slate-900 rounded-2xl p-6 shadow-inner overflow-hidden border border-slate-800">
+                {(selectedTransaction.rawPayload || selectedTransaction.rawResponse) && (
+                  <div className="bg-slate-900 rounded-[.5em] p-6 shadow-inner overflow-hidden border border-slate-800">
                     <div className="flex justify-between items-center mb-4">
                       <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-2">
-                        <Zap size={12} className="text-amber-400" /> Raw Safaricom Payload
+                        <Zap size={12} className="text-amber-400" /> Technical Conversation
                       </p>
-                      <span className="text-[10px] font-black text-slate-600 uppercase tracking-widest hl-mono">JSON Audit</span>
+                      <span className="text-[10px] font-black text-slate-600 uppercase tracking-widest hl-mono">Forensic Audit</span>
                     </div>
                     <div className="max-h-48 overflow-y-auto custom-scrollbar">
                       <pre className="text-[10px] font-medium text-emerald-400/90 hl-mono leading-relaxed whitespace-pre-wrap">
                         {(() => {
                           try {
-                            const parsed = typeof selectedTransaction.rawResponse === 'string' 
-                              ? JSON.parse(selectedTransaction.rawResponse) 
-                              : selectedTransaction.rawResponse;
+                            const payload = selectedTransaction.rawPayload || selectedTransaction.rawResponse;
+                            const parsed = typeof payload === 'string' 
+                              ? JSON.parse(payload) 
+                              : payload;
                             return JSON.stringify(parsed, null, 2);
                           } catch (e) {
-                            return selectedTransaction.rawResponse;
+                            return selectedTransaction.rawPayload || selectedTransaction.rawResponse;
                           }
                         })()}
                       </pre>
@@ -870,13 +836,13 @@ export default function SubscriptionPage() {
               <div className="flex gap-4 pt-4">
                 <button
                   onClick={() => window.print()}
-                  className="flex-1 py-4 bg-slate-900 text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-black transition-all flex items-center justify-center gap-2"
+                  className="flex-1 py-4 bg-slate-900 text-white rounded-[.5em] font-black text-xs uppercase tracking-widest hover:bg-black transition-all flex items-center justify-center gap-2"
                 >
                   <Download size={14} /> Download Receipt
                 </button>
                 <button
                   onClick={() => setSelectedTransaction(null)}
-                  className="flex-1 py-4 bg-white border border-slate-200 text-slate-500 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-slate-50 transition-all"
+                  className="flex-1 py-4 bg-white border border-slate-200 text-slate-500 rounded-[.5em] font-black text-xs uppercase tracking-widest hover:bg-slate-50 transition-all"
                 >
                   Close
                 </button>

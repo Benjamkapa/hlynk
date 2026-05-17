@@ -65,8 +65,8 @@ export default function DashboardPage() {
           <h1 className="text-5xl font-black text-slate-900 tracking-tighter">Business Pulse</h1>
           <p className="text-slate-500 font-medium text-xl">Overview of your store performance today</p>
         </div>
-        <div className="flex items-center gap-4 bg-white p-3 rounded-lg border border-slate-100 shadow-sm">
-           {/* <div className="h-10 w-10 bg-emerald-100 text-emerald-600 rounded-md flex items-center justify-center">
+        <div className="flex items-center gap-4 bg-white p-3 rounded-[.5rem] border border-slate-100 shadow-sm">
+           {/* <div className="h-10 w-10 bg-emerald-100 text-emerald-600 rounded-[.5rem] flex items-center justify-center">
               <Star size={20} className="fill-emerald-600" />
            </div> */}
            {/* <div>
@@ -93,7 +93,7 @@ export default function DashboardPage() {
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-10">
         {/* Sales Chart */}
-        <div className="xl:col-span-2 bg-white p-10 rounded-2xl border border-slate-100 shadow-xl shadow-slate-900/5">
+        <div className="xl:col-span-2 bg-white p-10 rounded-[.5rem] border border-slate-100 shadow-xl shadow-slate-900/5">
           <div className="flex justify-between items-center mb-10">
             <div>
               <h3 className="text-2xl font-black text-slate-900">Revenue Trajectory</h3>
@@ -147,16 +147,16 @@ export default function DashboardPage() {
         </div>
 
         {/* Recent Activity */}
-        <div className="bg-white p-8 rounded-2xl border border-slate-100 shadow-xl shadow-slate-900/5 flex flex-col">
+        <div className="bg-white p-8 rounded-[.5rem] border border-slate-100 shadow-xl shadow-slate-900/5 flex flex-col">
           <h3 className="text-xl font-black text-slate-900 mb-8 flex items-center justify-between">
              Recent Sales
              <Receipt size={20} className="text-slate-300" />
           </h3>
           <div className="space-y-6 flex-1">
              {recentSales?.length > 0 ? recentSales.map((sale: any, i: number) => (
-               <div key={i} className="flex items-center justify-between group cursor-pointer hover:bg-slate-50 p-2 rounded-xl transition-all">
+               <div key={i} className="flex items-center justify-between group cursor-pointer hover:bg-slate-50 p-2 rounded-[.5rem] transition-all">
                   <div className="flex items-center gap-4">
-                     <div className="h-10 w-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-400 group-hover:bg-[#0D4A3E] group-hover:text-white transition-all">
+                     <div className="h-10 w-10 rounded-[.5rem] bg-slate-100 flex items-center justify-center text-slate-400 group-hover:bg-[#0D4A3E] group-hover:text-white transition-all">
                         <DollarSign size={18} />
                      </div>
                      <div>
@@ -173,7 +173,7 @@ export default function DashboardPage() {
                <p className="text-xs text-slate-400 font-bold text-center py-4">No recent sales</p>
              )}
           </div>
-          <Link to="/dashboard/sales" className="mt-8 w-full py-4 bg-slate-900 text-white rounded-xl text-center text-xs font-black uppercase tracking-widest hover:bg-slate-800 transition-all shadow-lg shadow-slate-900/10">
+          <Link to="/dashboard/sales" className="mt-8 w-full py-4 bg-slate-900 text-white rounded-[.5rem] text-center text-xs font-black uppercase tracking-widest hover:bg-slate-800 transition-all shadow-lg shadow-slate-900/10">
              View Full History
           </Link>
         </div>
@@ -191,8 +191,8 @@ function StoreKpi({ title, value, sub, icon: Icon, color, trend }: any) {
   }
 
   return (
-    <div className="bg-white p-8 rounded-lg border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all group cursor-pointer relative overflow-hidden">
-      <div className={`h-14 w-14 rounded-md flex items-center justify-center mb-6 transition-transform group-hover:scale-110 ${colorMap[color as keyof typeof colorMap]}`}>
+    <div className="bg-white p-8 rounded-[.5rem] border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all group cursor-pointer relative overflow-hidden">
+      <div className={`h-14 w-14 rounded-[.5rem] flex items-center justify-center mb-6 transition-transform group-hover:scale-110 ${colorMap[color as keyof typeof colorMap]}`}>
         <Icon size={28} />
       </div>
       <div>

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Download, Plus, Search, Trash2, TrendingUp, Wallet } from 'lucide-react'
+import { Download, Plus, Search, Trash2, Eye, TrendingUp, Wallet, Loader2 } from 'lucide-react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { keepPreviousData } from '@tanstack/react-query'
 
@@ -15,6 +15,7 @@ import { PaginatedResponse } from '../../lib/types/api'
 
 export default function ExpensesPage() {
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
+  const [viewDetailsId, setViewDetailsId] = useState<string | null>(null)
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   const [search, setSearch] = useState('')
   const [page, setPage] = useState(1)
@@ -55,6 +56,15 @@ export default function ExpensesPage() {
     toast.success('Expense report exported')
   }
 
+  const viewDetailsMutation = useMutation({
+    mutationFn: expensesApi.getById,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['expenses'] })
+      toast.success('Expense details retrieved')
+    },
+    onError: (err: any) => toast.error(getErrorMessage(err)),
+  })
+
   const deleteMutation = useMutation({
     mutationFn: expensesApi.delete,
     onSuccess: () => {
@@ -64,8 +74,62 @@ export default function ExpensesPage() {
     onError: (err: any) => toast.error(getErrorMessage(err)),
   })
 
+  const { data: selectedExpense, isLoading: isDetailLoading } = useQuery({
+    queryKey: ['expense', viewDetailsId],
+    queryFn: () => expensesApi.getById(viewDetailsId!),
+    enabled: !!viewDetailsId,
+  })
+
   return (
     <div className="space-y-8 animate-in fade-in duration-500 pt-6">
+
+      <SlideOver
+        isOpen={!!viewDetailsId}
+        onClose={() => setViewDetailsId(null)}
+        title="Expense Details"
+      >
+        {isDetailLoading ? (
+          <div className="p-32 flex flex-col items-center justify-center text-slate-400 gap-4">
+            <Loader2 className="animate-spin" size={48} />
+            <p className="font-black uppercase tracking-widest text-xs">Fetching Details...</p>
+          </div>
+        ) : selectedExpense && (
+          <div className="space-y-8">
+            <div className="bg-slate-50 p-8 rounded-[.5rem] border border-slate-100 text-center">
+               <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Total Amount</p>
+               <h2 className="text-4xl font-black text-slate-900 hl-mono">KES {Number(selectedExpense.amount).toLocaleString()}</h2>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+               <div className="p-6 bg-white rounded-[.5rem] border border-slate-100 shadow-sm">
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Category</p>
+                  <p className="text-sm font-black text-slate-900">{selectedExpense.category}</p>
+               </div>
+               <div className="p-6 bg-white rounded-[.5rem] border border-slate-100 shadow-sm">
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Date</p>
+                  <p className="text-sm font-black text-slate-900 hl-mono">{new Date(selectedExpense.date).toLocaleDateString()}</p>
+               </div>
+            </div>
+
+            <div className="p-6 bg-white rounded-[.5rem] border border-slate-100 shadow-sm">
+               <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Description</p>
+               <p className="text-sm font-medium text-slate-600 leading-relaxed italic">"{selectedExpense.description}"</p>
+            </div>
+
+            <div className="p-6 bg-slate-900 rounded-[.5rem] shadow-xl">
+               <div className="flex items-center gap-4">
+                  <div className="h-10 w-10 rounded-[.5rem] bg-emerald-500/10 flex items-center justify-center text-emerald-400">
+                     <Eye size={20} />
+                  </div>
+                  <div>
+                    <p className="text-[8px] font-black text-slate-500 uppercase tracking-widest">Recorded By</p>
+                    <p className="text-xs font-black text-white uppercase tracking-widest">{selectedExpense.recordedBy || 'System Admin'}</p>
+                  </div>
+               </div>
+            </div>
+          </div>
+        )}
+      </SlideOver>
 
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
         <div>
@@ -75,13 +139,13 @@ export default function ExpensesPage() {
         <div className="flex gap-4">
           <button
             onClick={handleExport}
-            className="bg-gray-100 text-gray-600 h-12 px-6 rounded-xl font-bold text-sm hover:bg-gray-200 transition-all flex items-center gap-2"
+            className="bg-gray-100 text-gray-600 h-12 px-6 rounded-[.5rem] font-bold text-sm hover:bg-gray-200 transition-all flex items-center gap-2"
           >
             <Download size={18} /> Export CSV
           </button>
           <button
             onClick={() => setIsAddModalOpen(true)}
-            className="bg-[#0D4A3E] text-white h-12 px-6 rounded-xl font-bold text-sm hover:bg-[#0A3D33] transition-all flex items-center gap-2 shadow-xl shadow-emerald-900/10"
+            className="bg-[#0D4A3E] text-white h-12 px-6 rounded-[.5rem] font-bold text-sm hover:bg-[#0A3D33] transition-all flex items-center gap-2 shadow-xl shadow-emerald-900/10"
           >
             <Plus size={20} /> Log Expense
           </button>
@@ -96,7 +160,7 @@ export default function ExpensesPage() {
       </div>
 
       {/* Expenses Table */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-xl shadow-gray-900/5 overflow-hidden">
+      <div className="bg-white rounded-[.5rem] border border-gray-100 shadow-xl shadow-gray-900/5 overflow-hidden">
         <div className="p-6 border-b border-gray-50 flex flex-col md:flex-row gap-4">
           <div className="relative flex-1">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
@@ -108,7 +172,7 @@ export default function ExpensesPage() {
                 setSearch(e.target.value)
                 setPage(1)
               }}
-              className="w-full bg-gray-50 border-none rounded-xl py-3.5 pl-12 pr-4 outline-none focus:ring-4 focus:ring-emerald-500/5 transition-all text-sm font-bold"
+              className="w-full bg-gray-50 border-none rounded-[.5rem] py-3.5 pl-12 pr-4 outline-none focus:ring-4 focus:ring-emerald-500/5 transition-all text-sm font-bold"
             />
           </div>
         </div>
@@ -120,6 +184,7 @@ export default function ExpensesPage() {
                 <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest cursor-pointer hover:text-emerald-600" onClick={() => { setSortBy('date'); setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc') }}>Date {sortBy === 'date' && (sortOrder === 'asc' ? '↑' : '↓')}</th>
                 <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest cursor-pointer hover:text-emerald-600" onClick={() => { setSortBy('description'); setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc') }}>Description {sortBy === 'description' && (sortOrder === 'asc' ? '↑' : '↓')}</th>
                 <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest cursor-pointer hover:text-emerald-600" onClick={() => { setSortBy('category'); setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc') }}>Category {sortBy === 'category' && (sortOrder === 'asc' ? '↑' : '↓')}</th>
+                <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest cursor-pointer hover:text-emerald-600" onClick={() => { setSortBy('recordedBy'); setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc') }}>Recorded By {sortBy === 'recordedBy' && (sortOrder === 'asc' ? '↑' : '↓')}</th>
                 <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right cursor-pointer hover:text-emerald-600" onClick={() => { setSortBy('amount'); setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc') }}>Amount {sortBy === 'amount' && (sortOrder === 'asc' ? '↑' : '↓')}</th>
                 <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Action</th>
               </tr>
@@ -133,22 +198,33 @@ export default function ExpensesPage() {
                 </tr>
               ) : expenses.length > 0 ? expenses.map((e: any, i: number) => (
                 <tr key={e.id ?? i} className="hover:bg-red-50/30 transition-all group cursor-pointer">
-                  <td className="px-8 py-5 text-xs font-bold text-gray-400 hl-mono">{new Date(e.date || e.createdAt).toLocaleDateString()}</td>
+                  <td className="px-8 py-5 text-xs font-bold text-gray-400 hl-mono">{new Date(e.date || e.createdAt).toLocaleDateString('en-KE', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' }).toUpperCase()}</td>
                   <td className="px-8 py-5">
                     <span className="font-black text-gray-900 text-sm">{e.description}</span>
                     <p className="text-[9px] text-gray-400 font-bold hl-mono tracking-tighter uppercase">ID: {e.id.slice(-8).toUpperCase()}</p>
                   </td>
                   <td className="px-8 py-5">
-                    <span className="text-[10px] font-black text-gray-500 bg-gray-100 px-2.5 py-1 rounded-md uppercase tracking-widest">{e.category}</span>
+                    <span className="text-[10px] font-black text-gray-500 bg-gray-100 px-2.5 py-1 rounded-[.5rem] uppercase tracking-widest">{e.category}</span>
+                  </td>
+                  <td className="px-8 py-5">
+                    <span className="text-[10px] font-black text-gray-500 bg-gray-100 px-2.5 py-1 rounded-[.5rem] uppercase tracking-widest">{e.recordedBy || 'System Provider'}</span>
                   </td>
                   <td className="px-8 py-5 text-right font-black text-red-600 text-sm hl-mono whitespace-nowrap">KES {Number(e.amount).toLocaleString()}</td>
                   <td className="px-8 py-5 text-right">
                     <button
                       onClick={() => setConfirmDeleteId(e.id)}
                       disabled={deleteMutation.isPending}
-                      className="p-2 hover:bg-white hover:shadow-lg rounded-lg transition-all text-slate-300 hover:text-red-600 disabled:opacity-50"
+                      className="p-2 hover:bg-white hover:shadow-lg rounded-[.5rem] transition-all text-slate-300 hover:text-red-600 disabled:opacity-50"
                     >
                       <Trash2 size={16} />
+                    </button>
+                    {/* view details */}
+                    <button
+                      onClick={() => setViewDetailsId(e.id)}
+                      disabled={ viewDetailsMutation.isPending }
+                      className="p-2 hover:bg-white hover:shadow-lg rounded-[.5rem] transition-all text-slate-300 hover:text-red-600 disabled:opacity-50"
+                    >
+                      <Eye size={16} />
                     </button>
                   </td>
                 </tr>
@@ -234,7 +310,7 @@ function BurnRateGauge({ value, target }: { value: number; target: number }) {
   })
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-xl shadow-gray-900/5 hover:shadow-2xl hover:shadow-gray-900/10 transition-all p-6 flex flex-col items-center h-full">
+    <div className="bg-white rounded-[.5rem] border border-gray-100 shadow-xl shadow-gray-900/5 hover:shadow-2xl hover:shadow-gray-900/10 transition-all p-6 flex flex-col items-center h-full">
       {/* ── Header row ─────────────────────────────────────────────────── */}
       <div className="w-full flex justify-between items-start mb-4">
         <div>
@@ -309,7 +385,7 @@ function BurnRateGauge({ value, target }: { value: number; target: number }) {
           />
 
           {/* Center value */}
-          <text x={cx} y={cy + 10} textAnchor="middle" fontSize="38" fontWeight="900" className="hl-mono" fill="#0f172a">
+          <text x={cx} y={cy + 10} textAnchor="middle" fontSize="25" fontWeight="900" className="hl-mono" fill="#0f172a">
             {(value || 0).toLocaleString()}
           </text>
           
@@ -370,7 +446,7 @@ function AddExpenseForm({ onClose }: { onClose: () => void }) {
         <select
           value={form.category}
           onChange={(e) => setForm({ ...form, category: e.target.value })}
-          className="w-full bg-gray-50 border-none rounded-xl py-4 px-4 outline-none focus:ring-4 focus:ring-emerald-500/5 transition-all font-bold text-sm appearance-none"
+          className="w-full bg-gray-50 border-none rounded-[.5rem] py-4 px-4 outline-none focus:ring-4 focus:ring-emerald-500/5 transition-all font-bold text-sm appearance-none"
         >
           {['Utilities', 'Rent', 'Supplies', 'Transport', 'Staff Wages', 'Marketing', 'Maintenance', 'Other'].map((c) => (
             <option key={c}>{c}</option>
@@ -387,7 +463,7 @@ function AddExpenseForm({ onClose }: { onClose: () => void }) {
           mutation.mutate(form)
         }}
         disabled={mutation.isPending}
-        className="w-full py-5 mt-6 bg-[#0D4A3E] text-white rounded-xl font-black text-xs uppercase tracking-widest hover:bg-[#0A3D33] transition-all shadow-2xl shadow-emerald-900/20 flex items-center justify-center"
+        className="w-full py-5 mt-6 bg-[#0D4A3E] text-white rounded-[.5rem] font-black text-xs uppercase tracking-widest hover:bg-[#0A3D33] transition-all shadow-2xl shadow-emerald-900/20 flex items-center justify-center"
       >
         {mutation.isPending ? 'Logging...' : 'Confirm Expense Log'}
       </button>
@@ -403,8 +479,8 @@ function KpiCard({ title, value, sub, icon: Icon, variant }: any) {
   }
 
   return (
-    <div className="bg-white p-8 rounded-2xl border border-gray-100 shadow-xl shadow-gray-900/5 flex items-center gap-6 hover:shadow-2xl hover:shadow-gray-900/10 transition-all group">
-      <div className={`h-16 w-16 rounded-2xl flex items-center justify-center shrink-0 transition-all group-hover:scale-110 ${variants[variant]} border`}>
+    <div className="bg-white p-8 rounded-[.5rem] border border-gray-100 shadow-xl shadow-gray-900/5 flex items-center gap-6 hover:shadow-2xl hover:shadow-gray-900/10 transition-all group">
+      <div className={`h-16 w-16 rounded-[.5rem] flex items-center justify-center shrink-0 transition-all group-hover:scale-110 ${variants[variant]} border`}>
         <Icon size={32} />
       </div>
       <div>
@@ -425,7 +501,7 @@ function InputGroup({ label, placeholder, mono = false, type = 'text', value, on
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className={`w-full bg-gray-50 border-none rounded-xl py-4 px-4 outline-none focus:ring-4 focus:ring-emerald-500/5 transition-all text-sm font-bold ${mono ? 'hl-mono text-red-600' : ''}`}
+        className={`w-full bg-gray-50 border-none rounded-[.5rem] py-4 px-4 outline-none focus:ring-4 focus:ring-emerald-500/5 transition-all text-sm font-bold ${mono ? 'hl-mono text-red-600' : ''}`}
       />
     </div>
   )

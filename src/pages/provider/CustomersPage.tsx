@@ -61,13 +61,13 @@ export default function CustomersPage() {
         <div className="flex gap-3">
           <button
             onClick={handleExport}
-            className="h-14 px-6 bg-white border border-slate-200 text-slate-600 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-slate-50 transition-all shadow-xl shadow-slate-200/50 flex items-center gap-2"
+            className="h-14 px-6 bg-white border border-slate-200 text-slate-600 rounded-[.5em] font-black text-xs uppercase tracking-widest hover:bg-slate-50 transition-all shadow-xl shadow-slate-200/50 flex items-center gap-2"
           >
             <Download size={18} /> Export
           </button>
           <button
             onClick={() => setIsAddModalOpen(true)}
-            className="h-14 px-8 bg-[#0D4A3E] text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-[#0A3D33] transition-all shadow-2xl shadow-emerald-900/20 flex items-center gap-2"
+            className="h-14 px-8 bg-[#0D4A3E] text-white rounded-[.5em] font-black text-xs uppercase tracking-widest hover:bg-[#0A3D33] transition-all shadow-2xl shadow-emerald-900/20 flex items-center gap-2"
           >
             <Plus size={20} /> New Customer
           </button>
@@ -82,7 +82,7 @@ export default function CustomersPage() {
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-3xl border border-slate-100 shadow-2xl shadow-slate-900/5 overflow-hidden">
+      <div className="bg-white rounded-[.5rem] border border-slate-100 shadow-2xl shadow-slate-900/5 overflow-hidden">
         <div className="p-8 border-b border-slate-50 flex flex-col md:flex-row gap-6">
           <div className="relative flex-1">
             <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
@@ -94,7 +94,7 @@ export default function CustomersPage() {
                 setSearch(e.target.value)
                 setPage(1)
               }}
-              className="w-full bg-slate-50 border-none rounded-2xl py-4.5 pl-14 pr-6 outline-none focus:ring-4 focus:ring-emerald-500/5 transition-all text-sm font-bold placeholder:text-slate-400"
+              className="w-full bg-slate-50 border-none rounded-[.5rem] py-4.5 pl-14 pr-6 outline-none focus:ring-4 focus:ring-emerald-500/5 transition-all text-sm font-bold placeholder:text-slate-400"
             />
           </div>
         </div>
@@ -121,7 +121,7 @@ export default function CustomersPage() {
                 <tr key={c.id} className="hover:bg-slate-50/50 transition-all group">
                   <td className="px-8 py-6">
                     <div className="flex items-center gap-4">
-                      <div className="h-12 w-12 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center justify-center overflow-hidden">
+                      <div className="h-12 w-12 rounded-[.5rem] bg-emerald-50 border border-emerald-100 flex items-center justify-center overflow-hidden">
                         <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${c.name}`} alt="avatar" referrerPolicy="no-referrer" />
                       </div>
                       <div>
@@ -152,19 +152,19 @@ export default function CustomersPage() {
                     <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-all">
                       <button
                         onClick={() => toast.info('Customer insights coming soon!', { description: 'Full performance and purchase history will be viewable here.'})}
-                        className="p-2 hover:bg-white hover:shadow-lg rounded-xl transition-all text-slate-400 hover:text-blue-500"
+                        className="p-2 hover:bg-white hover:shadow-lg rounded-[.5rem] transition-all text-slate-400 hover:text-blue-500"
                       >
                         <Eye size={18} />
                       </button>
                       <button
                         onClick={() => setEditingCustomer(c)}
-                        className="p-2 hover:bg-white hover:shadow-lg rounded-xl transition-all text-slate-400 hover:text-emerald-600"
+                        className="p-2 hover:bg-white hover:shadow-lg rounded-[.5rem] transition-all text-slate-400 hover:text-emerald-600"
                       >
                         <Edit size={18} />
                       </button>
                       <button
                         onClick={() => setConfirmDeleteId(c.id)}
-                        className="p-2 hover:bg-white hover:shadow-lg rounded-xl transition-all text-slate-400 hover:text-red-600"
+                        className="p-2 hover:bg-white hover:shadow-lg rounded-[.5rem] transition-all text-slate-400 hover:text-red-600"
                       >
                         <Trash2 size={18} />
                       </button>
@@ -239,7 +239,7 @@ function CustomerForm({ customer, onClose }: { customer?: any; onClose: () => vo
       <button
         onClick={() => mutation.mutate(form)}
         disabled={mutation.isPending}
-        className="w-full py-5 mt-8 bg-[#0D4A3E] text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-[#0A3D33] transition-all shadow-2xl shadow-emerald-900/20"
+        className="w-full py-5 mt-8 bg-[#0D4A3E] text-white rounded-[.5rem] font-black text-xs uppercase tracking-widest hover:bg-[#0A3D33] transition-all shadow-2xl shadow-emerald-900/20"
       >
         {mutation.isPending ? 'Processing...' : customer ? 'Update Profile' : 'Register Customer'}
       </button>
@@ -255,8 +255,8 @@ function KpiCard({ title, value, sub, icon: Icon, variant }: any) {
   }
 
   return (
-    <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-xl shadow-slate-900/5 flex items-center gap-6 hover:shadow-2xl transition-all border-b-4 group">
-      <div className={`h-16 w-16 rounded-2xl flex items-center justify-center shrink-0 transition-all group-hover:scale-110 ${variants[variant as keyof typeof variants]} border`}>
+    <div className="bg-white p-8 rounded-[.5rem] border border-slate-100 shadow-xl shadow-slate-900/5 flex items-center gap-6 hover:shadow-2xl transition-all border-b-4 group">
+      <div className={`h-16 w-16 rounded-[.5rem] flex items-center justify-center shrink-0 transition-all group-hover:scale-110 ${variants[variant as keyof typeof variants]} border`}>
         <Icon size={32} />
       </div>
       <div>
@@ -277,7 +277,7 @@ function InputGroup({ label, placeholder, value, onChange }: any) {
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="w-full bg-slate-50 border-none rounded-2xl py-4.5 px-6 outline-none focus:ring-4 focus:ring-emerald-500/5 transition-all text-sm font-bold"
+        className="w-full bg-slate-50 border-none rounded-[.5rem] py-4.5 px-6 outline-none focus:ring-4 focus:ring-emerald-500/5 transition-all text-sm font-bold"
       />
     </div>
   )

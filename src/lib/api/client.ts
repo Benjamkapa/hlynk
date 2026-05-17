@@ -3,12 +3,12 @@ import axios from 'axios'
 import { queryClient } from '../query/queryClient'
 import { storage } from '../utils/storage'
 
-const API_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '')
+const API_URL = (import.meta.env.VITE_API_URL || '').replace(/\/+$/, '')
 
 export const api = axios.create({
   baseURL: `${API_URL}/api/v1`,
   headers: { 'Content-Type': 'application/json' },
-  timeout: 60000, // Increased from 10s to 60s to accommodate slow M-Pesa STK Push API responses
+  timeout: 60000, 
 })
 
 api.interceptors.request.use((config) => {
@@ -30,7 +30,7 @@ api.interceptors.response.use(
         if (!refreshToken) throw new Error('No refresh token')
 
         const { data } = await axios.post(
-          `${import.meta.env.VITE_API_URL}/api/v1/auth/refresh`,
+          `${API_URL}/api/v1/auth/refresh`,
           { refreshToken },
         )
 

@@ -69,14 +69,14 @@ export default function ProductsPage() {
         <div className="flex gap-3">
           <button 
             onClick={handleExport}
-            className="bg-white text-gray-600 h-12 px-6 rounded-md border border-gray-100 font-bold text-sm hover:bg-gray-50 transition-all flex items-center gap-2"
+            className="bg-white text-gray-600 h-12 px-6 rounded-[.5rem] border border-gray-100 font-bold text-sm hover:bg-gray-50 transition-all flex items-center gap-2"
           >
             <Download size={18} />
             Export
           </button>
           <button 
             onClick={() => setIsAddModalOpen(true)} 
-            className="bg-[#0D4A3E] text-white h-12 px-6 rounded-md font-bold text-sm hover:bg-[#0A3D33] transition-all flex items-center gap-2"
+            className="bg-[#0D4A3E] text-white h-12 px-6 rounded-[.5rem] font-bold text-sm hover:bg-[#0A3D33] transition-all flex items-center gap-2"
           >
             <Plus size={18} /> Add Product
           </button>
@@ -94,7 +94,7 @@ export default function ProductsPage() {
       </div>
 
       {/* Products Table */}
-      <div className="bg-white rounded-lg border border-gray-100 shadow-sm overflow-hidden">
+      <div className="bg-white rounded-[.5rem] border border-gray-100 shadow-sm overflow-hidden">
       
         <SlideOver 
           isOpen={isAddModalOpen} 
@@ -120,10 +120,10 @@ export default function ProductsPage() {
               placeholder="Search products by name or category..." 
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full bg-gray-50 border-none rounded-md py-3.5 pl-12 pr-4 outline-none focus:ring-2 focus:ring-emerald-500/10 transition-all text-sm font-medium" 
+              className="w-full bg-gray-50 border-none rounded-[.5rem] py-3.5 pl-12 pr-4 outline-none focus:ring-2 focus:ring-emerald-500/10 transition-all text-sm font-medium" 
             />
           </div>
-          <div className="flex items-center gap-2 bg-gray-50 p-1.5 rounded-xl border border-gray-100">
+          <div className="flex items-center gap-2 bg-gray-50 p-1.5 rounded-[.5rem] border border-gray-100">
              <Filter className="ml-2 text-slate-400" size={14} />
              <select 
                value={category}
@@ -162,9 +162,9 @@ export default function ProductsPage() {
                   <td className="px-8 py-5">
                     <div className="flex items-center gap-4">
                       {p.imageUrl ? (
-                        <img src={p.imageUrl} alt={p.name} className="h-12 w-12 rounded-xl object-cover border border-slate-100 shadow-sm transition-transform group-hover:scale-110" />
+                        <img src={p.imageUrl} alt={p.name} className="h-12 w-12 rounded-[.5rem] object-cover border border-slate-100 shadow-sm transition-transform group-hover:scale-110" />
                       ) : (
-                        <div className="h-12 w-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-black border border-emerald-100 group-hover:bg-emerald-600 group-hover:text-white transition-all text-[10px]">
+                        <div className="h-12 w-12 rounded-[.5rem] bg-emerald-50 text-emerald-600 flex items-center justify-center font-black border border-emerald-100 group-hover:bg-emerald-600 group-hover:text-white transition-all text-[10px]">
                           {p.name.charAt(0).toUpperCase()}
                         </div>
                       )}
@@ -176,9 +176,9 @@ export default function ProductsPage() {
                   </td>
                   <td className="px-8 py-5">
                     <div className="flex flex-wrap gap-2">
-                      <span className="text-[10px] font-black text-slate-500 bg-slate-100 px-2.5 py-1 rounded-md uppercase tracking-widest">{p.category}</span>
+                      <span className="text-[10px] font-black text-slate-500 bg-slate-100 px-2.5 py-1 rounded-[.5rem] uppercase tracking-widest">{p.category}</span>
                       {p.isPerishable && (
-                        <span className={`text-[10px] font-black px-2.5 py-1 rounded-md uppercase tracking-widest ${new Date(p.expiryDate) < new Date() ? 'bg-red-50 text-red-600' : 'bg-amber-50 text-amber-600'}`}>
+                        <span className={`text-[10px] font-black px-2.5 py-1 rounded-[.5rem] uppercase tracking-widest ${new Date(p.expiryDate) < new Date() ? 'bg-red-50 text-red-600' : 'bg-amber-50 text-amber-600'}`}>
                           {new Date(p.expiryDate) < new Date() ? 'Expired' : `Exp: ${new Date(p.expiryDate).toLocaleDateString()}`}
                         </span>
                       )}
@@ -193,14 +193,14 @@ export default function ProductsPage() {
                     <div className="flex justify-end gap-2">
                       <button 
                         onClick={(e) => { e.stopPropagation(); setEditingProduct(p) }}
-                        className="p-2 hover:bg-white hover:shadow-lg rounded-lg transition-all text-slate-300 hover:text-emerald-600"
+                        className="p-2 hover:bg-white hover:shadow-lg rounded-[.5rem] transition-all text-slate-300 hover:text-emerald-600"
                       >
                         <Edit size={16} />
                       </button>
                       <button 
                         onClick={(e) => { e.stopPropagation(); setConfirmDeleteId(p.id) }}
                         disabled={deleteMutation.isPending}
-                        className="p-2 hover:bg-white hover:shadow-lg rounded-lg transition-all text-slate-300 hover:text-red-600 disabled:opacity-50"
+                        className="p-2 hover:bg-white hover:shadow-lg rounded-[.5rem] transition-all text-slate-300 hover:text-red-600 disabled:opacity-50"
                       >
                         <Trash2 size={16} />
                       </button>
@@ -226,17 +226,17 @@ export default function ProductsPage() {
                 <button 
                   onClick={() => setPage(p => Math.max(1, p - 1))}
                   disabled={page === 1}
-                  className="h-10 px-4 bg-white border border-slate-200 rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-slate-50 disabled:opacity-40 transition-all"
+                  className="h-10 px-4 bg-white border border-slate-200 rounded-[.5rem] text-[10px] font-black uppercase tracking-widest hover:bg-slate-50 disabled:opacity-40 transition-all"
                 >
                   Previous
                 </button>
-                <div className="h-10 px-4 flex items-center justify-center font-black text-xs hl-mono text-emerald-600 bg-emerald-50 rounded-lg">
+                <div className="h-10 px-4 flex items-center justify-center font-black text-xs hl-mono text-emerald-600 bg-emerald-50 rounded-[.5rem]">
                   {page} / {productsData.pages}
                 </div>
                 <button 
                   onClick={() => setPage(p => Math.min(productsData.pages, p + 1))}
                   disabled={page === productsData.pages}
-                  className="h-10 px-4 bg-white border border-slate-200 rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-slate-50 disabled:opacity-40 transition-all"
+                  className="h-10 px-4 bg-white border border-slate-200 rounded-[.5rem] text-[10px] font-black uppercase tracking-widest hover:bg-slate-50 disabled:opacity-40 transition-all"
                 >
                   Next
                 </button>
@@ -345,7 +345,7 @@ function AddProductForm({ onClose }: { onClose: () => void }) {
         <select 
           value={form.type}
           onChange={(e) => setForm({ ...form, type: e.target.value })}
-          className="w-full bg-slate-50 border-none rounded-xl py-4 px-4 outline-none focus:ring-4 focus:ring-emerald-500/5 transition-all font-bold appearance-none text-sm"
+          className="w-full bg-slate-50 border-none rounded-[.5rem] py-4 px-4 outline-none focus:ring-4 focus:ring-emerald-500/5 transition-all font-bold appearance-none text-sm"
         >
            <option value="GOOD">Physical Good (Track Stock)</option>
            <option value="SERVICE">Service (Barber, Consult, etc)</option>
@@ -357,7 +357,7 @@ function AddProductForm({ onClose }: { onClose: () => void }) {
       )}
       
       {form.type === 'GOOD' && (
-        <div className="flex items-center gap-3 bg-slate-50 p-4 rounded-xl border border-slate-100 mt-4">
+        <div className="flex items-center gap-3 bg-slate-50 p-4 rounded-[.5rem] border border-slate-100 mt-4">
           <input 
             type="checkbox" 
             id="isPerishableAdd" 
@@ -376,7 +376,7 @@ function AddProductForm({ onClose }: { onClose: () => void }) {
             type="date" 
             value={form.expiryDate}
             onChange={(e) => setForm({ ...form, expiryDate: e.target.value })}
-            className="w-full bg-slate-50 border-none rounded-xl py-4 px-4 outline-none focus:ring-4 focus:ring-emerald-500/5 transition-all font-bold text-sm hl-mono"
+            className="w-full bg-slate-50 border-none rounded-[.5rem] py-4 px-4 outline-none focus:ring-4 focus:ring-emerald-500/5 transition-all font-bold text-sm hl-mono"
           />
         </div>
       )}
@@ -394,7 +394,7 @@ function AddProductForm({ onClose }: { onClose: () => void }) {
          })
        }}
        disabled={mutation.isPending}
-       className="w-full py-5 mt-6 bg-[#0D4A3E] text-white rounded-xl font-black text-xs uppercase tracking-widest hover:bg-[#0A3D33] transition-all shadow-2xl shadow-emerald-900/20 flex items-center justify-center"
+       className="w-full py-5 mt-6 bg-[#0D4A3E] text-white rounded-[.5rem] font-black text-xs uppercase tracking-widest hover:bg-[#0A3D33] transition-all shadow-2xl shadow-emerald-900/20 flex items-center justify-center"
       >
         {mutation.isPending ? 'Saving...' : 'Save Inventory Item'}
       </button>
@@ -433,7 +433,7 @@ function EditProductForm({ product, onClose }: { product: any; onClose: () => vo
       <div className="flex flex-col items-center gap-4">
         <div 
           onClick={() => document.getElementById('image-edit-upload')?.click()}
-          className="h-32 w-32 rounded-3xl bg-slate-50 border-4 border-dashed border-slate-200 flex items-center justify-center overflow-hidden cursor-pointer hover:border-emerald-500 hover:bg-emerald-50 transition-all group relative"
+          className="h-32 w-32 rounded-[.5rem] bg-slate-50 border-4 border-dashed border-slate-200 flex items-center justify-center overflow-hidden cursor-pointer hover:border-emerald-500 hover:bg-emerald-50 transition-all group relative"
         >
           {form.imageUrl ? (
             <>
@@ -481,7 +481,7 @@ function EditProductForm({ product, onClose }: { product: any; onClose: () => vo
         <select 
           value={form.category}
           onChange={(e) => setForm({ ...form, category: e.target.value })}
-          className="w-full bg-slate-50 border-none rounded-xl py-4 px-4 outline-none focus:ring-4 focus:ring-emerald-500/5 transition-all font-bold appearance-none text-sm"
+          className="w-full bg-slate-50 border-none rounded-[.5rem] py-4 px-4 outline-none focus:ring-4 focus:ring-emerald-500/5 transition-all font-bold appearance-none text-sm"
         >
            {['Groceries', 'Bakery', 'Dairy', 'Hardware', 'Electronics', 'Clothing', 'Services', 'Other'].map(c => (
              <option key={c}>{c}</option>
@@ -498,7 +498,7 @@ function EditProductForm({ product, onClose }: { product: any; onClose: () => vo
         <select 
           value={form.type}
           onChange={(e) => setForm({ ...form, type: e.target.value })}
-          className="w-full bg-slate-50 border-none rounded-xl py-4 px-4 outline-none focus:ring-4 focus:ring-emerald-500/5 transition-all font-bold appearance-none text-sm"
+          className="w-full bg-slate-50 border-none rounded-[.5rem] py-4 px-4 outline-none focus:ring-4 focus:ring-emerald-500/5 transition-all font-bold appearance-none text-sm"
         >
            <option value="GOOD">Physical Good (Track Stock)</option>
            <option value="SERVICE">Service (Barber, Consult, etc)</option>
@@ -510,7 +510,7 @@ function EditProductForm({ product, onClose }: { product: any; onClose: () => vo
       )}
       
       {form.type === 'GOOD' && (
-        <div className="flex items-center gap-3 bg-slate-50 p-4 rounded-xl border border-slate-100 mt-4">
+        <div className="flex items-center gap-3 bg-slate-50 p-4 rounded-[.5rem] border border-slate-100 mt-4">
           <input 
             type="checkbox" 
             id="isPerishableEdit" 
@@ -529,7 +529,7 @@ function EditProductForm({ product, onClose }: { product: any; onClose: () => vo
             type="date" 
             value={form.expiryDate}
             onChange={(e) => setForm({ ...form, expiryDate: e.target.value })}
-            className="w-full bg-slate-50 border-none rounded-xl py-4 px-4 outline-none focus:ring-4 focus:ring-emerald-500/5 transition-all font-bold text-sm hl-mono"
+            className="w-full bg-slate-50 border-none rounded-[.5rem] py-4 px-4 outline-none focus:ring-4 focus:ring-emerald-500/5 transition-all font-bold text-sm hl-mono"
           />
         </div>
       )}
@@ -546,7 +546,7 @@ function EditProductForm({ product, onClose }: { product: any; onClose: () => vo
          })
        }}
        disabled={mutation.isPending}
-       className="w-full py-5 mt-6 bg-[#0D4A3E] text-white rounded-xl font-black text-xs uppercase tracking-widest hover:bg-[#0A3D33] transition-all shadow-2xl shadow-emerald-900/20 flex items-center justify-center"
+       className="w-full py-5 mt-6 bg-[#0D4A3E] text-white rounded-[.5rem] font-black text-xs uppercase tracking-widest hover:bg-[#0A3D33] transition-all shadow-2xl shadow-emerald-900/20 flex items-center justify-center"
       >
         {mutation.isPending ? 'Updating...' : 'Update Product Details'}
       </button>
@@ -564,8 +564,8 @@ function SummaryCard({ title, value, sub, icon: Icon, variant }: any) {
   }
 
   return (
-    <div className="bg-white p-6 rounded-lg border border-gray-100 shadow-sm flex items-center gap-5 hover:shadow-md transition-all group">
-      <div className={`h-12 w-12 rounded-md flex items-center justify-center shrink-0 ${variants[variant as keyof typeof variants]} group-hover:scale-110 transition-transform`}>
+    <div className="bg-white p-6 rounded-[.5rem] border border-gray-100 shadow-sm flex items-center gap-5 hover:shadow-md transition-all group">
+      <div className={`h-12 w-12 rounded-[.5rem] flex items-center justify-center shrink-0 ${variants[variant as keyof typeof variants]} group-hover:scale-110 transition-transform`}>
         <Icon size={24} />
       </div>
       <div>
@@ -586,7 +586,7 @@ function InputGroup({ label, placeholder, mono = false, value, onChange }: any) 
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className={`w-full bg-gray-50 border-none rounded-md py-4 px-4 outline-none focus:ring-2 focus:ring-emerald-500/10 transition-all text-sm font-bold ${mono ? 'hl-mono text-[#0D4A3E]' : ''}`} 
+        className={`w-full bg-gray-50 border-none rounded-[.5rem] py-4 px-4 outline-none focus:ring-2 focus:ring-emerald-500/10 transition-all text-sm font-bold ${mono ? 'hl-mono text-[#0D4A3E]' : ''}`} 
       />
     </div>
   )

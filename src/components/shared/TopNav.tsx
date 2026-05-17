@@ -72,7 +72,7 @@ export default function TopNav({ onMobileMenuToggle, isCollapsed, onToggleCollap
         {onToggleCollapse && (
           <button 
             onClick={onToggleCollapse} 
-            className="hidden lg:flex h-12 w-12 rounded-xl bg-white border border-slate-100 items-center justify-center text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 hover:border-emerald-100 transition-all shadow-sm"
+            className="hidden lg:flex h-12 w-12 rounded-full bg-white items-center justify-center text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 hover:border-emerald-100 transition-all shadow-md"
           >
             {isCollapsed ? <PanelLeftOpen size={20} /> : <PanelLeftClose size={20} />}
           </button>
@@ -93,7 +93,7 @@ export default function TopNav({ onMobileMenuToggle, isCollapsed, onToggleCollap
           <div className="relative" ref={notificationRef}>
             <button 
               onClick={() => setShowNotifications(!showNotifications)} 
-              className={`w-12 h-12 rounded-xl border flex items-center justify-center transition-all relative ${showNotifications ? 'bg-white border-emerald-200 shadow-xl text-emerald-600' : 'hover:bg-slate-50 hover:border-slate-100 hover:text-slate-400 border-slate-200 text-slate-600 bg-emerald-50'}`}
+              className={`w-12 h-12 rounded-[.5rem] border flex items-center justify-center transition-all relative ${showNotifications ? 'bg-white border-emerald-200 shadow-xl text-emerald-600' : 'hover:bg-slate-50 hover:border-slate-100 hover:text-slate-400 border-slate-200 text-slate-600 bg-emerald-50'}`}
             >
               <Bell size={20} />
               {unreadCount > 0 && (
@@ -104,7 +104,7 @@ export default function TopNav({ onMobileMenuToggle, isCollapsed, onToggleCollap
             </button>
 
             {showNotifications && (
-              <div className="absolute top-16 right-0 w-[340px] bg-white border border-slate-100 rounded-3xl shadow-2xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200 z-[200]">
+              <div className="absolute top-16 right-0 w-[340px] bg-white border border-slate-100 rounded-[.5rem] shadow-2xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200 z-[200]">
                 <div className="p-5 bg-slate-50/50 border-b border-slate-100 flex justify-between items-center">
                   <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Activity Stream</span>
                   {unreadCount > 0 && (
@@ -132,7 +132,7 @@ export default function TopNav({ onMobileMenuToggle, isCollapsed, onToggleCollap
                           onClick={() => !n.isRead && markReadMutation.mutate(n.id)}
                         >
                           <div className="flex gap-4">
-                            <div className={`h-10 w-10 rounded-2xl flex items-center justify-center shrink-0 transition-all border ${n.isRead ? 'bg-white border-slate-100 text-slate-400' : 'bg-white border-emerald-100 text-emerald-600 shadow-sm'}`}>
+                            <div className={`h-10 w-10 rounded-[.5rem] flex items-center justify-center shrink-0 transition-all border ${n.isRead ? 'bg-white border-slate-100 text-slate-400' : 'bg-white border-emerald-100 text-emerald-600 shadow-sm'}`}>
                               <Bell size={14} />
                             </div>
                             <div className="space-y-1 flex-1">
@@ -158,9 +158,9 @@ export default function TopNav({ onMobileMenuToggle, isCollapsed, onToggleCollap
         <div className="relative" ref={userMenuRef}>
           <button 
             onClick={() => setShowUserMenu(!showUserMenu)} 
-            className={`p-1.5 rounded-2xl border flex items-center gap-3 transition-all ${showUserMenu ? 'bg-white border-emerald-200 shadow-xl ring-4 ring-emerald-500/5' : 'bg-transparent border-transparent hover:bg-white hover:border-slate-100 hover:shadow-lg'}`}
+            className={`p-1.5 rounded-[.5rem] border flex items-center gap-3 transition-all ${showUserMenu ? 'bg-white border-emerald-200 shadow-xl ring-4 ring-emerald-500/5' : 'bg-transparent border-transparent hover:bg-white hover:border-slate-100 hover:shadow-lg'}`}
           >
-            <div className="w-10 h-10 rounded-xl bg-emerald-600 overflow-hidden shadow-2xl shadow-emerald-900/20 border border-white/20 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-[.5rem] bg-emerald-600 overflow-hidden shadow-2xl shadow-emerald-900/20 border border-white/20 flex items-center justify-center">
               <img
                 src={user?.photoUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || '')}&background=0D4A3E&color=fff`}
                 alt={user?.name ? `${user.name} profile` : 'Profile'}
@@ -176,23 +176,23 @@ export default function TopNav({ onMobileMenuToggle, isCollapsed, onToggleCollap
           </button>
 
           {showUserMenu && (
-            <div className="absolute top-16 right-0 w-64 bg-white border border-slate-100 rounded-[24px] shadow-2xl p-2 animate-in fade-in slide-in-from-top-2 duration-200 z-[200]">
+            <div className="absolute top-16 right-0 w-64 bg-white border border-slate-100 rounded-[.5rem] shadow-2xl p-2 animate-in fade-in slide-in-from-top-2 duration-200 z-[200]">
               <div className="px-5 py-4 mb-2 border-b border-slate-50">
                 <p className="text-[9px] font-black text-slate-300 uppercase tracking-widest mb-1.5">Authenticated ID</p>
                 <p className="text-xs font-black text-slate-900 tracking-tight truncate">{user?.email}</p>
               </div>
-              <Link to={user?.role === 'SUPER_ADMIN' ? "/admin/settings" : "/dashboard/settings"} onClick={() => setShowUserMenu(false)} className="flex items-center gap-3 px-4 py-3.5 rounded-xl text-xs font-black text-slate-500 uppercase tracking-widest hover:bg-emerald-50 hover:text-emerald-700 transition-all">
+              <Link to={user?.role === 'SUPER_ADMIN' ? "/admin/settings" : "/dashboard/settings"} onClick={() => setShowUserMenu(false)} className="flex items-center gap-3 px-4 py-3.5 rounded-[.5rem] text-xs font-black text-slate-500 uppercase tracking-widest hover:bg-emerald-50 hover:text-emerald-700 transition-all">
                 <User size={16} className="opacity-50" /> Profile Security
               </Link>
               {user?.role !== 'SUPER_ADMIN' && (
-                <Link to="/dashboard/subscription" onClick={() => setShowUserMenu(false)} className="flex items-center gap-3 px-4 py-3.5 rounded-xl text-xs font-black text-slate-500 uppercase tracking-widest hover:bg-emerald-50 hover:text-emerald-700 transition-all">
+                <Link to="/dashboard/subscription" onClick={() => setShowUserMenu(false)} className="flex items-center gap-3 px-4 py-3.5 rounded-[.5rem] text-xs font-black text-slate-500 uppercase tracking-widest hover:bg-emerald-50 hover:text-emerald-700 transition-all">
                   <Sparkles size={16} className="text-emerald-500" /> Subscription
                 </Link>
               )}
               <div className="h-px bg-slate-50 my-2 mx-2" />
               <button 
                 onClick={handleLogout} 
-                className="w-full flex items-center gap-3 px-4 py-3.5 rounded-xl text-xs font-black text-red-500 uppercase tracking-widest hover:bg-red-50 transition-all"
+                className="w-full flex items-center gap-3 px-4 py-3.5 rounded-[.5rem] text-xs font-black text-red-500 uppercase tracking-widest hover:bg-red-50 transition-all"
               >
                 <LogOut size={16} /> Terminate Session
               </button>

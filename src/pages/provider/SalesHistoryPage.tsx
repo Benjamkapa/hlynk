@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { Search, Download, Calendar, Eye, Receipt, User, CreditCard, ChevronLeft, ChevronRight, Printer, Store, CheckCircle, Filter } from 'lucide-react'
+import { Search, Download, Calendar, Eye, Receipt, User, CreditCard, ChevronLeft, ChevronRight, Printer, Store, CheckCircle, Filter, Zap, AlertTriangle } from 'lucide-react'
 import { ConfirmModal } from '../../components/shared/ConfirmModal'
 import { useQuery } from '@tanstack/react-query'
 import { salesApi } from '../../lib/api/providers'
@@ -32,6 +32,22 @@ const RECEIPT_PRINT_CSS = `
     .print-only { display: block !important; }
   }
 `
+
+const getStatusLabel = (status: any) => {
+  const s = Number(status);
+  if (s === 0) return 'Success';
+  if (s === 2) return 'Pending';
+  if (s === 3) return 'Cancelled';
+  if (s === 1) return 'Failed';
+  return 'Success';
+};
+
+const getStatusColor = (status: any) => {
+  const s = Number(status);
+  if (s === 0) return 'text-emerald-600 bg-emerald-50';
+  if (s === 2) return 'text-amber-600 bg-amber-50';
+  return 'text-red-600 bg-red-50';
+};
 
 export default function SalesHistoryPage() {
   const [search, setSearch] = useState('')
@@ -108,14 +124,57 @@ export default function SalesHistoryPage() {
         </div>
         <button
           onClick={exportToCSV}
-          className="bg-gray-100 text-gray-600 h-12 px-6 rounded-xl font-bold text-sm hover:bg-gray-200 transition-all flex items-center gap-2"
+          className="bg-gray-100 text-gray-600 h-12 px-6 rounded-[.5rem] font-bold text-sm hover:bg-gray-200 transition-all flex items-center gap-2"
         >
           <Download size={18} /> Export CSV
         </button>
       </div>
 
-      <SlideOver isOpen={!!selectedSale} onClose={() => setSelectedSale(null)} title="Receipt">
-        {selectedSale && <ThermalReceipt sale={selectedSale} />}
+      <SlideOver isOpen={!!selectedSale} onClose={() => setSelectedSale(null)} title="Forensic Receipt View">
+        {selectedSale && (
+          <div className="space-y-8 pb-10">
+            <ThermalReceipt sale={selectedSale} />
+            
+            {/* {selectedSale.paymentMethod === 'MPESA' && (
+              <div className="px-4 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-300">
+                <div className="bg-slate-900 rounded-[.5rem] p-8 shadow-2xl border border-slate-800">
+                  <div className="flex justify-between items-center mb-6">
+                    <div className="flex items-center gap-3">
+                      <div className="h-8 w-8 rounded-[.5rem] bg-emerald-500/10 flex items-center justify-center text-emerald-400">
+                         <Zap size={16} />
+                      </div>
+                      <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400">Safaricom Conversation</h4>
+                    </div>
+                    <span className="text-[8px] font-black bg-slate-800 text-slate-500 px-2 py-1 rounded-[.5rem] uppercase tracking-tighter hl-mono">Audit JSON</span>
+                  </div>
+                  
+                  <div className="bg-slate-950 rounded-[.5rem] p-4 overflow-auto max-h-[300px] custom-scrollbar">
+                    {selectedSale.rawPayload ? (
+                      <pre className="text-[10px] text-emerald-400 hl-mono leading-relaxed">
+                        {JSON.stringify(selectedSale.rawPayload, null, 2)}
+                      </pre>
+                    ) : (
+                      <div className="py-10 text-center opacity-30 text-emerald-400 text-[10px] italic">
+                        No technical communication logs found for this POS transaction.
+                      </div>
+                    )}
+                  </div>
+                  
+                  <div className="mt-6 pt-6 border-t border-slate-800 grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-[8px] font-black text-slate-600 uppercase tracking-widest mb-1">M-Pesa Request ID</p>
+                      <p className="text-[10px] font-black text-slate-400 hl-mono truncate">{selectedSale.mpesaRequestId || 'N/A'}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-[8px] font-black text-slate-600 uppercase tracking-widest mb-1">Receipt Number</p>
+                      <p className="text-[10px] font-black text-slate-400 hl-mono">{selectedSale.mpesaReceipt || 'N/A'}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )} */}
+          </div>
+        )}
       </SlideOver>
 
       {/* Stats */}
@@ -131,7 +190,7 @@ export default function SalesHistoryPage() {
         <StatCard title="Avg. Sale" value={`KES ${(stats.avgSale || 0).toLocaleString()}`} sub="Per customer" icon={User} variant="amber" />
       </div>
 
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-xl shadow-gray-900/5 overflow-hidden">
+      <div className="bg-white rounded-[.5rem] border border-gray-100 shadow-xl shadow-gray-900/5 overflow-hidden">
         <div className="p-6 border-b border-gray-50 flex flex-col md:flex-row gap-4">
           <div className="relative flex-1">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
@@ -143,11 +202,11 @@ export default function SalesHistoryPage() {
                   setSearch(e.target.value)
                   setPage(1)
                 }}
-                className="w-full bg-gray-50 border-none rounded-xl py-3.5 pl-12 pr-4 outline-none focus:ring-4 focus:ring-emerald-500/5 transition-all text-sm font-bold"
+                className="w-full bg-gray-50 border-none rounded-[.5rem] py-3.5 pl-12 pr-4 outline-none focus:ring-4 focus:ring-emerald-500/5 transition-all text-sm font-bold"
               />
             </div>
-          <div className="flex items-center gap-2 bg-gray-50 p-1.5 rounded-xl border border-gray-100">
-            <button onClick={() => shiftDate(-1)} className="p-2 hover:bg-white hover:shadow-sm rounded-lg transition-all text-gray-400 hover:text-slate-900">
+          <div className="flex items-center gap-2 bg-gray-50 p-1.5 rounded-[.5rem] border border-gray-100">
+            <button onClick={() => shiftDate(-1)} className="p-2 hover:bg-white hover:shadow-sm rounded-[.5rem] transition-all text-gray-400 hover:text-slate-900">
               <ChevronLeft size={18} />
             </button>
             <div className="relative">
@@ -162,12 +221,12 @@ export default function SalesHistoryPage() {
                 className="bg-transparent pl-10 pr-4 py-2 text-sm font-black text-slate-900 outline-none hl-mono"
               />
             </div>
-            <button onClick={() => shiftDate(1)} className="p-2 hover:bg-white hover:shadow-sm rounded-lg transition-all text-gray-400 hover:text-slate-900">
+            <button onClick={() => shiftDate(1)} className="p-2 hover:bg-white hover:shadow-sm rounded-[.5rem] transition-all text-gray-400 hover:text-slate-900">
               <ChevronRight size={18} />
             </button>
           </div>
 
-          <div className="flex items-center gap-2 bg-gray-50 p-1.5 rounded-xl border border-gray-100">
+          <div className="flex items-center gap-2 bg-gray-50 p-1.5 rounded-[.5rem] border border-gray-100">
              <Filter className="ml-2 text-slate-400" size={14} />
              <select 
                value={status}
@@ -212,6 +271,7 @@ export default function SalesHistoryPage() {
                   Total {sortBy === 'totalAmount' && (sortOrder === 'asc' ? '↑' : '↓')}
                 </th>
                 <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Method</th>
+
                 <th 
                   className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center cursor-pointer hover:text-emerald-600 transition-colors"
                   onClick={() => { setSortBy('status'); setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc') }}
@@ -234,20 +294,20 @@ export default function SalesHistoryPage() {
                   <td className="px-8 py-5 text-center text-sm font-black hl-mono">{s.items?.reduce((sum: number, item: any) => sum + (item.quantity || 1), 0) || 0}</td>
                   <td className="px-8 py-5 text-right font-black text-[#0D4A3E] text-sm hl-mono">KES {Number(s.totalAmount).toLocaleString()}</td>
                   <td className="px-8 py-5 text-center">
-                    <span className={`text-[10px] font-black px-2.5 py-1 rounded-md uppercase tracking-widest ${s.paymentMethod === 'MPESA' ? 'text-emerald-600 bg-emerald-50' : 'text-blue-600 bg-blue-50'}`}>
+                    <span className={`text-[10px] font-black px-2.5 py-1 rounded-[.5rem] uppercase tracking-widest ${s.paymentMethod === 'MPESA' ? 'text-emerald-600 bg-emerald-50' : 'text-blue-600 bg-blue-50'}`}>
                       {s.paymentMethod}
                     </span>
                   </td>
                   <td className="px-8 py-5 text-center">
-                    <span className={`text-[10px] font-black px-2.5 py-1 rounded-md uppercase tracking-widest ${s.status === 'PENDING' ? 'text-amber-600 bg-amber-50' : s.status === 'FAILED' ? 'text-red-600 bg-red-50' : 'text-emerald-600 bg-emerald-50'}`}>
-                      {s.status || 'COMPLETED'}
+                    <span className={`text-[10px] font-black px-2.5 py-1 rounded-[.5rem] uppercase tracking-widest ${getStatusColor(s.status)}`}>
+                      {getStatusLabel(s.status)}
                     </span>
                   </td>
                   <td className="px-8 py-5 text-right flex gap-1">
-                    <div className="p-2 bg-slate-50 group-hover:bg-white group-hover:shadow-lg group-hover:shadow-emerald-900/10 rounded-lg transition-all text-gray-300 group-hover:text-emerald-600 inline-block">
+                    <div className="p-2 bg-slate-50 group-hover:bg-white group-hover:shadow-lg group-hover:shadow-emerald-900/10 rounded-[.5rem] transition-all text-gray-300 group-hover:text-emerald-600 inline-block">
                       <Eye size={18} />
                     </div>
-                    {/* <div className="p-2 bg-slate-50 group-hover:bg-white group-hover:shadow-lg group-hover:shadow-emerald-900/10 rounded-lg transition-all text-gray-300 group-hover:text-emerald-600 inline-block">
+                    {/* <div className="p-2 bg-slate-50 group-hover:bg-white group-hover:shadow-lg group-hover:shadow-emerald-900/10 rounded-[.5rem] transition-all text-gray-300 group-hover:text-emerald-600 inline-block">
                       <Receipt size={18} />
                     </div> */}
                   </td>
@@ -413,7 +473,7 @@ function ThermalReceipt({ sale }: { sale: any }) {
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', color: '#666', marginBottom: 6 }}>
             <span>STATUS</span>
-            <span style={{ fontWeight: 'bold' }}>{sale.status || 'COMPLETED'}</span>
+            <span style={{ fontWeight: 'bold' }}>{getStatusLabel(sale.status)}</span>
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', fontSize: 15, borderTop: '2px solid #000', paddingTop: 8, marginTop: 4 }}>
             <span>TOTAL</span><span>KES {Number(sale.totalAmount).toLocaleString()}</span>
@@ -437,13 +497,13 @@ function ThermalReceipt({ sale }: { sale: any }) {
       <div className="no-print flex gap-3 w-full" style={{ maxWidth: 320 }}>
         {/* <button
           onClick={handleDownload}
-          className="flex-1 h-12 bg-gray-900 text-white rounded-xl font-black text-xs uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-gray-700 transition-all"
+          className="flex-1 h-12 bg-gray-900 text-white rounded-[.5rem] font-black text-xs uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-gray-700 transition-all"
         >
           <Printer size={15} /> Download PDF
         </button> */}
         <button
           onClick={handlePrint}
-          className="h-12 px-5 bg-gray-100 text-gray-600 rounded-xl mx-auto font-black text-xs uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-gray-200 transition-all"
+          className="h-12 px-5 bg-gray-100 text-gray-600 rounded-[.5rem] mx-auto font-black text-xs uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-gray-200 transition-all"
         >
           <Printer size={15} /> Print
         </button>
@@ -466,8 +526,8 @@ function StatCard({ title, value, sub, icon: Icon, variant }: any) {
     amber: 'bg-amber-50 text-amber-600 border-amber-100',
   }
   return (
-    <div className="bg-white p-8 rounded-2xl border border-gray-100 shadow-xl shadow-gray-900/5 flex items-center gap-6 hover:shadow-2xl hover:shadow-gray-900/10 transition-all border-b-4 group">
-      <div className={`h-16 w-16 rounded-2xl flex items-center justify-center shrink-0 transition-all group-hover:scale-110 ${variants[variant]} border`}>
+    <div className="bg-white p-8 rounded-[.5rem] border border-gray-100 shadow-xl shadow-gray-900/5 flex items-center gap-6 hover:shadow-2xl hover:shadow-gray-900/10 transition-all border-b-4 group">
+      <div className={`h-16 w-16 rounded-[.5rem] flex items-center justify-center shrink-0 transition-all group-hover:scale-110 ${variants[variant]} border`}>
         <Icon size={32} />
       </div>
       <div>

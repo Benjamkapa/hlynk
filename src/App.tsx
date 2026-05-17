@@ -120,7 +120,7 @@ export default function App() {
           <Route path="subscriptions" element={<SubscriptionsPageAdmin />} />
           <Route path="payments" element={<PaymentsPageAdmin />} />
           <Route path="support" element={<SupportPageAdmin />} />
-          <Route path="audit" element={<AuditSecurityPage />} />
+          <Route path="forensic-audit" element={<LogsPage />} />
           <Route path="reports" element={<ReportsPageAdmin />} />
           <Route path="settings" element={<SettingsPageAdmin />} />
           <Route path="help" element={<HelpPageAdmin />} />

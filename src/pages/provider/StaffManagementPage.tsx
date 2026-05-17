@@ -64,7 +64,7 @@ export default function StaffManagementPage() {
           <div className="flex gap-3">
             <button 
               onClick={() => setIsAddModalOpen(true)} 
-              className="bg-[#0D4A3E] text-white h-12 px-6 rounded-md font-bold text-sm hover:bg-[#0A3D33] transition-all flex items-center gap-2"
+              className="bg-[#0D4A3E] text-white h-12 px-6 rounded-[.5em] font-bold text-sm hover:bg-[#0A3D33] transition-all flex items-center gap-2"
             >
               <Plus size={18} /> Add Member
             </button>
@@ -72,7 +72,7 @@ export default function StaffManagementPage() {
         </div>
 
         {/* Staff Table */}
-        <div className="bg-white rounded-lg border border-gray-100 shadow-sm overflow-hidden">
+        <div className="bg-white rounded-[.5em] border border-gray-100 shadow-sm overflow-hidden">
         
           <SlideOver 
             isOpen={isAddModalOpen} 
@@ -98,7 +98,7 @@ export default function StaffManagementPage() {
                 placeholder="Search team members by name or phone..." 
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full bg-gray-50 border-none rounded-md py-3.5 pl-12 pr-4 outline-none focus:ring-2 focus:ring-emerald-500/10 transition-all text-sm font-medium" 
+                className="w-full bg-gray-50 border-none rounded-[.5em] py-3.5 pl-12 pr-4 outline-none focus:ring-2 focus:ring-emerald-500/10 transition-all text-sm font-medium" 
               />
             </div>
           </div>
@@ -163,7 +163,7 @@ export default function StaffManagementPage() {
                       <td className="px-8 py-5">
                         <div className="flex flex-wrap gap-1">
                           {s.permissions?.length > 0 ? s.permissions.map((p: string) => (
-                            <span key={p} className="text-[9px] font-black text-slate-500 bg-slate-100 px-2 py-0.5 rounded-sm uppercase tracking-widest">{p}</span>
+                            <span key={p} className="text-[9px] font-black text-slate-500 bg-slate-100 px-2 py-0.5 rounded-[.5em] uppercase tracking-widest">{p}</span>
                           )) : (
                             <span className="text-[9px] text-slate-400">Basic</span>
                           )}
@@ -183,13 +183,13 @@ export default function StaffManagementPage() {
                         <div className="flex justify-end gap-2">
                           <button 
                             onClick={(e) => { e.stopPropagation(); setEditingStaff(s) }}
-                            className="p-2 hover:bg-white hover:shadow-lg rounded-lg transition-all text-slate-300 hover:text-emerald-600"
+                            className="p-2 hover:bg-white hover:shadow-lg rounded-[.5em] transition-all text-slate-300 hover:text-emerald-600"
                           >
                             <Edit size={16} />
                           </button>
                           <button 
                             onClick={(e) => { e.stopPropagation(); setConfirmDeleteId(s.id) }}
-                            className="p-2 hover:bg-white hover:shadow-lg rounded-lg transition-all text-slate-300 hover:text-red-600"
+                            className="p-2 hover:bg-white hover:shadow-lg rounded-[.5em] transition-all text-slate-300 hover:text-red-600"
                           >
                             <Trash2 size={16} />
                           </button>
@@ -302,7 +302,7 @@ function StaffForm({ staff, onClose }: { staff?: any; onClose: () => void }) {
             <select 
               value={form.commissionType}
               onChange={(e) => setForm({ ...form, commissionType: e.target.value })}
-              className="w-full bg-slate-50 border-none rounded-xl py-4 px-4 outline-none focus:ring-4 focus:ring-emerald-500/5 transition-all font-bold appearance-none text-sm"
+              className="w-full bg-slate-50 border-none rounded-[.5em] py-4 px-4 outline-none focus:ring-4 focus:ring-emerald-500/5 transition-all font-bold appearance-none text-sm"
             >
               <option value="NONE">No Commission</option>
               <option value="PERCENTAGE">Percentage (%)</option>
@@ -325,7 +325,7 @@ function StaffForm({ staff, onClose }: { staff?: any; onClose: () => void }) {
         <h3 className="text-xs font-black uppercase text-slate-800 mb-4 tracking-widest flex items-center gap-2"><Shield size={14} /> Access Permissions</h3>
         <div className="grid grid-cols-2 gap-3">
           {availablePermissions.map(p => (
-            <label key={p.id} className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg cursor-pointer hover:bg-emerald-50 transition-colors border border-transparent hover:border-emerald-100">
+            <label key={p.id} className="flex items-center gap-3 p-3 bg-slate-50 rounded-[.5em] cursor-pointer hover:bg-emerald-50 transition-colors border border-transparent hover:border-emerald-100">
               <input 
                 type="checkbox"
                 checked={form.permissions.includes(p.id)}
@@ -339,7 +339,7 @@ function StaffForm({ staff, onClose }: { staff?: any; onClose: () => void }) {
       </div>
 
       {staff && (
-        <label className="flex items-center gap-3 p-4 bg-slate-50 rounded-xl cursor-pointer">
+        <label className="flex items-center gap-3 p-4 bg-slate-50 rounded-[.5em] cursor-pointer">
           <input 
             type="checkbox"
             checked={form.isActive}
@@ -353,7 +353,7 @@ function StaffForm({ staff, onClose }: { staff?: any; onClose: () => void }) {
       <button 
         onClick={handleSubmit}
         disabled={loading}
-        className="w-full py-5 mt-6 bg-[#0D4A3E] text-white rounded-xl font-black text-xs uppercase tracking-widest hover:bg-[#0A3D33] transition-all shadow-2xl shadow-emerald-900/20 flex items-center justify-center disabled:opacity-50"
+        className="w-full py-5 mt-6 bg-[#0D4A3E] text-white rounded-[.5em] font-black text-xs uppercase tracking-widest hover:bg-[#0A3D33] transition-all shadow-2xl shadow-emerald-900/20 flex items-center justify-center disabled:opacity-50"
       >
         {loading ? 'Saving...' : staff ? 'Update Team Member' : 'Add Team Member'}
       </button>
@@ -370,7 +370,7 @@ function InputGroup({ label, placeholder, mono = false, type = "text", value, on
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className={`w-full bg-gray-50 border-none rounded-xl py-4 px-4 outline-none focus:ring-4 focus:ring-emerald-500/5 transition-all text-sm font-bold ${mono ? 'hl-mono text-[#0D4A3E]' : ''}`} 
+        className={`w-full bg-gray-50 border-none rounded-[.5em] py-4 px-4 outline-none focus:ring-4 focus:ring-emerald-500/5 transition-all text-sm font-bold ${mono ? 'hl-mono text-[#0D4A3E]' : ''}`} 
       />
     </div>
   )

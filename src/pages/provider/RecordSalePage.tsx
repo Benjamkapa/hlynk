@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Search, Plus, Minus, Trash2, CreditCard, Wallet, Banknote, Zap, CheckCircle2, Package, Scan, ArrowRight, ShoppingCart, Loader2, LayoutGrid, List, ChevronLeft, ChevronRight, Lock, Smartphone, AlertTriangle } from 'lucide-react'
+import { Search, Plus, Minus, Trash2, CreditCard, Wallet, Banknote, Zap, CheckCircle2, Package, Scan, ArrowRight, ShoppingCart, Loader2, LayoutGrid, List, ChevronLeft, ChevronRight, Lock, Smartphone, AlertTriangle, RefreshCcw } from 'lucide-react'
 import FeatureGate, { FEATURE_PLANS } from '../../components/shared/FeatureGate'
 import { toast } from 'sonner'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
@@ -150,16 +150,28 @@ export default function RecordSalePage() {
     if (handleCompleteSale.error) toast.error(getErrorMessage(handleCompleteSale.error))
   }, [handleCompleteSale.error])
 
-  const { data: pendingSaleData, error: pollingError } = useQuery({
+  useEffect(() => {
+    let timeout: any;
+    if (waitingMpesaSaleId && isProcessingMpesa) {
+      timeout = setTimeout(() => {
+        setWaitingMpesaSaleId(null);
+        setIsProcessingMpesa(false);
+        toast.error('Payment polling timed out. Please check the transaction status in Sales History.');
+      }, 60000); // 60s safety cutoff
+    }
+    return () => clearTimeout(timeout);
+  }, [waitingMpesaSaleId, isProcessingMpesa]);
+
+  const { data: pendingSaleData } = useQuery({
     queryKey: ['sale-details', waitingMpesaSaleId],
     queryFn: () => {
-      console.log('[QUERY] Polling for sale:', waitingMpesaSaleId);
       return salesApi.getDetails(waitingMpesaSaleId!);
     },
     enabled: !!waitingMpesaSaleId,
     refetchInterval: (query) => {
       const sale = query.state.data?.data;
-      if (sale && (sale.status === 0 || sale.status === 3 || sale.status === 1)) {
+      // Stop on all terminal states: 0 (Paid), 1 (Failed), 3 (Cancelled), 4 (Error)
+      if (sale && [0, 1, 3, 4].includes(sale.status)) {
         return false;
       }
       return 2000;
@@ -174,33 +186,34 @@ export default function RecordSalePage() {
       const sale = pendingSaleData.data;
       console.log('[POLLING] Current Sale Status:', sale.status);
 
-      if (sale.status === 0) {
+      if ([0, 1, 3, 4].includes(sale.status)) {
+        const status = sale.status;
         setWaitingMpesaSaleId(null)
         setIsProcessingMpesa(false)
-        toast.success('Transaction Finalized', {
-          description: `M-Pesa payment received. Receipt #${sale.id?.slice(-6).toUpperCase()} issued.`,
-          icon: <CheckCircle2 className="text-emerald-500" />
-        })
-        setCart([])
-        setMpesaPhone('')
-        setPaymentMethod('CASH')
-        setSelectedCustomerId(null)
-        setCustomerSearch('')
-        queryClient.invalidateQueries({ queryKey: ['inventory-pos'] })
-        queryClient.invalidateQueries({ queryKey: ['recent-sales'] })
-        queryClient.invalidateQueries({ queryKey: ['provider-stats'] })
-        queryClient.invalidateQueries({ queryKey: ['pos-customers'] })
-      }
-      else if (sale.status === 1 || sale.status === 3) {
-        setWaitingMpesaSaleId(null)
-        setIsProcessingMpesa(false)
-        const isCancelled = sale.status === 3;
-        toast.error(isCancelled ? 'Transaction Cancelled' : 'Payment Failed', {
-          description: isCancelled
-            ? 'The customer cancelled the request on their phone.'
-            : 'M-Pesa could not process the payment at this time.',
-          icon: <AlertTriangle className="text-red-500" />
-        })
+        
+        if (status === 0) {
+          toast.success('Transaction Finalized', {
+            description: `M-Pesa payment received. Receipt #${sale.id?.slice(-6).toUpperCase()} issued.`,
+            icon: <CheckCircle2 className="text-emerald-500" />
+          })
+          setCart([])
+          setMpesaPhone('')
+          setPaymentMethod('CASH')
+          setSelectedCustomerId(null)
+          setCustomerSearch('')
+          queryClient.invalidateQueries({ queryKey: ['inventory-pos'] })
+          queryClient.invalidateQueries({ queryKey: ['recent-sales'] })
+          queryClient.invalidateQueries({ queryKey: ['provider-stats'] })
+          queryClient.invalidateQueries({ queryKey: ['pos-customers'] })
+        } else {
+          const isCancelled = status === 3;
+          toast.error(isCancelled ? 'Transaction Cancelled' : 'Payment Failed', {
+            description: isCancelled
+              ? 'The customer cancelled the request on their phone.'
+              : sale.message || 'M-Pesa could not process the payment at this time.',
+            icon: <AlertTriangle className="text-red-500" />
+          })
+        }
       }
     }
   }, [pendingSaleData, waitingMpesaSaleId, queryClient])
@@ -244,21 +257,21 @@ export default function RecordSalePage() {
               <p className="text-slate-500 font-medium text-[10px] md:text-sm uppercase tracking-widest opacity-60">Tap items to add to cart</p>
             </div>
             <div className="flex items-center gap-3 self-stretch md:self-auto">
-              <div className="flex bg-slate-100 p-1 rounded-lg">
+              <div className="flex bg-slate-100 p-1 rounded-[.5rem]">
                 <button
                   onClick={() => setViewMode('grid')}
-                  className={`p-2 rounded-md transition-all ${viewMode === 'grid' ? 'bg-white shadow-sm text-emerald-600' : 'text-slate-400 hover:text-slate-600'}`}
+                  className={`p-2 rounded-[.5rem] transition-all ${viewMode === 'grid' ? 'bg-white shadow-sm text-emerald-600' : 'text-slate-400 hover:text-slate-600'}`}
                 >
                   <LayoutGrid size={20} />
                 </button>
                 <button
                   onClick={() => setViewMode('list')}
-                  className={`p-2 rounded-md transition-all ${viewMode === 'list' ? 'bg-white shadow-sm text-emerald-600' : 'text-slate-400 hover:text-slate-600'}`}
+                  className={`p-2 rounded-[.5rem] transition-all ${viewMode === 'list' ? 'bg-white shadow-sm text-emerald-600' : 'text-slate-400 hover:text-slate-600'}`}
                 >
                   <List size={20} />
                 </button>
               </div>
-              {/* <button className="h-12 px-5 bg-white border border-slate-200 rounded-lg flex items-center gap-3 text-slate-500 font-black text-[10px] uppercase tracking-widest hover:bg-slate-50 transition-all">
+              {/* <button className="h-12 px-5 bg-white border border-slate-200 rounded-[.5rem] flex items-center gap-3 text-slate-500 font-black text-[10px] uppercase tracking-widest hover:bg-slate-50 transition-all">
                 <Scan size={18} /> Barcode
               </button> */}
             </div>
@@ -277,7 +290,7 @@ export default function RecordSalePage() {
                   setSearch('')
                 }
               }}
-              className="w-full bg-white border border-slate-200 shadow-lg shadow-slate-900/5 rounded-2xl py-4 pl-14 pr-6 text-base font-bold focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all placeholder:text-slate-300"
+              className="w-full bg-white border border-slate-200 shadow-lg shadow-slate-900/5 rounded-[.5rem] py-4 pl-14 pr-6 text-base font-bold focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all placeholder:text-slate-300"
             />
           </div>
         </div>
@@ -289,7 +302,7 @@ export default function RecordSalePage() {
             <p className="font-black uppercase tracking-widest text-xs">Indexing Inventory...</p>
           </div>
         ) : filteredProducts.length === 0 ? (
-          <div className="py-32 flex flex-col items-center justify-center text-slate-400 gap-6 bg-slate-50 rounded-3xl border-2 border-dashed border-slate-200">
+          <div className="py-32 flex flex-col items-center justify-center text-slate-400 gap-6 bg-slate-50 rounded-[.5rem] border-2 border-dashed border-slate-200">
             <div className="h-20 w-20 rounded-full bg-slate-100 flex items-center justify-center">
               <Package size={40} className="opacity-20" />
             </div>
@@ -301,7 +314,7 @@ export default function RecordSalePage() {
               <div
                 key={product.id}
                 onClick={() => addToCart(product)}
-                className="group relative bg-white rounded-2xl md:rounded-3xl cursor-pointer transition-all hover:shadow-2xl hover:shadow-emerald-900/20 overflow-hidden border border-slate-100 h-[240px] md:h-[380px]"
+                className="group relative bg-white rounded-[.5rem] md:rounded-[.5rem] cursor-pointer transition-all hover:shadow-2xl hover:shadow-emerald-900/20 overflow-hidden border border-slate-100 h-[240px] md:h-[380px]"
               >
                 {/* Image Region */}
                 {product.imageUrl ? (
@@ -325,7 +338,7 @@ export default function RecordSalePage() {
                   <h4 className="text-sm md:text-xl font-black text-white mb-1 md:mb-2 line-clamp-1">{product.name}</h4>
                   <div className="flex justify-between items-center">
                     <span className="text-sm md:text-2xl font-black text-white hl-mono">KES {Number(product.price).toLocaleString()}</span>
-                    <div className="h-8 w-8 md:h-12 md:w-12 rounded-xl md:rounded-2xl bg-emerald-500 text-white flex items-center justify-center shadow-lg shadow-emerald-500/40 opacity-0 md:group-hover:opacity-100 transition-all transform translate-y-2 group-hover:translate-y-0">
+                    <div className="h-8 w-8 md:h-12 md:w-12 rounded-[.5rem] md:rounded-[.5rem] bg-emerald-500 text-white flex items-center justify-center shadow-lg shadow-emerald-500/40 opacity-0 md:group-hover:opacity-100 transition-all transform translate-y-2 group-hover:translate-y-0">
                       <Plus size={16} />
                     </div>
                   </div>
@@ -334,7 +347,7 @@ export default function RecordSalePage() {
             ))}
           </div>
         ) : (
-          <div className="bg-white rounded-2xl border border-slate-100 shadow-xl shadow-slate-900/5 overflow-hidden">
+          <div className="bg-white rounded-[.5rem] border border-slate-100 shadow-xl shadow-slate-900/5 overflow-hidden">
             <table className="w-full text-left">
               <thead>
                 <tr className="border-b border-slate-50 bg-slate-50/50">
@@ -355,9 +368,9 @@ export default function RecordSalePage() {
                     <td className="px-8 py-5">
                       <div className="flex items-center gap-3">
                         {product.imageUrl ? (
-                          <img src={product.imageUrl} alt={product.name} className="h-8 w-8 rounded-lg object-cover border border-slate-100" />
+                          <img src={product.imageUrl} alt={product.name} className="h-8 w-8 rounded-[.5rem] object-cover border border-slate-100" />
                         ) : (
-                          <div className="h-8 w-8 rounded-lg bg-slate-50 flex items-center justify-center text-slate-300">
+                          <div className="h-8 w-8 rounded-[.5rem] bg-slate-50 flex items-center justify-center text-slate-300">
                             <Package size={14} />
                           </div>
                         )}
@@ -391,19 +404,19 @@ export default function RecordSalePage() {
             <button
               disabled={page === 1}
               onClick={() => setPage(p => Math.max(1, p - 1))}
-              className="h-12 w-12 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-400 hover:text-emerald-600 disabled:opacity-30 transition-all shadow-sm"
+              className="h-12 w-12 rounded-[.5rem] bg-white border border-slate-200 flex items-center justify-center text-slate-400 hover:text-emerald-600 disabled:opacity-30 transition-all shadow-sm"
             >
               <ChevronLeft size={24} />
             </button>
             <div className="flex items-center gap-2">
               <span className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Page</span>
-              <span className="h-10 w-10 flex items-center justify-center bg-slate-900 text-white rounded-lg text-sm font-black hl-mono">{page}</span>
+              <span className="h-10 w-10 flex items-center justify-center bg-slate-900 text-white rounded-[.5rem] text-sm font-black hl-mono">{page}</span>
               <span className="text-[11px] font-black text-slate-400 uppercase tracking-widest">of {productsData.pages}</span>
             </div>
             <button
               disabled={page === productsData.pages}
               onClick={() => setPage(p => Math.min(productsData.pages, p + 1))}
-              className="h-12 w-12 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-400 hover:text-emerald-600 disabled:opacity-30 transition-all shadow-sm"
+              className="h-12 w-12 rounded-[.5rem] bg-white border border-slate-200 flex items-center justify-center text-slate-400 hover:text-emerald-600 disabled:opacity-30 transition-all shadow-sm"
             >
               <ChevronRight size={24} />
             </button>
@@ -420,10 +433,10 @@ export default function RecordSalePage() {
         >
           <ChevronLeft size={16} /> Back to Products
         </button>
-        <div className="bg-white p-10 rounded-3xl border border-slate-100 shadow-xl shadow-slate-900/5 flex-1 flex flex-col min-h-[500px] max-h-[calc(100vh-200px)] relative overflow-hidden">
+        <div className="bg-white p-10 rounded-[.5rem] border border-slate-100 shadow-xl shadow-slate-900/5 flex-1 flex flex-col min-h-[500px] max-h-[calc(100vh-200px)] relative overflow-hidden">
           <div className="flex items-center justify-between mb-10 relative z-10">
             <h3 className="text-2xl font-black text-slate-900 tracking-tighter">Cart Summary</h3>
-            <span className="bg-[#0D4A3E] text-white px-4 py-1.5 rounded-lg text-[11px] font-black uppercase tracking-widest hl-mono shadow-lg shadow-emerald-900/20">
+            <span className="bg-[#0D4A3E] text-white px-4 py-1.5 rounded-[.5rem] text-[11px] font-black uppercase tracking-widest hl-mono shadow-lg shadow-emerald-900/20">
               {cart.length} ITEMS
             </span>
           </div>
@@ -439,10 +452,10 @@ export default function RecordSalePage() {
                   placeholder="Search existing customer..."
                   value={customerSearch}
                   onChange={(e) => setCustomerSearch(e.target.value)}
-                  className="w-full bg-slate-50 border-none rounded-xl py-3 pl-10 pr-4 outline-none focus:ring-2 focus:ring-emerald-500/10 text-xs font-bold"
+                  className="w-full bg-slate-50 border-none rounded-[.5rem] py-3 pl-10 pr-4 outline-none focus:ring-2 focus:ring-emerald-500/10 text-xs font-bold"
                 />
                 {customerSearch.length > 1 && customersData?.items && customersData.items.length > 0 && (
-                  <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-2xl border border-slate-100 z-50 overflow-hidden divide-y divide-slate-50">
+                  <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-[.5rem] shadow-2xl border border-slate-100 z-50 overflow-hidden divide-y divide-slate-50">
                     {customersData.items.map((c: any) => (
                       <button
                         key={c.id}
@@ -463,7 +476,7 @@ export default function RecordSalePage() {
                 )}
               </div>
             ) : (
-              <div className="flex items-center justify-between p-3 bg-emerald-50 border border-emerald-100 rounded-xl">
+              <div className="flex items-center justify-between p-3 bg-emerald-50 border border-emerald-100 rounded-[.5rem]">
                 <div className="flex items-center gap-3">
                   <div className="h-8 w-8 rounded-full bg-emerald-500 text-white flex items-center justify-center text-xs font-black">
                     {selectedCustomer?.name?.charAt(0) || 'C'}
@@ -475,7 +488,7 @@ export default function RecordSalePage() {
                 </div>
                 <button
                   onClick={() => setSelectedCustomerId(null)}
-                  className="h-8 w-8 rounded-lg hover:bg-white hover:text-red-500 text-slate-400 transition-all flex items-center justify-center"
+                  className="h-8 w-8 rounded-[.5rem] hover:bg-white hover:text-red-500 text-slate-400 transition-all flex items-center justify-center"
                 >
                   <Trash2 size={16} />
                 </button>
@@ -493,21 +506,21 @@ export default function RecordSalePage() {
               </div>
             ) : (
               cart.map(item => (
-                <div key={item.id} className="flex items-center gap-4 p-4 rounded-xl bg-slate-50/50 border border-slate-100 hover:bg-white hover:shadow-xl hover:shadow-slate-900/5 transition-all group">
+                <div key={item.id} className="flex items-center gap-4 p-4 rounded-[.5rem] bg-slate-50/50 border border-slate-100 hover:bg-white hover:shadow-xl hover:shadow-slate-900/5 transition-all group">
                   <div className="flex-1 min-w-0">
                     <h5 className="text-sm font-black text-slate-900 truncate">{item.name}</h5>
                     <p className="text-[10px] text-slate-400 font-bold hl-mono uppercase tracking-widest mt-0.5">KES {Number(item.price).toLocaleString()}</p>
                   </div>
                   <div className="flex items-center gap-3">
-                    <button onClick={(e) => { e.stopPropagation(); updateQuantity(item.id, -1); }} className="h-8 w-8 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-slate-400 hover:text-emerald-600 transition-all shadow-sm">
+                    <button onClick={(e) => { e.stopPropagation(); updateQuantity(item.id, -1); }} className="h-8 w-8 rounded-[.5rem] bg-white border border-slate-200 flex items-center justify-center text-slate-400 hover:text-emerald-600 transition-all shadow-sm">
                       <Minus size={14} />
                     </button>
                     <span className="text-xs font-black w-5 text-center hl-mono text-slate-900">{item.quantity}</span>
-                    <button onClick={(e) => { e.stopPropagation(); updateQuantity(item.id, 1); }} className="h-8 w-8 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-slate-400 hover:text-emerald-600 transition-all shadow-sm">
+                    <button onClick={(e) => { e.stopPropagation(); updateQuantity(item.id, 1); }} className="h-8 w-8 rounded-[.5rem] bg-white border border-slate-200 flex items-center justify-center text-slate-400 hover:text-emerald-600 transition-all shadow-sm">
                       <Plus size={14} />
                     </button>
                   </div>
-                  <button onClick={(e) => { e.stopPropagation(); removeFromCart(item.id); }} className="h-8 w-8 rounded-lg text-slate-200 hover:text-red-500 hover:bg-red-50 transition-all flex items-center justify-center">
+                  <button onClick={(e) => { e.stopPropagation(); removeFromCart(item.id); }} className="h-8 w-8 rounded-[.5rem] text-slate-200 hover:text-red-500 hover:bg-red-50 transition-all flex items-center justify-center">
                     <Trash2 size={16} />
                   </button>
                 </div>
@@ -520,7 +533,7 @@ export default function RecordSalePage() {
               <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Subtotal</span>
               <span className="text-sm font-black text-slate-900 hl-mono">KES {subtotal.toLocaleString()}</span>
             </div>
-            <div className="flex justify-between items-center p-6 bg-[#0D4A3E] rounded-2xl text-white shadow-2xl shadow-emerald-900/20">
+            <div className="flex justify-between items-center p-6 bg-[#0D4A3E] rounded-[.5rem] text-white shadow-2xl shadow-emerald-900/20">
               <span className="text-xs font-black uppercase tracking-widest opacity-80">Payable</span>
               <span className="text-3xl font-black hl-mono tracking-tighter">KES {total.toLocaleString()}</span>
             </div>
@@ -530,7 +543,7 @@ export default function RecordSalePage() {
         </div>
 
         {/* Payment & Action */}
-        <div className="bg-white p-10 rounded-3xl border border-slate-100 shadow-xl shadow-slate-900/5 space-y-8">
+        <div className="bg-white p-10 rounded-[.5rem] border border-slate-100 shadow-xl shadow-slate-900/5 space-y-8">
           <div className="grid grid-cols-2 gap-4">
             {[
               { id: 'CASH', label: 'Cash', icon: Banknote, feature: null },
@@ -543,7 +556,7 @@ export default function RecordSalePage() {
                   method.feature ? (
                     <button
                       onClick={() => toast.info(`${method.label} requires the Growth Plan. Please upgrade to unlock.`)}
-                      className="relative group flex flex-col items-center justify-center gap-2 py-5 rounded-2xl border-2 border-slate-50 bg-slate-50/50 text-slate-300 cursor-not-allowed overflow-hidden"
+                      className="relative group flex flex-col items-center justify-center gap-2 py-5 rounded-[.5rem] border-2 border-slate-50 bg-slate-50/50 text-slate-300 cursor-not-allowed overflow-hidden"
                     >
                       <div className="flex items-center gap-3">
                         <method.icon size={20} />
@@ -561,7 +574,7 @@ export default function RecordSalePage() {
               >
                 <button
                   onClick={() => setPaymentMethod(method.id)}
-                  className={`flex items-center justify-center gap-3 py-5 rounded-2xl border-2 transition-all ${paymentMethod === method.id
+                  className={`flex items-center justify-center gap-3 py-5 rounded-[.5rem] border-2 transition-all ${paymentMethod === method.id
                     ? 'border-[#0D4A3E] bg-emerald-50/50 text-[#0D4A3E] shadow-lg shadow-emerald-900/5'
                     : 'border-slate-50 bg-white text-slate-400 hover:bg-slate-50 hover:text-slate-600'
                     }`}
@@ -576,7 +589,7 @@ export default function RecordSalePage() {
 
           {paymentMethod === 'MPESA' ? (
             <div className="space-y-4 animate-in slide-in-from-top-2 duration-300">
-              <div className="bg-emerald-50 border border-emerald-100 rounded-2xl p-4 flex items-center gap-4">
+              <div className="bg-emerald-50 border border-emerald-100 rounded-[.5rem] p-4 flex items-center gap-4">
                 <Smartphone size={20} className="text-[#0D4A3E]" />
                 <p className="text-[10px] font-medium text-emerald-800 leading-tight">
                   STK Push will be sent to the customer's phone for instant verification.
@@ -589,12 +602,12 @@ export default function RecordSalePage() {
                   placeholder="07..."
                   value={mpesaPhone}
                   onChange={(e) => setMpesaPhone(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-100 rounded-xl py-4 px-6 text-sm font-bold focus:ring-4 focus:ring-emerald-500/5 outline-none transition-all hl-mono"
+                  className="w-full bg-slate-50 border border-slate-100 rounded-[.5rem] py-4 px-6 text-sm font-bold focus:ring-4 focus:ring-emerald-500/5 outline-none transition-all hl-mono"
                 />
               </div>
             </div>
           ) : (
-             <div className="bg-amber-50 border border-amber-100 rounded-2xl p-4 flex items-center gap-4 animate-in slide-in-from-top-2 duration-300">
+             <div className="bg-amber-50 border border-amber-100 rounded-[.5rem] p-4 flex items-center gap-4 animate-in slide-in-from-top-2 duration-300">
                 <Banknote size={20} className="text-amber-700" />
                 <p className="text-[10px] font-medium text-amber-800 leading-tight">
                   Recording as Cash. Ensure you have received the funds physically before completing.
@@ -602,16 +615,44 @@ export default function RecordSalePage() {
              </div>
           )}
 
+          {/* {isProcessingMpesa && (
+            <div className="bg-slate-900 rounded-[.5rem] p-6 text-white space-y-4 animate-in zoom-in-95 duration-300">
+               <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                     <Loader2 className="animate-spin text-emerald-400" size={18} />
+                     <span className="text-[10px] font-black uppercase tracking-widest">Waiting for Payment</span>
+                  </div>
+                  {waitingMpesaSaleId && (
+                    <button 
+                      onClick={() => queryClient.refetchQueries({ queryKey: ['sale-details', waitingMpesaSaleId] })}
+                      className="flex items-center gap-2 px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded-lg text-[8px] font-black uppercase tracking-tighter transition-all border border-white/5"
+                    >
+                      <RefreshCcw size={10} /> Check Status
+                    </button>
+                  )}
+               </div>
+               <div className="h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
+                  <div className="h-full bg-emerald-500 animate-progress origin-left" style={{ width: '100%' }} />
+               </div>
+               <p className="text-[10px] text-slate-400 font-medium">
+                  We've sent the prompt to <span className="text-white font-bold">{mpesaPhone}</span>. Please keep this screen open until the customer enters their PIN.
+               </p>
+            </div>
+          )} */}
+
           <button
             disabled={cart.length === 0 || handleCompleteSale.isPending || isProcessingMpesa}
             onClick={() => paymentMethod === 'MPESA' ? initiateMpesaPayment() : handleCompleteSale.mutate(undefined)}
-            className={`w-full py-6 rounded-2xl font-black text-sm uppercase tracking-widest shadow-2xl transition-all flex items-center justify-center gap-4 ${cart.length === 0 || handleCompleteSale.isPending || isProcessingMpesa
+            className={`w-full py-6 rounded-[.5rem] font-black text-sm uppercase tracking-widest shadow-2xl transition-all flex items-center justify-center gap-4 ${cart.length === 0 || handleCompleteSale.isPending || isProcessingMpesa
               ? 'bg-slate-100 text-slate-300 cursor-not-allowed shadow-none'
               : 'bg-slate-900 text-white hover:bg-black shadow-slate-900/20 active:scale-[0.98]'
               }`}
           >
             {handleCompleteSale.isPending || isProcessingMpesa ? (
-              <Loader2 size={20} className="animate-spin" />
+              <div className="flex items-center gap-3">
+                 <Loader2 size={20} className="animate-spin" />
+                 <span>Processing...</span>
+              </div>
             ) : (
               <>
                 {paymentMethod === 'MPESA' ? 'Send STK Prompt' : 'Complete Sale'} <ArrowRight size={20} />
@@ -627,10 +668,10 @@ export default function RecordSalePage() {
         <div className="fixed bottom-6 left-6 right-6 z-[100] xl:hidden animate-in slide-in-from-bottom-8 duration-500">
           <button 
             onClick={() => setActiveTab('cart')}
-            className="w-full bg-[#0D4A3E] text-white p-5 rounded-[24px] shadow-2xl shadow-emerald-900/40 flex items-center justify-between border-4 border-white/10 backdrop-blur-md"
+            className="w-full bg-[#0D4A3E] text-white p-5 rounded-[.5rem] shadow-2xl shadow-emerald-900/40 flex items-center justify-between border-4 border-white/10 backdrop-blur-md"
           >
             <div className="flex items-center gap-4">
-              <div className="h-10 w-10 bg-white/20 rounded-xl flex items-center justify-center relative">
+              <div className="h-10 w-10 bg-white/20 rounded-[.5rem] flex items-center justify-center relative">
                 <ShoppingCart size={20} />
                 <span className="absolute -top-2 -right-2 h-5 w-5 bg-red-500 text-white text-[10px] font-black rounded-full flex items-center justify-center border-2 border-[#0D4A3E]">
                   {cart.length}
@@ -641,7 +682,7 @@ export default function RecordSalePage() {
                 <p className="text-lg font-black hl-mono leading-none">KES {total.toLocaleString()}</p>
               </div>
             </div>
-            <div className="h-10 w-10 bg-white text-[#0D4A3E] rounded-xl flex items-center justify-center">
+            <div className="h-10 w-10 bg-white text-[#0D4A3E] rounded-[.5rem] flex items-center justify-center">
               <ArrowRight size={20} />
             </div>
           </button>

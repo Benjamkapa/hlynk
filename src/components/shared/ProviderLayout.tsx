@@ -74,9 +74,9 @@ export default function ProviderLayout() {
     {
       label: 'System',
       items: [
-        { to: '/dashboard/logs', label: 'Security Logs', icon: Shield, permission: 'logs', plan: 'MAX' },
+        { to: '/dashboard/logs', label: 'Forensic Audit', icon: Terminal, permission: 'logs' },
         { to: '/dashboard/subscription', label: 'Billing Plan', icon: Calendar, role: 'PROVIDER' },
-        { to: '/dashboard/developer', label: 'Developer', icon: Terminal, role: 'PROVIDER', plan: 'PLUS' },
+        { to: '/dashboard/developer', label: 'Developer Console', icon: Terminal, role: 'PROVIDER', plan: 'PLUS' },
       ],
     },
   ];
@@ -86,7 +86,7 @@ export default function ProviderLayout() {
     items: group.items.map(item => {
       // Super admin sees everything as unlocked
       if (user?.role === 'SUPER_ADMIN') return { ...item, isLocked: false }
-      
+
       // If user is STAFF, we hide everything they don't have permission for
       if (user?.role === 'STAFF') {
         // Hlynk Rule: Staff ONLY see what they are allowed to use. 
@@ -94,7 +94,7 @@ export default function ProviderLayout() {
         if (item.permission && !user.permissions?.includes(item.permission)) {
           return null;
         }
-        
+
         // Administrative/Owner-only areas are always hidden from staff
         if (item.to.includes('subscription') || item.to.includes('developer') || (item as any).role === 'PROVIDER') {
           return null;
@@ -107,7 +107,7 @@ export default function ProviderLayout() {
       const currentPlanRaw = user?.subscription?.planName || 'LITE'
       const currentPlan = currentPlanRaw.toUpperCase()
       const isTrial = user?.subscription?.status === 'TRIAL'
-      
+
       const getPlanWeight = (p: string) => {
         if (p.includes('MAX')) return 3
         if (p.includes('PLUS')) return 2
@@ -130,7 +130,7 @@ export default function ProviderLayout() {
     }).filter((item): item is any => item !== null)
   })).filter(group => group.items.length > 0);
 
-  const timeRemainingMs = user?.subscription?.endDate 
+  const timeRemainingMs = user?.subscription?.endDate
     ? new Date(user.subscription.endDate).getTime() - new Date().getTime()
     : 0;
 
@@ -178,7 +178,7 @@ export default function ProviderLayout() {
           <div key={group.label}>
             <AnimatePresence mode="wait">
               {!collapsed && (
-                <motion.p 
+                <motion.p
                   initial={{ opacity: 0, x: -10 }}
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -10 }}
@@ -245,49 +245,46 @@ export default function ProviderLayout() {
 
       {/* Profile Summary */}
       <div className="p-4 mt-auto border-t border-slate-50">
-         <AnimatePresence>
-           {!collapsed && (
-             <motion.div 
-               initial={{ opacity: 0, y: 20 }}
-               animate={{ opacity: 1, y: 0 }}
-               exit={{ opacity: 0, y: 20 }}
-               className="bg-emerald-900 rounded-xl p-3 border border-emerald-800 shadow-2xl shadow-emerald-950/20 mb-3 relative overflow-hidden"
-             >
-                <div className="relative z-10">
-                    <div className="flex justify-between items-center mb-2">
-                       <p className="text-[8px] text-emerald-400 font-black uppercase tracking-widest">
-                         {user?.subscription?.planName} Tier
-                       </p>
-                       {isCritical && <AlertTriangle size={10} className="text-amber-400 animate-pulse" />}
-                    </div>
-                   <CountdownTimer expiryDate={user?.subscription?.endDate} />
-                </div>
-             </motion.div>
-           )}
-         </AnimatePresence>
-         <div className="flex gap-2">
-            <NavLink to="/dashboard/settings" className="flex-1 h-12 bg-slate-50 rounded-md flex items-center justify-center text-slate-400 hover:bg-emerald-50 hover:text-emerald-600 transition-all border border-slate-100">
-               <Settings size={20} />
-            </NavLink>
-            <button 
-              onClick={() => logout()}
-              className="h-12 w-12 bg-slate-50 rounded-md flex items-center justify-center text-slate-400 hover:bg-red-50 hover:text-red-600 transition-all border border-slate-100"
+        <AnimatePresence>
+          {!collapsed && (
+            <div
+              className="bg-emerald-900 rounded-[.5rem] p-3 shadow-md shadow-emerald-950/20 mb-3 relative overflow-hidden"
             >
-               <LogOut size={20} />
-            </button>
-         </div>
+              <div className="relative z-10">
+                <div className="flex justify-between items-center mb-2">
+                  <p className="text-[8px] text-emerald-400 font-black uppercase tracking-widest">
+                    {user?.subscription?.planName} Tier 
+                  </p>
+                  {isCritical && <AlertTriangle size={10} className="text-amber-400 animate-pulse" />}
+                </div>
+                <CountdownTimer expiryDate={user?.subscription?.endDate} />
+              </div>
+            </div>
+          )}
+        </AnimatePresence>
+        <div className="flex gap-2">
+          <NavLink to="/dashboard/settings" className="flex-1 h-12 bg-slate-50 rounded-[.5rem] flex items-center justify-center text-slate-400 hover:bg-emerald-50 hover:text-emerald-600 transition-all border border-slate-100">
+            <Settings size={20} />
+          </NavLink>
+          <button
+            onClick={() => logout()}
+            className="h-12 w-12 bg-slate-50 rounded-[.5rem] flex items-center justify-center text-slate-400 hover:bg-red-50 hover:text-red-600 transition-all border border-slate-100"
+          >
+            <LogOut size={20} />
+          </button>
+        </div>
       </div>
     </div>
   );
 
   return (
     <div className="flex h-screen overflow-hidden hl-dash bg-slate-50/50">
-      
+
       {/* ── REVIEW MODAL ── */}
       {showReviewModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-gray-900/60 backdrop-blur-sm p-4 animate-in fade-in duration-300">
-          <div className="bg-white rounded-3xl w-full max-w-md p-8 relative shadow-2xl animate-in zoom-in-95 duration-300">
-            <button 
+          <div className="bg-white rounded-[.5rem] w-full max-w-md p-8 relative shadow-2xl animate-in zoom-in-95 duration-300">
+            <button
               onClick={() => {
                 setShowReviewModal(false);
                 localStorage.setItem('hlynk_has_reviewed', 'true');
@@ -314,9 +311,9 @@ export default function ProviderLayout() {
                   onClick={() => setReviewRating(star)}
                   className="transition-transform hover:scale-110 focus:outline-none"
                 >
-                  <Star 
-                    size={40} 
-                    className={`${reviewRating >= star ? 'text-[#0D4A3E] fill-[#0D4A3E]' : 'text-slate-200 fill-slate-200'} transition-colors`} 
+                  <Star
+                    size={40}
+                    className={`${reviewRating >= star ? 'text-[#0D4A3E] fill-[#0D4A3E]' : 'text-slate-200 fill-slate-200'} transition-colors`}
                   />
                 </button>
               ))}
@@ -324,18 +321,18 @@ export default function ProviderLayout() {
 
             <div className="mb-8">
               <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 block">Your Feedback (Optional)</label>
-              <textarea 
+              <textarea
                 value={reviewText}
                 onChange={e => setReviewText(e.target.value)}
                 placeholder="What do you love? What could we improve?"
-                className="w-full bg-slate-50 border border-slate-100 rounded-2xl p-4 text-sm font-medium text-slate-700 outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all resize-none h-28"
+                className="w-full bg-slate-50 border border-slate-100 rounded-[.5rem] p-4 text-sm font-medium text-slate-700 outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all resize-none h-28"
               />
             </div>
 
             <button
               onClick={handleSubmitReview}
               disabled={isSubmittingReview || reviewRating === 0}
-              className="w-full h-14 bg-[#0D4A3E] text-white rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-[#0A3D33] transition-all flex items-center justify-center shadow-xl shadow-emerald-900/20 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full h-14 bg-[#0D4A3E] text-white rounded-[.5rem] font-black text-sm uppercase tracking-widest hover:bg-[#0A3D33] transition-all flex items-center justify-center shadow-xl shadow-emerald-900/20 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSubmittingReview ? <Loader2 className="animate-spin" size={20} /> : 'Submit Review'}
             </button>
@@ -373,7 +370,7 @@ export default function ProviderLayout() {
       </aside>
 
       {/* ── MOBILE SWIPE HANDLE ── */}
-      <motion.div 
+      <motion.div
         drag="x"
         dragConstraints={{ left: 0, right: 0 }}
         onDragEnd={(_, info) => {
@@ -386,28 +383,28 @@ export default function ProviderLayout() {
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
         {isCritical && user?.role === 'PROVIDER' && (
           <div className="bg-red-600 text-white px-8 py-3 flex items-center justify-between animate-in slide-in-from-top duration-700 z-[100] shadow-2xl">
-             <div className="flex items-center gap-4">
-               <div className="h-8 w-8 rounded-full bg-white/20 flex items-center justify-center">
+            <div className="flex items-center gap-4">
+              <div className="h-8 w-8 rounded-full bg-white/20 flex items-center justify-center">
                 <AlertTriangle size={18} className="animate-bounce" />
-               </div>
-               <div>
+              </div>
+              <div>
                 <p className="text-[11px] font-black uppercase tracking-widest leading-none mb-1">Critical: Subscription Expiry Imminent</p>
                 <p className="text-[9px] font-medium opacity-80 uppercase tracking-widest leading-none">Your access expires in {daysRemaining} days. Renew now to avoid business disruption.</p>
-               </div>
-             </div>
-             <Link to="/dashboard/subscription" className="px-6 py-2 bg-white text-red-600 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-red-50 transition-all shadow-lg active:scale-95">
-               Top Up Now
-             </Link>
+              </div>
+            </div>
+            <Link to="/dashboard/subscription" className="px-6 py-2 bg-white text-red-600 rounded-[.5rem] text-[10px] font-black uppercase tracking-widest hover:bg-red-50 transition-all shadow-lg active:scale-95">
+              Top Up Now
+            </Link>
           </div>
         )}
-        <TopNav 
+        <TopNav
           onMobileMenuToggle={() => setIsMobileOpen(true)}
           isCollapsed={isCollapsed}
           onToggleCollapse={() => setIsCollapsed(!isCollapsed)}
           showMail={true}
           extraActions={
-            <Link to="/dashboard/sales/new" className="hidden lg:flex items-center gap-2 px-6 py-3 bg-[#0D4A3E] text-white rounded-xl font-black text-xs uppercase tracking-widest shadow-xl shadow-emerald-900/10 hover:bg-[#064E3B] hover:-translate-y-0.5 transition-all">
-               <Zap size={16} /> Record Sale
+            <Link to="/dashboard/sales/new" className="hidden lg:flex items-center gap-2 px-6 py-3 bg-[#0D4A3E] text-white rounded-[.5rem] font-black text-xs uppercase tracking-widest shadow-xl shadow-emerald-900/10 hover:bg-[#064E3B] hover:-translate-y-0.5 transition-all">
+              <Zap size={16} /> Record Sale
             </Link>
           }
         />
@@ -417,7 +414,7 @@ export default function ProviderLayout() {
 
           {/* ── Transparent Background Footer ── */}
           <div className="fixed bottom-0 left-0 lg:left-64 right-0 p-4 pointer-events-none z-[40] flex justify-center bg-gradient-to-t from-white/90 to-transparent backdrop-blur-[2px]">
-            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 opacity-60 select-none">
+            <p className="text-[15px] font-black tracking-[0.2em] text-slate-900 opacity-60 select-none">
               {user?.businessName || 'HudumaLynk Provider Workspace'}
             </p>
           </div>
@@ -463,7 +460,7 @@ function CountdownTimer({ expiryDate }: { expiryDate: string | undefined }) {
         { v: timeLeft.m, l: 'm' },
         { v: timeLeft.s, l: 's' }
       ].map((t, i) => (
-        <div key={i} className="flex-1 flex flex-col items-center bg-white/5 rounded-lg py-1 border border-white/5">
+        <div key={i} className="flex-1 flex flex-col items-center bg-white/5 rounded-[.5rem] py-1 border border-white/5">
           <span className="text-[11px] font-black text-white hl-mono leading-none">{t.v.toString().padStart(2, '0')}</span>
           <span className="text-[6px] font-black text-emerald-400 uppercase opacity-50">{t.l}</span>
         </div>

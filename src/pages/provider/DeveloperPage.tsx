@@ -55,20 +55,20 @@ export default function DeveloperPage() {
           <button
             onClick={handleSave}
             disabled={updateMutation.isPending}
-            className="group bg-[#0D4A3E] text-white h-14 px-10 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-black transition-all flex items-center gap-3 disabled:opacity-50 shadow-2xl shadow-emerald-900/20 active:scale-95"
+            className="group bg-[#0D4A3E] text-white h-14 px-10 rounded-[.5em] font-black text-xs uppercase tracking-widest hover:bg-black transition-all flex items-center gap-3 disabled:opacity-50 shadow-2xl shadow-emerald-900/20 active:scale-95"
           >
             {updateMutation.isPending ? <Loader2 className="animate-spin" size={18} /> : <Save size={18} className="group-hover:rotate-12 transition-transform" />}
             Save Integration
           </button>
         </div>
 
-        <div className="bg-white rounded-[40px] border border-slate-100 shadow-2xl shadow-slate-900/5 overflow-hidden">
+        <div className="bg-white rounded-[.5em] border border-slate-100 shadow-2xl shadow-slate-900/5 overflow-hidden">
           <div className="grid grid-cols-1 lg:grid-cols-12">
             {/* Sidebar info */}
             <div className="lg:col-span-4 bg-slate-50/50 p-12 border-r border-slate-100">
               <div className="sticky top-12 space-y-10">
                 <div>
-                  <div className="h-14 w-14 bg-white rounded-2xl shadow-lg flex items-center justify-center text-emerald-600 mb-6">
+                  <div className="h-14 w-14 bg-white rounded-[.5em] shadow-lg flex items-center justify-center text-emerald-600 mb-6">
                     <Wallet size={28} />
                   </div>
                   <h3 className="text-xl font-black text-slate-900 mb-4">Direct M-Pesa Gateway</h3>
@@ -98,7 +98,7 @@ export default function DeveloperPage() {
                   </div>
                 </div>
 
-                <div className="p-6 bg-white rounded-3xl border border-slate-100 shadow-sm">
+                <div className="p-6 bg-white rounded-[.5em] border border-slate-100 shadow-sm">
                   <div className="flex items-center gap-3 mb-3">
                     <div className="h-2 w-2 rounded-full bg-amber-500 animate-pulse" />
                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Security Protocol</p>
@@ -115,16 +115,18 @@ export default function DeveloperPage() {
               <div className="max-w-2xl space-y-12">
                 <div>
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-6 block">Environment Selection</label>
-                  <div className="flex bg-slate-100 p-1.5 rounded-2xl gap-1.5">
+                  <div className="flex bg-slate-100 p-1.5 rounded-[.5em] gap-1.5">
                     <button
+                      type="button"
                       onClick={() => setFormData({ ...formData, operationalSettings: { ...formData.operationalSettings, mpesa: { ...formData.operationalSettings?.mpesa, env: 'sandbox' } } })}
-                      className={`flex-1 py-4 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all ${formData.operationalSettings?.mpesa?.env !== 'production' ? 'bg-white text-slate-900 shadow-xl' : 'text-slate-400 hover:text-slate-600'}`}
+                      className={`flex-1 py-4 rounded-[.5em] font-black text-[10px] uppercase tracking-widest transition-all ${formData.operationalSettings?.mpesa?.env !== 'production' ? 'bg-white text-slate-900 shadow-xl' : 'text-slate-400 hover:text-slate-600'}`}
                     >
                       Testing (Sandbox)
                     </button>
                     <button
+                      type="button"
                       onClick={() => setFormData({ ...formData, operationalSettings: { ...formData.operationalSettings, mpesa: { ...formData.operationalSettings?.mpesa, env: 'production' } } })}
-                      className={`flex-1 py-4 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all ${formData.operationalSettings?.mpesa?.env === 'production' ? 'bg-[#0D4A3E] text-white shadow-xl' : 'text-slate-400 hover:text-slate-600'}`}
+                      className={`flex-1 py-4 rounded-[.5em] font-black text-[10px] uppercase tracking-widest transition-all ${formData.operationalSettings?.mpesa?.env === 'production' ? 'bg-[#0D4A3E] text-white shadow-xl' : 'text-slate-400 hover:text-slate-600'}`}
                     >
                       Live (Production)
                     </button>
@@ -132,39 +134,62 @@ export default function DeveloperPage() {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  <div className="md:col-span-2">
-                    <InputGroup
-                      label="Consumer Key"
-                      placeholder="Enter Daraja Consumer Key"
-                      value={formData.operationalSettings?.mpesa?.consumerKey || ''}
-                      onChange={(v: string) => setFormData({ ...formData, operationalSettings: { ...formData.operationalSettings, mpesa: { ...formData.operationalSettings?.mpesa, consumerKey: v } } })}
-                    />
-                  </div>
-                  <div className="md:col-span-2">
-                    <InputGroup
-                      label="Consumer Secret"
-                      type="password"
-                      placeholder="Enter Daraja Consumer Secret"
-                      value={formData.operationalSettings?.mpesa?.consumerSecret || ''}
-                      onChange={(v: string) => setFormData({ ...formData, operationalSettings: { ...formData.operationalSettings, mpesa: { ...formData.operationalSettings?.mpesa, consumerSecret: v } } })}
-                    />
-                  </div>
-                  <InputGroup
-                    label="Business Shortcode"
-                    placeholder="Paybill or Till Number"
-                    value={formData.operationalSettings?.mpesa?.shortcode || ''}
-                    onChange={(v: string) => setFormData({ ...formData, operationalSettings: { ...formData.operationalSettings, mpesa: { ...formData.operationalSettings?.mpesa, shortcode: v } } })}
-                  />
-                  <InputGroup
-                    label="Passkey / Online Password"
-                    type="password"
-                    placeholder="LNM Online Passkey"
-                    value={formData.operationalSettings?.mpesa?.passkey || ''}
-                    onChange={(v: string) => setFormData({ ...formData, operationalSettings: { ...formData.operationalSettings, mpesa: { ...formData.operationalSettings?.mpesa, passkey: v } } })}
-                  />
+                  {(() => {
+                    const env = formData.operationalSettings?.mpesa?.env === 'production' ? 'production' : 'sandbox';
+                    const current = formData.operationalSettings?.mpesa?.[env] || {};
+                    
+                    const updateField = (field: string, val: string) => {
+                      setFormData({
+                        ...formData,
+                        operationalSettings: {
+                          ...formData.operationalSettings,
+                          mpesa: {
+                            ...formData.operationalSettings?.mpesa,
+                            env,
+                            [env]: { ...current, [field]: val }
+                          }
+                        }
+                      });
+                    };
+
+                    return (
+                      <>
+                        <div className="md:col-span-2">
+                          <InputGroup
+                            label={`${env === 'production' ? 'PROD' : 'SANDBOX'} Consumer Key`}
+                            placeholder="Enter Daraja Consumer Key"
+                            value={current.consumerKey || ''}
+                            onChange={(v: string) => updateField('consumerKey', v)}
+                          />
+                        </div>
+                        <div className="md:col-span-2">
+                          <InputGroup
+                            label={`${env === 'production' ? 'PROD' : 'SANDBOX'} Consumer Secret`}
+                            type="password"
+                            placeholder="Enter Daraja Consumer Secret"
+                            value={current.consumerSecret || ''}
+                            onChange={(v: string) => updateField('consumerSecret', v)}
+                          />
+                        </div>
+                        <InputGroup
+                          label="Business Shortcode"
+                          placeholder="Paybill or Till Number"
+                          value={current.shortcode || ''}
+                          onChange={(v: string) => updateField('shortcode', v)}
+                        />
+                        <InputGroup
+                          label="Passkey / Online Password"
+                          type="password"
+                          placeholder="LNM Online Passkey"
+                          value={current.passkey || ''}
+                          onChange={(v: string) => updateField('passkey', v)}
+                        />
+                      </>
+                    );
+                  })()}
                 </div>
 
-                <div className="bg-amber-50 border border-amber-100 p-6 rounded-3xl flex items-start gap-4">
+                <div className="bg-amber-50 border border-amber-100 p-6 rounded-[.5em] flex items-start gap-4">
                   <AlertTriangle className="text-amber-600 shrink-0" size={20} />
                   <div>
                     <h5 className="text-[10px] font-black text-amber-900 uppercase tracking-widest mb-1">Important Configuration</h5>
@@ -192,7 +217,7 @@ function InputGroup({ label, value, onChange, placeholder, type = "text", mono =
         value={value}
         onChange={(e) => onChange?.(e.target.value)}
         placeholder={placeholder}
-        className={`w-full bg-slate-50 border border-slate-100 rounded-2xl py-4 px-5 outline-none focus:ring-4 focus:ring-emerald-500/5 focus:border-emerald-500 transition-all text-sm font-bold ${mono ? 'hl-mono' : ''}`}
+        className={`w-full bg-slate-50 border border-slate-100 rounded-[.5em] py-4 px-5 outline-none focus:ring-4 focus:ring-emerald-500/5 focus:border-emerald-500 transition-all text-sm font-bold ${mono ? 'hl-mono' : ''}`}
       />
     </div>
   )

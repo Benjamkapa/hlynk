@@ -75,7 +75,7 @@ export default function ReportsPage() {
           </div>
           <button 
             onClick={handleExport}
-            className="bg-white text-gray-600 h-12 px-6 rounded-xl border border-gray-100 font-bold text-sm hover:bg-gray-50 transition-all flex items-center gap-2"
+            className="bg-white text-gray-600 h-12 px-6 rounded-[.5em] border border-gray-100 font-bold text-sm hover:bg-gray-50 transition-all flex items-center gap-2"
           >
             <Download size={18} />
             Export All Data
@@ -83,7 +83,7 @@ export default function ReportsPage() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2 bg-white p-8 rounded-[14px] border border-gray-100 shadow-sm">
+          <div className="lg:col-span-2 bg-white p-8 rounded-[.5em] border border-gray-100 shadow-sm">
             <div className="flex justify-between items-center mb-8">
               <h3 className="text-xl font-black text-gray-900">Weekly Performance</h3>
               <div className="flex gap-4">
@@ -122,11 +122,11 @@ export default function ReportsPage() {
           </div>
 
           <div className="space-y-6">
-            <div className="bg-[#0D4A3E] p-8 rounded-[14px] text-white shadow-xl shadow-emerald-900/20 relative overflow-hidden">
+            <div className="bg-[#0D4A3E] p-8 rounded-[.5rem] text-white shadow-xl shadow-emerald-900/20 relative overflow-hidden">
               <div className="relative z-10">
                 <p className="text-[10px] font-black opacity-60 uppercase tracking-widest mb-2">Estimated Profit (MTD)</p>
                 <h2 className="text-3xl font-black mb-6 hl-mono">KES {Number(stats?.profit || 0).toLocaleString()}</h2>
-                <div className="flex items-center gap-2 text-xs font-black bg-white/10 w-fit px-4 py-2 rounded-lg uppercase tracking-widest hl-mono">
+                <div className="flex items-center gap-2 text-xs font-black bg-white/10 w-fit px-4 py-2 rounded-[.5em] uppercase tracking-widest hl-mono">
                   <TrendingUp size={16} />
                   +15.4%
                 </div>
@@ -134,10 +134,10 @@ export default function ReportsPage() {
               <BarChart3 size={120} className="absolute -right-6 -bottom-6 text-white opacity-5 rotate-12" />
             </div>
 
-            <div className="bg-white p-8 rounded-[14px] border border-gray-100 shadow-sm relative overflow-hidden">
+            <div className="bg-white p-8 rounded-[.5rem] border border-gray-100 shadow-sm relative overflow-hidden">
               <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Out of Stock Alerts</p>
               <h2 className="text-3xl font-black text-gray-900 mb-6 hl-mono">{stats?.outOfStockCount || 0} ITEMS</h2>
-              <div className="flex items-center gap-2 text-xs font-black text-red-500 bg-red-50 w-fit px-4 py-2 rounded-lg uppercase tracking-widest hl-mono">
+              <div className="flex items-center gap-2 text-xs font-black text-red-500 bg-red-50 w-fit px-4 py-2 rounded-[.5em] uppercase tracking-widest hl-mono">
                 <TrendingDown size={16} />
                 Requires Action
               </div>

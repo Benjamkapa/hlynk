@@ -45,7 +45,7 @@ export const salesApi = {
 
 export const subscriptionsApi = {
   getMe: () => api.get('/subscriptions/me').then(r => r.data),
-  getHistory: (params?: { page?: number; limit?: number; status?: string; plan?: string }) => api.get('/subscriptions/history', { params }).then(r => r.data),
+  getBillingHistory: (params?: { page?: number; limit?: number; status?: string; plan?: string; sortBy?: string; sortOrder?: string }) => api.get('/subscriptions/history', { params }).then(r => r.data),
   renew: (phone: string) => api.post('/subscriptions/renew', { phone }).then(r => r.data),
   changePlan: (planName: string, phone: string) => api.post('/subscriptions/change-plan', { planName, phone }).then(r => r.data),
   verify: (paymentId: string) => api.get(`/subscriptions/verify/${paymentId}`).then(r => r.data),
@@ -69,6 +69,7 @@ export const inventoryApi = {
 export const expensesApi = {
   list: (params?: { page?: number; search?: string; category?: string; limit?: number; sortBy?: string; sortOrder?: string }) => api.get('/expenses', { params }).then(r => r.data),
   create: (data: any) => api.post('/expenses', data).then(r => r.data),
+  getById: (id: string) => api.get(`/expenses/${id}`).then(r => r.data),
   delete: (id: string) => api.delete(`/expenses/${id}`).then(r => r.data),
 }
 
@@ -96,7 +97,7 @@ export const requestsApi = {
 export const paymentsApi = {
   stkPush: (data: { phone: string; amount: number; reference: string }) => 
     api.post('/payments/mpesa/stk-push', data).then(r => r.data),
-  getMpesaLogs: (params?: { page?: number; limit?: number }) =>
+  getMpesaLogs: (params?: { page?: number; limit?: number; sortOrder?: string }) =>
     api.get('/payments/mpesa/logs', { params }).then(r => r.data),
 }
 
