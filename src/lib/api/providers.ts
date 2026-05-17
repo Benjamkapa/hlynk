@@ -69,7 +69,7 @@ export const inventoryApi = {
 export const expensesApi = {
   list: (params?: { page?: number; search?: string; category?: string; limit?: number; sortBy?: string; sortOrder?: string }) => api.get('/expenses', { params }).then(r => r.data),
   create: (data: any) => api.post('/expenses', data).then(r => r.data),
-  getById: (id: string) => api.get(`/expenses/${id}`).then(r => r.data),
+  getById: (id: string) => api.get(`/expenses/${id}`).then(r => r.data.data),
   delete: (id: string) => api.delete(`/expenses/${id}`).then(r => r.data),
 }
 
