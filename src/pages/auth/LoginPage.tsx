@@ -34,6 +34,7 @@ const CATEGORIES = [
 type RegisterFormState = {
   businessName: string; ownerName: string; phone: string
   category: string; county: string; location: string; planName: 'LITE' | 'PLUS' | 'MAX'
+  referredBy?: string;
 }
 
 function ReviewCard({ review }: { review: any }) {
@@ -159,7 +160,7 @@ export default function LoginPage() {
   const requestedPlan = (urlParams.get('plan') as 'LITE' | 'PLUS' | 'MAX') || 'LITE';
 
   const [formData, setFormData] = useState<RegisterFormState>({
-    businessName: '', ownerName: '', phone: '', category: '', county: '', location: '', planName: requestedPlan,
+    businessName: '', ownerName: '', phone: '', category: '', county: '', location: '', planName: requestedPlan, referredBy: ''
   })
 
   const handleGoogleAuth = async (credential: string) => {
@@ -453,9 +454,14 @@ export default function LoginPage() {
                         <Field label="Specific Town/Area" icon={MapPin}>
                           <input type="text" value={formData.location} onChange={e => setFormData({ ...formData, location: e.target.value })} className={inputCls} placeholder="e.g. Westlands, Nairobi" required />
                         </Field>
-                        <Field label="M-Pesa Number" icon={Phone}>
-                          <input type="tel" value={formData.phone} onChange={e => setFormData({ ...formData, phone: e.target.value })} className={inputCls} placeholder="07xx xxx xxx" required />
-                        </Field>
+                        <div className="grid grid-cols-2 gap-4">
+                          <Field label="M-Pesa Number" icon={Phone}>
+                            <input type="tel" value={formData.phone} onChange={e => setFormData({ ...formData, phone: e.target.value })} className={inputCls} placeholder="07xx xxx xxx" required />
+                          </Field>
+                          <Field label="Referral Code (Optional)" icon={Tag}>
+                            <input type="text" value={formData.referredBy} onChange={e => setFormData({ ...formData, referredBy: e.target.value.toUpperCase() })} className={inputCls} placeholder="Partner Code" />
+                          </Field>
+                        </div>
                       </div>
 
                       <button type="submit" disabled={formLoading} className="lp-btn-submit">
