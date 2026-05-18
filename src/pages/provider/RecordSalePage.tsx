@@ -262,7 +262,7 @@ export default function RecordSalePage() {
         {/* Left: Product Selection */}
         <div className={`flex-1 space-y-6 md:space-y-10 min-w-0 w-full ${activeTab === 'cart' ? 'hidden xl:block' : 'block'}`}>
           {/* Sticky Header and Search */}
-          <div className="sticky top-0 z-30 bg-white/80 backdrop-blur-md p-2 pb-8 space-y-8">
+          <div className="sticky top-0 z-30 bg-white/80 rounded-[.5rem] shadow-lg shadow-slate-900/5 backdrop-blur-md p-2 pb-8 space-y-8">
             <div className="flex justify-between items-center gap-1 px-2">
               <div className="space-y-0.5">
                 <p className="text-slate-500 font-medium text-[10px] md:text-sm uppercase tracking-widest opacity-60">Tap items to add to cart</p>
@@ -302,8 +302,8 @@ export default function RecordSalePage() {
                 className="w-full ml-auto mr-auto bg-slate-50 border border-slate-200 shadow-lg shadow-slate-900/5 rounded-full py-4 pl-14 pr-6 text-base font-bold focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all placeholder:text-slate-300"
               />
               <div className="flex justify-end px-3 py-1">
-                <div className="flex items-center gap-3 bg-slate-100 shadow-lg shadow-slate-900/5 px-2 rounded-[.5rem]">
-                  <span className="text-black-900 font-medium text-[10px] md:text-sm tracking-widest opacity-60">{user?.businessName || 'Your Store'}</span>
+                <div className="flex items-center gap-3 bg-slate-100 shadow-lg shadow-slate-900/5 px-2 rounded-full">
+                  <span className="text-black-900 font-medium text-[10px] md:text-sm font-black tracking-widest font-semibold ">{user?.businessName || 'Your Store'}</span>
                 </div>
               </div>
             </div>

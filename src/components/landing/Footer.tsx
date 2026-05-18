@@ -21,11 +21,15 @@ export default function Footer() {
             ))}
           </nav>
 
-          <div className="flex flex-col items-center md:items-end gap-2">
+          <div className="flex flex-col items-center md:items-end gap-3">
             <div className="text-[13px] font-black font-thin tracking-[0.2em] text-white">
               © {new Date().getFullYear()} hlynk Portal
             </div>
-            
+            <div className="flex gap-4 text-[9px] font-bold uppercase tracking-widest text-slate-400">
+              <Link to="/privacy-policy" className="hover:text-emerald-500 transition-colors">Privacy Policy</Link>
+              <Link to="/google/privacy" className="hover:text-emerald-500 transition-colors">Google Privacy</Link>
+              <Link to="/terms-conditions" className="hover:text-emerald-500 transition-colors">Terms</Link>
+            </div>
           </div>
         </div>
       </div>

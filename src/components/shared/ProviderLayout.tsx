@@ -74,7 +74,7 @@ export default function ProviderLayout() {
     {
       label: 'System',
       items: [
-        { to: '/dashboard/logs', label: 'Staff Activity Log', icon: ShieldCheck, permission: 'logs', plan: 'MAX' },
+        { to: '/dashboard/logs', label: 'Staff Activity', icon: ShieldCheck, permission: 'logs', plan: 'MAX' },
         { to: '/dashboard/subscription', label: 'Billing Plan', icon: Calendar, role: 'PROVIDER' },
         { to: '/dashboard/developer', label: 'M-Pesa Setup', icon: Terminal, role: 'PROVIDER', plan: 'PLUS' },
       ],
@@ -130,20 +130,26 @@ export default function ProviderLayout() {
     }).filter((item): item is any => item !== null)
   })).filter(group => group.items.length > 0);
 
-  const timeRemainingMs = user?.subscription?.endDate
-    ? new Date(user.subscription.endDate).getTime() - new Date().getTime()
+  const isTrial = user?.subscription?.status === 2;
+  const targetEndDate = isTrial ? user?.subscription?.trialEndDate : user?.subscription?.endDate;
+
+  const timeRemainingMs = targetEndDate
+    ? new Date(targetEndDate).getTime() - new Date().getTime()
     : 0;
 
-  const daysRemaining = Math.max(0, Math.floor(timeRemainingMs / (1000 * 60 * 60 * 24)));
+  const daysRemaining = Math.max(0, Math.ceil(timeRemainingMs / (1000 * 60 * 60 * 24)));
   const isCritical = daysRemaining < 3 && timeRemainingMs > 0;
   const isExpiringSoon = daysRemaining <= 5 && timeRemainingMs > 0;
+  const isTrialExpired = isTrial && targetEndDate && new Date() > new Date(targetEndDate);
 
   useEffect(() => {
-    if (isExpiringSoon && !localStorage.getItem('hlynk_has_reviewed')) {
+    if (user?.role === 'PROVIDER' && isTrialExpired && !user?.hasReviewed && !localStorage.getItem('hlynk_has_reviewed')) {
+      setShowReviewModal(true);
+    } else if (isExpiringSoon && !localStorage.getItem('hlynk_has_reviewed')) {
       const timer = setTimeout(() => setShowReviewModal(true), 10000); // 10s delay for better UX
       return () => clearTimeout(timer);
     }
-  }, [isExpiringSoon]);
+  }, [user, isExpiringSoon, isTrialExpired]);
 
   const handleSubmitReview = async () => {
     if (reviewRating === 0) return toast.error("Please select a rating");
@@ -257,7 +263,7 @@ export default function ProviderLayout() {
                   </p>
                   {isCritical && <AlertTriangle size={10} className="text-amber-400 animate-pulse" />}
                 </div>
-                <CountdownTimer expiryDate={user?.subscription?.endDate} />
+                <CountdownTimer expiryDate={targetEndDate} />
               </div>
             </div>
           )}
@@ -280,27 +286,33 @@ export default function ProviderLayout() {
   return (
     <div className="flex h-screen overflow-hidden hl-dash bg-slate-50/50">
 
-      {/* ── REVIEW MODAL ── */}
+       {/* ── REVIEW MODAL ── */}
       {showReviewModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-gray-900/60 backdrop-blur-sm p-4 animate-in fade-in duration-300">
           <div className="bg-white rounded-[.5rem] w-full max-w-md p-8 relative shadow-2xl animate-in zoom-in-95 duration-300">
-            <button
-              onClick={() => {
-                setShowReviewModal(false);
-                localStorage.setItem('hlynk_has_reviewed', 'true');
-              }}
-              className="absolute top-6 right-6 text-slate-400 hover:text-slate-900 transition-colors"
-            >
-              <X size={20} />
-            </button>
+            {!isTrialExpired && (
+              <button
+                onClick={() => {
+                  setShowReviewModal(false);
+                  localStorage.setItem('hlynk_has_reviewed', 'true');
+                }}
+                className="absolute top-6 right-6 text-slate-400 hover:text-slate-900 transition-colors"
+              >
+                <X size={20} />
+              </button>
+            )}
 
             <div className="text-center mb-8">
               <div className="h-16 w-16 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Star size={32} className="fill-emerald-600" />
               </div>
-              <h2 className="text-2xl font-black text-slate-900 tracking-tight mb-2">How are we doing?</h2>
+              <h2 className="text-2xl font-black text-slate-900 tracking-tight mb-2">
+                {isTrialExpired ? "Your Trial has Completed!" : "How are we doing?"}
+              </h2>
               <p className="text-xs text-slate-500 font-medium leading-relaxed">
-                Your subscription is renewing soon. We'd love to know how HudumaLynk has helped your business grow!
+                {isTrialExpired 
+                  ? "To keep using hlynk and help us grow, please share a quick rating of your experience so far!"
+                  : "Your subscription is renewing soon. We'd love to know how hlynk has helped your business grow!"}
               </p>
             </div>
 
@@ -388,12 +400,18 @@ export default function ProviderLayout() {
                 <AlertTriangle size={18} className="animate-bounce" />
               </div>
               <div>
-                <p className="text-[11px] font-black uppercase tracking-widest leading-none mb-1">Critical: Subscription Expiry Imminent</p>
-                <p className="text-[9px] font-medium opacity-80 uppercase tracking-widest leading-none">Your access expires in {daysRemaining} days. Renew now to avoid business disruption.</p>
+                <p className="text-[11px] font-black uppercase tracking-widest leading-none mb-1">
+                  {isTrial ? "Critical: Free Trial Expiry Imminent" : "Critical: Subscription Expiry Imminent"}
+                </p>
+                <p className="text-[9px] font-medium opacity-80 uppercase tracking-widest leading-none">
+                  {isTrial 
+                    ? `Your free trial expires in ${daysRemaining} ${daysRemaining === 1 ? 'day' : 'days'}. Purchase a plan now to keep your business running smoothly.`
+                    : `Your access expires in ${daysRemaining} ${daysRemaining === 1 ? 'day' : 'days'}. Renew now to avoid business disruption.`}
+                </p>
               </div>
             </div>
             <Link to="/dashboard/subscription" className="px-6 py-2 bg-white text-red-600 rounded-[.5rem] text-[10px] font-black uppercase tracking-widest hover:bg-red-50 transition-all shadow-lg active:scale-95">
-              Top Up Now
+              {isTrial ? "Upgrade Now" : "Top Up Now"}
             </Link>
           </div>
         )}

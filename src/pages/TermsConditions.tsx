@@ -100,8 +100,8 @@ export default function TermsConditions() {
               <p>
                 If you have any questions about these Terms, please contact us at:
                 <br /><br />
-                <strong>Email:</strong> legal@hlynk.co.ke<br />
-                <strong>Support:</strong> support@hlynk.co.ke
+                <strong>Email (Legal):</strong> <a href="mailto:benjamin@hlynk.co.ke">benjamin@hlynk.co.ke</a><br />
+                <strong>Email (Information):</strong> <a href="mailto:info@hlynk.co.ke">info@hlynk.co.ke</a>
               </p>
             </section>
           </div>

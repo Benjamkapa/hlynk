@@ -202,7 +202,7 @@ export default function DeveloperPage() {
                     <h5 className="text-[10px] font-black text-amber-900 uppercase tracking-widest mb-1">Important Configuration</h5>
                     <p className="text-[11px] text-amber-800/80 font-medium leading-relaxed">
                       Ensure your Daraja App has the <strong>Lipa Na M-Pesa Online</strong> API enabled.
-                      Transactions will use the Callback URL provided by HudumaLynk automatically.
+                      Transactions will use the Callback URL provided by hlynk automatically.
                     </p>
                   </div>
                 </div>

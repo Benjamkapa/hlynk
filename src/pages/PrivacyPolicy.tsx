@@ -88,8 +88,7 @@ export default function PrivacyPolicy() {
               <p>
                 If you have questions or comments about this notice, you may email us at:
                 <br /><br />
-                <strong>Email:</strong> privacy@hlynk.co.ke<br />
-                <strong>Support:</strong> support@hlynk.co.ke
+                <strong>Email (Information):</strong> <a href="mailto:info@hlynk.co.ke">info@hlynk.co.ke</a>
               </p>
             </section>
           </div>

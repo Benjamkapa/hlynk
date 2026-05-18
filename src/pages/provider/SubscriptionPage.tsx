@@ -124,7 +124,10 @@ export default function SubscriptionPage() {
   const pagination = historyResponse?.data?.pagination
 
   const isTrial = subscription?.status === 2
-  const isExpired = subscription?.status === 1 || (subscription?.endDate && new Date(subscription.endDate) < new Date())
+  const isExpired = subscription?.status === 1 || 
+                    (subscription?.endDate && new Date(subscription.endDate) < new Date()) ||
+                    (isTrial && subscription?.trialEndDate && new Date(subscription.trialEndDate) < new Date())
+  const targetEndDate = isTrial ? subscription?.trialEndDate : subscription?.endDate
 
   // Watch for payment status change
   useEffect(() => {
@@ -332,13 +335,13 @@ export default function SubscriptionPage() {
           {isTrial && !isExpired && (
             <div className="bg-emerald-900 text-white p-8 rounded-[.5em] shadow-2xl shadow-emerald-900/20 flex flex-col md:flex-row justify-between items-center gap-6">
               <div>
-                <h3 className="text-xl font-black tracking-tight">You're exploring HudumaLynk on a 7-Day Free Trial</h3>
+                <h3 className="text-xl font-black tracking-tight">You're exploring hlynk on a 7-Day Free Trial</h3>
                 <p className="text-emerald-200 text-sm font-medium">No payment required. See your real profit before you pay.</p>
               </div>
               <div className="bg-emerald-800 px-6 py-3 rounded-[.5em] border border-emerald-700/50 flex flex-col items-center">
                 <p className="text-[10px] font-black uppercase tracking-widest opacity-60 mb-1">Trial Ends In</p>
                 <p className="text-2xl font-black hl-mono">
-                  {subscription?.endDate ? Math.ceil((new Date(subscription.endDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)) : 0} Days
+                  {targetEndDate ? Math.ceil((new Date(targetEndDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)) : 0} Days
                 </p>
               </div>
             </div>
@@ -370,10 +373,12 @@ export default function SubscriptionPage() {
                 {isExpired ? 'EXPIRED' : (isTrial ? 'FREE TRIAL' : 'ACTIVE SUBSCRIPTION')}
               </span>
               <h2 className="text-5xl font-black text-gray-900 mt-6 mb-4 tracking-tighter">
-                {PLANS.find(p => p.id === subscription?.planName)?.name || 'Custom'}
+                {isTrial ? "Free Trial (Starter)" : (PLANS.find(p => p.id === subscription?.planName)?.name || 'Custom')}
               </h2>
               <p className="text-gray-500 font-medium text-xl mb-12 leading-relaxed">
-                {PLANS.find(p => p.id === subscription?.planName)?.desc || 'Your current subscription plan details.'}
+                {isTrial 
+                  ? "Explore all Starter features free for 7 days. Grow your business risk-free."
+                  : (PLANS.find(p => p.id === subscription?.planName)?.desc || 'Your current subscription plan details.')}
               </p>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-10 mb-12">
@@ -382,7 +387,7 @@ export default function SubscriptionPage() {
                     <Calendar size={14} className="text-emerald-500" /> {isTrial ? 'Trial Ends' : 'Next Billing Date'}
                   </p>
                   <p className="text-xl font-black text-gray-900 hl-mono">
-                    {subscription?.endDate ? new Date(subscription.endDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : 'N/A'}
+                    {targetEndDate ? new Date(targetEndDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : 'N/A'}
                   </p>
                 </div>
                 <div className="space-y-1">
@@ -390,7 +395,7 @@ export default function SubscriptionPage() {
                     <CreditCard size={14} className="text-emerald-500" /> Monthly Investment
                   </p>
                   <p className="text-xl font-black text-[#0D4A3E] hl-mono">
-                    KES {PLANS.find(p => p.id === subscription?.planName)?.price.toLocaleString() || '0'}
+                    {isTrial ? "Free (KES 0)" : `KES ${(PLANS.find(p => p.id === subscription?.planName)?.price.toLocaleString() || '0')}`}
                   </p>
                 </div>
               </div>

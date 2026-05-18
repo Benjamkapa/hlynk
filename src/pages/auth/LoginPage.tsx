@@ -12,6 +12,7 @@ import GoogleAuthButton from '../../components/auth/GoogleAuthButton'
 import { platformApi, type PlatformReview } from '../../lib/api/platform'
 import StarRating from '../../components/shared/StarRating'
 import { FadeUp } from '../../components/landing/Animations'
+import { Link } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 
 const logo = '/logo.png'
@@ -189,7 +190,7 @@ export default function LoginPage() {
       const res = await authApi.googleAuth({ credential: googleCredential, registration: formData })
       login({ accessToken: res.data.accessToken, refreshToken: res.data.refreshToken }, res.data.user)
       navigate('/dashboard', { replace: true })
-      toast.success('Your shop is now live on HudumaLynk!')
+      toast.success('Your shop is now live on hynk!')
     } catch (err: any) { toast.error(getErrorMessage(err)) }
     finally { setFormLoading(false) }
   }
@@ -361,7 +362,7 @@ export default function LoginPage() {
             <div className="w-full max-w-[380px] mx-auto flex flex-col h-full">
 
               <div className="flex justify-center mb-12">
-                <img src={logo} alt="HudumaLynk" className="h-12 object-contain sm:h-12 md:h-12 lg:h-12" />
+                <img src={logo} alt="hlynk" className="h-12 object-contain sm:h-12 md:h-12 lg:h-12" />
               </div>
 
               {/* ── AnimatePresence handles the login ↔ registration transition ── */}
@@ -454,21 +455,29 @@ export default function LoginPage() {
                         <Field label="Specific Town/Area" icon={MapPin}>
                           <input type="text" value={formData.location} onChange={e => setFormData({ ...formData, location: e.target.value })} className={inputCls} placeholder="e.g. Westlands, Nairobi" required />
                         </Field>
-                        <div className="grid grid-cols-2 gap-4">
-                          <Field label="M-Pesa Number" icon={Phone}>
-                            <input type="tel" value={formData.phone} onChange={e => setFormData({ ...formData, phone: e.target.value })} className={inputCls} placeholder="07xx xxx xxx" required />
-                          </Field>
-                          <Field label="Referral Code (Optional)" icon={Tag}>
-                            <input type="text" value={formData.referredBy} onChange={e => setFormData({ ...formData, referredBy: e.target.value.toUpperCase() })} className={inputCls} placeholder="Partner Code" />
-                          </Field>
-                        </div>
+                        <Field label="M-Pesa Number" icon={Phone}>
+                          <input type="tel" value={formData.phone} onChange={e => setFormData({ ...formData, phone: e.target.value })} className={inputCls} placeholder="07xx xxx xxx" required />
+                        </Field>
                       </div>
 
                       <button type="submit" disabled={formLoading} className="lp-btn-submit">
                         {formLoading ? <Loader2 size={18} className="animate-spin" /> : 'Launch My biashara'}
                       </button>
 
-                      {/* <div   */}
+                      {/* back to login page */}
+                      <button
+                        type="button"
+                        disabled={formLoading}
+                        onClick={() => {
+                          setRequiresRegistration(false)
+                          setGoogleCredential('')
+                          setGoogleProfile(null)
+                        }}
+                        className="text-center mt-8 cursor-pointer text-black font-normal pl-5 hover:underline bg-transparent border-none outline-none"
+                      >
+                        Back to Login
+                      </button>
+
                     </form>
                   </motion.div>
                 )}

@@ -1,6 +1,6 @@
 # System Optimization Walkthrough
 
-I have successfully completed the architectural and optimization refactoring for HudumaLynk. Here is a summary of the improvements made:
+I have successfully completed the architectural and optimization refactoring for hlynk. Here is a summary of the improvements made:
 
 ## 1. Database Architecture & Integrity
 - **Native Foreign Keys**: Removed Prisma's emulation (`relationMode="prisma"`) so that the underlying MySQL database engine now strictly enforces referential integrity.

@@ -1,7 +1,7 @@
 {
-  "name": "hudumalynk-web",
+  "name": "hlynk-web",
   "version": "1.0.0",
-  "description": "HudumaLynk Frontend PWA — React + Vite + shadcn/ui",
+  "description": "hlynk Frontend PWA — React + Vite + shadcn/ui",
   "type": "module",
   "scripts": {
     "dev": "vite",
