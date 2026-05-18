@@ -104,7 +104,7 @@ export default function ProviderLayout() {
       // Default lock state for everyone else (Providers see everything but locked)
       let isLocked = false
 
-      const currentPlanRaw = user?.subscription?.planName || 'LITE'
+      const currentPlanRaw = user?.role === 'SUPER_ADMIN' ? 'MAX' : (user?.subscription?.planName || 'LITE')
       const currentPlan = currentPlanRaw.toUpperCase()
       const isTrial = Number(user?.subscription?.status) === 2 || user?.subscription?.status === 'TRIAL'
 
@@ -117,7 +117,7 @@ export default function ProviderLayout() {
       const userWeight = getPlanWeight(currentPlan)
       const requiredWeight = item.plan ? getPlanWeight(item.plan) : 1
 
-      if (!isTrial && userWeight < requiredWeight && user?.role !== 'STAFF') {
+      if (userWeight < requiredWeight && user?.role !== 'STAFF') {
         isLocked = true
       }
 

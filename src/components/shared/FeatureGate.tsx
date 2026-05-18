@@ -40,7 +40,7 @@ export default function FeatureGate({ feature, children, fallback, variant = 'ca
 
   const getPlanName = (p: string) => p === 'MAX' ? 'Business Pro' : p === 'PLUS' ? 'Growth' : 'Starter';
 
-  const planRaw = user?.subscription?.planName || 'LITE'
+  const planRaw = user?.role === 'SUPER_ADMIN' ? 'MAX' : (user?.subscription?.planName || 'LITE')
   const plan = planRaw.toUpperCase()
   const isTrial = Number(user?.subscription?.status) === 2 || user?.subscription?.status === 'TRIAL'
   const featurePlans = FEATURE_PLANS[feature]
@@ -61,9 +61,6 @@ export default function FeatureGate({ feature, children, fallback, variant = 'ca
 
   // STAFF PRIVACY & UNLOCK: Staff see everything allowed to them WITHOUT plan limits
   if (user?.role === 'STAFF') hasAccess = true
-
-  // CRITICAL: Grant full access to everything during the Trial period 
-  if (isTrial) hasAccess = true
 
   if (hasAccess) return <>{children}</>
 
