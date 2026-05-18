@@ -20,6 +20,7 @@ export interface AuthUser {
   }
   hasGoogleAuth?: boolean
   usesPasswordAuth?: boolean
+  hasReviewed?: boolean
   permissions?: string[]
 }
 

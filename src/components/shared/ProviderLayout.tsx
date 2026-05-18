@@ -106,7 +106,7 @@ export default function ProviderLayout() {
 
       const currentPlanRaw = user?.subscription?.planName || 'LITE'
       const currentPlan = currentPlanRaw.toUpperCase()
-      const isTrial = user?.subscription?.status === 'TRIAL'
+      const isTrial = Number(user?.subscription?.status) === 2 || user?.subscription?.status === 'TRIAL'
 
       const getPlanWeight = (p: string) => {
         if (p.includes('MAX')) return 3
@@ -130,7 +130,7 @@ export default function ProviderLayout() {
     }).filter((item): item is any => item !== null)
   })).filter(group => group.items.length > 0);
 
-  const isTrial = user?.subscription?.status === 2;
+  const isTrial = Number(user?.subscription?.status) === 2 || user?.subscription?.status === 'TRIAL';
   const targetEndDate = isTrial ? user?.subscription?.trialEndDate : user?.subscription?.endDate;
 
   const timeRemainingMs = targetEndDate

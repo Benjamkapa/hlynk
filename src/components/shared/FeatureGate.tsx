@@ -42,7 +42,7 @@ export default function FeatureGate({ feature, children, fallback, variant = 'ca
 
   const planRaw = user?.subscription?.planName || 'LITE'
   const plan = planRaw.toUpperCase()
-  const isTrial = user?.subscription?.status === 'TRIAL'
+  const isTrial = Number(user?.subscription?.status) === 2 || user?.subscription?.status === 'TRIAL'
   const featurePlans = FEATURE_PLANS[feature]
 
   if (!featurePlans) return <>{children}</>
