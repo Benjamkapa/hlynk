@@ -33,7 +33,7 @@ const PLANS = [
     price: 16999,
     desc: 'For businesses that need complete operational and staff management.',
     color: 'purple',
-    features: ['Everything in Growth', 'Unlimited Staff Accounts', 'Staff Activity Tracking', 'Roles & Permissions', 'Multi-Branch Management', 'Advanced Business Controls'],
+    features: ['Everything in Growth', 'Unlimited Staff Accounts', 'Staff Activity Tracking', 'Roles & Permissions', 'Advanced Business Controls'],
     notIncluded: []
   },
 ]
@@ -171,7 +171,7 @@ export default function SubscriptionPage() {
 
     // FAILURE DETECTION
     if (isCancelled || isFailed) {
-      console.log('[SUBSCRIPTION] Failure detected:', { isCancelled, isFailed });
+      // console.log('[SUBSCRIPTION] Failure detected:', { isCancelled, isFailed });
       
       setWaitingPaymentId(null);
       setIsWaitingForPayment(false);

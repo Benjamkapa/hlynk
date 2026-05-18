@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Plus, Search, Eye, ShieldAlert, UserCheck, Filter, TrendingUp, Bell, Users, Landmark, Zap, LayoutGrid } from 'lucide-react'
 import Pagination from '../../components/shared/Pagination'
 import { SlideOver } from '../../components/shared/SlideOver'
+import { ConfirmModal } from '../../components/shared/ConfirmModal'
 import { toast } from 'sonner'
 import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query'
 import { adminApi } from '../../lib/api/providers'
@@ -23,7 +24,7 @@ export default function ProvidersPage() {
 
   const { data: tenantsRes, isLoading } = useQuery<any>({
     queryKey: ['admin-tenants', search, status, planName, page],
-    queryFn: () => adminApi.getTenants({ search, status, planName, page, limit: 10 }),
+    queryFn: () => adminApi.getTenants({ search, status, planName, page, limit: 5 }),
     placeholderData: keepPreviousData
   })
 
@@ -243,6 +244,7 @@ export default function ProvidersPage() {
 function ProviderDetailsPanel({ provider, onClose }: { provider: any, onClose: () => void }) {
   const queryClient = useQueryClient()
   const [isEditing, setIsEditing] = useState(false)
+  const [confirmDelete, setConfirmDelete] = useState(false)
   const [form, setForm] = useState({ businessName: provider.businessName, slug: provider.slug || '' })
 
   const deleteMutation = useMutation({
@@ -263,6 +265,18 @@ function ProviderDetailsPanel({ provider, onClose }: { provider: any, onClose: (
       onClose()
     },
     onError: () => toast.error('Failed to update status')
+  })
+
+  const impersonateMutation = useMutation({
+    mutationFn: () => adminApi.impersonateUser(provider.primaryUserId),
+    onSuccess: (res: any) => {
+      localStorage.setItem('accessToken', res.data.accessToken)
+      localStorage.setItem('refreshToken', res.data.refreshToken)
+      localStorage.setItem('user', JSON.stringify(res.data.user))
+      toast.success(`Logged in as ${provider.businessName}`)
+      window.location.href = '/provider/dashboard'
+    },
+    onError: (err: any) => toast.error(err.response?.data?.message || 'Failed to impersonate user')
   })
 
   const updateMutation = useMutation({
@@ -323,10 +337,30 @@ function ProviderDetailsPanel({ provider, onClose }: { provider: any, onClose: (
             <UserCheck size={18} /> Verify
           </button>
         </div>
-        <button onClick={() => { if(window.confirm('Are you sure you want to permanently delete this business and all its data?')) deleteMutation.mutate(); }} disabled={deleteMutation.isPending} className="w-full py-4 text-gray-300 hover:text-red-600 text-[10px] font-black uppercase tracking-widest transition-all">
+        {provider.primaryUserId && (
+          <button 
+            onClick={() => impersonateMutation.mutate()} 
+            disabled={impersonateMutation.isPending}
+            className="w-full mt-2 py-4 bg-emerald-600 text-white rounded-xl font-black text-xs uppercase tracking-widest hover:bg-emerald-700 transition-all shadow-xl flex items-center justify-center gap-2"
+          >
+            {impersonateMutation.isPending ? 'Logging In...' : `Login as ${provider.businessName}`}
+          </button>
+        )}
+        <button onClick={() => setConfirmDelete(true)} disabled={deleteMutation.isPending} className="w-full py-4 text-gray-300 hover:text-red-600 text-[10px] font-black uppercase tracking-widest transition-all">
           {deleteMutation.isPending ? 'Deleting...' : 'Delete Account Permanently'}
         </button>
       </div>
+
+      <ConfirmModal
+        isOpen={confirmDelete}
+        onClose={() => setConfirmDelete(false)}
+        onConfirm={() => deleteMutation.mutate()}
+        title="Delete Business Permanently"
+        message="Are you sure you want to permanently delete this business and all its data? This action is irreversible and will destroy all records, subscriptions, and associated identities."
+        confirmText="Delete Business"
+        isDestructive={true}
+        isLoading={deleteMutation.isPending}
+      />
     </div>
   )
 }

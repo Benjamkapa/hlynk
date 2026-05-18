@@ -1,42 +1,29 @@
 export interface AdminStats {
-  totalVolume: number;
-  platformFees: number;
-  recurringRevenue: number;
-  pendingPayouts: number;
-  revenueChart: { name: string; revenue: number; profit: number }[];
-  recentTransactions: any[];
-  totalVolume24h: number;
-  successRate: number;
-  pendingPayoutsCount: number;
-  pendingPayoutsAmount: number;
-  failedTransactionsCount: number;
-  activeSubscriptions: number;
-  mrr: number;
-  expiringSoon: number;
-  recentTickets: any[];
-  openTicketsCount: number;
-  avgResponseTime: string;
-  resolvedTicketsCount: number;
-  customerSatisfaction: string;
-  securityAlertsCount: number;
-  failedLoginsCount: number;
-  activeProtocolsCount: number;
-  availableReports: any[];
-  scheduledReportsCount: number;
-  gtv: string;
-  revenue: string;
-  alertsCount: number;
-  todayVolume: number;
-  activeAdmins: number;
-  tenantsCount: number;
-  recentEvents: any[];
-  recentSubscriptions: any[];
-  trends: {
-    weeklyGrowth: any[];
-    revenueTrend: any[];
-    dailyActive: any[];
-    ticketTrend: any[];
+  overview: {
+    totalProviders: number;
+    payingProviders: number;
+    activeToday: number;
+    revenueThisMonth: number;
+    totalPendingPayouts: number;
+    totalGrossFees: number;
+    expiringSoon: number;
+    activeAvatars: any[];
   };
+  revenue: {
+    total: number;
+    platformVolume: number;
+    mpesaCollections: number;
+  };
+  trends: {
+    revenueTrend: any[];
+    weeklyGrowth: any[];
+    dailyActive?: any[];
+    ticketTrend?: any[];
+  };
+  recentTransactions: any[];
+  recentActivity?: any[];
+  // Legacy fields (keep optional for other pages that might still use them)
+  [key: string]: any;
 }
 
 export interface SystemHealth {

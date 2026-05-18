@@ -4,6 +4,7 @@ import { adminApi } from '../../lib/api/providers'
 import { toast } from 'sonner'
 import { Search, Filter, CreditCard, CheckCircle2, Clock, ArrowUpCircle, Wallet } from 'lucide-react'
 import Pagination from '../../components/shared/Pagination'
+import { ConfirmModal } from '../../components/shared/ConfirmModal'
 import { AdminStats } from '../../lib/types/api'
 
 export default function SubscriptionsPage() {
@@ -11,6 +12,7 @@ export default function SubscriptionsPage() {
   const [status, setStatus] = useState('')
   const [planName, setPlanName] = useState('')
   const [page, setPage] = useState(1)
+  const [confirmUpgradePayload, setConfirmUpgradePayload] = useState<{id: string, plan: string} | null>(null)
   const queryClient = useQueryClient()
 
   const { data: rawStats, error: statsError } = useQuery<any>({
@@ -20,7 +22,7 @@ export default function SubscriptionsPage() {
 
   const { data: subsRes, isLoading, error: subsError } = useQuery<any>({
     queryKey: ['admin-subscriptions', search, status, planName, page],
-    queryFn: () => adminApi.getSubscriptions({ search, status, planName, page, limit: 10 })
+    queryFn: () => adminApi.getSubscriptions({ search, status, planName, page, limit: 5 })
   })
 
   useEffect(() => {
@@ -37,8 +39,12 @@ export default function SubscriptionsPage() {
       queryClient.invalidateQueries({ queryKey: ['admin-subscriptions'] })
       queryClient.invalidateQueries({ queryKey: ['admin-stats'] })
       toast.success('Subscription plan updated')
+      setConfirmUpgradePayload(null)
     },
-    onError: () => toast.error('Failed to update subscription')
+    onError: () => {
+      toast.error('Failed to update subscription')
+      setConfirmUpgradePayload(null)
+    }
   })
 
   // Reset page when filters change
@@ -59,9 +65,9 @@ export default function SubscriptionsPage() {
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <StatCard title="Active Subs" value={stats?.activeSubscriptions || '0'} sub="Businesses" icon={CheckCircle2} variant="emerald" />
-        <StatCard title="MRR" value={`KES ${(stats?.mrr || 0).toLocaleString()}`} sub="Monthly Revenue" icon={CreditCard} variant="blue" />
-        <StatCard title="Expiring Soon" value={stats?.expiringSoon || '0'} sub="Next 7 days" icon={Clock} variant="amber" />
+        <StatCard title="Active Subs" value={stats?.overview?.payingProviders || '0'} sub="Businesses" icon={CheckCircle2} variant="emerald" />
+        <StatCard title="MRR" value={`KES ${(stats?.overview?.revenueThisMonth || 0).toLocaleString()}`} sub="Monthly Revenue" icon={CreditCard} variant="blue" />
+        <StatCard title="Expiring Soon" value={stats?.overview?.expiringSoon || '0'} sub="Next 7 days" icon={Clock} variant="amber" />
       </div>
 
       <div className="bg-white rounded-lg border border-gray-100 shadow-sm overflow-hidden">
@@ -157,7 +163,7 @@ export default function SubscriptionsPage() {
                          <button 
                            key={p}
                            disabled={upgradeMutation.isPending}
-                           onClick={() => { if(window.confirm(`Switch to ${p}?`)) upgradeMutation.mutate({ id: s.tenantId, plan: p }) }} 
+                           onClick={() => setConfirmUpgradePayload({ id: s.tenantId, plan: p }) } 
                            className="text-[9px] font-black uppercase tracking-widest hover:bg-slate-50 px-2 py-1.5 rounded border border-slate-100 transition-all"
                          >
                            {p === 'MAX' ? 'Business Pro' : p === 'PLUS' ? 'Growth' : 'Starter'}
@@ -183,6 +189,17 @@ export default function SubscriptionsPage() {
           label="Subscription"
         />
       </div>
+
+      <ConfirmModal
+        isOpen={!!confirmUpgradePayload}
+        onClose={() => setConfirmUpgradePayload(null)}
+        onConfirm={() => confirmUpgradePayload && upgradeMutation.mutate(confirmUpgradePayload)}
+        title="Upgrade Business Plan"
+        message={`Are you sure you want to force-switch this business to the ${confirmUpgradePayload?.plan} tier? This will immediately override their current billing logic.`}
+        confirmText={`Switch to ${confirmUpgradePayload?.plan}`}
+        isDestructive={false}
+        isLoading={upgradeMutation.isPending}
+      />
     </div>
   )
 }
@@ -200,6 +217,11 @@ function StatCard({ title, value, sub, icon: Icon, variant }: any) {
         <Icon size={24} />
       </div>
       <div>
+
+
+
+
+        
         <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-0.5">{title}</p>
         <h3 className="text-xl font-black text-gray-900 hl-mono">{value}</h3>
         <p className="text-[10px] text-gray-500 font-bold">{sub}</p>

@@ -49,10 +49,11 @@ export const subscriptionsApi = {
   renew: (phone: string) => api.post('/subscriptions/renew', { phone }).then(r => r.data),
   changePlan: (planName: string, phone: string) => api.post('/subscriptions/change-plan', { planName, phone }).then(r => r.data),
   verify: (paymentId: string) => api.get(`/subscriptions/verify/${paymentId}`).then(r => r.data),
+  applyPromoCode: (code: string) => api.post('/subscriptions/promo/apply', { code }).then(r => r.data),
 }
 
 export const inventoryApi = {
-  list: (params?: { page?: number; search?: string; category?: string; limit?: number; sortBy?: string; sortOrder?: string }) => api.get('/inventory', { params }).then(r => r.data),
+  list: (params?: { page?: number; search?: string; category?: string; limit?: number; sortBy?: string; sortOrder?: string; includeStats?: boolean }) => api.get('/inventory', { params }).then(r => r.data),
   create: (data: any) => api.post('/inventory', data).then(r => r.data),
   update: (id: string, data: any) => api.put(`/inventory/${id}`, data).then(r => r.data),
   adjustStock: (id: string, quantity: number, reason: string) => api.post(`/inventory/${id}/adjust`, { quantity, reason }).then(r => r.data),
@@ -103,8 +104,8 @@ export const paymentsApi = {
 
 export const adminApi = {
   getStats: (timeframe?: string) => api.get('/admin/stats', { params: { timeframe } }).then(r => r.data),
-  getHealth: () => api.get('/admin/system-health').then(r => r.data),
-  getSystemHealth: () => api.get('/admin/system-health').then(r => r.data),
+  getHealth: () => api.get('/admin/health').then(r => r.data),
+  getSystemHealth: () => api.get('/admin/health').then(r => r.data),
   getTenants: (params?: { page?: number; search?: string; status?: string; planName?: string; limit?: number }) =>
     api.get('/admin/tenants', { params }).then(r => r.data),
   suspendTenant: (id: string) => api.put(`/admin/tenants/${id}/suspend`).then(r => r.data),
@@ -137,5 +138,7 @@ export const adminApi = {
     return api.post('/admin/me/photo', formData, {
       headers: { 'Content-Type': 'multipart/form-data' }
     }).then(r => r.data)
-  }
+  },
+  generatePromoCode: (data: { planName: string, durationDays: number, maxUses?: number, assignedPhone?: string }) =>
+    api.post('/subscriptions/promo/generate', data).then(r => r.data)
 }

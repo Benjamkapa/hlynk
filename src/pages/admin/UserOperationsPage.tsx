@@ -6,12 +6,16 @@ import { toast } from 'sonner'
 import { useAuth } from '../../lib/auth/AuthContext'
 import { useNavigate } from 'react-router-dom'
 import Pagination from '../../components/shared/Pagination'
+import { ConfirmModal } from '../../components/shared/ConfirmModal'
 
 export default function UserOperationsPage() {
   const [search, setSearch] = useState('')
   const [role, setRole] = useState('')
   const [page, setPage] = useState(1)
   const [selectedUser, setSelectedUser] = useState<any>(null)
+  const [confirmTerminateId, setConfirmTerminateId] = useState<string | null>(null)
+  const [confirmImpersonateUser, setConfirmImpersonateUser] = useState<any>(null)
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
   const queryClient = useQueryClient()
   const { login } = useAuth()
   const navigate = useNavigate()
@@ -19,7 +23,7 @@ export default function UserOperationsPage() {
 
   const { data: usersRes, isLoading } = useQuery<any>({
     queryKey: ['admin-users', search, role, page],
-    queryFn: () => adminApi.getUsers({ search, role, page, limit: 10 })
+    queryFn: () => adminApi.getUsers({ search, role, page, limit: 5 })
   })
 
   const { data: sessionsResponse } = useQuery<{ success: boolean; data: any[] }>({
@@ -44,6 +48,7 @@ export default function UserOperationsPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-users'] })
       toast.success('User deleted successfully')
+      setConfirmDeleteId(null)
     }
   })
 
@@ -52,6 +57,7 @@ export default function UserOperationsPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-sessions'] })
       toast.success('Session terminated')
+      setConfirmTerminateId(null)
     }
   })
 
@@ -63,9 +69,13 @@ export default function UserOperationsPage() {
         res.data.user
       )
       toast.success(`impersonation active: now acting as ${res.data.user.name}`)
+      setConfirmImpersonateUser(null)
       navigate('/dashboard')
     },
-    onError: (err: any) => toast.error(err.message || 'Failed to impersonate')
+    onError: (err: any) => {
+      toast.error(err.message || 'Failed to impersonate')
+      setConfirmImpersonateUser(null)
+    }
   })
 
   const handleFilterChange = (setter: any, val: string) => {
@@ -155,7 +165,7 @@ export default function UserOperationsPage() {
                       </td>
                       <td className="px-8 py-5 text-right">
                         <button 
-                          onClick={(e) => { e.stopPropagation(); if(window.confirm('Terminate this session immediately?')) terminateMutation.mutate(s.id); }}
+                          onClick={(e) => { e.stopPropagation(); setConfirmTerminateId(s.id); }}
                           className="text-gray-400 hover:text-red-600 transition-all p-2 hover:bg-red-50 rounded-lg"
                         >
                           <LogOut size={18} />
@@ -258,7 +268,7 @@ export default function UserOperationsPage() {
                         <div className="flex justify-end gap-2 text-gray-400">
                           {u.role !== 'SUPER_ADMIN' && (
                             <button 
-                              onClick={(e) => { e.stopPropagation(); if(window.confirm(`Login as ${u.name}?`)) impersonateMutation.mutate(u.id); }}
+                              onClick={(e) => { e.stopPropagation(); setConfirmImpersonateUser(u); }}
                               disabled={impersonateMutation.isPending}
                               title="Impersonate User"
                               className="hover:text-[#0D4A3E] transition-all p-2 hover:bg-emerald-50 rounded-lg disabled:opacity-50"
@@ -267,7 +277,7 @@ export default function UserOperationsPage() {
                             </button>
                           )}
                           <button 
-                            onClick={(e) => { e.stopPropagation(); if(window.confirm('Delete this user completely?')) deleteMutation.mutate(u.id); }}
+                            onClick={(e) => { e.stopPropagation(); setConfirmDeleteId(u.id); }}
                             className="hover:text-red-600 transition-all p-2 hover:bg-red-50 rounded-lg"
                             title="Delete User"
                           >
@@ -372,6 +382,39 @@ export default function UserOperationsPage() {
           </div>
         </div>
       </div>
+      
+      <ConfirmModal
+        isOpen={!!confirmTerminateId}
+        onClose={() => setConfirmTerminateId(null)}
+        onConfirm={() => confirmTerminateId && terminateMutation.mutate(confirmTerminateId)}
+        title="Terminate Session"
+        message="Are you sure you want to terminate this live session? The user will be immediately logged out."
+        confirmText="Terminate"
+        isDestructive={true}
+        isLoading={terminateMutation.isPending}
+      />
+
+      <ConfirmModal
+        isOpen={!!confirmImpersonateUser}
+        onClose={() => setConfirmImpersonateUser(null)}
+        onConfirm={() => confirmImpersonateUser && impersonateMutation.mutate(confirmImpersonateUser.id)}
+        title="Impersonate Identity"
+        message={`You are about to log in as ${confirmImpersonateUser?.name}. All your actions will be tracked under their identity until you log out. Continue?`}
+        confirmText="Impersonate"
+        isDestructive={false}
+        isLoading={impersonateMutation.isPending}
+      />
+
+      <ConfirmModal
+        isOpen={!!confirmDeleteId}
+        onClose={() => setConfirmDeleteId(null)}
+        onConfirm={() => confirmDeleteId && deleteMutation.mutate(confirmDeleteId)}
+        title="Delete Identity"
+        message="Are you sure you want to permanently delete this user? This action cannot be undone and will destroy their access."
+        confirmText="Delete User"
+        isDestructive={true}
+        isLoading={deleteMutation.isPending}
+      />
     </div>
   )
 }

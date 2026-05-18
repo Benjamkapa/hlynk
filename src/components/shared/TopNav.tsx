@@ -158,9 +158,9 @@ export default function TopNav({ onMobileMenuToggle, isCollapsed, onToggleCollap
         <div className="relative" ref={userMenuRef}>
           <button 
             onClick={() => setShowUserMenu(!showUserMenu)} 
-            className={`p-1.5 rounded-[.5rem] border flex items-center gap-3 transition-all ${showUserMenu ? 'bg-white border-emerald-200 shadow-xl ring-4 ring-emerald-500/5' : 'bg-transparent border-transparent hover:bg-white hover:border-slate-100 hover:shadow-lg'}`}
+            className={`p-1.5 rounded-[.5rem] border flex items-center gap-3 transition-all ${showUserMenu ? 'bg-white shadow-xl ring-4 ring-emerald-500/5' : 'bg-transparent border-transparent hover:bg-white hover:border-slate-100 hover:shadow-lg'}`}
           >
-            <div className="w-10 h-10 rounded-[.5rem] bg-emerald-600 overflow-hidden shadow-2xl shadow-emerald-900/20 border border-white/20 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-[.5rem] bg-emerald-600 overflow-hidden shadow-sm shadow-emerald-900/50 flex items-center justify-center">
               <img
                 src={user?.photoUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || '')}&background=0D4A3E&color=fff`}
                 alt={user?.name ? `${user.name} profile` : 'Profile'}

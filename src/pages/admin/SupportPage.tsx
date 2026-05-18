@@ -29,9 +29,9 @@ export default function SupportPage() {
 
   const stats: AdminStats = rawStats?.data || rawStats
   const allTickets = stats?.recentTickets || []
-  const filteredTickets = allTickets.filter(t => 
-    t.subject.toLowerCase().includes(search.toLowerCase()) ||
-    t.id.toLowerCase().includes(search.toLowerCase()) ||
+  const filteredTickets = allTickets.filter((t: any) => 
+    t.subject?.toLowerCase().includes(search.toLowerCase()) ||
+    t.id?.toLowerCase().includes(search.toLowerCase()) ||
     (t.businessName || '').toLowerCase().includes(search.toLowerCase())
   )
 

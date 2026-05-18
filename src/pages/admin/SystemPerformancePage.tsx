@@ -69,24 +69,13 @@ export default function SystemPerformancePage() {
             </div>
           </div>
           <div className="h-[350px]">
-            <ResponsiveContainer width="100%" height="100%" minWidth={0}>
-              <AreaChart data={performanceData}>
-                <defs>
-                  <linearGradient id="colorApi" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.1}/>
-                    <stop offset="95%" stopColor="#3B82F6" stopOpacity={0}/>
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F1F5F9" />
-                <XAxis dataKey="time" axisLine={false} tickLine={false} tick={{fontSize: 10, fill: '#94A3B8', fontFamily: 'JetBrains Mono'}} dy={15} />
-                <YAxis axisLine={false} tickLine={false} tick={{fontSize: 10, fill: '#94A3B8', fontFamily: 'JetBrains Mono'}} />
-                <Tooltip 
-                  contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)', padding: '20px' }}
-                  itemStyle={{ fontFamily: 'JetBrains Mono' }}
-                />
-                <Area type="monotone" dataKey="api" stroke="#3B82F6" strokeWidth={4} fillOpacity={1} fill="url(#colorApi)" />
-              </AreaChart>
-            </ResponsiveContainer>
+            <Gauge 
+               value={parseInt(health?.apiLatency || '0')} 
+               max={500} 
+               label="Current Latency" 
+               unit="ms" 
+               colorHex="#3B82F6" 
+            />
           </div>
         </div>
 
@@ -101,18 +90,13 @@ export default function SystemPerformancePage() {
             </div>
           </div>
           <div className="h-[350px]">
-            <ResponsiveContainer width="100%" height="100%" minWidth={0}>
-              <LineChart data={performanceData}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F1F5F9" />
-                <XAxis dataKey="time" axisLine={false} tickLine={false} tick={{fontSize: 10, fill: '#94A3B8', fontFamily: 'JetBrains Mono'}} dy={15} />
-                <YAxis axisLine={false} tickLine={false} tick={{fontSize: 10, fill: '#94A3B8', fontFamily: 'JetBrains Mono'}} />
-                <Tooltip 
-                  contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)', padding: '20px' }}
-                  itemStyle={{ fontFamily: 'JetBrains Mono' }}
-                />
-                <Line type="monotone" dataKey="load" stroke="#8B5CF6" strokeWidth={4} dot={{ r: 6, fill: '#8B5CF6', strokeWidth: 3, stroke: '#fff' }} />
-              </LineChart>
-            </ResponsiveContainer>
+            <Gauge 
+               value={parseInt(health?.cpuLoad || '0')} 
+               max={100} 
+               label="CPU Saturation" 
+               unit="%" 
+               colorHex="#8B5CF6" 
+            />
           </div>
         </div>
       </div>
@@ -193,3 +177,58 @@ function MetricCard({ title, value, sub, icon: Icon, trend, color }: any) {
     </div>
   )
 }
+
+function Gauge({ value, max = 100, label, unit, colorHex = "#10B981" }: any) {
+  const radius = 100;
+  const strokeWidth = 24;
+  const circumference = Math.PI * radius; // Semi-circle
+  const safeValue = isNaN(value) ? 0 : Math.max(0, Math.min(value, max));
+  const percent = safeValue / max;
+  const strokeDashoffset = circumference - (percent * circumference);
+  const rotation = percent * 180 - 90;
+
+  return (
+    <div className="flex flex-col items-center justify-center h-full w-full">
+      <div className="relative w-[240px] h-[120px] overflow-hidden">
+        <svg className="w-full h-[240px] absolute top-0 left-0" viewBox="0 0 240 240">
+          <path
+            d={`M 20 120 A ${radius} ${radius} 0 0 1 220 120`}
+            fill="none"
+            stroke="#F1F5F9"
+            strokeWidth={strokeWidth}
+            strokeLinecap="round"
+          />
+          <path
+            d={`M 20 120 A ${radius} ${radius} 0 0 1 220 120`}
+            fill="none"
+            stroke={colorHex}
+            strokeWidth={strokeWidth}
+            strokeLinecap="round"
+            strokeDasharray={circumference}
+            strokeDashoffset={strokeDashoffset}
+            style={{ transition: 'stroke-dashoffset 1.5s cubic-bezier(0.22, 1, 0.36, 1)' }}
+          />
+        </svg>
+        
+        {/* Animated Caliber (Needle) */}
+        <div 
+           className="absolute bottom-0 left-1/2 w-1.5 h-24 origin-bottom rounded-t-full bg-slate-800 z-10"
+           style={{ 
+             transform: `translateX(-50%) rotate(${rotation}deg)`, 
+             transition: 'transform 1.5s cubic-bezier(0.22, 1, 0.36, 1)' 
+           }}
+        >
+          <div className="absolute -bottom-2 -left-[5px] w-4 h-4 rounded-full bg-slate-800 border-[3px] border-white shadow-sm" />
+        </div>
+      </div>
+      
+      <div className="text-center mt-12">
+        <h2 className="text-5xl font-black text-slate-900 hl-mono tracking-tighter">
+           {safeValue}<span className="text-xl text-slate-400 ml-1">{unit}</span>
+        </h2>
+        <p className="text-xs font-black text-slate-400 uppercase tracking-widest mt-2">{label}</p>
+      </div>
+    </div>
+  )
+}
+

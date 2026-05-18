@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Plus, Search, Filter, Download, Edit, Trash2, Package, TrendingDown, Activity, AlertTriangle } from 'lucide-react'
+import { Plus, Search, Filter, Download, Edit,  Trash2, Package, TrendingDown, Activity, AlertTriangle } from 'lucide-react'
 import { ConfirmModal } from '../../components/shared/ConfirmModal'
 import { SlideOver } from '../../components/shared/SlideOver'
 import { toast } from 'sonner'
@@ -26,7 +26,7 @@ export default function ProductsPage() {
 
   const { data: productsData, isLoading, error } = useQuery<PaginatedResponse<any> & { stats: any }>({
     queryKey: ['inventory', search, page, sortBy, sortOrder, category],
-    queryFn: () => inventoryApi.list({ search, page, limit: 10, sortBy, sortOrder, category: category || undefined }),
+    queryFn: () => inventoryApi.list({ search, page, limit: 10, sortBy, sortOrder, category: category || undefined, includeStats: true }),
     placeholderData: keepPreviousData
   })
 
@@ -63,7 +63,7 @@ export default function ProductsPage() {
       {/* Header section */}
       <div className="flex justify-between items-end">
         <div>
-          <h1 className="text-3xl font-black text-gray-900 tracking-tight">Products & Stock</h1>
+          <h1 className="text-3xl font-black text-gray-900 tracking-tight">Products & Services</h1>
           <p className="text-gray-500 font-medium">Track your inventory, stock levels, and profit margins</p>
         </div>
         <div className="flex gap-3">
@@ -101,7 +101,7 @@ export default function ProductsPage() {
           onClose={() => setIsAddModalOpen(false)} 
           title="Add New Product"
         >
-          <AddProductForm onClose={() => setIsAddModalOpen(false)} />
+          <ProductForm onClose={() => setIsAddModalOpen(false)} />
         </SlideOver>
 
         <SlideOver 
@@ -259,28 +259,41 @@ export default function ProductsPage() {
   )
 }
 
-
-function AddProductForm({ onClose }: { onClose: () => void }) {
+function ProductForm({ onClose }: { onClose: () => void }) {
   const queryClient = useQueryClient()
-  const [form, setForm] = useState({ name: '', category: 'Groceries', type: 'GOOD', buyingPrice: '', price: '', stock: '', imageUrl: '', isPerishable: false, expiryDate: '' })
+  const [form, setForm] = useState({ 
+    name: '', category: 'Groceries', buyingPrice: '', price: '', stock: '',
+    imageUrl: '', file: null as File | null, isPerishable: false, expiryDate: '', type: 'GOOD'
+  })
 
   const mutation = useMutation({
-    mutationFn: inventoryApi.create,
+    mutationFn: async (data: any) => {
+      // Remove base64 image and file before sending to create
+      const payload = { ...data };
+      delete payload.file;
+      if (data.file) delete payload.imageUrl;
+      
+      const res = await inventoryApi.create(payload);
+      if (data.file && res.data?.id) {
+        await inventoryApi.uploadImage(res.data.id, data.file);
+      }
+      return res;
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['inventory'] })
       queryClient.invalidateQueries({ queryKey: ['inventory-pos'] })
-      toast.success('Product added successfully')
+      toast.success('Product added to inventory')
       onClose()
     },
     onError: (err: any) => toast.error(getErrorMessage(err))
   })
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-20">
       <div className="flex flex-col items-center gap-4">
         <div 
           onClick={() => document.getElementById('image-upload')?.click()}
-          className="h-32 w-32 rounded-3xl bg-slate-50 border-4 border-dashed border-slate-200 flex items-center justify-center overflow-hidden cursor-pointer hover:border-emerald-500 hover:bg-emerald-50 transition-all group relative"
+          className="h-32 w-32 rounded-[.5rem] bg-slate-50 border-4 border-dashed border-slate-200 flex items-center justify-center overflow-hidden cursor-pointer hover:border-emerald-500 hover:bg-emerald-50 transition-all group relative"
         >
           {form.imageUrl ? (
             <>
@@ -304,7 +317,7 @@ function AddProductForm({ onClose }: { onClose: () => void }) {
               const file = e.target.files?.[0]
               if (file) {
                 const reader = new FileReader()
-                reader.onloadend = () => setForm({ ...form, imageUrl: reader.result as string })
+                reader.onloadend = () => setForm({ ...form, imageUrl: reader.result as string, file: file })
                 reader.readAsDataURL(file)
               }
             }}
@@ -313,7 +326,7 @@ function AddProductForm({ onClose }: { onClose: () => void }) {
         {form.imageUrl && (
           <button 
             type="button"
-            onClick={() => setForm({ ...form, imageUrl: '' })}
+            onClick={() => setForm({ ...form, imageUrl: '', file: null })}
             className="text-[9px] font-black text-red-500 uppercase tracking-widest hover:underline"
           >
             Remove Image
@@ -413,12 +426,23 @@ function EditProductForm({ product, onClose }: { product: any; onClose: () => vo
     price: product.price?.toString() || '', 
     stock: product.stockLevel?.toString() || '',
     imageUrl: product.imageUrl || '',
+    file: null as File | null,
     isPerishable: !!product.isPerishable,
     expiryDate: product.expiryDate ? new Date(product.expiryDate).toISOString().split('T')[0] : ''
   })
 
   const mutation = useMutation({
-    mutationFn: (data: any) => inventoryApi.update(product.id, data),
+    mutationFn: async (data: any) => {
+      const payload = { ...data };
+      delete payload.file;
+      if (data.file) delete payload.imageUrl;
+      
+      const res = await inventoryApi.update(product.id, payload);
+      if (data.file) {
+        await inventoryApi.uploadImage(product.id, data.file);
+      }
+      return res;
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['inventory'] })
       queryClient.invalidateQueries({ queryKey: ['inventory-pos'] })
@@ -429,7 +453,7 @@ function EditProductForm({ product, onClose }: { product: any; onClose: () => vo
   })
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-20">
       <div className="flex flex-col items-center gap-4">
         <div 
           onClick={() => document.getElementById('image-edit-upload')?.click()}
@@ -457,7 +481,7 @@ function EditProductForm({ product, onClose }: { product: any; onClose: () => vo
               const file = e.target.files?.[0]
               if (file) {
                 const reader = new FileReader()
-                reader.onloadend = () => setForm({ ...form, imageUrl: reader.result as string })
+                reader.onloadend = () => setForm({ ...form, imageUrl: reader.result as string, file: file })
                 reader.readAsDataURL(file)
               }
             }}
@@ -466,7 +490,7 @@ function EditProductForm({ product, onClose }: { product: any; onClose: () => vo
         {form.imageUrl && (
           <button 
             type="button"
-            onClick={() => setForm({ ...form, imageUrl: '' })}
+            onClick={() => setForm({ ...form, imageUrl: '', file: null })}
             className="text-[9px] font-black text-red-500 uppercase tracking-widest hover:underline"
           >
             Remove Image

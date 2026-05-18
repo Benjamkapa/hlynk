@@ -13,6 +13,7 @@ import { useQuery } from '@tanstack/react-query'
 import { adminApi } from '../../lib/api/providers'
 import { toast } from 'sonner'
 import { Link } from 'react-router-dom'
+import Pagination from '../../components/shared/Pagination'
 
 
 import { useEffect } from 'react'
@@ -20,6 +21,7 @@ import { AdminStats } from '../../lib/types/api'
 
 export default function AdminDashboardPage() {
   const [timeframe, setTimeframe] = useState<'HOURLY' | 'DAILY'>('HOURLY')
+  const [page, setPage] = useState(1)
   const { data: rawStats, isLoading, error } = useQuery<any>({
     queryKey: ['admin-stats-', timeframe],
     queryFn: () => adminApi.getStats(timeframe)
@@ -98,11 +100,11 @@ export default function AdminDashboardPage() {
       </div>
 
       {/* KPI Section */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-8">
-        <KpiCard title="Active Tenancy" value={stats?.overview?.totalProviders?.toLocaleString() || '0'} sub={`${stats?.overview?.payingProviders || 0} Paying`} icon={Landmark} trend="up" color="emerald" />
-        <KpiCard title="Platform Revenue" value={`KES ${stats?.overview?.revenueThisMonth?.toLocaleString() || '0'}`} sub="This Month" icon={DollarSign} trend="up" color="purple" />
-        <KpiCard title="Trials Expiring Soon" value={stats?.trials?.expiringSoon || '0'} sub={`${stats?.trials?.conversionRate?.toFixed(1) || 0}% Conv Rate`} icon={Zap} trend="up" color="blue" />
-        <KpiCard title="Active Today" value={stats?.overview?.activeToday || '0'} sub="Requires immediate review" icon={Users} trend="down" color="red" />
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-8 mb-8">
+        <KpiCard title="Hlynk Revenue" value={`KES ${stats?.revenue?.total?.toLocaleString() || '0'}`} sub="Platform Income" icon={DollarSign} trend="up" color="emerald" />
+        <KpiCard title="Platform Volume" value={`KES ${stats?.revenue?.platformVolume?.toLocaleString() || '0'}`} sub="Total sales processed" icon={Activity} trend="up" color="purple" />
+        <KpiCard title="M-Pesa Collections" value={`KES ${stats?.revenue?.mpesaCollections?.toLocaleString() || '0'}`} sub="Via System Paybill" icon={Landmark} trend="up" color="blue" />
+        <KpiCard title="Active Tenancy" value={stats?.overview?.totalProviders?.toLocaleString() || '0'} sub={`${stats?.overview?.payingProviders || 0} Paying`} icon={Users} trend="up" color="emerald" />
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-10">
@@ -129,8 +131,8 @@ export default function AdminDashboardPage() {
             </div>
           </div>
           
-          <div className="h-[400px] w-full relative z-10">
-            <ResponsiveContainer width="100%" height="100%" minWidth={0} debounce={100}>
+          <div className="h-[400px] w-full relative z-10" style={{ minHeight: 300 }}>
+            <ResponsiveContainer width="100%" height={400} minWidth={0} debounce={100}>
               <AreaChart data={revenueData}>
                 <defs>
                   <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
@@ -249,7 +251,7 @@ export default function AdminDashboardPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50">
-              {stats?.recentTransactions?.length > 0 ? stats.recentTransactions.map((tx: any, i: number) => (
+              {stats?.recentTransactions?.length > 0 ? stats.recentTransactions.slice((page - 1) * 5, page * 5).map((tx: any, i: number) => (
                 <tr key={i} className="group hover:bg-slate-50/30 transition-all cursor-pointer">
                   <td className="px-10 py-6 text-xs font-black text-slate-900 hl-mono">{tx.id}</td>
                   <td className="px-10 py-6">
@@ -286,6 +288,17 @@ export default function AdminDashboardPage() {
             </tbody>
           </table>
         </div>
+        {stats?.recentTransactions?.length > 5 && (
+          <div className="border-t border-slate-50 p-6">
+            <Pagination 
+              page={page}
+              pages={Math.ceil((stats?.recentTransactions?.length || 0) / 5)}
+              total={stats?.recentTransactions?.length || 0}
+              onPageChange={setPage}
+              label="Transaction"
+            />
+          </div>
+        )}
       </div>
     </div>
   )

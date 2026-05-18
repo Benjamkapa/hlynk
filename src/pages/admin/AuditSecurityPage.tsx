@@ -20,7 +20,7 @@ export default function AuditSecurityPage() {
 
   const { data: logsRes, isLoading: logsLoading, refetch: refetchLogs } = useQuery<any>({
     queryKey: ['admin-activity-logs', logPage, search, category],
-    queryFn: () => adminApi.getActivityLogs({ page: logPage, limit: 10, search, category })
+    queryFn: () => adminApi.getActivityLogs({ page: logPage, limit: 5, search, category })
   })
 
   const logsData = logsRes?.data

@@ -55,7 +55,7 @@ const pricingPlans = [
       "Unlimited Staff Accounts",
       "Staff Activity Tracking",
       "Roles & Permissions",
-      "Multi-Branch Management",
+      // "Multi-Branch Management",
       "Advanced Business Controls",
       "Dedicated Account Assistance"
     ],

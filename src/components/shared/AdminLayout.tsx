@@ -40,7 +40,6 @@ export default function AdminLayout() {
     {
       label: 'Governance',
       items: [
-        { to: '/admin/support', label: 'Support', icon: MessageSquare },
         { to: '/admin/forensic-audit', label: 'Forensic Audit', icon: ShieldCheck },
         { to: '/admin/settings', label: 'Settings', icon: Settings },
         { to: '/admin/reports', label: 'Reports', icon: BarChart2 },

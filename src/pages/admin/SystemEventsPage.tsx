@@ -14,7 +14,7 @@ export default function SystemEventsPage() {
 
   const { data, isLoading, error } = useQuery({
     queryKey: ['admin-system-events', page, level, category],
-    queryFn: () => adminApi.getSystemEvents({ page, limit: 40, level: level || undefined, category: category || undefined }),
+    queryFn: () => adminApi.getSystemEvents({ page, limit: 5, level: level || undefined, category: category || undefined }),
   })
 
   useEffect(() => {
