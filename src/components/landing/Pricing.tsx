@@ -107,7 +107,7 @@ export default function Pricing() {
 
                 <div className="flex-1 space-y-5 mb-12 relative z-10">
                   {p.features.map(f => (
-                    <div key={f} className="flex items-start gap-4 text-[13px] font-black text-slate-900 tracking-tight leading-tight" style={{ fontFamily: 'JetBrains Mono, monospace' }}>
+                    <div key={f} className="flex items-start gap-4 text-[13px] font-black text-slate-900 tracking-tight leading-tight" style={{ fontFamily: 'Nunito, sans-serif' }}>
                       <div className="h-5 w-5 bg-black rounded-full flex items-center justify-center text-white shrink-0 mt-0.5 shadow-sm">
                         <Check size={10} strokeWidth={5} />
                       </div>
