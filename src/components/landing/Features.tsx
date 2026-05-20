@@ -10,7 +10,7 @@ const features = [
   {
     icon: <Receipt size={24} />,
     title: "Fast Point of Sale",
-    desc: "Scan barcodes or tap products to record sales in seconds. Professional receipts sent via SMS."
+    desc: "Tap or search for products to record sales in seconds. Professional receipts sent via SMS."
   },
   {
     icon: <PackageSearch size={24} />,
@@ -36,7 +36,7 @@ const features = [
 
 export default function Features() {
   return (
-    <section id="features" className="py-32 bg-white relative overflow-hidden">
+    <section id="features" className="py-24 bg-white relative overflow-hidden">
       <div className="max-w-7xl mx-auto px-6 md:px-12 relative z-10">
         <div className="text-center max-w-3xl mx-auto mb-24">
           <FadeUp delay={0.1}>

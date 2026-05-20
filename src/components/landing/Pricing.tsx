@@ -7,15 +7,15 @@ const pricingPlans = [
   {
     id: "LITE",
     name: "Starter",
-    monthlyPrice: "2,999",
+    monthlyPrice: "4,450",
     desc: "For small businesses that want better control of daily sales and expenses.",
     color: "bg-[#F472B6]", // Pink
     features: [
+      "Manage Up to 15 Items",
       "Record Sales",
       "Track Expenses",
-      "Manage Stock",
       "Save Customer Records",
-      "Track Cash & M-Pesa",
+      "Track Payments",
       "Daily Profit Reports",
       "Standard Support",
       "7-Day Free Trial"
@@ -29,10 +29,11 @@ const pricingPlans = [
     id: "PLUS",
     name: "Growth",
     badge: "Most Popular",
-    monthlyPrice: "6,999",
+    monthlyPrice: "9,450",
     desc: "For growing businesses that need deeper reports and better business tracking.",
     color: "bg-[#2DD4BF]", // Teal/Emerald
     features: [
+      "Manage Up to 100 Items",
       "Everything in Starter",
       "Profit Analytics",
       "Sales Reports & Graphs",
@@ -51,11 +52,11 @@ const pricingPlans = [
     desc: "For businesses that need complete operational and staff management.",
     color: "bg-[#818CF8]", // Indigo/Purple
     features: [
+      "Unlimited Items",
       "Everything in Growth",
       "Unlimited Staff Accounts",
       "Staff Activity Tracking",
       "Roles & Permissions",
-      // "Multi-Branch Management",
       "Advanced Business Controls",
       "Dedicated Account Assistance"
     ],
@@ -65,7 +66,7 @@ const pricingPlans = [
 
 export default function Pricing() {
   return (
-    <section id="pricing" className="py-32 bg-white relative overflow-hidden border-t border-slate-100">
+    <section id="pricing" className="py-24 bg-white relative overflow-hidden border-t border-slate-100">
       <div className="max-w-7xl mx-auto px-6 md:px-12 relative z-10">
         <div className="text-center mb-24">
           <FadeUp delay={0.1}>

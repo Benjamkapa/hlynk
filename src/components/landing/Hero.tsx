@@ -201,10 +201,10 @@ function MockCursorAnimation() {
 export default function Hero() {
   return (
     <section style={{
-      position: 'relative', minHeight: '100svh',
+      position: 'relative', minHeight: '85svh',
       display: 'flex', alignItems: 'center',
-      paddingTop: 'clamp(96px, 14vw, 160px)',
-      paddingBottom: 'clamp(60px, 8vw, 100px)',
+      paddingTop: 'clamp(80px, 10vw, 120px)',
+      paddingBottom: 'clamp(40px, 5vw, 60px)',
       overflow: 'hidden',
     }}>
 

@@ -33,7 +33,7 @@ export default function FAQ() {
   }
 
   return (
-    <section className="py-24 bg-slate-50 relative overflow-hidden border-t border-slate-200">
+    <section id="faq" className="py-24 bg-white relative overflow-hidden border-t border-slate-200">
       <div className="max-w-4xl mx-auto px-6 md:px-12 relative z-10">
         <div className="text-center mb-16">
           <FadeUp delay={0.1}>

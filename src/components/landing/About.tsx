@@ -2,7 +2,7 @@ import { CheckCircle2, TrendingUp, ShieldCheck, Users } from 'lucide-react'
 
 export default function About() {
   return (
-    <section id="about" className="py-24 bg-transparent relative overflow-hidden">
+    <section id="about" className="py-20 bg-white relative overflow-hidden">
       {/* Subtle Background Pattern - slightly more visible for depth */}
       <div className="absolute inset-0 opacity-[0.05] pointer-events-none text-emerald-400">
         <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">

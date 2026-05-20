@@ -12,19 +12,19 @@ const PLANS = [
   {
     id: 'LITE',
     name: 'Starter',
-    price: 2999,
+    price: 4450,
     desc: 'For small businesses that want better control of daily sales and expenses.',
     color: 'emerald',
-    features: ['Record Sales', 'Track Expenses', 'Manage Stock', 'Save Customer Records', 'Track Cash & M-Pesa', 'Daily Profit Reports', 'Standard Support'],
+    features: ['Manage up to 15 items', 'Record Sales', 'Track Expenses', 'Save Customer Records', 'Track Payments', 'Daily Profit Reports', 'Standard Support'],
     notIncluded: ['Profit Analytics', 'M-Pesa Paybill Integration', 'Staff Accounts']
   },
   {
     id: 'PLUS',
     name: 'Growth',
-    price: 6999,
+    price: 9450,
     desc: 'For growing businesses that need deeper reports and better business tracking.',
     color: 'blue',
-    features: ['Everything in Starter', 'Profit Analytics', 'Sales Reports & Graphs', 'M-Pesa Paybill Integration', '1 Staff Account', 'Priority Support'],
+    features: ['Manage up to 100 items', 'Everything in Starter', 'Profit Analytics', 'Sales Reports & Graphs', 'M-Pesa Paybill Integration', '1 Staff Account', 'Priority Support'],
     notIncluded: ['Unlimited Staff Accounts', 'Roles & Permissions']
   },
   {
@@ -33,14 +33,14 @@ const PLANS = [
     price: 16999,
     desc: 'For businesses that need complete operational and staff management.',
     color: 'purple',
-    features: ['Everything in Growth', 'Unlimited Staff Accounts', 'Staff Activity Tracking', 'Roles & Permissions', 'Advanced Business Controls'],
+    features: ['Unlimited Inventory Items', 'Everything in Growth', 'Unlimited Staff Accounts', 'Staff Activity Tracking', 'Roles & Permissions', 'Advanced Business Controls'],
     notIncluded: []
   },
 ]
 
 const FEATURE_COMPARISON = [
+  { name: 'Inventory Management (Items)', lite: 'Up to 15', plus: 'Up to 100', max: 'Unlimited' },
   { name: 'Record & View Sales', lite: true, plus: true, max: true },
-  { name: 'Manage Stock & Customers', lite: true, plus: true, max: true },
   { name: 'Track Daily Expenses', lite: true, plus: true, max: true },
   { name: 'Profit Analytics', lite: false, plus: true, max: true },
   { name: 'M-Pesa Paybill Integration', lite: false, plus: true, max: true },
@@ -448,17 +448,35 @@ export default function SubscriptionPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
-                  {FEATURE_COMPARISON.map((f, i) => (
+                  {FEATURE_COMPARISON.map((f: any, i) => (
                     <tr key={i} className="hover:bg-slate-50/50 transition-all group">
                       <td className="py-6 font-bold text-slate-700 text-sm">{f.name}</td>
                       <td className="py-6 text-center">
-                        {f.lite ? <CheckCircle2 size={20} className="mx-auto text-emerald-500" /> : <span className="text-slate-200">✕</span>}
+                        {typeof f.lite === 'string' ? (
+                          <span className="text-xs font-black text-emerald-600 hl-mono">{f.lite}</span>
+                        ) : f.lite ? (
+                          <CheckCircle2 size={20} className="mx-auto text-emerald-500" />
+                        ) : (
+                          <span className="text-slate-200">✕</span>
+                        )}
                       </td>
                       <td className="py-6 text-center">
-                        {f.plus ? <CheckCircle2 size={20} className="mx-auto text-blue-500" /> : <span className="text-slate-200">✕</span>}
+                        {typeof f.plus === 'string' ? (
+                          <span className="text-xs font-black text-blue-600 hl-mono">{f.plus}</span>
+                        ) : f.plus ? (
+                          <CheckCircle2 size={20} className="mx-auto text-blue-500" />
+                        ) : (
+                          <span className="text-slate-200">✕</span>
+                        )}
                       </td>
                       <td className="py-6 text-center">
-                        {f.max ? <CheckCircle2 size={20} className="mx-auto text-purple-500" /> : <span className="text-slate-200">✕</span>}
+                        {typeof f.max === 'string' ? (
+                          <span className="text-xs font-black text-purple-600 hl-mono">{f.max}</span>
+                        ) : f.max ? (
+                          <CheckCircle2 size={20} className="mx-auto text-purple-500" />
+                        ) : (
+                          <span className="text-slate-200">✕</span>
+                        )}
                       </td>
                     </tr>
                   ))}
