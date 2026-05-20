@@ -35,8 +35,10 @@ export default function AdminLayout() {
         { to: '/admin/businesses', label: 'Businesses', icon: Briefcase },
         { to: '/admin/user-operations', label: 'Users', icon: Users },
         { to: '/admin/subscriptions', label: 'Subscriptions', icon: CreditCard },
+        { to: '/admin/community-reviews', label: 'Community Reviews', icon: MessageSquare },
       ],
     },
+
     {
       label: 'Governance',
       items: [

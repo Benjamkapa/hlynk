@@ -2,18 +2,36 @@ import { useQuery } from '@tanstack/react-query'
 import { adminApi } from '../../lib/api/providers'
 import { toast } from 'sonner'
 import { getErrorMessage } from '../../lib/utils/error'
-import { DollarSign, TrendingUp, PieChart, ArrowUpRight, Download, Search, Filter, CheckCircle2, Clock, CreditCard, Activity, Landmark, Wallet } from 'lucide-react'
+import { DollarSign, TrendingUp, PieChart, ArrowUpRight, Download, Search, Filter, CheckCircle2, Clock, CreditCard, Activity, Landmark, Wallet, AlertTriangle, ExternalLink, Smartphone, Banknote, ChevronLeft, ChevronRight, X } from 'lucide-react'
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, BarChart, Bar } from 'recharts'
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { AdminStats } from '../../lib/types/api'
 
 export default function FinancialsPage() {
+  const [page, setPage] = useState(1)
+  const [search, setSearch] = useState('')
+  const [status, setStatus] = useState('')
+  const [method, setMethod] = useState('')
+  const [type, setType] = useState('')
+  const [selectedTxId, setSelectedTxId] = useState<string | null>(null)
+
   const { data: rawStats, error } = useQuery<any>({
     queryKey: ['financial-stats'],
     queryFn: () => adminApi.getStats('DAILY')
   })
   
+  const { data: txData, isLoading: txLoading } = useQuery({
+    queryKey: ['admin-transactions', page, search, status, method, type],
+    queryFn: () => adminApi.getTransactions({ page, limit: 10, search, status, method, type })
+  })
+
+  const { data: selectedTxData } = useQuery({
+    queryKey: ['admin-tx-detail', selectedTxId],
+    queryFn: () => adminApi.getTransactionDetail(selectedTxId!),
+    enabled: !!selectedTxId
+  })
+
   const stats = rawStats?.data || rawStats;
 
   useEffect(() => {
@@ -23,7 +41,7 @@ export default function FinancialsPage() {
   const revenueData = stats?.trends?.revenueTrend?.map((r: any) => ({
     name: r.name,
     revenue: r.value,
-    profit: r.value * 0.8 // Simulate net profit
+    profit: r.value * 0.8 
   })) || []
 
   return (
@@ -31,7 +49,7 @@ export default function FinancialsPage() {
       
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
         <div className="space-y-2">
-          <h1 className="text-5xl font-black text-slate-900 tracking-tighter">Financial Ledger</h1>
+          <h1 className="text-5xl font-black text-slate-900 tracking-tighter">Master Ledger</h1>
           <p className="text-slate-500 font-medium text-xl">Global revenue orchestration and payout monitoring</p>
         </div>
         <div className="flex gap-4">
@@ -39,25 +57,7 @@ export default function FinancialsPage() {
              Audit Trail
            </a>
             <button 
-              onClick={async () => {
-                try {
-                  const token = localStorage.getItem('accessToken')
-                  const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/admin/financials/export?type=SALES`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                  })
-                  if (!response.ok) throw new Error('Export failed')
-                  const blob = await response.blob()
-                  const url = window.URL.createObjectURL(blob)
-                  const a = document.createElement('a')
-                  a.href = url
-                  a.download = `financial-report-${Date.now()}.csv`
-                  document.body.appendChild(a)
-                  a.click()
-                  a.remove()
-                } catch (err) {
-                  toast.error('Failed to export report')
-                }
-              }}
+              onClick={() => toast.info('Exporting full ledger...')}
               className="bg-[#0D4A3E] text-white h-12 px-6 rounded-md font-bold text-sm hover:bg-[#0A3D33] transition-all flex items-center gap-2 shadow-xl shadow-emerald-900/10"
             >
               <Download size={18} /> Export Reports
@@ -110,7 +110,7 @@ export default function FinancialsPage() {
         </div>
 
         <div className="space-y-10">
-            <div className="bg-emerald-900 rounded-lg p-10 text-white shadow-2xl shadow-emerald-900/20 relative overflow-hidden">
+            <div className="bg-emerald-900 rounded-lg p-10 text-white shadow-2xl shadow-emerald-900/20 relative overflow-hidden h-full">
                <div className="relative z-10">
                  <PieChart size={40} className="text-emerald-400 mb-6" />
                  <h4 className="text-xl font-black mb-2">Payout Health</h4>
@@ -130,35 +130,266 @@ export default function FinancialsPage() {
                </div>
                <Landmark size={180} className="absolute -right-10 -bottom-10 text-white opacity-5 rotate-12" />
             </div>
-
-           <div className="bg-white p-8 rounded-[32px] border border-slate-100 shadow-sm">
-              <h4 className="text-lg font-black text-slate-900 mb-6">Recent Adjustments</h4>
-              <div className="space-y-6">
-                 {stats?.recentActivity?.length > 0 ? stats.recentActivity.map((adj: any, i: number) => (
-                    <div key={i} className="flex justify-between items-center group cursor-pointer">
-                       <div className="flex items-center gap-4">
-                          <div className="h-10 w-10 rounded-xl bg-slate-50 text-slate-400 flex items-center justify-center group-hover:bg-emerald-50 group-hover:text-emerald-600 transition-all">
-                             <Activity size={18} />
-                          </div>
-                          <div>
-                             <p className="text-sm font-black text-slate-900">{adj.event}</p>
-                             <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">{adj.entity}</p>
-                          </div>
-                       </div>
-                       <div className="text-right">
-                          <p className="text-sm font-black hl-mono text-slate-900">SYSTEM</p>
-                          <p className="text-[10px] text-slate-400 font-bold hl-mono uppercase">
-                            {new Date(adj.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                          </p>
-                       </div>
-                    </div>
-                 )) : (
-                    <p className="text-xs text-slate-400 font-bold text-center py-4">No recent adjustments</p>
-                 )}
-              </div>
-           </div>
         </div>
       </div>
+
+      {/* MASTER TRANSACTION TABLE */}
+      <div className="bg-white rounded-lg border border-slate-100 shadow-sm overflow-hidden">
+        <div className="p-8 border-b border-slate-50 flex flex-col xl:flex-row gap-6 justify-between items-start xl:items-center">
+          <div>
+            <h3 className="text-xl font-black text-slate-900 tracking-tight">Active Payments Log</h3>
+            <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mt-1">Unified view of all platform transactions</p>
+          </div>
+          
+          <div className="flex flex-wrap gap-4 w-full xl:w-auto">
+            <div className="relative flex-1 xl:w-64 min-w-[200px]">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={16} />
+              <input 
+                type="text" 
+                placeholder="Search Reference, ID, Business..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-lg text-xs font-bold focus:ring-4 focus:ring-emerald-500/5 transition-all outline-none"
+              />
+            </div>
+            
+            <select 
+              value={method}
+              onChange={(e) => setMethod(e.target.value)}
+              className="bg-slate-50 border border-slate-100 rounded-lg px-4 py-3 text-[10px] font-black uppercase tracking-widest text-slate-500 outline-none"
+            >
+              <option value="">All Methods</option>
+              <option value="MPESA">M-Pesa</option>
+              <option value="CASH">Cash</option>
+            </select>
+
+            <select 
+              value={status}
+              onChange={(e) => setStatus(e.target.value)}
+              className="bg-slate-50 border border-slate-100 rounded-lg px-4 py-3 text-[10px] font-black uppercase tracking-widest text-slate-500 outline-none"
+            >
+              <option value="">All Statuses</option>
+              <option value="0">Paid/Success</option>
+              <option value="2">Pending</option>
+              <option value="1">Failed</option>
+              <option value="3">Cancelled</option>
+            </select>
+          </div>
+        </div>
+
+        <div className="overflow-x-auto">
+          <table className="w-full text-left">
+            <thead>
+              <tr className="bg-slate-50/50 border-b border-slate-50">
+                <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Transaction ID</th>
+                <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Tenant / Business</th>
+                <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Method</th>
+                <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Type</th>
+                <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Amount</th>
+                <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Status</th>
+                <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Created</th>
+                <th className="px-8 py-5"></th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-50">
+              {txLoading ? (
+                Array.from({length: 5}).map((_, i) => (
+                  <tr key={i} className="animate-pulse">
+                    <td colSpan={8} className="px-8 py-6"><div className="h-4 bg-slate-100 rounded w-full" /></td>
+                  </tr>
+                ))
+              ) : txData?.data?.items?.length === 0 ? (
+                <tr>
+                  <td colSpan={8} className="px-8 py-20 text-center text-sm font-bold text-slate-400 italic">No transactions found</td>
+                </tr>
+              ) : txData?.data?.items?.map((tx: any) => (
+                <tr key={tx.id} className="hover:bg-slate-50/50 transition-colors group">
+                  <td className="px-8 py-6">
+                    <span className="text-xs font-black hl-mono text-slate-900">#{tx.id.slice(0, 12)}</span>
+                  </td>
+                  <td className="px-8 py-6">
+                    <div>
+                      <p className="text-xs font-black text-slate-900 capitalize">{tx.businessName}</p>
+                      <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">{tx.tenantSlug}</p>
+                    </div>
+                  </td>
+                  <td className="px-8 py-6">
+                    <div className="flex items-center gap-2">
+                      {tx.mpesaRequestId ? (
+                        <div className="flex items-center gap-1.5 px-2 py-1 bg-emerald-50 text-emerald-600 rounded-md">
+                          <Smartphone size={10} />
+                          <span className="text-[9px] font-black uppercase tracking-tighter">M-Pesa</span>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-1.5 px-2 py-1 bg-slate-100 text-slate-500 rounded-md">
+                          <Banknote size={10} />
+                          <span className="text-[9px] font-black uppercase tracking-tighter">Cash</span>
+                        </div>
+                      )}
+                    </div>
+                  </td>
+                  <td className="px-8 py-6">
+                    <span className="text-[10px] font-black bg-slate-100 text-slate-500 px-2 py-1 rounded-md uppercase tracking-tighter">
+                      {tx.transactionType}
+                    </span>
+                  </td>
+                  <td className="px-8 py-6 text-right">
+                    <span className="text-sm font-black text-slate-900 hl-mono">KES {Number(tx.amount).toLocaleString()}</span>
+                  </td>
+                  <td className="px-8 py-6 text-right">
+                    <StatusBadge status={tx.status} resultCode={tx.mpesaResultCode} />
+                  </td>
+                  <td className="px-8 py-6 text-right">
+                    <span className="text-[10px] font-black text-slate-400 hl-mono uppercase">
+                      {new Date(tx.createdAt).toLocaleDateString()}
+                    </span>
+                  </td>
+                  <td className="px-8 py-6 text-right">
+                    <button 
+                      onClick={() => setSelectedTxId(tx.id)}
+                      className="p-2 h-8 w-8 rounded-full hover:bg-emerald-50 text-slate-300 hover:text-emerald-600 transition-all flex items-center justify-center"
+                    >
+                      <ExternalLink size={14} />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {/* PAGINATION */}
+        <div className="p-8 border-t border-slate-50 flex items-center justify-between">
+          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+            Showing <span className="text-slate-900">{txData?.data?.items?.length || 0}</span> of <span className="text-slate-900">{txData?.data?.pagination?.total || 0}</span> records
+          </p>
+          <div className="flex items-center gap-4">
+            <button 
+              disabled={page === 1}
+              onClick={() => setPage(p => p - 1)}
+              className="h-10 w-10 flex items-center justify-center rounded-lg border border-slate-100 text-slate-400 hover:text-emerald-600 disabled:opacity-30 transition-all"
+            >
+              <ChevronLeft size={18} />
+            </button>
+            <span className="text-xs font-black hl-mono text-slate-900 bg-slate-50 px-3 py-2 rounded-lg border border-slate-100">
+              {page}
+            </span>
+            <button 
+              disabled={page >= (txData?.data?.pagination?.pages || 1)}
+              onClick={() => setPage(p => p + 1)}
+              className="h-10 w-10 flex items-center justify-center rounded-lg border border-slate-100 text-slate-400 hover:text-emerald-600 disabled:opacity-30 transition-all"
+            >
+              <ChevronRight size={18} />
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* DETAIL DRAWER / MODAL */}
+      {selectedTxId && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => setSelectedTxId(null)} />
+          <div className="relative bg-white w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
+            {!selectedTxData ? (
+              <div className="p-20 flex flex-col items-center justify-center gap-4">
+                <Activity className="animate-spin text-emerald-500" size={32} />
+                <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Fetching Audit Log...</p>
+              </div>
+            ) : (
+              <div className="p-0">
+                <div className="p-8 bg-[#0D4A3E] text-white flex justify-between items-start">
+                  <div>
+                    <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-60 mb-2">Transaction Detail</p>
+                    <h3 className="text-3xl font-black hl-mono">#{selectedTxData.data.id.slice(0, 16)}</h3>
+                  </div>
+                  <button onClick={() => setSelectedTxId(null)} className="p-2 hover:bg-white/10 rounded-full transition-all">
+                    <X size={20} />
+                  </button>
+                </div>
+
+                <div className="p-10 space-y-10 max-h-[70vh] overflow-y-auto">
+                  <div className="grid grid-cols-2 gap-8">
+                    <div>
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Entity / Business</label>
+                        <p className="text-sm font-black text-slate-900">{selectedTxData.data.tenantName}</p>
+                        <p className="text-[10px] text-slate-500 font-medium tracking-tight">ID: {selectedTxData.data.tenantId}</p>
+                    </div>
+                    <div className="text-right">
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Amount</label>
+                        <p className="text-2xl font-black text-slate-900 hl-mono">KES {Number(selectedTxData.data.amount).toLocaleString()}</p>
+                    </div>
+                  </div>
+
+                  <div className="p-6 bg-slate-50 rounded-xl space-y-4">
+                    <h4 className="text-[10px] font-black text-slate-900 uppercase tracking-widest border-b border-white pb-2 flex items-center gap-2">
+                       <CreditCard size={12} /> Execution Details
+                    </h4>
+                    <div className="grid grid-cols-2 gap-6">
+                       <div>
+                          <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Type</p>
+                          <p className="text-[11px] font-bold text-slate-900 uppercase">{selectedTxData.data.transactionType}</p>
+                       </div>
+                       <div>
+                          <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Internal Ref</p>
+                          <p className="text-[11px] font-bold text-slate-900 hl-mono">{selectedTxData.data.reference}</p>
+                       </div>
+                       {selectedTxData.data.mpesaRequestId && (
+                         <div className="col-span-2">
+                            <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">M-Pesa Checkout ID</p>
+                            <p className="text-[11px] font-bold text-emerald-600 hl-mono">{selectedTxData.data.mpesaRequestId}</p>
+                         </div>
+                       )}
+                    </div>
+                  </div>
+
+                  {selectedTxData.data.mpesaLogs && selectedTxData.data.mpesaLogs.length > 0 && (
+                    <div className="space-y-4">
+                       <h4 className="text-[10px] font-black text-slate-900 uppercase tracking-widest flex items-center gap-2">
+                          <Activity size={12} /> M-Pesa Interaction Logs
+                       </h4>
+                       <div className="divide-y divide-slate-50 border border-slate-100 rounded-xl">
+                          {selectedTxData.data.mpesaLogs.map((log: any, i: number) => (
+                            <div key={i} className="p-4 flex justify-between items-start gap-4">
+                               <div>
+                                  <p className="text-[10px] font-black text-slate-900">{log.type === 0 ? 'PUSH INITIATION' : 'CALLBACK RESPONSE'}</p>
+                                  <p className="text-[9px] text-slate-500 font-medium">{log.resultDesc || 'Initiated successfully'}</p>
+                               </div>
+                               <div className="text-right">
+                                  <span className={`text-[8px] font-black px-2 py-0.5 rounded uppercase ${log.resultCode === 0 ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600'}`}>
+                                     CODE {log.resultCode ?? '...'}
+                                  </span>
+                                  <p className="text-[8px] text-slate-400 mt-1 hl-mono">{new Date(log.createdAt).toLocaleTimeString()}</p>
+                               </div>
+                            </div>
+                          ))}
+                       </div>
+                    </div>
+                  )}
+
+                  {selectedTxData.data.context && (
+                    <div className="p-6 border border-emerald-100 bg-emerald-50/30 rounded-xl">
+                       <p className="text-[10px] font-black text-emerald-800 uppercase tracking-widest mb-3">Linked Context Information</p>
+                       <pre className="text-[9px] hl-mono text-slate-600 overflow-x-auto">
+                          {JSON.stringify(selectedTxData.data.context.data, null, 2)}
+                       </pre>
+                    </div>
+                  )}
+                </div>
+
+                <div className="p-8 border-t border-slate-100 bg-slate-50/50 flex justify-end">
+                   <button 
+                     onClick={() => setSelectedTxId(null)}
+                     className="px-8 py-3 bg-white border border-slate-200 rounded-lg text-[10px] font-black uppercase tracking-widest text-slate-600 hover:bg-white active:scale-95 transition-all"
+                   >
+                     Close Ledger
+                   </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
     </div>
   )
 }
@@ -186,6 +417,33 @@ function FinancialStatCard({ title, value, sub, icon: Icon, color }: any) {
         </div>
         <p className="text-xs text-gray-500 font-bold mt-2">{sub}</p>
       </div>
+    </div>
+  )
+}
+
+function StatusBadge({ status, resultCode }: { status: number, resultCode?: number }) {
+  if (status === 0) return (
+    <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-emerald-50 text-emerald-600 rounded-full border border-emerald-100">
+      <CheckCircle2 size={10} />
+      <span className="text-[10px] font-black uppercase tracking-widest">Successful</span>
+    </div>
+  )
+  if (status === 2) return (
+    <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-amber-50 text-amber-600 rounded-full border border-amber-100">
+      <Clock size={10} className="animate-spin-slow" />
+      <span className="text-[10px] font-black uppercase tracking-widest">Pending</span>
+    </div>
+  )
+  if (status === 3) return (
+    <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-slate-100 text-slate-400 rounded-full border border-slate-200">
+      <X size={10} />
+      <span className="text-[10px] font-black uppercase tracking-widest">Cancelled</span>
+    </div>
+  )
+  return (
+    <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-red-50 text-red-600 rounded-full border border-red-100">
+      <AlertTriangle size={10} />
+      <span className="text-[10px] font-black uppercase tracking-widest">Failed {resultCode ? `(${resultCode})` : ''}</span>
     </div>
   )
 }

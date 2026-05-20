@@ -367,7 +367,14 @@ function ProviderDetailsPanel({ provider, onClose }: { provider: any, onClose: (
 
 function AddBusinessForm({ onClose }: { onClose: () => void }) {
   const queryClient = useQueryClient()
-  const [form, setForm] = useState({ businessName: '', ownerName: '', phone: '' })
+  const [form, setForm] = useState({ 
+    businessName: '', 
+    ownerName: '', 
+    phone: '', 
+    email: '', 
+    category: 'Other',
+    planName: 'LITE'
+  })
 
   const mutation = useMutation({
     mutationFn: adminApi.createTenant,
@@ -381,20 +388,57 @@ function AddBusinessForm({ onClose }: { onClose: () => void }) {
 
   return (
     <div className="space-y-6">
-      <InputGroup label="Business Name" placeholder="e.g. Quick Mart" value={form.businessName} onChange={(v: string) => setForm({ ...form, businessName: v })} />
-      <InputGroup label="Owner Full Name" placeholder="e.g. John Doe" value={form.ownerName} onChange={(v: string) => setForm({ ...form, ownerName: v })} />
-      <InputGroup label="Phone Number" placeholder="e.g. 0712 345 678" mono value={form.phone} onChange={(v: string) => setForm({ ...form, phone: v })} />
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <InputGroup label="Business Name" placeholder="e.g. Quick Mart" value={form.businessName} onChange={(v: string) => setForm({ ...form, businessName: v })} />
+        <InputGroup label="Owner Full Name" placeholder="e.g. John Doe" value={form.ownerName} onChange={(v: string) => setForm({ ...form, ownerName: v })} />
+      </div>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <InputGroup label="Phone Number" placeholder="07... " mono value={form.phone} onChange={(v: string) => setForm({ ...form, phone: v })} />
+        <InputGroup label="Email Address" placeholder="owner@business.com" value={form.email} onChange={(v: string) => setForm({ ...form, email: v })} />
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="space-y-2">
+          <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Business Category</label>
+          <select 
+            value={form.category} 
+            onChange={(e) => setForm({ ...form, category: e.target.value })}
+            className="w-full bg-gray-50 border-none rounded-md py-4 px-4 outline-none focus:ring-2 focus:ring-emerald-500/10 transition-all text-sm font-bold"
+          >
+            <option value="Other">Other / General</option>
+            <option value="Salon">Salon & Barber</option>
+            <option value="Restaurant">Restaurant & Cafe</option>
+            <option value="Retail">Retail Shop</option>
+            <option value="Healthcare">Healthcare</option>
+            <option value="Professional">Professional Services</option>
+          </select>
+        </div>
+        <div className="space-y-2">
+          <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Onboarding Plan</label>
+          <select 
+            value={form.planName} 
+            onChange={(e) => setForm({ ...form, planName: e.target.value })}
+            className="w-full bg-gray-50 border-none rounded-md py-4 px-4 outline-none focus:ring-2 focus:ring-emerald-500/10 transition-all text-sm font-bold"
+          >
+            <option value="LITE">Starter (7-Day Trial)</option>
+            <option value="PLUS">Growth (Subscription)</option>
+            <option value="MAX">Business Pro (Subscription)</option>
+          </select>
+        </div>
+      </div>
       
       <button 
         onClick={() => mutation.mutate(form)}
         disabled={mutation.isPending}
         className="w-full py-5 mt-6 bg-[#0D4A3E] text-white rounded-md font-black text-xs uppercase tracking-widest hover:bg-[#0A3D33] transition-all shadow-xl flex items-center justify-center"
       >
-        {mutation.isPending ? 'Registering...' : 'Register Business'}
+        {mutation.isPending ? 'Registering...' : 'Complete Registration'}
       </button>
     </div>
   )
 }
+
 
 function InputGroup({ label, placeholder, mono = false, value, onChange }: any) {
   return (

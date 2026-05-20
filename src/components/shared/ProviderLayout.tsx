@@ -140,16 +140,21 @@ export default function ProviderLayout() {
   const daysRemaining = Math.max(0, Math.ceil(timeRemainingMs / (1000 * 60 * 60 * 24)));
   const isCritical = daysRemaining < 3 && timeRemainingMs > 0;
   const isExpiringSoon = daysRemaining <= 5 && timeRemainingMs > 0;
-  const isTrialExpired = isTrial && targetEndDate && new Date() > new Date(targetEndDate);
+  const isExpired = Number(user?.subscription?.status) === 1;
+  const isTrialExpired = isTrial && isExpired;
 
   useEffect(() => {
-    if (user?.role === 'PROVIDER' && isTrialExpired && !user?.hasReviewed && !localStorage.getItem('hlynk_has_reviewed')) {
+    // Unique key for the current expiry period
+    const reviewKey = `hlynk_reviewed_${user?.tenantId}_${targetEndDate}`;
+    const alreadyReviewed = localStorage.getItem(reviewKey);
+
+    if (user?.role === 'PROVIDER' && (isExpired || isTrialExpired) && !alreadyReviewed) {
       setShowReviewModal(true);
-    } else if (isExpiringSoon && !localStorage.getItem('hlynk_has_reviewed')) {
-      const timer = setTimeout(() => setShowReviewModal(true), 10000); // 10s delay for better UX
+    } else if (isExpiringSoon && !alreadyReviewed) {
+      const timer = setTimeout(() => setShowReviewModal(true), 5000); // 5s delay for better UX
       return () => clearTimeout(timer);
     }
-  }, [user, isExpiringSoon, isTrialExpired]);
+  }, [user, isExpiringSoon, isExpired, isTrialExpired, targetEndDate]);
 
   const handleSubmitReview = async () => {
     if (reviewRating === 0) return toast.error("Please select a rating");
@@ -157,7 +162,9 @@ export default function ProviderLayout() {
     try {
       await providersApi.submitReview({ rating: reviewRating, reviewText });
       toast.success("Thank you for your feedback!");
-      localStorage.setItem('hlynk_has_reviewed', 'true');
+      
+      const reviewKey = `hlynk_reviewed_${user?.tenantId}_${targetEndDate}`;
+      localStorage.setItem(reviewKey, 'true');
       setShowReviewModal(false);
     } catch (err: any) {
       toast.error(err.message || "Failed to submit review");
@@ -416,7 +423,8 @@ export default function ProviderLayout() {
           </div>
         )}
         <TopNav
-          onMobileMenuToggle={() => setIsMobileOpen(true)}
+          isMobileOpen={isMobileOpen}
+          onMobileMenuToggle={() => setIsMobileOpen(!isMobileOpen)}
           isCollapsed={isCollapsed}
           onToggleCollapse={() => setIsCollapsed(!isCollapsed)}
           showMail={true}

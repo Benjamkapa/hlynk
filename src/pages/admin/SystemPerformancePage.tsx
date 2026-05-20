@@ -57,49 +57,74 @@ export default function SystemPerformancePage() {
         <MetricCard title="Incident Rate" value={health?.incidentRate || '0%'} sub="Critical Zero" icon={ShieldCheck} trend="none" color="purple" />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-        <div className="bg-white p-10 rounded-lg border border-slate-100 shadow-sm">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+        <div className="bg-white p-10 rounded-lg border border-slate-100 shadow-sm relative overflow-hidden">
           <div className="flex justify-between items-center mb-10">
             <div>
-               <h3 className="text-2xl font-black text-slate-900">API Latency Velocity</h3>
-               <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mt-1">Real-time millisecond distribution</p>
+               <h3 className="text-2xl font-black text-slate-900">API Velocity</h3>
+               <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mt-1">Platform Distribution Latency</p>
             </div>
             <div className="h-10 w-10 rounded-md bg-slate-50 flex items-center justify-center text-slate-400">
                <Activity size={20} />
             </div>
           </div>
-          <div className="h-[350px]">
-            <Gauge 
-               value={parseInt(health?.apiLatency || '0')} 
-               max={500} 
-               label="Current Latency" 
-               unit="ms" 
-               colorHex="#3B82F6" 
-            />
+          <div className="h-[300px]">
+             <Gauge 
+                value={parseInt(health?.apiLatency || '0')} 
+                max={500} 
+                label="System Latency" 
+                unit="ms" 
+                colorHex="#3B82F6" 
+             />
           </div>
+          <div className="absolute top-0 right-0 h-32 w-32 bg-blue-50 rounded-full blur-[60px] -mr-16 -mt-16 opacity-50" />
         </div>
 
-        <div className="bg-white p-10 rounded-lg border border-slate-100 shadow-sm">
+        <div className="bg-white p-10 rounded-lg border border-slate-100 shadow-sm relative overflow-hidden">
           <div className="flex justify-between items-center mb-10">
             <div>
-               <h3 className="text-2xl font-black text-slate-900">System Load Metrics</h3>
-               <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mt-1">CPU vs Memory Saturation %</p>
+               <h3 className="text-2xl font-black text-slate-900 text-emerald-600">Safaricom G2</h3>
+               <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mt-1">M-Pesa Webhook & SDK Pulse</p>
+            </div>
+            <div className={`h-10 w-10 rounded-full flex items-center justify-center text-white shadow-lg ${health?.safaricomStatus === 'Healthy' ? 'bg-emerald-500' : 'bg-amber-500'}`}>
+               <Globe size={20} />
+            </div>
+          </div>
+          <div className="h-[300px]">
+             <Gauge 
+                value={parseInt(health?.safaricomLatency || '0')} 
+                max={200} 
+                label="Safaricom Response" 
+                unit="ms" 
+                colorHex="#10B981" 
+             />
+          </div>
+          <div className={`absolute top-0 right-0 h-32 w-32 rounded-full blur-[60px] -mr-16 -mt-16 opacity-30 ${health?.safaricomStatus === 'Healthy' ? 'bg-emerald-100' : 'bg-amber-100'}`} />
+        </div>
+
+        <div className="bg-white p-10 rounded-lg border border-slate-100 shadow-sm relative overflow-hidden">
+          <div className="flex justify-between items-center mb-10">
+            <div>
+               <h3 className="text-2xl font-black text-slate-900">Cluster Load</h3>
+               <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mt-1">CPU & Memory Saturation</p>
             </div>
             <div className="h-10 w-10 rounded-md bg-slate-50 flex items-center justify-center text-slate-400">
                <Server size={20} />
             </div>
           </div>
-          <div className="h-[350px]">
-            <Gauge 
-               value={parseInt(health?.cpuLoad || '0')} 
-               max={100} 
-               label="CPU Saturation" 
-               unit="%" 
-               colorHex="#8B5CF6" 
-            />
+          <div className="h-[300px]">
+             <Gauge 
+                value={parseInt(health?.cpuLoad || '0')} 
+                max={100} 
+                label="Computing Load" 
+                unit="%" 
+                colorHex="#8B5CF6" 
+             />
           </div>
+          <div className="absolute top-0 right-0 h-32 w-32 bg-purple-50 rounded-full blur-[60px] -mr-16 -mt-16 opacity-50" />
         </div>
       </div>
+
 
       {/* Cluster Nodes */}
       <div className="bg-slate-900 rounded-lg p-10 text-white relative overflow-hidden">

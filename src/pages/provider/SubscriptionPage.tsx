@@ -158,7 +158,7 @@ export default function SubscriptionPage() {
       setPaymentResultMessage(null);
       
       // Force refresh everything
-      queryClient.invalidateQueries({ queryKey: ['subscriptions-me'] });
+      queryClient.invalidateQueries({ queryKey: ['my-subscription'] });
       queryClient.invalidateQueries({ queryKey: ['billing-history'] });
       refreshUser();
       
@@ -169,6 +169,12 @@ export default function SubscriptionPage() {
         description: `Your ${currentPlan || 'new'} plan is now active. All features are unlocked.`,
         icon: <CheckCircle2 className="text-emerald-500" />
       });
+
+      // Automatically reload the page after a short delay to manifest the changes
+      // This ensures the sidebar, guard, and all other components see the fresh subscription
+      setTimeout(() => {
+        window.location.href = '/dashboard'; // Redirect to dashboard to "exit" the lock
+      }, 2000);
       return;
     }
 
@@ -199,7 +205,7 @@ export default function SubscriptionPage() {
     mutationFn: (phone: string) => subscriptionsApi.renew(phone),
     onSuccess: (data) => {
       setInitialPlan(subResponse?.data?.planName || null)
-      toast.success(data.message || 'STK Push sent!')
+      toast.success(data.message || 'STK Push sent to your phone, Enter your pin to complete the transaction!')
       setShowRenewModal(false)
       setIsWaitingForPayment(true)
       // Store the specific payment ID if returned, or we'll fallback to latest in history
@@ -242,6 +248,11 @@ export default function SubscriptionPage() {
         toast.success("Payment verified successfully! Your plan is active.")
         queryClient.clear()
         refreshUser()
+
+        // Automatically reload and return to dashboard
+        setTimeout(() => {
+          window.location.href = '/dashboard'
+        }, 2000)
       } else {
         toast.info(`Transaction Status: ${data.data.status}`)
         queryClient.invalidateQueries({ queryKey: ['billing-history'] })

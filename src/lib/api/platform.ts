@@ -40,4 +40,6 @@ export const platformApi = {
     api.patch(`/platform/notifications/${id}/read`).then((r) => r.data),
   markAllAsRead: () =>
     api.post('/platform/notifications/read-all').then((r) => r.data),
+  deleteAllNotifications: () =>
+    api.delete('/platform/notifications').then((r) => r.data),
 }

@@ -26,25 +26,19 @@ export default function SettingsPage() {
   })
 
   useEffect(() => {
-    if (res?.data && Array.isArray(res.data)) {
-      const stateObj: Record<string, string> = {}
-      res.data.forEach((s: any) => {
-        stateObj[s.key] = s.value
-      })
-      setFormState(stateObj)
+    if (res?.data) {
+      setFormState(res.data)
     }
     if (error) toast.error('Failed to load system settings')
   }, [res, error])
 
-  const setField = (key: string, value: string) => {
+  const setField = (key: string, value: any) => {
     setFormState(prev => ({ ...prev, [key]: value }))
   }
 
   const updateMutation = useMutation({
-    mutationFn: () => {
-      const payload = Object.keys(formState).map(k => ({ key: k, value: String(formState[k]) }))
-      return adminApi.updateSettings({ settings: payload })
-    },
+    mutationFn: () => adminApi.updateSettings(formState),
+
     onSuccess: () => {
       toast.success('System configurations synchronized')
       queryClient.invalidateQueries({ queryKey: ['admin-settings'] })
@@ -229,17 +223,17 @@ export default function SettingsPage() {
                       <span className="text-xs font-black uppercase tracking-[0.2em]">Primary Details</span>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                      <InputGroup 
-                        label="Application Identity" 
-                        value={formState['APP_NAME'] || ''} 
-                        onChange={(v: string) => setField('APP_NAME', v)} 
-                        placeholder="Platform name" 
+                       <InputGroup 
+                        label="Support Email" 
+                        value={formState['supportEmail'] || ''} 
+                        onChange={(v: string) => setField('supportEmail', v)} 
+                        placeholder="support@hlynk.com" 
                       />
                       <InputGroup 
-                        label="Ops Support Channel" 
-                        value={formState['SUPPORT_EMAIL'] || ''} 
-                        onChange={(v: string) => setField('SUPPORT_EMAIL', v)} 
-                        placeholder="Email address" 
+                        label="Platform Fee (%)" 
+                        value={formState['platformFeePercentage'] || '5.00'} 
+                        onChange={(v: string) => setField('platformFeePercentage', v)} 
+                        placeholder="5.00" 
                       />
                     </div>
                   </section>
@@ -247,23 +241,26 @@ export default function SettingsPage() {
                   <section className="space-y-6">
                     <div className="flex items-center gap-2 text-slate-400 mb-2">
                       <Globe size={16} />
-                      <span className="text-xs font-black uppercase tracking-[0.2em]">Localization</span>
+                      <span className="text-xs font-black uppercase tracking-[0.2em]">Maintenance</span>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                      <SelectGroup 
-                        label="Default Currency" 
-                        options={['KES - Kenya Shilling', 'USD - US Dollar', 'UGX - Uganda Shilling']} 
-                        value={formState['DEFAULT_CURRENCY'] || ''}
-                        onChange={(v: string) => setField('DEFAULT_CURRENCY', v)}
+                      <SecuritySwitch 
+                        title="Maintenance Mode" 
+                        desc="Temporary block all provider access for maintenance" 
+                        active={!!formState['maintenanceMode']} 
+                        onChange={(v: boolean) => setField('maintenanceMode', v)}
+                        icon={Settings}
                       />
-                      <SelectGroup 
-                        label="System Timezone" 
-                        options={['Africa/Nairobi (UTC+3)', 'UTC (Coordinated Universal Time)']} 
-                        value={formState['TIMEZONE'] || ''}
-                        onChange={(v: string) => setField('TIMEZONE', v)}
+                      <SecuritySwitch 
+                        title="Allow Registration" 
+                        desc="Enable new provider signups" 
+                        active={!!formState['allowNewProviders']} 
+                        onChange={(v: boolean) => setField('allowNewProviders', v)}
+                        icon={Globe}
                       />
                     </div>
                   </section>
+
                 </>
               )}
 

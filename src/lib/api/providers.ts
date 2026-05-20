@@ -19,7 +19,7 @@ export const providersApi = {
       headers: { 'Content-Type': 'multipart/form-data' },
     }).then(r => r.data)
   },
-  submitReview: (data: { rating: number, reviewText: string }) => api.post('/providers/review', data).then(r => r.data),
+  submitReview: (data: { rating: number, reviewText: string }) => api.post('/platform/reviews', data).then(r => r.data),
   getReviews: () => api.get('/providers/reviews').then(r => r.data),
   // Inventory aliases
   getProducts: (params?: any) => inventoryApi.list(params),
@@ -40,7 +40,7 @@ export const salesApi = {
   list: (params?: { page?: number; search?: string; date?: string; status?: string; limit?: number; sortBy?: string; sortOrder?: string }) => api.get('/sales', { params }).then(r => r.data),
   create: (data: any) => api.post('/sales', data).then(r => r.data),
   getDetails: (id: string) => api.get(`/sales/${id}`).then(r => r.data),
-  vendorMpesaPush: (data: { phone: string; amount: number; reference: string }) => api.post('/sales/mpesa-push', data).then(r => r.data),
+  vendorMpesaPush: (data: { phone: string; amount: number; reference: string; saleId?: string; customerName?: string }) => api.post('/sales/mpesa-push', data).then(r => r.data),
 }
 
 export const subscriptionsApi = {
@@ -131,6 +131,8 @@ export const adminApi = {
   getSettings: () => api.get('/admin/settings').then(r => r.data),
   updateSettings: (data: any) => api.put('/admin/settings', data).then(r => r.data),
   getActivityLogs: (params?: { page?: number; limit?: number; search?: string; category?: string }) => api.get('/admin/activity', { params }).then(r => r.data),
+  getTransactions: (params?: { page?: number; limit?: number; status?: string; method?: string; search?: string; type?: string }) => api.get('/admin/transactions', { params }).then(r => r.data),
+  getTransactionDetail: (id: string) => api.get(`/admin/transactions/${id}`).then(r => r.data),
   updateProfile: (data: any) => api.put('/admin/me', data).then(r => r.data),
   uploadPhoto: (file: File) => {
     const formData = new FormData()
@@ -140,5 +142,8 @@ export const adminApi = {
     }).then(r => r.data)
   },
   generatePromoCode: (data: { planName: string, durationDays: number, maxUses?: number, assignedPhone?: string }) =>
-    api.post('/subscriptions/promo/generate', data).then(r => r.data)
+    api.post('/subscriptions/promo/generate', data).then(r => r.data),
+  getReviews: (params?: { page?: number; limit?: number; status?: number }) => api.get('/admin/reviews', { params }).then(r => r.data),
+  updateReviewStatus: (id: string, status: number) => api.patch(`/admin/reviews/${id}`, { status }).then(r => r.data),
 }
+

@@ -35,6 +35,7 @@ const SubscriptionsPageAdmin = lazy(() => import('./pages/admin/SubscriptionsPag
 const PaymentsPageAdmin = lazy(() => import('./pages/admin/PaymentsPage'))
 const SettingsPageAdmin = lazy(() => import('./pages/admin/SettingsPage'))
 const HelpPageAdmin = lazy(() => import('./pages/admin/HelpPage'))
+const ReviewsPageAdmin = lazy(() => import('./pages/admin/ReviewsPage'))
 
 // Provider Pages
 const RecordSalePage = lazy(() => import('./pages/provider/RecordSalePage'))
@@ -119,6 +120,7 @@ export default function App() {
           <Route path="subscriptions" element={<SubscriptionsPageAdmin />} />
           <Route path="payments" element={<PaymentsPageAdmin />} />
           <Route path="forensic-audit" element={<AuditSecurityPage />} />
+          <Route path="community-reviews" element={<ReviewsPageAdmin />} />
           <Route path="reports" element={<ReportsPageAdmin />} />
           <Route path="settings" element={<SettingsPageAdmin />} />
           <Route path="help" element={<HelpPageAdmin />} />

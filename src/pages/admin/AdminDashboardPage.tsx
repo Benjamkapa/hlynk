@@ -101,11 +101,12 @@ export default function AdminDashboardPage() {
 
       {/* KPI Section */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-8 mb-8">
-        <KpiCard title="Hlynk Revenue" value={`KES ${stats?.revenue?.total?.toLocaleString() || '0'}`} sub="Platform Income" icon={DollarSign} trend="up" color="emerald" />
-        <KpiCard title="Platform Volume" value={`KES ${stats?.revenue?.platformVolume?.toLocaleString() || '0'}`} sub="Total sales processed" icon={Activity} trend="up" color="purple" />
-        <KpiCard title="M-Pesa Collections" value={`KES ${stats?.revenue?.mpesaCollections?.toLocaleString() || '0'}`} sub="Via System Paybill" icon={Landmark} trend="up" color="blue" />
-        <KpiCard title="Active Tenancy" value={stats?.overview?.totalProviders?.toLocaleString() || '0'} sub={`${stats?.overview?.payingProviders || 0} Paying`} icon={Users} trend="up" color="emerald" />
+        <KpiCard title="Platform Revenue" value={`KES ${stats?.revenue?.total?.toLocaleString() || '0'}`} sub="Subscription Income" icon={DollarSign} trend="up" color="emerald" />
+        <KpiCard title="Gross Volume (GMV)" value={`KES ${stats?.revenue?.platformVolume?.toLocaleString() || '0'}`} sub="Total sales processed" icon={Activity} trend="up" color="purple" />
+        <KpiCard title="Paybill Collections" value={`KES ${stats?.revenue?.mpesaCollections?.toLocaleString() || '0'}`} sub="M-Pesa system flow" icon={Landmark} trend="up" color="blue" />
+        <KpiCard title="Active Business" value={stats?.overview?.totalProviders?.toLocaleString() || '0'} sub={`${stats?.overview?.payingProviders || 0} Paying Subs`} icon={Users} trend="up" color="emerald" />
       </div>
+
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-10">
         {/* Main Chart */}

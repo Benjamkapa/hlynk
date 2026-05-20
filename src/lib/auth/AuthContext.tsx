@@ -58,7 +58,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     if (token) {
       fetchUser()
-      const intervalId = setInterval(fetchUser, 15000)
+      const intervalId = setInterval(fetchUser, 5000)
       return () => clearInterval(intervalId)
     }
 
