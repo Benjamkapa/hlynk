@@ -65,7 +65,9 @@ export default function RecordSalePage() {
   const addToCart = (product: any) => {
     const existing = cart.find(item => item.id === product.id)
     const currentQty = existing ? existing.quantity : 0
-    if (currentQty >= product.stockLevel) {
+    const isService = product.type === 'SERVICE'
+
+    if (!isService && currentQty >= product.stockLevel) {
       toast.error(product.stockLevel <= 0 ? `${product.name} is out of stock` : `Only ${product.stockLevel} units available`)
       return
     }
@@ -81,7 +83,8 @@ export default function RecordSalePage() {
     setCart(cart.map(item => {
       if (item.id === id) {
         const newQty = item.quantity + delta
-        if (delta > 0 && newQty > item.stockLevel) {
+        const isService = item.type === 'SERVICE'
+        if (delta > 0 && !isService && newQty > item.stockLevel) {
           toast.error(`Only ${item.stockLevel} units available`)
           return item
         }
@@ -342,11 +345,17 @@ export default function RecordSalePage() {
                     </div>
                   )}
 
-                  {/* Stock Badge */}
+                  {/* Stock/Service Badge */}
                   <div className="absolute top-4 right-4 z-20">
-                    <span className={`px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest shadow-lg ${availableStock <= 0 ? 'bg-red-600 text-white animate-pulse' : availableStock < 10 ? 'bg-amber-500 text-white' : 'bg-white/90 backdrop-blur-md text-slate-900'}`}>
-                      {availableStock <= 0 ? 'Out of Stock' : `${availableStock} in stock`}
-                    </span>
+                    {product.type === 'SERVICE' ? (
+                      <span className="px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest shadow-lg bg-emerald-100 text-emerald-800 border border-emerald-200">
+                        Service
+                      </span>
+                    ) : (
+                      <span className={`px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest shadow-lg ${availableStock <= 0 ? 'bg-red-600 text-white animate-pulse' : availableStock < 10 ? 'bg-amber-500 text-white' : 'bg-white/90 backdrop-blur-md text-slate-900'}`}>
+                        {availableStock <= 0 ? 'Out of Stock' : `${availableStock} in stock`}
+                      </span>
+                    )}
                   </div>
 
                   {/* Faded Detail Overlay */}
@@ -401,7 +410,11 @@ export default function RecordSalePage() {
                         <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{product.category}</span>
                       </td>
                       <td className="px-8 py-5">
-                        <span className={`text-[10px] font-black hl-mono ${availableStock < 10 ? 'text-red-600' : 'text-slate-600'}`}>{availableStock}</span>
+                        {product.type === 'SERVICE' ? (
+                          <span className="text-[10px] font-black text-emerald-600 uppercase tracking-widest">Service</span>
+                        ) : (
+                          <span className={`text-[10px] font-black hl-mono ${availableStock < 10 ? 'text-red-600' : 'text-slate-600'}`}>{availableStock}</span>
+                        )}
                       </td>
                       <td className="px-8 py-5 text-right">
                         <span className="text-sm font-black text-[#0D4A3E] hl-mono">KES {Number(product.price).toLocaleString()}</span>
