@@ -162,7 +162,7 @@ export default function ProviderLayout() {
     try {
       await providersApi.submitReview({ rating: reviewRating, reviewText });
       toast.success("Thank you for your feedback!");
-      
+
       const reviewKey = `hlynk_reviewed_${user?.tenantId}_${targetEndDate}`;
       localStorage.setItem(reviewKey, 'true');
       setShowReviewModal(false);
@@ -293,7 +293,7 @@ export default function ProviderLayout() {
   return (
     <div className="flex h-screen overflow-hidden hl-dash bg-slate-50/50">
 
-       {/* ── REVIEW MODAL ── */}
+      {/* ── REVIEW MODAL ── */}
       {showReviewModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-gray-900/60 backdrop-blur-sm p-4 animate-in fade-in duration-300">
           <div className="bg-white rounded-[.5rem] w-full max-w-md p-8 relative shadow-2xl animate-in zoom-in-95 duration-300">
@@ -317,7 +317,7 @@ export default function ProviderLayout() {
                 {isTrialExpired ? "Your Trial has Completed!" : "How are we doing?"}
               </h2>
               <p className="text-xs text-slate-500 font-medium leading-relaxed">
-                {isTrialExpired 
+                {isTrialExpired
                   ? "To keep using hlynk and help us grow, please share a quick rating of your experience so far!"
                   : "Your subscription is renewing soon. We'd love to know how hlynk has helped your business grow!"}
               </p>
@@ -411,7 +411,7 @@ export default function ProviderLayout() {
                   {isTrial ? "Critical: Free Trial Expiry Imminent" : "Critical: Subscription Expiry Imminent"}
                 </p>
                 <p className="text-[9px] font-medium opacity-80 uppercase tracking-widest leading-none">
-                  {isTrial 
+                  {isTrial
                     ? `Your free trial expires in ${daysRemaining} ${daysRemaining === 1 ? 'day' : 'days'}. Purchase a plan now to keep your business running smoothly.`
                     : `Your access expires in ${daysRemaining} ${daysRemaining === 1 ? 'day' : 'days'}. Renew now to avoid business disruption.`}
                 </p>

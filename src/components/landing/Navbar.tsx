@@ -3,10 +3,13 @@ import { Link } from 'react-router-dom'
 import { AlignRight, X } from 'lucide-react'
 
 const navItems = [
-  { label: "About",    href: "#about"    },
-  { label: "Features", href: "#features" },
-  { label: "Pricing",  href: "#pricing"  },
-  { label: "Contact",  href: "#contact"  },
+  { label: "Who Uses",   href: "#who"      },
+  { label: "About",      href: "#about"    },
+  { label: "Features",   href: "#features" },
+  { label: "How It Works", href: "#how"    },
+  { label: "Pricing",    href: "#pricing"  },
+  { label: "FAQ",        href: "#faq"      },
+  { label: "Contact",    href: "#contact"  },
 ]
 
 export default function Navbar() {
@@ -95,7 +98,7 @@ export default function Navbar() {
           align-items: center;
           gap: 8px;
           padding: 9px 20px;
-          border-radius: 9999px;
+          border-radius: .5rem;
           background: #0D4A3E;
           font-size: 0.7rem;
           font-weight: 800;

@@ -2,7 +2,7 @@ import { CheckCircle2, TrendingUp, ShieldCheck, Users } from 'lucide-react'
 
 export default function About() {
   return (
-    <section id="about" className="py-20 bg-white relative overflow-hidden">
+    <section id="about" className="py-24 bg-transparent relative overflow-hidden">
       {/* Subtle Background Pattern - slightly more visible for depth */}
       <div className="absolute inset-0 opacity-[0.05] pointer-events-none text-emerald-400">
         <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
@@ -33,12 +33,12 @@ export default function About() {
         <div className="mb-24">
           <div className="relative rounded-3xl p-8 md:p-12 overflow-hidden bg-emerald-950/40 backdrop-blur-md border border-white/10 text-white shadow-2xl">
             <div className="absolute top-0 right-0 w-full h-full opacity-20 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-emerald-400/20 via-transparent to-transparent pointer-events-none" />
-            
+
             <div className="relative z-10 grid md:grid-cols-2 gap-12 items-center">
               <div>
                 <h4 className="text-2xl md:text-4xl font-black mb-6">Our Mission</h4>
                 <p className="text-base text-emerald-100/70 leading-relaxed mb-8">
-                  In Kenya's vibrant economy, small businesses are the heartbeat. Yet, many struggle to track cash flow across M-Pesa, cash, and bank transactions. 
+                  In Kenya's vibrant economy, small businesses are the heartbeat. Yet, many struggle to track cash flow across M-Pesa, cash, and bank transactions.
                   <br /><br />
                   hlynk digitizes the ledger for every local merchant—providing professional-grade analytics at their fingertips.
                 </p>
@@ -65,7 +65,7 @@ export default function About() {
         </div>
 
         {/* Pillars - Glassmorphic Grid */}
-        <div className="grid md:grid-cols-3 gap-8 ">
+        <div className="grid md:grid-cols-3 gap-8">
           {[
             {
               icon: ShieldCheck,

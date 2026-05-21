@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   Building2, MapPin, Phone, Tag,
-  Loader2, Check, ShieldCheck, Lock, Sparkles
+  Loader2, Check, ShieldCheck, Lock, Sparkles, ArrowLeft
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { authApi } from '../../lib/api/auth'
@@ -299,6 +299,39 @@ export default function LoginPage() {
           .lp-container { border-radius: 2rem; }
           .lp-right { padding: 40px 24px; }
         }
+
+        /* Mobile review float — hidden on desktop (left panel shows it) */
+        .lp-review-float {
+          display: none;
+        }
+        @media (max-width: 1024px) {
+          .lp-review-float {
+            display: block;
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: min(300px, calc(100vw - 40px));
+            z-index: 999;
+            transform-origin: bottom right;
+            animation: lp-float-in 0.65s cubic-bezier(0.22,1,0.36,1) 1.2s both;
+          }
+          .lp-review-float-inner {
+            background: linear-gradient(135deg, rgba(10,23,18,0.97) 0%, rgba(13,74,62,0.97) 100%);
+            backdrop-filter: blur(24px) saturate(160%);
+            -webkit-backdrop-filter: blur(24px) saturate(160%);
+            border: 1px solid rgba(52,211,153,0.18);
+            border-radius: 1rem;
+            padding: 0;
+            box-shadow:
+              0 24px 60px rgba(0,0,0,0.45),
+              0 0 0 1px rgba(255,255,255,0.04) inset;
+            overflow: hidden;
+          }
+        }
+        @keyframes lp-float-in {
+          from { opacity: 0; transform: translateY(20px) scale(0.93); }
+          to   { opacity: 1;  transform: translateY(0)   scale(1);    }
+        }
       `}</style>
 
       {/* ── Page fade-in ── */}
@@ -408,6 +441,11 @@ export default function LoginPage() {
                       </span>
                     </label>
 
+                    <a href="/" className="text-right flex items-center mt-8 cursor-pointer text-black font-normal pl-5 hover:underline bg-transparent border-none outline-none">
+                    <ArrowLeft size={12} className="mr-2" />
+                      Back to Website
+                    </a>
+
                   </motion.div>
                 ) : (
                   <motion.div
@@ -473,7 +511,7 @@ export default function LoginPage() {
                           setGoogleCredential('')
                           setGoogleProfile(null)
                         }}
-                        className="text-center mt-8 cursor-pointer text-black font-normal pl-5 hover:underline bg-transparent border-none outline-none"
+                        className="text-left mt-8 cursor-pointer text-black font-normal pl-5 hover:underline bg-transparent border-none outline-none"
                       >
                         Back to Login
                       </button>
@@ -484,6 +522,14 @@ export default function LoginPage() {
               </AnimatePresence>
 
             </div>
+
+            {/* ── Mobile-only floating review panel (fixed bottom-right) ── */}
+            <div className="lp-review-float">
+              <div className="lp-review-float-inner">
+                <ReviewPanel />
+              </div>
+            </div>
+
           </div>
         </motion.div>
 
