@@ -1,10 +1,11 @@
 import { useMemo } from 'react'
 import { ChevronLeft } from 'lucide-react'
-import { useNavigate } from 'react-router-dom'
 
 export default function GooglePrivacyPolicy() {
-  const navigate = useNavigate()
-  const updated = useMemo(() => new Date().toLocaleDateString(), [])
+  const updated = useMemo(
+    () => new Date().toLocaleDateString('en-KE', { year: 'numeric', month: 'long', day: 'numeric' }),
+    [],
+  )
 
   return (
     <div className="min-h-screen bg-white">
@@ -20,32 +21,47 @@ export default function GooglePrivacyPolicy() {
           <section>
             <h2 className="text-xl font-black text-slate-900">1. What this notice covers</h2>
             <p>
-              When you sign in with Google on the hynk portal, we process limited profile information provided by Google for authentication and account creation.
+              This notice explains what we do with the information you provide through Google sign-in on the Hlynk portal.
             </p>
           </section>
 
           <section>
-            <h2 className="text-xl font-black text-slate-900">2. Data we may receive</h2>
-            <ul className="list-disc pl-6">
-              <li>Your Google account email (and related account details provided by Google sign-in).</li>
-              <li>Basic profile information such as name and profile photo when available.</li>
+            <h2 className="text-xl font-black text-slate-900">2. Data we may receive from Google</h2>
+            <p className="mb-3">
+              Our backend verifies your Google credential and may read these fields (when present):
+            </p>
+            <ul className="list-disc pl-6 space-y-2">
+              <li><strong>Email</strong> (used to find or create your Hlynk user account).</li>
+              <li><strong>Name</strong> (used for account onboarding fields).</li>
+              <li><strong>Profile photo</strong> (used to store/update the profile photo in your account).</li>
             </ul>
           </section>
 
           <section>
-            <h2 className="text-xl font-black text-slate-900">3. Why we process it</h2>
-            <p>
-              We use Google sign-in data to verify your identity, create or match your user account, and enable access to the service.
-            </p>
+            <h2 className="text-xl font-black text-slate-900">3. How we use it</h2>
+            <ul className="list-disc pl-6 space-y-2">
+              <li>Authenticate your sign-in attempt.</li>
+              <li>Create a new tenant/business and associated provider record for first-time Google sign-ins.</li>
+              <li>Issue session tokens so you can access the portal.</li>
+              <li>Optionally sync/update your stored profile photo when Google provides a different photo.</li>
+            </ul>
           </section>
 
           <section>
             <h2 className="text-xl font-black text-slate-900">4. Google’s role</h2>
-            <p>
-              Google provides the authentication service. Our use of any data from Google is governed by this notice and our Privacy Policy.
+            <p className="mb-2">
+              Google is the identity provider for this sign-in method. Our use of Google-provided information is limited to enabling authentication and onboarding in our portal.
             </p>
-            <p className="mt-2">
-              You can review Google’s policies at: <a className="text-blue-600 underline" href="https://policies.google.com/privacy" target="_blank" rel="noreferrer">https://policies.google.com/privacy</a>
+            <p>
+              Review Google’s privacy information here:{' '}
+              <a
+                className="text-blue-600 underline"
+                href="https://policies.google.com/privacy"
+                target="_blank"
+                rel="noreferrer"
+              >
+                https://policies.google.com/privacy
+              </a>
             </p>
           </section>
 
@@ -60,4 +76,5 @@ export default function GooglePrivacyPolicy() {
     </div>
   )
 }
+
 

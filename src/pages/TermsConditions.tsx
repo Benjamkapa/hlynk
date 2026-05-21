@@ -187,7 +187,7 @@ export default function TermsConditions() {
               <p>
                 <strong>General enquiries:</strong> <a href="mailto:info@hlynk.co.ke" className="text-emerald-600 underline">info@hlynk.co.ke</a><br />
                 <strong>Legal / formal notices:</strong> <a href="mailto:benjamin@hlynk.co.ke" className="text-emerald-600 underline">benjamin@hlynk.co.ke</a><br />
-                <strong>Platform:</strong> www.hlynk.co.ke
+                {/* <strong href= >Platform:</strong> www.hlynk.co.ke */}
               </p>
             </section>
 

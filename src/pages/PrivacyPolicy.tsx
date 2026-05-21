@@ -135,7 +135,8 @@ export default function PrivacyPolicy() {
               <p className="mb-3">If you have any questions, concerns, or requests relating to this Privacy Policy or how we handle your data, please contact us:</p>
               <p>
                 <strong>Email:</strong> <a href="mailto:info@hlynk.co.ke" className="text-emerald-600 underline">info@hlynk.co.ke</a><br />
-                <strong>Platform:</strong> www.hlynk.co.ke
+                
+                {/* <strong>Platform:</strong> www.hlynk.co.ke */}
               </p>
               <p className="mt-4 text-sm text-slate-500">
                 If you believe your data rights have been violated and we have not resolved your concern, you may lodge a complaint with the <strong>Office of the Data Protection Commissioner (ODPC)</strong> of Kenya at <a href="https://www.odpc.go.ke" className="text-emerald-600 underline" target="_blank" rel="noreferrer">www.odpc.go.ke</a>.
