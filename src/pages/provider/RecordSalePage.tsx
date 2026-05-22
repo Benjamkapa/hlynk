@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Search, Plus, Minus, Trash2, CreditCard, Wallet, Banknote, Zap, CheckCircle2, Package, Scan, ArrowRight, ShoppingCart, Loader2, LayoutGrid, List, ChevronLeft, ChevronRight, Lock, Smartphone, AlertTriangle, RefreshCcw } from 'lucide-react'
+import { Search, Plus, Minus, Trash2, CreditCard, Wallet, Banknote, Zap, CheckCircle2, Package, Scan, ArrowRight, ShoppingCart, Loader2, LayoutGrid, List, ChevronLeft, ChevronRight, Lock, Smartphone, AlertTriangle, RefreshCcw, Wifi } from 'lucide-react'
 import FeatureGate, { FEATURE_PLANS } from '../../components/shared/FeatureGate'
 import { toast } from 'sonner'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
@@ -8,6 +8,8 @@ import { getErrorMessage } from '../../lib/utils/error'
 import { keepPreviousData } from '@tanstack/react-query'
 import { useAuth } from '../../lib/auth/AuthContext'
 import { PaginatedResponse } from '../../lib/types/api'
+import { useOfflineStatus } from '../../lib/offline/useOfflineStatus'
+import { enqueueSale } from '../../lib/offline/db'
 
 export default function RecordSalePage() {
   const { user } = useAuth()
@@ -24,6 +26,7 @@ export default function RecordSalePage() {
   const [isProcessingMpesa, setIsProcessingMpesa] = useState(false)
   const [waitingMpesaSaleId, setWaitingMpesaSaleId] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<'products' | 'cart'>('products')
+  const { isOnline, pendingCount } = useOfflineStatus()
   const queryClient = useQueryClient()
 
   // Debounce searches
@@ -161,8 +164,55 @@ export default function RecordSalePage() {
   })
 
   useEffect(() => {
-    if (handleCompleteSale.error) toast.error(getErrorMessage(handleCompleteSale.error))
+    if (handleCompleteSale.error) {
+      const errorMsg = getErrorMessage(handleCompleteSale.error)
+      
+      // If it's a network error and we are offline, it's already handled or should be
+      if (!navigator.onLine) {
+        // Silently consume or handle differently
+      } else {
+        toast.error(errorMsg)
+      }
+    }
   }, [handleCompleteSale.error])
+
+  const handleOfflineSale = async () => {
+    const salePayload = {
+      items: cart.map(i => ({
+        productId: i.id,
+        name: i.name,
+        quantity: i.quantity,
+        price: i.price
+      })),
+      paymentMethod,
+      totalAmount: total,
+      customerId: selectedCustomerId,
+      customerName: selectedCustomer?.name || null,
+      customerPhone: mpesaPhone || undefined,
+      status: 0, // Recorded as cash/completed offline
+    }
+
+    const offlineId = crypto.randomUUID()
+    
+    await enqueueSale({
+      id: offlineId,
+      createdAt: Date.now(),
+      payload: salePayload,
+      retries: 0
+    })
+
+    toast.success('Sale Recorded Offline', {
+      description: 'Transaction queued and will sync automatically once you are back online.',
+      icon: <RefreshCcw className="text-amber-500 animate-spin-slow" />
+    })
+
+    // Reset UI
+    setCart([])
+    setMpesaPhone('')
+    setPaymentMethod('CASH')
+    setSelectedCustomerId(null)
+    setCustomerSearch('')
+  }
 
   useEffect(() => {
     let timeout: any;
@@ -580,7 +630,7 @@ export default function RecordSalePage() {
             <div className="grid grid-cols-2 gap-4">
               {[
                 { id: 'CASH', label: 'Cash', icon: Banknote, feature: null },
-                { id: 'MPESA', label: 'M-Pesa', icon: Wallet, feature: 'mpesa_stk' },
+                { id: 'MPESA', label: isOnline ? 'M-Pesa' : 'M-Pesa Manual', icon: Wallet, feature: 'mpesa_stk' },
               ].map(method => (
                 <FeatureGate
                   key={method.id}
@@ -621,24 +671,54 @@ export default function RecordSalePage() {
 
 
             {paymentMethod === 'MPESA' ? (
-              <div className="space-y-4 animate-in slide-in-from-top-2 duration-300">
-                <div className="bg-emerald-50 border border-emerald-100 rounded-[.5rem] p-4 flex items-center gap-4">
-                  <Smartphone size={20} className="text-[#0D4A3E]" />
-                  <p className="text-[10px] font-medium text-emerald-800 leading-tight">
-                    STK Push will be sent to the customer's phone for instant verification.
-                  </p>
+              isOnline ? (
+                <div className="space-y-4 animate-in slide-in-from-top-2 duration-300">
+                  <div className="bg-emerald-50 border border-emerald-100 rounded-[.5rem] p-4 flex items-center gap-4">
+                    <Smartphone size={20} className="text-[#0D4A3E]" />
+                    <p className="text-[10px] font-medium text-emerald-800 leading-tight">
+                      STK Push will be sent to the customer's phone for instant verification.
+                    </p>
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1 block mb-2">Customer M-Pesa Number</label>
+                    <input
+                      type="text"
+                      placeholder="07..."
+                      value={mpesaPhone}
+                      onChange={(e) => setMpesaPhone(e.target.value)}
+                      className="w-full bg-slate-50 border border-slate-100 rounded-[.5rem] py-4 px-6 text-sm font-bold focus:ring-4 focus:ring-emerald-500/5 outline-none transition-all hl-mono"
+                    />
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1 block mb-2">Customer M-Pesa Number</label>
-                  <input
-                    type="text"
-                    placeholder="07..."
-                    value={mpesaPhone}
-                    onChange={(e) => setMpesaPhone(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-100 rounded-[.5rem] py-4 px-6 text-sm font-bold focus:ring-4 focus:ring-emerald-500/5 outline-none transition-all hl-mono"
-                  />
+              ) : (
+                <div className="space-y-4 animate-in slide-in-from-top-2 duration-300">
+                  <div className="bg-amber-50 border border-amber-100 rounded-[.5rem] p-5 space-y-4">
+                    <div className="flex items-center gap-4">
+                      <div className="h-10 w-10 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center">
+                        <Wifi size={20} className="animate-pulse" />
+                      </div>
+                      <div>
+                        <p className="text-xs font-black text-amber-900 uppercase tracking-tight">M-Pesa Offline Mode</p>
+                        <p className="text-[10px] text-amber-700 font-medium leading-tight">Automatic STK push is disabled. Please follow manual steps below.</p>
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-3 pt-2 border-t border-amber-200/50">
+                      <div className="flex justify-between items-center text-[10px]">
+                        <span className="font-bold text-amber-800/60 uppercase">Instruction</span>
+                        <span className="font-black text-amber-900">Ask client for manual pay</span>
+                      </div>
+                      <div className="bg-white/50 p-3 rounded-lg border border-amber-200">
+                        <p className="text-[10px] font-medium text-amber-800 text-center italic">"Please pay via M-Pesa Till/Number and show me the confirmation message."</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="bg-slate-50 border border-slate-100 rounded-[.5rem] p-4">
+                    <p className="text-[10px] font-bold text-slate-500 mb-1 uppercase tracking-widest">Confirmation Source</p>
+                    <p className="text-sm font-black text-slate-900">SMS / Manual Verification</p>
+                  </div>
                 </div>
-              </div>
+              )
             ) : (
               <div className="bg-amber-50 border border-amber-100 rounded-[.5rem] p-4 flex items-center gap-4 animate-in slide-in-from-top-2 duration-300">
                 <Banknote size={20} className="text-amber-700" />
@@ -675,10 +755,25 @@ export default function RecordSalePage() {
 
             <button
               disabled={cart.length === 0 || handleCompleteSale.isPending || isProcessingMpesa}
-              onClick={() => paymentMethod === 'MPESA' ? initiateMpesaPayment() : handleCompleteSale.mutate(undefined)}
+              onClick={() => {
+                if (paymentMethod === 'MPESA' && !isOnline) {
+                  toast.error('M-Pesa requires an active internet connection.')
+                  return
+                }
+                
+                if (!isOnline) {
+                  handleOfflineSale()
+                } else if (paymentMethod === 'MPESA') {
+                  initiateMpesaPayment()
+                } else {
+                  handleCompleteSale.mutate(undefined)
+                }
+              }}
               className={`w-full py-6 rounded-[.5rem] font-black text-sm uppercase tracking-widest shadow-2xl transition-all flex items-center justify-center gap-4 ${cart.length === 0 || handleCompleteSale.isPending || isProcessingMpesa
                 ? 'bg-slate-100 text-slate-300 cursor-not-allowed shadow-none'
-                : 'bg-slate-900 text-white hover:bg-black shadow-slate-900/20 active:scale-[0.98]'
+                : isOnline 
+                  ? 'bg-slate-900 text-white hover:bg-black shadow-slate-900/20 active:scale-[0.98]'
+                  : 'bg-amber-600 text-white hover:bg-amber-700 shadow-amber-900/20 active:scale-[0.98]'
                 }`}
             >
               {handleCompleteSale.isPending || isProcessingMpesa ? (
@@ -688,7 +783,13 @@ export default function RecordSalePage() {
                 </div>
               ) : (
                 <>
-                  {paymentMethod === 'MPESA' ? 'Send STK Prompt' : 'Complete Sale'} <ArrowRight size={20} />
+                  {!isOnline ? (
+                    <>Record Offline <RefreshCcw size={20} /></>
+                  ) : paymentMethod === 'MPESA' ? (
+                    <>Send STK Prompt <ArrowRight size={20} /></>
+                  ) : (
+                    <>Complete Sale <ArrowRight size={20} /></>
+                  )}
                 </>
               )}
             </button>

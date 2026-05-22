@@ -7,7 +7,11 @@ import { Toaster } from 'sonner'
 import App from './App'
 import { AuthProvider } from './lib/auth/AuthContext'
 import { queryClient } from './lib/query/queryClient'
+import { syncEngine } from './lib/offline/syncEngine'
 import './index.css'
+
+// Start the offline sync engine
+syncEngine.start()
 
 async function clearDevServiceWorkers() {
   if (!import.meta.env.DEV || typeof window === 'undefined' || !('serviceWorker' in navigator)) return

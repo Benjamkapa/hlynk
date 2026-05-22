@@ -38,27 +38,46 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const token = storage.getItem('accessToken')
 
     const fetchUser = async () => {
+      // If we are offline, don't even try to reach the server, just keep using cached profile
+      if (!navigator.onLine && user) {
+        setIsLoading(false)
+        return
+      }
+
       try {
         const res = await authApi.me()
         if (res.success && res.data) {
           setUser(res.data)
           storage.setItem('user_profile', JSON.stringify(res.data))
         } else {
-          throw new Error('Invalid user data received')
+          // If the server responded with an error (like 401), we logout
+          throw new Error('Invalid session')
         }
-      } catch {
-        storage.removeItem('accessToken')
-        storage.removeItem('refreshToken')
-        storage.removeItem('user_profile')
-        setUser(null)
+      } catch (err: any) {
+        // IMPORTANT: Only clear tokens if the error is actually an auth error
+        // If it's a network error (offline), we keep the user logged in
+        if (err.response?.status === 401 || err.response?.status === 403) {
+          storage.removeItem('accessToken')
+          storage.removeItem('refreshToken')
+          storage.removeItem('user_profile')
+          setUser(null)
+        } else {
+          console.log('[Auth] Network error or server unreachable. Preserving offline session.')
+        }
       } finally {
         setIsLoading(false)
       }
     }
 
     if (token) {
+      // Initial fetch attempt
       fetchUser()
-      const intervalId = setInterval(fetchUser, 5000)
+      
+      // Periodically refresh, but only if online
+      const intervalId = setInterval(() => {
+        if (navigator.onLine) fetchUser()
+      }, 30000) // Increase interval to 30s to save battery/data
+
       return () => clearInterval(intervalId)
     }
 

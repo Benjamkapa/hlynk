@@ -7,6 +7,7 @@ import { Loader2 } from 'lucide-react'
 import ProviderLayout from './components/shared/ProviderLayout'
 import AdminLayout from './components/shared/AdminLayout'
 import SubscriptionGuard from './components/shared/SubscriptionGuard'
+import OfflineBanner from './components/shared/OfflineBanner'
 
 // Public
 const LandingPage = lazy(() => import('./pages/LandingPage'))
@@ -77,6 +78,7 @@ function AdminRoute({ children }: { children: React.ReactNode }) {
 export default function App() {
   return (
     <Suspense fallback={<LoadingScreen />}>
+      <OfflineBanner />
       <Routes>
         {/* Public */}
         <Route path="/" element={<LandingPage />} />
