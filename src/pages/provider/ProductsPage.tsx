@@ -12,6 +12,7 @@ import FeatureGate from '../../components/shared/FeatureGate'
 import { useEffect } from 'react'
 import { keepPreviousData } from '@tanstack/react-query'
 import { PaginatedResponse } from '../../lib/types/api'
+import { cacheInventory } from '../../lib/offline/db'
 
 export default function ProductsPage() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
@@ -33,6 +34,13 @@ export default function ProductsPage() {
   useEffect(() => {
     if (error) toast.error(getErrorMessage(error))
   }, [error])
+
+  // Sync with Offline DB for POS use
+  useEffect(() => {
+    if (productsData?.items && page === 1 && !search && !category) {
+      cacheInventory(productsData.items).catch(err => console.error('Failed to update offline inventory:', err))
+    }
+  }, [productsData, page, search, category])
 
   const products = productsData?.items || []
   const stats = productsData?.stats || {

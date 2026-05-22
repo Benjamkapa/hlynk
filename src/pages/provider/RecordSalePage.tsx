@@ -9,7 +9,7 @@ import { keepPreviousData } from '@tanstack/react-query'
 import { useAuth } from '../../lib/auth/AuthContext'
 import { PaginatedResponse } from '../../lib/types/api'
 import { useOfflineStatus } from '../../lib/offline/useOfflineStatus'
-import { enqueueSale } from '../../lib/offline/db'
+import { enqueueSale, cacheInventory, getCachedInventory, cacheCustomers, getCachedCustomers } from '../../lib/offline/db'
 
 export default function RecordSalePage() {
   const { user } = useAuth()
@@ -42,8 +42,34 @@ export default function RecordSalePage() {
 
   const { data: productsData, isLoading: productsLoading, error: productsError } = useQuery<PaginatedResponse<any>>({
     queryKey: ['inventory-pos', search, page],
-    queryFn: () => inventoryApi.list({ search, page, limit: 100 }),
-    placeholderData: keepPreviousData
+    queryFn: async () => {
+      if (!isOnline) {
+        console.log('[POS] Offline: Loading inventory from IndexedDB')
+        const cached = await getCachedInventory()
+        // Simple client-side search if offline
+        const filtered = search 
+          ? cached.filter(p => p.name.toLowerCase().includes(search.toLowerCase()) || p.category.toLowerCase().includes(search.toLowerCase()))
+          : cached
+        
+        return {
+          items: filtered,
+          total: filtered.length,
+          page: 1,
+          pages: 1
+        }
+      }
+
+      const res = await inventoryApi.list({ search, page, limit: 100 })
+      
+      // Background cache if it was a broad search (page 1, no search or just a few chars)
+      if (res.items && page === 1 && !search) {
+        cacheInventory(res.items).catch(err => console.error('Failed to cache inventory:', err))
+      }
+
+      return res
+    },
+    placeholderData: keepPreviousData,
+    staleTime: isOnline ? 30000 : Infinity
   })
 
   useEffect(() => {
@@ -57,8 +83,25 @@ export default function RecordSalePage() {
 
   const { data: customersData } = useQuery({
     queryKey: ['pos-customers', customerSearch],
-    queryFn: () => customersApi.list({ search: customerSearch, limit: 10 }),
-    enabled: customerSearch.length > 1
+    queryFn: async () => {
+      if (!isOnline) {
+        const cached = await getCachedCustomers()
+        const filtered = customerSearch 
+          ? cached.filter(c => c.name.toLowerCase().includes(customerSearch.toLowerCase()) || c.phone?.includes(customerSearch))
+          : cached
+        return { items: filtered.slice(0, 10), total: filtered.length }
+      }
+
+      const res = await customersApi.list({ search: customerSearch, limit: 10 })
+      
+      // Cache customers in background if we fetched them
+      if (res.items && !customerSearch) {
+        cacheCustomers(res.items).catch(err => console.error('Failed to cache customers:', err))
+      }
+      
+      return res
+    },
+    enabled: isOnline ? customerSearch.length > 1 : true
   })
 
   const selectedCustomer = customersData?.items?.find((c: any) => c.id === selectedCustomerId)
@@ -698,8 +741,8 @@ export default function RecordSalePage() {
                         <Wifi size={20} className="animate-pulse" />
                       </div>
                       <div>
-                        <p className="text-xs font-black text-amber-900 uppercase tracking-tight">M-Pesa Offline Mode</p>
-                        <p className="text-[10px] text-amber-700 font-medium leading-tight">Automatic STK push is disabled. Please follow manual steps below.</p>
+                        <p className="text-xs font-black text-amber-900 uppercase tracking-tight">Manual M-Pesa Mode</p>
+                        <p className="text-[10px] text-amber-700 font-medium leading-tight">Accept payment via Pochi la Biashara or Paybill, then record here.</p>
                       </div>
                     </div>
                     
@@ -756,12 +799,8 @@ export default function RecordSalePage() {
             <button
               disabled={cart.length === 0 || handleCompleteSale.isPending || isProcessingMpesa}
               onClick={() => {
-                if (paymentMethod === 'MPESA' && !isOnline) {
-                  toast.error('M-Pesa requires an active internet connection.')
-                  return
-                }
-                
                 if (!isOnline) {
+                  // Allow offline recording for all methods (Cash or Manual M-Pesa)
                   handleOfflineSale()
                 } else if (paymentMethod === 'MPESA') {
                   initiateMpesaPayment()
