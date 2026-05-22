@@ -8,7 +8,8 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
+      injectRegister: 'auto',
+      includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg', 'logo.png', 'fav.png', 'hlynk.png', 'hlynkful.png', 'img.png'],
       manifest: {
         name: 'hlynk',
         short_name: 'hlynk',
@@ -16,7 +17,7 @@ export default defineConfig({
         theme_color: '#0B5ED7',
         background_color: '#F8F9FA',
         display: 'standalone',
-        start_url: '/',
+        start_url: '/login',
         icons: [
           { src: 'pwa-192x192.png', sizes: '192x192', type: 'image/png' },
           { src: 'pwa-512x512.png', sizes: '512x512', type: 'image/png' },
@@ -25,7 +26,8 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
-        maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
+        maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
+        navigateFallback: '/index.html',
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/api\.hlynk\.com\/.*/i,

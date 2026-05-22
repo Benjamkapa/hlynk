@@ -68,6 +68,10 @@ export default function SubscriptionPage() {
   const [isWaitingForPayment, setIsWaitingForPayment] = useState(false)
   const [waitingPaymentId, setWaitingPaymentId] = useState<string | null>(null)
   const [selectedTransaction, setSelectedTransaction] = useState<any>(null)
+  
+  // Manual Payment Support
+  const [subPaymentMethod, setSubPaymentMethod] = useState<'STK' | 'MANUAL'>('STK')
+  const [mpesaCode, setMpesaCode] = useState('')
 
   // ── STAFF ACCESS LOCK ──
   if (user?.role === 'STAFF') {
@@ -264,6 +268,21 @@ export default function SubscriptionPage() {
     }
   })
 
+  const manualPaymentMutation = useMutation({
+    mutationFn: (data: { planName: string, mpesaCode: string }) => subscriptionsApi.submitManualPayment(data),
+    onSuccess: (data) => {
+      toast.success(data.message, {
+        description: 'Once verified, your subscription will be activated automatically.',
+        duration: 8000
+      })
+      setShowRenewModal(false)
+      setShowChangeModal(false)
+      setMpesaCode('')
+      queryClient.invalidateQueries({ queryKey: ['billing-history'] })
+    },
+    onError: (err) => toast.error(getErrorMessage(err))
+  })
+
   if (subLoading) return (
     <div className="p-20 text-center flex flex-col items-center justify-center space-y-4">
       <div className="h-12 w-12 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center animate-bounce">
@@ -364,8 +383,8 @@ export default function SubscriptionPage() {
                 <Smartphone size={24} />
               </div>
               <div>
-                <h3 className="text-sm font-black text-[#0D4A3E] uppercase tracking-widest">M-Pesa STK Push Only</h3>
-                <p className="text-xs font-medium text-emerald-800/60">We only deal in automated STK prompts. No cash or manual payments are allowed.</p>
+                <h3 className="text-sm font-black text-[#0D4A3E] uppercase tracking-widest">Flexible Payments</h3>
+                <p className="text-xs font-medium text-emerald-800/60">We support automatic M-Pesa STK push and manual Pochi la Biashara / Paybill deposits.</p>
               </div>
             </div>
             <div className="flex items-center gap-2 px-4 py-2 bg-white/50 rounded-[.5em] border border-emerald-100">
@@ -620,22 +639,64 @@ export default function SubscriptionPage() {
             </div>
 
             <h3 className="text-2xl font-black text-gray-900 mb-2">Renew Subscription</h3>
-            <p className="text-gray-500 text-sm mb-8 font-medium">Enter your M-Pesa number to receive the payment prompt.</p>
+            <p className="text-gray-500 text-sm mb-6 font-medium">Choose your preferred M-Pesa payment method.</p>
+
+            <div className="flex bg-slate-100 p-1 rounded-xl mb-8">
+              <button
+                onClick={() => setSubPaymentMethod('STK')}
+                className={`flex-1 py-3 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${subPaymentMethod === 'STK' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+              >
+                STK Push
+              </button>
+              <button
+                onClick={() => setSubPaymentMethod('MANUAL')}
+                className={`flex-1 py-3 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${subPaymentMethod === 'MANUAL' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+              >
+                Manual / Pochi
+              </button>
+            </div>
 
             <div className="space-y-6">
-              <div className="space-y-2">
-                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">M-Pesa Number</label>
-                <div className="relative">
-                  <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-                  <input
-                    type="text"
-                    placeholder="0712345678"
-                    value={mpesaPhone}
-                    onChange={(e) => setMpesaPhone(e.target.value)}
-                    className="w-full bg-gray-50 border-none rounded-[.5em] py-4 pl-12 pr-4 outline-none focus:ring-2 focus:ring-emerald-500/10 text-lg font-black hl-mono"
-                  />
+              {subPaymentMethod === 'STK' ? (
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">M-Pesa Number</label>
+                  <div className="relative">
+                    <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                    <input
+                      type="text"
+                      placeholder="0712345678"
+                      value={mpesaPhone}
+                      onChange={(e) => setMpesaPhone(e.target.value)}
+                      className="w-full bg-gray-50 border-none rounded-[.5em] py-4 pl-12 pr-4 outline-none focus:ring-2 focus:ring-emerald-500/10 text-lg font-black hl-mono"
+                    />
+                  </div>
+                  <p className="text-[10px] font-medium text-slate-400 italic mt-1">We will send a prompt to this number.</p>
                 </div>
-              </div>
+              ) : (
+                <div className="space-y-6 animate-in fade-in slide-in-from-top-2 duration-300">
+                  <div className="bg-emerald-50 p-6 rounded-xl border border-emerald-100 space-y-4">
+                    <p className="text-[10px] font-black text-emerald-800 uppercase tracking-widest mb-2">Instructions</p>
+                    <div className="space-y-2">
+                      <p className="text-xs font-medium text-emerald-700">1. Go to M-Pesa &gt; Lipa na M-Pesa</p>
+                      <p className="text-xs font-medium text-emerald-700 font-bold">2. Paybill: 4124967 (HudumaLynk)</p>
+                      <p className="text-xs font-medium text-emerald-700">3. Account: {user?.businessName?.slice(0, 5).toUpperCase() || 'HL'}</p>
+                      <p className="text-xs font-medium text-emerald-700">4. Amount: KES {PLANS.find(p => p.id === subscription?.planName)?.price.toLocaleString()}</p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Transaction Code</label>
+                    <input
+                      type="text"
+                      placeholder="SFL89H..."
+                      value={mpesaCode}
+                      onChange={(e) => setMpesaCode(e.target.value.toUpperCase())}
+                      className="w-full bg-gray-50 border-none rounded-[.5em] py-4 px-6 outline-none focus:ring-2 focus:ring-emerald-500/10 text-lg font-black hl-mono uppercase"
+                    />
+                    <p className="text-[10px] font-medium text-slate-400 italic mt-1">Paste the M-Pesa confirmation code here.</p>
+                  </div>
+                </div>
+              )}
 
               <div className="bg-gray-50 p-4 rounded-[.5em] flex justify-between items-center">
                 <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Amount to Pay</span>
@@ -644,6 +705,10 @@ export default function SubscriptionPage() {
 
               <button
                 onClick={() => {
+                  if (subPaymentMethod === 'MANUAL') {
+                    manualPaymentMutation.mutate({ planName: subscription?.planName, mpesaCode })
+                    return
+                  }
                   const daysLeft = subscription?.endDate ? Math.ceil((new Date(subscription.endDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)) : 0
                   if (daysLeft > 0) {
                     setShowConfirmRenew(true)
@@ -651,10 +716,10 @@ export default function SubscriptionPage() {
                     renewMutation.mutate(mpesaPhone)
                   }
                 }}
-                disabled={renewMutation.isPending || !mpesaPhone}
+                disabled={renewMutation.isPending || manualPaymentMutation.isPending || (subPaymentMethod === 'STK' ? !mpesaPhone : !mpesaCode)}
                 className="w-full bg-[#0D4A3E] text-white py-4 rounded-[.5em] font-black text-xs uppercase tracking-widest hover:bg-[#0A3D33] transition-all flex items-center justify-center gap-2 shadow-lg shadow-emerald-900/20 disabled:opacity-50"
               >
-                {renewMutation.isPending ? <Loader2 className="animate-spin" size={18} /> : 'Pay via M-Pesa'}
+                {renewMutation.isPending || manualPaymentMutation.isPending ? <Loader2 className="animate-spin" size={18} /> : (subPaymentMethod === 'STK' ? 'Pay via M-Pesa' : 'Submit Code')}
               </button>
             </div>
           </div>
@@ -699,34 +764,73 @@ export default function SubscriptionPage() {
             {selectedPlan && (
               <div className="bg-white p-8 rounded-[.5em] border border-slate-100 animate-in slide-in-from-bottom-4">
                 {/* The warning was moved to ConfirmModal */}
-                <div className="flex flex-col md:flex-row items-center gap-8">
-                  <div className="flex-1 w-full space-y-2">
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">M-Pesa Payment Number</label>
-                    <div className="relative">
-                      <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
-                      <input
-                        type="text"
-                        placeholder="0712345678"
-                        value={mpesaPhone}
-                        onChange={(e) => setMpesaPhone(e.target.value)}
-                        className="w-full bg-slate-50 border-none rounded-[.5em] py-4 pl-12 pr-4 outline-none focus:ring-4 focus:ring-emerald-500/5 text-lg font-black hl-mono"
-                      />
-                    </div>
+                <div className="flex flex-col gap-6">
+                  {/* Payment Method Switcher for upgrade */}
+                  <div className="flex bg-slate-50 p-1 rounded-xl">
+                    <button
+                      onClick={() => setSubPaymentMethod('STK')}
+                      className={`flex-1 py-3 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${subPaymentMethod === 'STK' ? 'bg-white text-emerald-600 shadow-sm border border-slate-100' : 'text-slate-400 hover:text-slate-600'}`}
+                    >
+                      Instant STK Push
+                    </button>
+                    <button
+                      onClick={() => setSubPaymentMethod('MANUAL')}
+                      className={`flex-1 py-3 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${subPaymentMethod === 'MANUAL' ? 'bg-white text-emerald-600 shadow-sm border border-slate-100' : 'text-slate-400 hover:text-slate-600'}`}
+                    >
+                      Manual / Pochi
+                    </button>
                   </div>
-                  <button
-                    onClick={() => {
-                      const daysLeft = subscription?.endDate ? Math.ceil((new Date(subscription.endDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)) : 0
-                      if (daysLeft > 0 && subscription?.planName !== selectedPlan.id) {
-                        setShowConfirmChange(true)
-                      } else {
-                        changePlanMutation.mutate({ plan: selectedPlan.id, phone: mpesaPhone })
-                      }
-                    }}
-                    disabled={changePlanMutation.isPending || !mpesaPhone}
-                    className="w-full md:w-auto bg-emerald-600 text-white px-12 py-5 rounded-[.5em] font-black text-xs uppercase tracking-widest hover:bg-emerald-700 transition-all flex items-center justify-center gap-3 shadow-xl shadow-emerald-900/20 disabled:opacity-50"
-                  >
-                    {changePlanMutation.isPending ? <Loader2 className="animate-spin" size={18} /> : <>Upgrade to {selectedPlan.name}</>}
-                  </button>
+
+                  <div className="flex flex-col md:flex-row items-end gap-8">
+                    {subPaymentMethod === 'STK' ? (
+                      <div className="flex-1 w-full space-y-2">
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">M-Pesa Payment Number</label>
+                        <div className="relative">
+                          <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
+                          <input
+                            type="text"
+                            placeholder="0712345678"
+                            value={mpesaPhone}
+                            onChange={(e) => setMpesaPhone(e.target.value)}
+                            className="w-full bg-slate-50 border-none rounded-[.5em] py-4 pl-12 pr-4 outline-none focus:ring-4 focus:ring-emerald-500/5 text-lg font-black hl-mono"
+                          />
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex-1 w-full space-y-2 animate-in fade-in slide-in-from-top-2">
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">M-Pesa Transaction Code</label>
+                        <div className="relative">
+                          <input
+                            type="text"
+                            placeholder="SFL89H..."
+                            value={mpesaCode}
+                            onChange={(e) => setMpesaCode(e.target.value.toUpperCase())}
+                            className="w-full bg-slate-50 border-none rounded-[.5em] py-4 px-6 outline-none focus:ring-4 focus:ring-emerald-500/5 text-lg font-black hl-mono uppercase"
+                          />
+                        </div>
+                        <p className="text-[9px] font-medium text-slate-400">Pay KES {selectedPlan.price.toLocaleString()} to Paybill 4124967</p>
+                      </div>
+                    )}
+
+                    <button
+                      onClick={() => {
+                        if (subPaymentMethod === 'MANUAL') {
+                          manualPaymentMutation.mutate({ planName: selectedPlan.id, mpesaCode })
+                          return
+                        }
+                        const daysLeft = subscription?.endDate ? Math.ceil((new Date(subscription.endDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)) : 0
+                        if (daysLeft > 0 && subscription?.planName !== selectedPlan.id) {
+                          setShowConfirmChange(true)
+                        } else {
+                          changePlanMutation.mutate({ plan: selectedPlan.id, phone: mpesaPhone })
+                        }
+                      }}
+                      disabled={changePlanMutation.isPending || manualPaymentMutation.isPending || (subPaymentMethod === 'STK' ? !mpesaPhone : !mpesaCode)}
+                      className="w-full md:w-auto bg-emerald-600 text-white px-12 py-5 rounded-[.5em] font-black text-xs uppercase tracking-widest hover:bg-emerald-700 transition-all flex items-center justify-center gap-3 shadow-xl shadow-emerald-900/20 disabled:opacity-50"
+                    >
+                      {changePlanMutation.isPending || manualPaymentMutation.isPending ? <Loader2 className="animate-spin" size={18} /> : (subPaymentMethod === 'STK' ? `Upgrade to ${selectedPlan.name}` : 'Verify & Upgrade')}
+                    </button>
+                  </div>
                 </div>
               </div>
             )}

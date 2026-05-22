@@ -49,6 +49,7 @@ export const subscriptionsApi = {
   renew: (phone: string) => api.post('/subscriptions/renew', { phone }).then(r => r.data),
   changePlan: (planName: string, phone: string) => api.post('/subscriptions/change-plan', { planName, phone }).then(r => r.data),
   verify: (paymentId: string) => api.get(`/subscriptions/verify/${paymentId}`).then(r => r.data),
+  submitManualPayment: (data: { planName: string, mpesaCode: string, amount?: number, phone?: string }) => api.post('/subscriptions/manual', data).then(r => r.data),
   applyPromoCode: (code: string) => api.post('/subscriptions/promo/apply', { code }).then(r => r.data),
 }
 

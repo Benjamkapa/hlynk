@@ -290,8 +290,8 @@ export default function LoginPage() {
 
         @media (max-width: 1024px) {
           .lp-left { display: none; }
-          .lp-right { width: 100%; padding: 48px; }
-          .lp-container { min-height: auto; border-radius: 2rem; }
+          .lp-right { width: 100%; padding: 48px; height: auto; min-height: 600px; }
+          .lp-container { min-height: auto; border-radius: 2rem; flex-direction: column; overflow-y: auto; max-height: 95vh; }
         }
 
         @media (max-width: 500px) {
@@ -300,38 +300,7 @@ export default function LoginPage() {
           .lp-right { padding: 40px 24px; }
         }
 
-        /* Mobile review float — hidden on desktop (left panel shows it) */
-        .lp-review-float {
-          display: none;
-        }
-        @media (max-width: 1024px) {
-          .lp-review-float {
-            display: block;
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            width: min(300px, calc(100vw - 40px));
-            z-index: 999;
-            transform-origin: bottom right;
-            animation: lp-float-in 0.65s cubic-bezier(0.22,1,0.36,1) 1.2s both;
-          }
-          .lp-review-float-inner {
-            background: linear-gradient(135deg, rgba(10,23,18,0.97) 0%, rgba(13,74,62,0.97) 100%);
-            backdrop-filter: blur(24px) saturate(160%);
-            -webkit-backdrop-filter: blur(24px) saturate(160%);
-            border: 1px solid rgba(52,211,153,0.18);
-            border-radius: 1rem;
-            padding: 0;
-            box-shadow:
-              0 24px 60px rgba(0,0,0,0.45),
-              0 0 0 1px rgba(255,255,255,0.04) inset;
-            overflow: hidden;
-          }
-        }
-        @keyframes lp-float-in {
-          from { opacity: 0; transform: translateY(20px) scale(0.93); }
-          to   { opacity: 1;  transform: translateY(0)   scale(1);    }
-        }
+
       `}</style>
 
       {/* ── Page fade-in ── */}
@@ -523,11 +492,17 @@ export default function LoginPage() {
 
             </div>
 
-            {/* ── Mobile-only floating review panel (fixed bottom-right) ── */}
-            <div className="lp-review-float">
-              <div className="lp-review-float-inner">
+            {/* ── Mobile-only inline review section (appears at bottom of scroll) ── */}
+            <div className="mt-12 lg:hidden w-full max-w-[380px] mx-auto">
+              <div className="rounded-[2rem] overflow-hidden shadow-2xl" style={{ 
+                background: 'linear-gradient(135deg, #0a1712 0%, #0d4a3e 100%)',
+                border: '1px solid rgba(52,211,153,0.15)'
+              }}>
                 <ReviewPanel />
               </div>
+              {/* <p className="text-center text-[10px] text-gray-400 mt-6 tracking-widest uppercase font-bold opacity-50">
+                Trusted by 1000+ Businesses
+              </p> */}
             </div>
 
           </div>
