@@ -153,7 +153,7 @@ export default function ExpensesPage() {
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 grid-compact-cols md:grid-cols-3 gap-6">
         <KpiCard title="Total Expenses" value={`KES ${stats.totalExpenses.toLocaleString()}`} sub="Month to Date" icon={Wallet} variant="red" />
         <KpiCard title="Highest Category" value={stats.highestCategory} sub="Top spending area" icon={TrendingUp} variant="amber" />
         <BurnRateGauge value={stats.totalExpenses} target={250000} />

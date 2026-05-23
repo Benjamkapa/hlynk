@@ -6,6 +6,7 @@ import { BrowserRouter } from 'react-router-dom'
 import { Toaster } from 'sonner'
 import App from './App'
 import { AuthProvider } from './lib/auth/AuthContext'
+import { MobileViewportProvider } from './lib/MobileViewportContext'
 import { queryClient } from './lib/query/queryClient'
 import { syncEngine } from './lib/offline/syncEngine'
 import './index.css'
@@ -56,7 +57,9 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
     <QueryClientProvider client={queryClient}>
       <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <AuthProvider>
-          <App />
+          <MobileViewportProvider>
+            <App />
+          </MobileViewportProvider>
           <Toaster
             position="top-center"
             toastOptions={{

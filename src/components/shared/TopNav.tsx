@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
-import { Bell, User, LogOut, ChevronDown, Menu, Sparkles, X } from 'lucide-react'
+import { Bell, User, LogOut, ChevronDown, Menu, Sparkles, X, Maximize2, Minimize2 } from 'lucide-react'
 import { useAuth } from '../../lib/auth/AuthContext'
+import { useMobileViewport } from '../../lib/MobileViewportContext'
 import { Link, useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
@@ -18,6 +19,7 @@ interface TopNavProps {
 
 export default function TopNav({ isMobileOpen, onMobileMenuToggle, isCollapsed, onToggleCollapse, extraActions }: TopNavProps) {
   const { user, logout } = useAuth()
+  const { isZoomedOut, toggleZoom } = useMobileViewport()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const [showUserMenu, setShowUserMenu] = useState(false)
@@ -35,14 +37,6 @@ export default function TopNav({ isMobileOpen, onMobileMenuToggle, isCollapsed, 
   const markReadMutation = useMutation({
     mutationFn: (id: string) => platformApi.markAsRead(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['notifications'] })
-  })
-
-  const markAllReadMutation = useMutation({
-    mutationFn: () => platformApi.markAllAsRead(),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['notifications'] })
-      toast.success('Tray cleared')
-    }
   })
 
   const deleteNotificationsMutation = useMutation({
@@ -106,6 +100,15 @@ export default function TopNav({ isMobileOpen, onMobileMenuToggle, isCollapsed, 
       {/* RIGHT: ACTIONS & IDENTITY */}
       <div className="flex items-center gap-2 sm:gap-4">
         
+        {/* Mobile Zoom Toggle */}
+        <button
+          onClick={toggleZoom}
+          className="lg:hidden w-11 h-11 rounded-[.5rem] border flex items-center justify-center transition-all bg-white border-slate-200 text-slate-600 hover:text-emerald-600 active:scale-95 shadow-sm"
+          title={isZoomedOut ? "Expand View" : "Compact View"}
+        >
+          {isZoomedOut ? <Maximize2 size={18} /> : <Minimize2 size={18} />}
+        </button>
+
         {/* NOTIFICATIONS */}
         <div className="relative" ref={notificationRef}>
           <button 
@@ -148,7 +151,7 @@ export default function TopNav({ isMobileOpen, onMobileMenuToggle, isCollapsed, 
           )}
         </div>
 
-        {/* IDENTITY PILL (Mobile & Desktop consolidated) */}
+        {/* IDENTITY PILL */}
         <div className="relative" ref={userMenuRef}>
           <button 
             onClick={() => setShowUserMenu(!showUserMenu)} 
@@ -160,11 +163,9 @@ export default function TopNav({ isMobileOpen, onMobileMenuToggle, isCollapsed, 
               }
             `}
           >
-            {/* Name - Hidden on smallest mobile, visible from sm up */}
             <span className="hidden sm:block pl-3 text-sm font-black text-slate-900 tracking-tight">
               {user?.name}
             </span>
-            {/* Short Name - Visible only on mobile */}
             <span className="sm:hidden pl-3 text-xs font-black text-slate-900 tracking-tight">
               {user?.name?.split(' ')[0]}
             </span>
@@ -176,7 +177,6 @@ export default function TopNav({ isMobileOpen, onMobileMenuToggle, isCollapsed, 
                 className="w-full h-full object-cover"
               />
             </div>
-            
             <ChevronDown size={14} className={`text-slate-400 mr-2 transition-transform duration-300 ${showUserMenu ? 'rotate-180 text-emerald-500' : ''}`} />
           </button>
 

@@ -75,7 +75,7 @@ export default function CustomersPage() {
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 grid-compact-cols md:grid-cols-3 gap-6">
         <KpiCard title="Total Database" value={stats.total} sub="Registered Customers" icon={Users} variant="emerald" />
         <KpiCard title="Active Today" value={stats.activeToday} sub="Visiting Customers" icon={Star} variant="amber" />
         <KpiCard title="Top Spender" value={stats.topSpender} sub="High Value Profile" icon={TrendingUpIcon} variant="blue" />

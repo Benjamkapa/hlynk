@@ -41,7 +41,47 @@
   }
 
   * { @apply border-border box-border; }
-  html { scroll-behavior: smooth; -webkit-tap-highlight-color: transparent; overflow-x: hidden; }
+  html { 
+    scroll-behavior: smooth; 
+    -webkit-tap-highlight-color: transparent; 
+    overflow-x: hidden;
+  }
+
+  /* Mobile Zoom / Compact View Support */
+  @media (max-width: 768px) {
+    html.mobile-compact {
+      font-size: 74% !important; /* Squeezed more for high density */
+    }
+    
+    html.mobile-expanded {
+      font-size: 100% !important; 
+    }
+
+    /* Grid overrides for high density mobile */
+    html.mobile-compact .grid-compact-cols {
+      display: grid !important;
+      grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+      gap: 1rem !important;
+    }
+
+    /* Reduce padding in cards for high density mobile */
+    html.mobile-compact .p-8,
+    html.mobile-compact .p-10 {
+       padding: 1.25rem !important;
+    }
+    
+    html.mobile-compact .px-8,
+    html.mobile-compact .px-12 {
+       padding-left: 1rem !important;
+       padding-right: 1rem !important;
+    }
+
+    html.mobile-compact .py-12 {
+       padding-top: 1.5rem !important;
+       padding-bottom: 1.5rem !important;
+    }
+  }
+
   body { @apply bg-background text-foreground antialiased; line-height: 1.5; font-family: 'Nunito', sans-serif; overflow-x: hidden; }
   
   /* Ubuntu for the bold and big fonts */

@@ -92,7 +92,7 @@ export default function ProductsPage() {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 grid-compact-cols md:grid-cols-4 gap-6">
         <SummaryCard title="Total Items" value={stats.totalItems.toLocaleString()} sub="Unique SKUs" icon={Package} variant="emerald" />
         <FeatureGate feature="low_stock_alerts" variant="tease">
           <SummaryCard title="Low Stock" value={`${stats.lowStock} ALERTS`} sub="Requires attention" icon={TrendingDown} variant="red" />
