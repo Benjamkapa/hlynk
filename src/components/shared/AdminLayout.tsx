@@ -67,7 +67,7 @@ export default function AdminLayout() {
           <div key={group.label}>
             <AnimatePresence mode="wait">
               {!collapsed && (
-                <motion.p 
+                <motion.p
                   initial={{ opacity: 0, x: -10 }}
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -10 }}
@@ -100,25 +100,25 @@ export default function AdminLayout() {
       <div className="p-4 mt-auto border-t border-slate-50">
         <AnimatePresence mode="wait">
           {!collapsed ? (
-            <motion.div 
+            <motion.div
               key="full-footer"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 10 }}
               className="bg-gray-50 rounded-lg p-4 border border-gray-100"
             >
-               <div className="flex items-center gap-3 mb-4">
-                 <div className="h-10 w-10 rounded-md bg-emerald-100 text-emerald-600 flex items-center justify-center">
-                   <HelpCircle size={20} />
-                 </div>
-                 <div>
-                   <p className="text-xs font-black text-gray-900">Help Center</p>
-                   <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Docs & Guides</p>
-                 </div>
-               </div>
-               <NavLink to="/admin/help" className="block w-full py-2 bg-white text-gray-600 rounded-md text-center text-xs font-black border border-gray-100 hover:bg-emerald-50 hover:text-emerald-600 transition-all">
-                 Visit Support
-               </NavLink>
+              <div className="flex items-center gap-3 mb-4">
+                <div className="h-10 w-10 rounded-md bg-emerald-100 text-emerald-600 flex items-center justify-center">
+                  <HelpCircle size={20} />
+                </div>
+                <div>
+                  <p className="text-xs font-black text-gray-900">Help Center</p>
+                  <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Docs & Guides</p>
+                </div>
+              </div>
+              <NavLink to="/admin/help" className="block w-full py-2 bg-white text-gray-600 rounded-md text-center text-xs font-black border border-gray-100 hover:bg-emerald-50 hover:text-emerald-600 transition-all">
+                Visit Support
+              </NavLink>
             </motion.div>
           ) : (
             <motion.div
@@ -170,7 +170,7 @@ export default function AdminLayout() {
       </aside>
 
       {/* ── MOBILE SWIPE HANDLE ── */}
-      <motion.div 
+      <motion.div
         drag="x"
         dragConstraints={{ left: 0, right: 0 }}
         onDragEnd={(_, info) => {
@@ -181,16 +181,16 @@ export default function AdminLayout() {
 
       {/* ── MAIN CONTENT ── */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
-        <TopNav 
+        <TopNav
           onMobileMenuToggle={() => setIsMobileOpen(true)}
           isCollapsed={isCollapsed}
           onToggleCollapse={() => setIsCollapsed(!isCollapsed)}
-          // showMail={true}
-          // extraActions={
-          //   <div className="hidden xl:flex items-center gap-3 px-4 py-2 bg-emerald-50 text-emerald-700 rounded-lg text-[10px] font-black uppercase tracking-widest border border-emerald-100">
-          //     Platform Status: Operational
-          //   </div>
-          // }
+        // showMail={true}
+        // extraActions={
+        //   <div className="hidden xl:flex items-center gap-3 px-4 py-2 bg-emerald-50 text-emerald-700 rounded-lg text-[10px] font-black uppercase tracking-widest border border-emerald-100">
+        //     Platform Status: Operational
+        //   </div>
+        // }
         />
 
         <main className="flex-1 overflow-y-auto px-8 lg:px-12 py-12 bg-slate-50/30">

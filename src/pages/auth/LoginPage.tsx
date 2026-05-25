@@ -29,7 +29,7 @@ const COUNTIES = [
 
 const CATEGORIES = [
   'Retail Store', 'Barber & Salon', 'Cleaning Services', 'Plumbing',
-  'Electrical', 'Mechanic', 'Consultancy', 'Other',
+  'Electrical', 'Mechanic', 'Consultancy', 'Tailoring', 'Restaurant', 'Hotel', 'Hospital', 'School', 'College', 'University', 'Other',
 ]
 
 type RegisterFormState = {

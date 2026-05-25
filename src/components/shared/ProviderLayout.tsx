@@ -449,7 +449,7 @@ export default function ProviderLayout() {
 
       {/* ── MOBILE EXPANDED BACKDROP ── */}
       {isMobileExpanded && (
-        <div 
+        <div
           className="fixed inset-0 z-[65] bg-black/5 lg:hidden"
           onClick={() => setIsMobileExpanded(false)}
         />
