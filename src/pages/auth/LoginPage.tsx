@@ -259,7 +259,7 @@ export default function LoginPage() {
     setFormLoading(true)
     try {
       const res = await authApi.googleAuth({ credential: googleCredential, registration: formData })
-      login({ accessToken: res.data.accessToken, refreshToken: refreshToken }, res.data.user)
+      login({ accessToken: res.data.accessToken, refreshToken: res.data.refreshToken }, res.data.user)
       navigate('/dashboard', { replace: true })
       toast.success('Your shop is now live on hynk!')
     } catch (err: any) { toast.error(getErrorMessage(err)) }
