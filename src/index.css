@@ -320,23 +320,22 @@
   .hl-sidebar-item {
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 10px 16px;
+    gap: 8px;
+    padding: 8px 12px;
     border-radius: 0.5rem;
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 600;
     color: var(--ink2, #475569);
     transition: all 0.2s;
   }
   .hl-sidebar-item:hover {
-    background: var(--mint-soft, #ECFDF5);
+    background: #f1f5f9;
     color: var(--forest, #064E3B);
-    transform: translateX(4px);
   }
   .hl-sidebar-item.active {
-    background: var(--forest, #064E3B);
+    background: #0D4A3E;
     color: #fff;
-    box-shadow: 0 10px 15px -3px rgba(6, 78, 59, 0.2);
+    box-shadow: 0 4px 12px -2px rgba(13, 74, 62, 0.2);
   }
   
   .hl-sidebar-floating {

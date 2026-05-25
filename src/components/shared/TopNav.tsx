@@ -103,7 +103,7 @@ export default function TopNav({ isMobileOpen, onMobileMenuToggle, isCollapsed, 
         {/* Mobile Zoom Toggle */}
         <button
           onClick={toggleZoom}
-          className="lg:hidden w-11 h-11 rounded-[.5rem] border flex items-center justify-center transition-all bg-white border-slate-200 text-slate-600 hover:text-emerald-600 active:scale-95 shadow-sm"
+          className={`lg:hidden w-11 h-11 flex items-center justify-center transition-all text-slate-600 ${isZoomedOut ? 'hover:scale-110 duration-500 hover:text-emerald-600 active:scale-95' : 'hover:scale-90 duration-500 hover:text-emerald-600 active:scale-90'}`}
           title={isZoomedOut ? "Expand View" : "Compact View"}
         >
           {isZoomedOut ? <Maximize2 size={18} /> : <Minimize2 size={18} />}

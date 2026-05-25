@@ -39,8 +39,14 @@ export default function ProviderLayout() {
   const [reviewText, setReviewText] = useState("");
   const [isSubmittingReview, setIsSubmittingReview] = useState(false);
 
-  // Inactivity timer: 5 minutes (300,000 ms)
+  // Inactivity timer: 5 minutes (300,000 ms) - ONLY ON MOBILE
   useEffect(() => {
+    const isSmallScreen = window.innerWidth < 1024;
+    if (!isSmallScreen) {
+      setIsSidebarOpen(true);
+      return;
+    }
+
     let timer: any;
     const resetTimer = () => {
       if (timer) clearTimeout(timer);
@@ -63,6 +69,15 @@ export default function ProviderLayout() {
       window.removeEventListener('click', resetTimer);
     };
   }, [isSidebarOpen]);
+
+  // Ensure sidebar is open on window resize to desktop
+  useEffect(() => {
+    const checkSize = () => {
+      if (window.innerWidth >= 1024) setIsSidebarOpen(true);
+    };
+    window.addEventListener('resize', checkSize);
+    return () => window.removeEventListener('resize', checkSize);
+  }, []);
 
   useEffect(() => {
     setIsMobileOpen(false);
@@ -200,13 +215,13 @@ export default function ProviderLayout() {
   };
 
   const SidebarContent = ({ collapsed }: { collapsed: boolean }) => (
-    <div className={`flex flex-col h-full bg-white transition-all duration-300 ${collapsed ? 'w-[48px] lg:w-[70px]' : 'w-[280px]'}`}>
-      <div className="h-20 lg:h-28 flex items-center px-4 lg:px-6">
-        <div className="w-6 lg:w-10 flex justify-center">
+    <div className={`flex flex-col h-full bg-white transition-all duration-300 ${collapsed ? 'w-[60px] lg:w-[68px]' : 'w-[280px]'}`}>
+      <div className={`h-16 lg:h-20 flex items-center ${collapsed ? 'justify-center' : 'px-4'}`}>
+        <div className="flex-shrink-0">
           {collapsed ? (
-            <img src="/fav.png" alt="hlynk" className="h-6 w-6 lg:h-8 lg:w-8 transition-transform" />
+            <img src="/fav.png" alt="hlynk" className="h-6 w-6 lg:h-7 lg:w-7 transition-all object-contain" />
           ) : (
-            <img src="/logo.png" alt="hlynk" className="h-8 lg:h-10 w-auto transition-transform" />
+            <img src="/logo.png" alt="hlynk" className="h-6 lg:h-7 w-auto transition-all object-contain" />
           )}
         </div>
       </div>
@@ -232,7 +247,7 @@ export default function ProviderLayout() {
                 const ItemContent = (
                   <>
                     <div className="relative">
-                      <item.icon className={`transition-all ${collapsed ? 'w-[18px] lg:w-[20px] h-[18px] lg:h-[20px]' : 'w-[20px] h-[20px] shrink-0'}`} />
+                      <item.icon className={`transition-all ${collapsed ? 'w-[16px] lg:w-[18px] h-[16px] lg:h-[18px]' : 'w-[18px] h-[18px] shrink-0'}`} />
                       {item.isLocked && (
                         <div className="absolute -top-1 -right-1 h-3 w-3 bg-amber-500 rounded-full flex items-center justify-center border-2 border-white">
                           <Lock size={6} className="text-white fill-white" />
@@ -270,7 +285,7 @@ export default function ProviderLayout() {
                     to={item.to}
                     end={item.end}
                     className={({ isActive }) =>
-                      `hl-sidebar-item ${isActive ? 'active shadow-lg shadow-emerald-900/10' : ''} ${collapsed ? 'justify-center px-0 mx-2' : ''}`
+                      `hl-sidebar-item ${isActive ? 'active' : ''} ${collapsed ? 'justify-center px-0' : ''}`
                     }
                   >
                     {ItemContent}
@@ -393,16 +408,17 @@ export default function ProviderLayout() {
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
         className={`
-          fixed inset-y-0 left-0 z-50 flex flex-col pointer-events-none transition-all duration-700
-          lg:relative translate-x-0
+          flex flex-col transition-all duration-700
+          fixed inset-y-0 left-0 z-50 lg:relative lg:translate-x-0
           ${!isSidebarOpen ? '-translate-x-full opacity-0 w-0' : 'translate-x-0 opacity-100'}
-          ${isCollapsed && !isHovered ? 'w-[80px] lg:w-[102px]' : 'w-[312px]'}
+          ${isCollapsed && !isHovered ? 'w-[60px] lg:w-[64px]' : 'w-[312px]'}
         `}
       >
         <div className={`
-          absolute inset-y-0 left-0 flex flex-col pointer-events-auto
-          transition-all duration-300 ease-in-out overflow-hidden hl-sidebar-floating
-          ${isCollapsed && isHovered ? 'w-[280px] shadow-2xl z-[60]' : 'w-[calc(100%-2rem)]'}
+          absolute inset-y-0 left-0 flex flex-col bg-white
+          transition-all duration-300 ease-in-out overflow-hidden
+          ${isCollapsed && isHovered ? 'w-[280px] shadow-2xl z-[60]' : 'w-full'}
+          ${window.innerWidth < 1024 ? 'hl-sidebar-floating' : 'border-r border-slate-100'}
         `}>
           <SidebarContent collapsed={isCollapsed && !isHovered} />
         </div>
@@ -412,7 +428,7 @@ export default function ProviderLayout() {
       {!isSidebarOpen && (
         <button
           onClick={() => setIsSidebarOpen(true)}
-          className="fixed bottom-8 left-8 z-[100] h-14 w-14 bg-[#0D4A3E] text-white rounded-full flex items-center justify-center shadow-2xl hover:scale-110 active:scale-95 transition-all animate-in zoom-in-0 duration-300 border-4 border-white/20"
+          className="lg:hidden fixed bottom-8 left-8 z-[100] h-14 w-14 bg-[#0D4A3E] text-white rounded-full flex items-center justify-center shadow-2xl hover:scale-110 active:scale-95 transition-all animate-in zoom-in-0 duration-300 border-4 border-white/20"
         >
           <PanelLeftOpen size={24} />
         </button>
@@ -429,7 +445,7 @@ export default function ProviderLayout() {
       />
 
       {/* ── MAIN CONTENT ── */}
-      <div className={`flex-1 flex flex-col min-w-0 overflow-hidden relative transition-all duration-700 ${isSidebarOpen && isCollapsed && !isHovered ? 'pl-[80px] lg:pl-[102px]' : 'pl-0'}`}>
+      <div className={`flex-1 flex flex-col min-w-0 overflow-hidden relative transition-all duration-700 ${isSidebarOpen && isCollapsed && !isHovered ? 'pl-[60px] lg:pl-0' : 'pl-0'}`}>
         {isCritical && user?.role === 'PROVIDER' && (
           <div className="bg-red-600 text-white px-8 py-3 flex items-center justify-between animate-in slide-in-from-top duration-700 z-[100] shadow-2xl">
             <div className="flex items-center gap-4">
