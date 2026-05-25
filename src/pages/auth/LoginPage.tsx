@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   Building2, MapPin, Phone, Tag,
-  Loader2, Check, ShieldCheck, Lock, Sparkles, ArrowLeft
+  Loader2, Check, ShieldCheck, Lock, Sparkles, ArrowLeft, X
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { authApi } from '../../lib/api/auth'
@@ -56,9 +56,11 @@ function ReviewCard({ review }: { review: any }) {
 function ReviewPanel() {
   const [reviews, setReviews] = useState<PlatformReview[]>([])
   const [idx, setIdx] = useState(0)
+  const [isShowing, setIsShowing] = useState(false)
   const [visible, setVisible] = useState(true)
-  const [globallyVisible, setGloballyVisible] = useState(true)
+  const [mounted, setMounted] = useState(false)
 
+  // Initial Fetch
   useEffect(() => {
     platformApi.getReviews({ limit: 10 })
       .then(res => {
@@ -67,42 +69,59 @@ function ReviewPanel() {
       .catch(console.error)
   }, [])
 
+  // 5 Minute Interval Logic
   useEffect(() => {
-    if (reviews.length <= 1) return
-    const t = setInterval(() => {
-      setVisible(false)
-      setTimeout(() => {
-        setIdx(i => (i + 1) % reviews.length)
-        setVisible(true)
-      }, 400)
-    }, 8000)
-    return () => clearInterval(t)
-  }, [reviews.length])
+    if (!reviews.length) return
 
-  // Occasional disappearance for small devices
-  useEffect(() => {
-    const handleVisibility = () => {
-      if (window.innerWidth < 1024) { // Only for smaller devices
-        const cycle = setInterval(() => {
-          setGloballyVisible(false)
-          setTimeout(() => setGloballyVisible(true), 5000) // Stay hidden for 5s
-        }, 20000) // Cycle every 20s
-        return () => clearInterval(cycle)
-      }
+    const cycleTime = 1000 * 60 * 5 // 5 minutes
+    const itemDuration = 8000 // 8s per review
+
+    let currentIdx = 0
+    let itemInterval: any
+    let cycleTimeout: any
+
+    const startReviewLoop = () => {
+      setIsShowing(true)
+      currentIdx = 0
+      setIdx(0)
+      setVisible(true)
+
+      itemInterval = setInterval(() => {
+        setVisible(false)
+        setTimeout(() => {
+          if (currentIdx >= reviews.length - 1) {
+            // Cycle finished
+            clearInterval(itemInterval)
+            setIsShowing(false)
+            // Schedule next cycle
+            cycleTimeout = setTimeout(startReviewLoop, cycleTime)
+          } else {
+            currentIdx++
+            setIdx(currentIdx)
+            setVisible(true)
+          }
+        }, 600)
+      }, itemDuration)
     }
-    return handleVisibility()
-  }, [])
 
-  if (reviews.length === 0) return null
+    // First cycle after 5 minutes
+    cycleTimeout = setTimeout(startReviewLoop, cycleTime)
 
-  return (
+    return () => {
+      clearInterval(itemInterval)
+      clearTimeout(cycleTimeout)
+    }
+  }, [reviews.length, reviews])
+
+  if (reviews.length === 0 || !isShowing) return null
+
+  const DesktopPanel = (
     <div 
       className={`
         bg-white/5 backdrop-blur-[20px] border border-white/10 
         rounded-br-[.5rem] rounded-tl-[.5rem] rounded-tr-[.5rem] rounded-bl-[1.5rem] 
         p-8 shadow-[0_30px_100px_rgba(0,0,0,0.3)] 
-        transition-all duration-1000 animate-in fade-in slide-in-from-bottom-4 
-        ${!globallyVisible ? 'opacity-0 translate-y-4 pointer-events-none' : 'opacity-100 translate-y-0'}
+        transition-all duration-1000 animate-in fade-in slide-in-from-bottom-4
       `}
       style={{
         boxShadow: 'inset 0 0 40px rgba(255,255,255,0.05)',
@@ -117,6 +136,55 @@ function ReviewPanel() {
         <ReviewCard review={reviews[idx]} />
       </div>
     </div>
+  )
+
+  const MobileWidget = (
+    <motion.div
+      initial={{ opacity: 0, scale: 0.8, x: -20 }}
+      animate={{ opacity: 1, scale: 1, x: 0 }}
+      exit={{ opacity: 0, scale: 0.8, x: -20 }}
+      className="lg:hidden fixed bottom-6 left-6 z-[100] w-[calc(100%-48px)] max-w-[320px] bg-black/60 backdrop-blur-md border border-white/10 rounded-[1.5rem] p-6 shadow-2xl overflow-hidden"
+    >
+      <div 
+        className="absolute inset-0 opacity-20 pointer-events-none"
+        style={{ background: 'linear-gradient(135deg, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0) 100%)' }}
+      />
+      
+      <button 
+        onClick={() => setIsShowing(false)}
+        className="absolute top-4 right-4 h-6 w-6 rounded-full bg-white/5 flex items-center justify-center text-white/40 hover:text-white transition-all border border-white/5"
+      >
+        <X size={12} />
+      </button>
+
+      <div className="flex items-center gap-3 mb-4 relative z-10">
+        <div className="h-1.5 w-1.5 rounded-full bg-white/40 animate-pulse" />
+        <span className="text-[9px] tracking-[0.3em] uppercase font-black text-white/40">Community</span>
+      </div>
+
+      <div className="relative z-10 transition-opacity duration-500" style={{ opacity: visible ? 1 : 0 }}>
+        <ReviewCard review={reviews[idx]} />
+      </div>
+
+      <div className="mt-6 flex justify-between items-center relative z-10">
+        <div className="flex gap-1">
+          {reviews.slice(0, 5).map((_, i) => (
+            <div key={i} className={`h-0.5 rounded-full transition-all duration-500 ${i === idx % 5 ? 'w-3 bg-white' : 'w-0.5 bg-white/10'}`} />
+          ))}
+        </div>
+      </div>
+    </motion.div>
+  )
+
+  return (
+    <>
+      <div className="hidden lg:block">
+        {DesktopPanel}
+      </div>
+      <div className="lg:hidden">
+        {MobileWidget}
+      </div>
+    </>
   )
 }
 
@@ -191,7 +259,7 @@ export default function LoginPage() {
     setFormLoading(true)
     try {
       const res = await authApi.googleAuth({ credential: googleCredential, registration: formData })
-      login({ accessToken: res.data.accessToken, refreshToken: res.data.refreshToken }, res.data.user)
+      login({ accessToken: res.data.accessToken, refreshToken: refreshToken }, res.data.user)
       navigate('/dashboard', { replace: true })
       toast.success('Your shop is now live on hynk!')
     } catch (err: any) { toast.error(getErrorMessage(err)) }
@@ -237,10 +305,8 @@ export default function LoginPage() {
         .lp-left {
           flex: 1;
           margin: .5em;
-          // filter: brightness(0.7);
           position: relative;
           border-radius: 2rem;
-          // color: #01694B;
           background-image: url(${authBg});
           background-size: cover;
           background-position: center;
@@ -302,44 +368,30 @@ export default function LoginPage() {
           .lp-container { border-radius: 2rem; }
           .lp-right { padding: 40px 24px; }
         }
-
-
       `}</style>
 
-      {/* ── Page fade-in ── */}
       <motion.div
         className="lp-page lp-sans"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.6, ease: 'easeOut' }}
       >
-        {/* ── Card slide-up ── */}
         <motion.div
           className="lp-container"
           initial={{ opacity: 0, y: 40, scale: 0.97 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           transition={{ duration: 0.6, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
         >
-
           {/* Left section: The "Window" inside the white card */}
           <div className="lp-left hidden lg:flex">
             <div className="relative z-10 w-full">
-              <div className="flex items-center gap-4 mb-16">
-                {/* <div className="flex items-center gap-2 px-3 py-1 bg-white/10 backdrop-blur-md rounded-full border border-white/20">
-                   <Sparkles size={12} className="text-white" />
-                   <span className="text-[10px] tracking-[0.2em] uppercase font-bold text-white">Platform Goal</span>
-                </div> */}
-                <div className="h-[2px] w-24 bg-white/50" />
-              </div>
-
+              <div className="h-[2px] w-24 bg-white/50 mb-16" />
               <h1 className="lp-title">
                 The Smartest Way <br /> to Grow <br /> Your Biashara
               </h1>
-
               <p className="text-xl text-white font-light opacity-90 leading-relaxed max-w-sm drop-shadow-lg mb-10">
                 Stop the guesswork. Use modern tracking to manage stock and double your business profits.
               </p>
-
               <div className="flex flex-col gap-5">
                 {[
                   'M-Pesa Friendly Sales Tracking',
@@ -347,7 +399,7 @@ export default function LoginPage() {
                   'Automated Insights to Cut Costs',
                   'Instant Setup, No Fees to Start'
                 ].map((item, i) => (
-                  <div key={item} className="flex items-center gap-4 text-white group" style={{ opacity: 0, animation: `lp-text-in 0.8s forwards ${0.7 + (i * 0.1)}s` }}>
+                  <div key={item} className="flex items-center gap-4 text-white group">
                     <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center group-hover:bg-white/40 transition-colors">
                       <Check size={14} strokeWidth={3} />
                     </div>
@@ -362,15 +414,12 @@ export default function LoginPage() {
             </div>
           </div>
 
-          {/* Right section: the white form */}
           <div className="lp-right">
             <div className="w-full max-w-[380px] mx-auto flex flex-col h-full">
-
               <div className="flex justify-center mb-12">
-                <img src={logo} alt="hlynk" className="h-12 object-contain sm:h-12 md:h-12 lg:h-12" />
+                <img src={logo} alt="hlynk" className="h-12 object-contain" />
               </div>
 
-              {/* ── AnimatePresence handles the login ↔ registration transition ── */}
               <AnimatePresence mode="wait">
                 {!requiresRegistration ? (
                   <motion.div
@@ -378,7 +427,7 @@ export default function LoginPage() {
                     initial={{ opacity: 0, x: 20 }}
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: -20 }}
-                    transition={{ duration: 0.35, ease: 'easeInOut' }}
+                    transition={{ duration: 0.35 }}
                   >
                     <div className="text-center mb-10">
                       <h2 className="lp-serif text-[52px] leading-tight text-black mb-2">Welcome Back</h2>
@@ -395,12 +444,6 @@ export default function LoginPage() {
                       <div className="h-[1px] flex-1 bg-[#f1f5f9]" />
                     </div>
 
-                    <div className="my-8 px-2">
-                      <p className="text-[12px] text-gray-400 font-medium leading-relaxed italic">
-                        "Your records are protected by bank-grade encryption and stored securely in the cloud. You alone have access to your financial data."
-                      </p>
-                    </div>
-
                     <label className="flex items-start gap-4 mb-10 cursor-pointer group">
                       <input type="checkbox" className="mt-1 accent-black w-5 h-5 cursor-pointer rounded-md border-gray-200"
                         checked={acceptedEula} onChange={e => {
@@ -413,11 +456,10 @@ export default function LoginPage() {
                       </span>
                     </label>
 
-                    <a href="/" className="text-right flex items-center mt-8 cursor-pointer text-black font-normal pl-5 hover:underline bg-transparent border-none outline-none">
-                    <ArrowLeft size={12} className="mr-2" />
+                    <a href="/" className="text-right flex items-center mt-8 cursor-pointer text-black font-normal pl-5 hover:underline">
+                      <ArrowLeft size={12} className="mr-2" />
                       Back to Website
                     </a>
-
                   </motion.div>
                 ) : (
                   <motion.div
@@ -425,23 +467,12 @@ export default function LoginPage() {
                     initial={{ opacity: 0, x: 20 }}
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: -20 }}
-                    transition={{ duration: 0.35, ease: 'easeInOut' }}
+                    transition={{ duration: 0.35 }}
                   >
                     <form onSubmit={handleRegistrationSubmit} className="flex flex-col h-full">
                       <div className="text-center mb-8">
                         <h2 className="lp-serif text-[42px] leading-tight text-black mb-2">Setup Shop</h2>
                         <p className="text-gray-400 font-light text-sm">Tell us about your biashara to get started.</p>
-                      </div>
-
-                      <div className="bg-[#f8fafc] rounded-2xl p-4 mb-6 flex items-center gap-4 border border-[#f1f5f9]">
-                        {googleProfile?.picture && <img src={googleProfile.picture} alt="" className="w-11 h-11 rounded-full shadow-md" />}
-                        <div className="flex-1 min-w-0">
-                          <div className="text-[9px] text-[#94a3b8] font-bold uppercase tracking-widest mb-1">Verify Ownership</div>
-                          <div className="text-[14px] text-black font-bold truncate">{googleProfile?.email}</div>
-                        </div>
-                        <div className="w-6 h-6 rounded-full bg-black flex items-center justify-center shadow-lg">
-                          <Check size={12} color="white" strokeWidth={4} />
-                        </div>
                       </div>
 
                       <div className="flex flex-col gap-4 mb-8">
@@ -474,7 +505,6 @@ export default function LoginPage() {
                         {formLoading ? <Loader2 size={18} className="animate-spin" /> : 'Launch My biashara'}
                       </button>
 
-                      {/* back to login page */}
                       <button
                         type="button"
                         disabled={formLoading}
@@ -483,44 +513,16 @@ export default function LoginPage() {
                           setGoogleCredential('')
                           setGoogleProfile(null)
                         }}
-                        className="text-left mt-8 cursor-pointer text-black font-normal pl-5 hover:underline bg-transparent border-none outline-none"
+                        className="text-left mt-8 cursor-pointer text-black font-normal pl-5 hover:underline"
                       >
                         Back to Login
                       </button>
-
                     </form>
                   </motion.div>
                 )}
               </AnimatePresence>
-
             </div>
-
-            {/* ── Mobile-only inline review section (appears at bottom of scroll) ── */}
-            <div className="mt-12 lg:hidden w-full max-w-[380px] mx-auto">
-              <div className="rounded-[2rem] overflow-hidden shadow-2xl" style={{ 
-                background: 'linear-gradient(135deg, #0a1712 0%, #0d4a3e 100%)',
-                border: '1px solid rgba(52,211,153,0.15)'
-              }}>
-                <ReviewPanel />
-              </div>
-              {/* <p className="text-center text-[10px] text-gray-400 mt-6 tracking-widest uppercase font-bold opacity-50">
-                Trusted by 1000+ Businesses
-              </p> */}
-            </div>
-
           </div>
-        </motion.div>
-
-        {/* ── Realistic Footer Counter ── */}
-        <motion.div
-          className="absolute bottom-8 left-0 w-full text-center z-20 pointer-events-none"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 0.6 }}
-          transition={{ delay: 1, duration: 1 }}
-        >
-          {/* <p className="text-[15px] tracking-[0.3em] font-black drop-shadow-md">
-            Join {platformStats.totalBusinesses?.toLocaleString()}+ Kenyan businesses growing today.
-          </p> */}
         </motion.div>
       </motion.div>
     </>
