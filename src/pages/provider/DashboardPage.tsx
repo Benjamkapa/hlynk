@@ -97,7 +97,17 @@ export default function DashboardPage() {
           <div className="flex justify-between items-center mb-10">
             <div>
               <h3 className="text-2xl font-black text-slate-900">Revenue Trajectory</h3>
-              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">Daily transaction volume (Last 7 Days)</p>
+              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">Movement of money in your shop (Last 7 Days)</p>
+            </div>
+            <div className="flex gap-6">
+               <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full bg-emerald-500" />
+                  <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">Total Sales</span>
+               </div>
+               <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full bg-blue-500" />
+                  <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">Actual Profit</span>
+               </div>
             </div>
           </div>
           

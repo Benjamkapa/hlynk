@@ -17,7 +17,10 @@ export default function RecordSalePage() {
   const [searchInput, setSearchInput] = useState('')
   const [page, setPage] = useState(1)
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
-  const [cart, setCart] = useState<any[]>([])
+  const [cart, setCart] = useState<any[]>(() => {
+    const saved = localStorage.getItem('hlynk_pos_cart')
+    return saved ? JSON.parse(saved) : []
+  })
   const [paymentMethod, setPaymentMethod] = useState('CASH')
   const [selectedCustomerId, setSelectedCustomerId] = useState<string | null>(null)
   const [customerSearch, setCustomerSearch] = useState('')
@@ -39,6 +42,11 @@ export default function RecordSalePage() {
     const timer = setTimeout(() => setCustomerSearch(customerSearchInput), 300)
     return () => clearTimeout(timer)
   }, [customerSearchInput])
+
+  // Persist cart
+  useEffect(() => {
+    localStorage.setItem('hlynk_pos_cart', JSON.stringify(cart))
+  }, [cart])
 
   const { data: productsData, isLoading: productsLoading, error: productsError } = useQuery<PaginatedResponse<any>>({
     queryKey: ['inventory-pos', search, page],
@@ -193,6 +201,7 @@ export default function RecordSalePage() {
           icon: <CheckCircle2 className="text-emerald-500" />
         })
         setCart([])
+        localStorage.removeItem('hlynk_pos_cart')
         setMpesaPhone('')
         setPaymentMethod('CASH')
         setSelectedCustomerId(null)
@@ -251,6 +260,7 @@ export default function RecordSalePage() {
 
     // Reset UI
     setCart([])
+    localStorage.removeItem('hlynk_pos_cart')
     setMpesaPhone('')
     setPaymentMethod('CASH')
     setSelectedCustomerId(null)
@@ -304,6 +314,7 @@ export default function RecordSalePage() {
             icon: <CheckCircle2 className="text-emerald-500" />
           })
           setCart([])
+          localStorage.removeItem('hlynk_pos_cart')
           setMpesaPhone('')
           setPaymentMethod('CASH')
           setSelectedCustomerId(null)
@@ -563,7 +574,7 @@ export default function RecordSalePage() {
             <div className="flex items-center justify-between mb-10 relative z-10">
               <h3 className="text-2xl font-black text-slate-900 tracking-tighter">Cart Summary</h3>
               <span className="bg-[#0D4A3E] text-white px-4 py-1.5 rounded-[.5rem] text-[11px] font-black uppercase tracking-widest hl-mono shadow-lg shadow-emerald-900/20">
-                {cart.length} ITEMS
+                {cart.reduce((sum, item) => sum + item.quantity, 0)} ITEMS
               </span>
             </div>
 
@@ -646,7 +657,7 @@ export default function RecordSalePage() {
                         <Plus size={14} />
                       </button>
                     </div>
-                    <button onClick={(e) => { e.stopPropagation(); removeFromCart(item.id); }} className="h-8 w-8 rounded-[.5rem] text-slate-200 hover:text-red-500 hover:bg-red-50 transition-all flex items-center justify-center">
+                    <button onClick={(e) => { e.stopPropagation(); removeFromCart(item.id); }} className="h-8 w-8 rounded-[.5rem] text-slate-400 hover:text-red-500 hover:bg-red-50 transition-all flex items-center justify-center border border-transparent hover:border-red-100">
                       <Trash2 size={16} />
                     </button>
                   </div>
@@ -847,7 +858,7 @@ export default function RecordSalePage() {
               <div className="h-10 w-10 bg-white/20 rounded-[.5rem] flex items-center justify-center relative">
                 <ShoppingCart size={20} />
                 <span className="absolute -top-2 -right-2 h-5 w-5 bg-red-500 text-white text-[10px] font-black rounded-full flex items-center justify-center border-2 border-[#0D4A3E]">
-                  {cart.length}
+                  {cart.reduce((sum, item) => sum + item.quantity, 0)}
                 </span>
               </div>
               <div className="text-left">

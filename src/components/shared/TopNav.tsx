@@ -139,9 +139,16 @@ export default function TopNav({ isMobileOpen, onMobileMenuToggle, isCollapsed, 
                 ) : (
                   <div className="divide-y divide-slate-50">
                     {notifications.map((n: any) => (
-                      <div key={n.id} className="p-5" onClick={() => !n.isRead && markReadMutation.mutate(n.id)}>
-                        <p className="text-xs font-black text-slate-900 tracking-tight">{n.title}</p>
-                        <p className="text-[11px] text-slate-500 leading-tight">{n.message}</p>
+                      <div key={n.id} className="p-5 hover:bg-slate-50 transition-colors cursor-pointer" onClick={() => !n.isRead && markReadMutation.mutate(n.id)}>
+                        <div className="flex gap-4">
+                          <div className="h-8 w-8 shrink-0 bg-white border border-slate-100 rounded-[.4rem] p-1.5 shadow-sm flex items-center justify-center">
+                            <img src="/fav.png" alt="hlynk" className="w-full h-full object-contain" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className={`text-xs font-black tracking-tight ${n.isRead ? 'text-slate-400' : 'text-slate-900'}`}>{n.title}</p>
+                            <p className="text-[10px] text-slate-500 leading-tight mt-0.5 line-clamp-2">{n.message}</p>
+                          </div>
+                        </div>
                       </div>
                     ))}
                   </div>

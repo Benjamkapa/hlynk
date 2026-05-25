@@ -30,13 +30,39 @@ interface NavGroup {
 export default function ProviderLayout() {
   const { user, logout } = useAuth();
   const location = useLocation();
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(true);
   const [isHovered, setIsHovered] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [reviewRating, setReviewRating] = useState(0);
   const [reviewText, setReviewText] = useState("");
   const [isSubmittingReview, setIsSubmittingReview] = useState(false);
+
+  // Inactivity timer: 5 minutes (300,000 ms)
+  useEffect(() => {
+    let timer: any;
+    const resetTimer = () => {
+      if (timer) clearTimeout(timer);
+      timer = setTimeout(() => {
+        setIsSidebarOpen(false);
+      }, 300000);
+    };
+
+    if (isSidebarOpen) {
+      resetTimer();
+      window.addEventListener('mousemove', resetTimer);
+      window.addEventListener('keydown', resetTimer);
+      window.addEventListener('click', resetTimer);
+    }
+
+    return () => {
+      if (timer) clearTimeout(timer);
+      window.removeEventListener('mousemove', resetTimer);
+      window.removeEventListener('keydown', resetTimer);
+      window.removeEventListener('click', resetTimer);
+    };
+  }, [isSidebarOpen]);
 
   useEffect(() => {
     setIsMobileOpen(false);
@@ -174,13 +200,13 @@ export default function ProviderLayout() {
   };
 
   const SidebarContent = ({ collapsed }: { collapsed: boolean }) => (
-    <div className={`flex flex-col h-full bg-white transition-all duration-300 ${collapsed ? 'w-[90px]' : 'w-[280px]'}`}>
-      <div className={`pt-10 pb-12 flex items-center transition-all duration-300 ${collapsed ? 'justify-center' : 'px-8'}`}>
-        <div className="flex items-center gap-3">
+    <div className={`flex flex-col h-full bg-white transition-all duration-300 ${collapsed ? 'w-[48px] lg:w-[70px]' : 'w-[280px]'}`}>
+      <div className="h-20 lg:h-28 flex items-center px-4 lg:px-6">
+        <div className="w-6 lg:w-10 flex justify-center">
           {collapsed ? (
-            <img src="/fav.png" alt="hlynk" className="h-8 w-8" />
+            <img src="/fav.png" alt="hlynk" className="h-6 w-6 lg:h-8 lg:w-8 transition-transform" />
           ) : (
-            <img src="/logo.png" alt="hlynk" className="h-10 w-auto" />
+            <img src="/logo.png" alt="hlynk" className="h-8 lg:h-10 w-auto transition-transform" />
           )}
         </div>
       </div>
@@ -206,7 +232,7 @@ export default function ProviderLayout() {
                 const ItemContent = (
                   <>
                     <div className="relative">
-                      <item.icon size={20} className={collapsed ? '' : 'shrink-0'} />
+                      <item.icon className={`transition-all ${collapsed ? 'w-[18px] lg:w-[20px] h-[18px] lg:h-[20px]' : 'w-[20px] h-[20px] shrink-0'}`} />
                       {item.isLocked && (
                         <div className="absolute -top-1 -right-1 h-3 w-3 bg-amber-500 rounded-full flex items-center justify-center border-2 border-white">
                           <Lock size={6} className="text-white fill-white" />
@@ -244,7 +270,7 @@ export default function ProviderLayout() {
                     to={item.to}
                     end={item.end}
                     className={({ isActive }) =>
-                      `hl-sidebar-item ${isActive ? 'active' : ''} ${collapsed ? 'justify-center px-0' : ''}`
+                      `hl-sidebar-item ${isActive ? 'active shadow-lg shadow-emerald-900/10' : ''} ${collapsed ? 'justify-center px-0 mx-2' : ''}`
                     }
                   >
                     {ItemContent}
@@ -279,12 +305,6 @@ export default function ProviderLayout() {
           <NavLink to="/dashboard/settings" className="flex-1 h-12 bg-slate-50 rounded-[.5rem] flex items-center justify-center text-slate-400 hover:bg-emerald-50 hover:text-emerald-600 transition-all border border-slate-100">
             <Settings size={20} />
           </NavLink>
-          <button
-            onClick={() => logout()}
-            className="h-12 w-12 bg-slate-50 rounded-[.5rem] flex items-center justify-center text-slate-400 hover:bg-red-50 hover:text-red-600 transition-all border border-slate-100"
-          >
-            <LogOut size={20} />
-          </button>
         </div>
       </div>
     </div>
@@ -301,7 +321,8 @@ export default function ProviderLayout() {
               <button
                 onClick={() => {
                   setShowReviewModal(false);
-                  localStorage.setItem('hlynk_has_reviewed', 'true');
+                  const reviewKey = `hlynk_reviewed_${user?.tenantId}_${targetEndDate}`;
+                  localStorage.setItem(reviewKey, 'true');
                 }}
                 className="absolute top-6 right-6 text-slate-400 hover:text-slate-900 transition-colors"
               >
@@ -372,21 +393,30 @@ export default function ProviderLayout() {
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
         className={`
-          fixed inset-y-0 left-0 z-50 flex flex-col
-          transition-all duration-300 ease-in-out
-          lg:relative lg:translate-x-0
-          ${isMobileOpen ? 'translate-x-0 w-[280px]' : '-translate-x-full lg:w-[280px]'}
-          ${isCollapsed ? 'lg:w-[90px]' : 'lg:w-[280px]'}
+          fixed inset-y-0 left-0 z-50 flex flex-col pointer-events-none transition-all duration-700
+          lg:relative translate-x-0
+          ${!isSidebarOpen ? '-translate-x-full opacity-0 w-0' : 'translate-x-0 opacity-100'}
+          ${isCollapsed && !isHovered ? 'w-[80px] lg:w-[102px]' : 'w-[312px]'}
         `}
       >
         <div className={`
-          absolute inset-y-0 left-0 bg-white border-r border-slate-100 flex flex-col
-          transition-all duration-300 ease-in-out overflow-hidden
-          ${isCollapsed && isHovered ? 'w-[280px] shadow-2xl z-[60]' : 'w-full'}
+          absolute inset-y-0 left-0 flex flex-col pointer-events-auto
+          transition-all duration-300 ease-in-out overflow-hidden hl-sidebar-floating
+          ${isCollapsed && isHovered ? 'w-[280px] shadow-2xl z-[60]' : 'w-[calc(100%-2rem)]'}
         `}>
           <SidebarContent collapsed={isCollapsed && !isHovered} />
         </div>
       </aside>
+
+      {/* ── LAUNCHER ICON ── */}
+      {!isSidebarOpen && (
+        <button
+          onClick={() => setIsSidebarOpen(true)}
+          className="fixed bottom-8 left-8 z-[100] h-14 w-14 bg-[#0D4A3E] text-white rounded-full flex items-center justify-center shadow-2xl hover:scale-110 active:scale-95 transition-all animate-in zoom-in-0 duration-300 border-4 border-white/20"
+        >
+          <PanelLeftOpen size={24} />
+        </button>
+      )}
 
       {/* ── MOBILE SWIPE HANDLE ── */}
       <motion.div
@@ -399,7 +429,7 @@ export default function ProviderLayout() {
       />
 
       {/* ── MAIN CONTENT ── */}
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
+      <div className={`flex-1 flex flex-col min-w-0 overflow-hidden relative transition-all duration-700 ${isSidebarOpen && isCollapsed && !isHovered ? 'pl-[80px] lg:pl-[102px]' : 'pl-0'}`}>
         {isCritical && user?.role === 'PROVIDER' && (
           <div className="bg-red-600 text-white px-8 py-3 flex items-center justify-between animate-in slide-in-from-top duration-700 z-[100] shadow-2xl">
             <div className="flex items-center gap-4">
@@ -424,7 +454,7 @@ export default function ProviderLayout() {
         )}
         <TopNav
           isMobileOpen={isMobileOpen}
-          onMobileMenuToggle={() => setIsMobileOpen(!isMobileOpen)}
+          onMobileMenuToggle={undefined}
           isCollapsed={isCollapsed}
           onToggleCollapse={() => setIsCollapsed(!isCollapsed)}
           showMail={true}

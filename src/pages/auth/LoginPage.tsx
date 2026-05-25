@@ -40,35 +40,15 @@ type RegisterFormState = {
 
 function ReviewCard({ review }: { review: any }) {
   return (
-    <div className="flex items-start gap-4 p-2">
-      <div className="shrink-0">
-        {review.photoUrl ? (
-          <img
-            src={review.photoUrl}
-            alt={review.name}
-            className="w-12 h-12 rounded-full object-cover shadow-lg"
-          />
-        ) : (
-          <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center border-2 border-white/20">
-            <span className="text-xs font-bold text-white/50">{review.name?.charAt(0)}</span>
-          </div>
-        )}
-      </div>
-      <div className="flex flex-col gap-2 min-w-0">
-        <StarRating rating={review.rating || 5} size={10} />
-        <p className="text-[14px] text-white leading-relaxed font-light italic opacity-90 drop-shadow-sm line-clamp-3">
-          "{review.comment}"
-        </p>
-        <div className="text-[11px] font-bold text-white/60 flex items-center gap-2">
-          <span className="text-white font-black font-light uppercase tracking-tighter">{review.name}</span>
-          {review.businessName && (
-            <>
-              <div className="w-1 h-1 rounded-full bg-white/20" />
-              <span className="opacity-70 truncate">{review.businessName}</span>
-            </>
-          )}
+    <div className="flex flex-col gap-3 p-1">
+      <p className="text-[15px] text-white leading-[1.6] font-light italic opacity-95 drop-shadow-sm line-clamp-4">
+        "{review.comment}"
+      </p>
+      {review.businessName && (
+        <div className="text-[10px] font-black text-white/50 tracking-[0.2em] uppercase">
+          {review.businessName}
         </div>
-      </div>
+      )}
     </div>
   )
 }
@@ -77,17 +57,14 @@ function ReviewPanel() {
   const [reviews, setReviews] = useState<PlatformReview[]>([])
   const [idx, setIdx] = useState(0)
   const [visible, setVisible] = useState(true)
+  const [globallyVisible, setGloballyVisible] = useState(true)
 
   useEffect(() => {
     platformApi.getReviews({ limit: 10 })
       .then(res => {
-        if (res.items?.length) {
-          setReviews(res.items)
-        }
+        if (res.items?.length) setReviews(res.items)
       })
-      .catch((err) => {
-        console.error('Failed to fetch reviews:', err)
-      })
+      .catch(console.error)
   }, [])
 
   useEffect(() => {
@@ -98,19 +75,45 @@ function ReviewPanel() {
         setIdx(i => (i + 1) % reviews.length)
         setVisible(true)
       }, 400)
-    }, 6000)
+    }, 8000)
     return () => clearInterval(t)
   }, [reviews.length])
+
+  // Occasional disappearance for small devices
+  useEffect(() => {
+    const handleVisibility = () => {
+      if (window.innerWidth < 1024) { // Only for smaller devices
+        const cycle = setInterval(() => {
+          setGloballyVisible(false)
+          setTimeout(() => setGloballyVisible(true), 5000) // Stay hidden for 5s
+        }, 20000) // Cycle every 20s
+        return () => clearInterval(cycle)
+      }
+    }
+    return handleVisibility()
+  }, [])
 
   if (reviews.length === 0) return null
 
   return (
-    <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-br-[.5rem] rounded-tl-[.5rem] rounded-tr-[.5rem] rounded-bl-[1.5rem] p-6 shadow-2xl transition-all duration-700 animate-in fade-in slide-in-from-bottom-4">
-      <div className="flex items-center gap-3 mb-4">
-        <span className="text-[9px] tracking-[0.3em] uppercase font-bold text-white/40">From the Community</span>
-        <div className="h-[1px] flex-1 bg-white/10" />
+    <div 
+      className={`
+        bg-white/5 backdrop-blur-[20px] border border-white/10 
+        rounded-br-[.5rem] rounded-tl-[.5rem] rounded-tr-[.5rem] rounded-bl-[1.5rem] 
+        p-8 shadow-[0_30px_100px_rgba(0,0,0,0.3)] 
+        transition-all duration-1000 animate-in fade-in slide-in-from-bottom-4 
+        ${!globallyVisible ? 'opacity-0 translate-y-4 pointer-events-none' : 'opacity-100 translate-y-0'}
+      `}
+      style={{
+        boxShadow: 'inset 0 0 40px rgba(255,255,255,0.05)',
+        background: 'linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 100%)'
+      }}
+    >
+      <div className="flex items-center gap-3 mb-6">
+        <span className="text-[8px] tracking-[0.4em] uppercase font-black text-white/30">Community</span>
+        <div className="h-[1px] flex-1 bg-white/5" />
       </div>
-      <div style={{ opacity: visible ? 1 : 0, transition: 'opacity 0.4s ease' }}>
+      <div style={{ opacity: visible ? 1 : 0, transition: 'opacity 0.6s ease' }}>
         <ReviewCard review={reviews[idx]} />
       </div>
     </div>

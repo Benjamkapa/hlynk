@@ -50,7 +50,7 @@
   /* Mobile Zoom / Compact View Support */
   @media (max-width: 768px) {
     html.mobile-compact {
-      font-size: 74% !important; /* Squeezed more for high density */
+      font-size: 68% !important; /* Squeezed even more for ultimate high density */
     }
     
     html.mobile-expanded {
@@ -61,24 +61,40 @@
     html.mobile-compact .grid-compact-cols {
       display: grid !important;
       grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-      gap: 1rem !important;
+      gap: 0.75rem !important;
     }
 
-    /* Reduce padding in cards for high density mobile */
+    /* Aggressive padding reduction for compact view */
     html.mobile-compact .p-8,
-    html.mobile-compact .p-10 {
-       padding: 1.25rem !important;
+    html.mobile-compact .p-10,
+    html.mobile-compact .p-12 {
+       padding: 1rem !important;
     }
     
     html.mobile-compact .px-8,
-    html.mobile-compact .px-12 {
-       padding-left: 1rem !important;
-       padding-right: 1rem !important;
+    html.mobile-compact .px-12,
+    html.mobile-compact .px-10 {
+       padding-left: 0.75rem !important;
+       padding-right: 0.75rem !important;
     }
 
-    html.mobile-compact .py-12 {
-       padding-top: 1.5rem !important;
-       padding-bottom: 1.5rem !important;
+    html.mobile-compact .py-12,
+    html.mobile-compact .py-10 {
+       padding-top: 1rem !important;
+       padding-bottom: 1rem !important;
+    }
+
+    html.mobile-compact .gap-6,
+    html.mobile-compact .gap-8,
+    html.mobile-compact .gap-12 {
+       gap: 0.75rem !important;
+    }
+
+    html.mobile-compact .space-y-6,
+    html.mobile-compact .space-y-8,
+    html.mobile-compact .space-y-10 {
+       margin-top: 0.75rem !important;
+       margin-bottom: 0.75rem !important;
     }
   }
 
@@ -315,11 +331,16 @@
   .hl-sidebar-item:hover {
     background: var(--mint-soft, #ECFDF5);
     color: var(--forest, #064E3B);
+    transform: translateX(4px);
   }
   .hl-sidebar-item.active {
     background: var(--forest, #064E3B);
     color: #fff;
-    box-shadow: var(--shadow-md, 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1));
+    box-shadow: 0 10px 15px -3px rgba(6, 78, 59, 0.2);
+  }
+  
+  .hl-sidebar-floating {
+    @apply m-2 lg:m-4 rounded-[1.5rem] border border-slate-100 shadow-[0_20px_50px_rgba(0,0,0,0.05)];
   }
 }
 

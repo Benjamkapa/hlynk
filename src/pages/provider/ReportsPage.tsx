@@ -85,11 +85,18 @@ export default function ReportsPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 bg-white p-8 rounded-[.5em] border border-gray-100 shadow-sm">
             <div className="flex justify-between items-center mb-8">
-              <h3 className="text-xl font-black text-gray-900">Weekly Performance</h3>
-              <div className="flex gap-4">
+              <div>
+                <h3 className="text-xl font-black text-gray-900">Weekly Performance</h3>
+                <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">Comparison of your total sales vs actual take-home profit</p>
+              </div>
+              <div className="flex gap-6">
                  <div className="flex items-center gap-2">
                     <div className="w-3 h-3 rounded-full bg-emerald-500" />
-                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Gross Sales</span>
+                    <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Gross Sales</span>
+                 </div>
+                 <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-blue-500" />
+                    <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Net Profit</span>
                  </div>
               </div>
             </div>

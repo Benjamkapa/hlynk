@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Plus, Search, Filter, Download, Edit,  Trash2, Package, TrendingDown, Activity, AlertTriangle } from 'lucide-react'
+import { Plus, Search, Filter, Download, Edit,  Trash2, Package, TrendingDown, Activity, AlertTriangle, LayoutGrid, List } from 'lucide-react'
 import { ConfirmModal } from '../../components/shared/ConfirmModal'
 import { SlideOver } from '../../components/shared/SlideOver'
 import { toast } from 'sonner'
@@ -22,6 +22,7 @@ export default function ProductsPage() {
   const [sortBy, setSortBy] = useState('createdAt')
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
   const [category, setCategory] = useState('')
+  const [viewMode, setViewMode] = useState<'list' | 'grid'>('grid')
   const queryClient = useQueryClient()
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
 
@@ -144,85 +145,165 @@ export default function ProductsPage() {
                ))}
              </select>
           </div>
+          
+          <div className="flex bg-gray-50 p-1 rounded-[.5rem] border border-gray-100">
+            <button 
+              onClick={() => setViewMode('list')}
+              className={`p-2 rounded-[.4rem] transition-all ${viewMode === 'list' ? 'bg-white shadow-sm text-emerald-600' : 'text-gray-400 hover:text-gray-600'}`}
+            >
+              <List size={18} />
+            </button>
+            <button 
+              onClick={() => setViewMode('grid')}
+              className={`p-2 rounded-[.4rem] transition-all ${viewMode === 'grid' ? 'bg-white shadow-sm text-emerald-600' : 'text-gray-400 hover:text-gray-600'}`}
+            >
+              <LayoutGrid size={18} />
+            </button>
+          </div>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-left">
-            <thead>
-              <tr className="bg-gray-50/50">
-                <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest cursor-pointer hover:text-emerald-600" onClick={() => { setSortBy('name'); setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc') }}>Product {sortBy === 'name' && (sortOrder === 'asc' ? '↑' : '↓')}</th>
-                <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest cursor-pointer hover:text-emerald-600" onClick={() => { setSortBy('category'); setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc') }}>Category {sortBy === 'category' && (sortOrder === 'asc' ? '↑' : '↓')}</th>
-                <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center cursor-pointer hover:text-emerald-600" onClick={() => { setSortBy('stockLevel'); setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc') }}>In Stock {sortBy === 'stockLevel' && (sortOrder === 'asc' ? '↑' : '↓')}</th>
-                <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right cursor-pointer hover:text-emerald-600" onClick={() => { setSortBy('buyingPrice'); setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc') }}>Buying {sortBy === 'buyingPrice' && (sortOrder === 'asc' ? '↑' : '↓')}</th>
-                <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right cursor-pointer hover:text-emerald-600" onClick={() => { setSortBy('price'); setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc') }}>Selling {sortBy === 'price' && (sortOrder === 'asc' ? '↑' : '↓')}</th>
-                <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Action</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-50">
-              {isLoading ? (
-                <tr>
-                  <td colSpan={6} className="py-20 text-center">
-                     <div className="h-8 w-8 animate-spin rounded-full border-4 border-emerald-500 border-t-transparent mx-auto" />
-                  </td>
+        {viewMode === 'list' ? (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left">
+              <thead>
+                <tr className="bg-gray-50/50">
+                  <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest cursor-pointer hover:text-emerald-600" onClick={() => { setSortBy('name'); setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc') }}>Product {sortBy === 'name' && (sortOrder === 'asc' ? '↑' : '↓')}</th>
+                  <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest cursor-pointer hover:text-emerald-600" onClick={() => { setSortBy('category'); setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc') }}>Category {sortBy === 'category' && (sortOrder === 'asc' ? '↑' : '↓')}</th>
+                  <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center cursor-pointer hover:text-emerald-600" onClick={() => { setSortBy('stockLevel'); setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc') }}>In Stock {sortBy === 'stockLevel' && (sortOrder === 'asc' ? '↑' : '↓')}</th>
+                  <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right cursor-pointer hover:text-emerald-600" onClick={() => { setSortBy('buyingPrice'); setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc') }}>Buying {sortBy === 'buyingPrice' && (sortOrder === 'asc' ? '↑' : '↓')}</th>
+                  <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right cursor-pointer hover:text-emerald-600" onClick={() => { setSortBy('price'); setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc') }}>Selling {sortBy === 'price' && (sortOrder === 'asc' ? '↑' : '↓')}</th>
+                  <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Action</th>
                 </tr>
-              ) : products.length > 0 ? products.map((p: any, i: number) => (
-                <tr key={p.id ?? i} className="hover:bg-emerald-50/30 transition-all group cursor-pointer">
-                  <td className="px-8 py-5">
-                    <div className="flex items-center gap-4">
+              </thead>
+              <tbody className="divide-y divide-gray-50">
+                {isLoading ? (
+                  <tr>
+                    <td colSpan={6} className="py-20 text-center">
+                       <div className="h-8 w-8 animate-spin rounded-full border-4 border-emerald-500 border-t-transparent mx-auto" />
+                    </td>
+                  </tr>
+                ) : products.length > 0 ? products.map((p: any, i: number) => (
+                  <tr key={p.id ?? i} className="hover:bg-emerald-50/30 transition-all group cursor-pointer" onClick={() => setEditingProduct(p)}>
+                    <td className="px-8 py-5">
+                      <div className="flex items-center gap-4">
+                        {p.imageUrl ? (
+                          <img src={p.imageUrl} alt={p.name} className="h-12 w-12 rounded-[.5rem] object-cover border border-slate-100 shadow-sm transition-transform group-hover:scale-110" />
+                        ) : (
+                          <div className="h-12 w-12 rounded-[.5rem] bg-emerald-50 text-emerald-600 flex items-center justify-center font-black border border-emerald-100 group-hover:bg-emerald-600 group-hover:text-white transition-all text-[10px]">
+                            {p.name.charAt(0).toUpperCase()}
+                          </div>
+                        )}
+                        <div>
+                          <span className="font-black text-slate-900 text-sm block">{p.name}</span>
+                          <span className="text-[9px] font-bold text-slate-400 hl-mono tracking-tighter uppercase">SKU: {p.sku || 'N/A'}</span>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-8 py-5">
+                      <div className="flex flex-wrap gap-2">
+                        <span className="text-[10px] font-black text-slate-500 bg-slate-100 px-2.5 py-1 rounded-[.5rem] uppercase tracking-widest">{p.category}</span>
+                        {p.isPerishable && (
+                          <span className={`text-[10px] font-black px-2.5 py-1 rounded-[.5rem] uppercase tracking-widest ${new Date(p.expiryDate) < new Date() ? 'bg-red-50 text-red-600' : 'bg-amber-50 text-amber-600'}`}>
+                            {new Date(p.expiryDate) < new Date() ? 'Expired' : `Exp: ${new Date(p.expiryDate).toLocaleDateString()}`}
+                          </span>
+                        )}
+                      </div>
+                    </td>
+                    <td className="px-8 py-5 text-center">
+                      <span className={`text-sm font-black hl-mono ${p.stockLevel < 10 ? 'text-red-600' : 'text-slate-900'}`}>{p.stockLevel}</span>
+                    </td>
+                    <td className="px-8 py-5 text-right font-bold text-slate-400 text-xs hl-mono">KES {Number(p.buyingPrice || 0).toLocaleString()}</td>
+                    <td className="px-8 py-5 text-right font-black text-[#0D4A3E] text-sm hl-mono">KES {Number(p.price).toLocaleString()}</td>
+                    <td className="px-8 py-5 text-right">
+                      <div className="flex justify-end gap-2">
+                        <button 
+                          onClick={(e) => { e.stopPropagation(); setEditingProduct(p) }}
+                          className="p-2 hover:bg-white hover:shadow-lg rounded-[.5rem] transition-all text-slate-300 hover:text-emerald-600"
+                        >
+                          <Edit size={16} />
+                        </button>
+                        <button 
+                          onClick={(e) => { e.stopPropagation(); setConfirmDeleteId(p.id) }}
+                          disabled={deleteMutation.isPending}
+                          className="p-2 hover:bg-white hover:shadow-lg rounded-[.5rem] transition-all text-slate-300 hover:text-red-600 disabled:opacity-50"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                )) : (
+                  <tr>
+                    <td colSpan={6} className="py-20 text-center text-gray-400 font-bold text-xs uppercase tracking-widest">No products found</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <div className="p-8">
+            {isLoading ? (
+              <div className="py-20 text-center">
+                 <div className="h-12 w-12 animate-spin rounded-full border-4 border-emerald-500 border-t-transparent mx-auto" />
+              </div>
+            ) : products.length > 0 ? (
+              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-4">
+                {products.map((p: any) => (
+                  <div 
+                    key={p.id} 
+                    className="group bg-white border border-gray-100 rounded-[.5rem] overflow-hidden hover:shadow-2xl hover:shadow-emerald-900/10 transition-all cursor-pointer relative"
+                    onClick={() => setEditingProduct(p)}
+                  >
+                    <div className="aspect-square relative overflow-hidden bg-gray-50">
                       {p.imageUrl ? (
-                        <img src={p.imageUrl} alt={p.name} className="h-12 w-12 rounded-[.5rem] object-cover border border-slate-100 shadow-sm transition-transform group-hover:scale-110" />
+                        <img src={p.imageUrl} alt={p.name} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110" />
                       ) : (
-                        <div className="h-12 w-12 rounded-[.5rem] bg-emerald-50 text-emerald-600 flex items-center justify-center font-black border border-emerald-100 group-hover:bg-emerald-600 group-hover:text-white transition-all text-[10px]">
+                        <div className="h-full w-full flex items-center justify-center text-xl font-black text-emerald-100">
                           {p.name.charAt(0).toUpperCase()}
                         </div>
                       )}
-                      <div>
-                        <span className="font-black text-slate-900 text-sm block">{p.name}</span>
-                        <span className="text-[9px] font-bold text-slate-400 hl-mono tracking-tighter uppercase">SKU: {p.sku || 'N/A'}</span>
+                      <div className="absolute top-2 right-2 flex flex-col gap-1.5 opacity-0 group-hover:opacity-100 transition-all">
+                        <button 
+                          onClick={(e) => { e.stopPropagation(); setEditingProduct(p) }}
+                          className="h-8 w-8 bg-white rounded-full shadow-lg flex items-center justify-center text-slate-400 hover:text-emerald-600 transition-all"
+                        >
+                          <Edit size={14} />
+                        </button>
+                        <button 
+                          onClick={(e) => { e.stopPropagation(); setConfirmDeleteId(p.id) }}
+                          className="h-8 w-8 bg-white rounded-full shadow-lg flex items-center justify-center text-slate-400 hover:text-red-600 transition-all"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
+                      
+                      <div className="absolute bottom-2 left-2 right-2 translate-y-12 group-hover:translate-y-0 transition-all duration-300">
+                         <div className="bg-white/90 backdrop-blur-md p-2 rounded-[.4rem] border border-white/20 shadow-xl">
+                            <p className="text-[8px] font-black text-[#0D4A3E] hl-mono text-center">STOCK: {p.stockLevel}</p>
+                         </div>
                       </div>
                     </div>
-                  </td>
-                  <td className="px-8 py-5">
-                    <div className="flex flex-wrap gap-2">
-                      <span className="text-[10px] font-black text-slate-500 bg-slate-100 px-2.5 py-1 rounded-[.5rem] uppercase tracking-widest">{p.category}</span>
-                      {p.isPerishable && (
-                        <span className={`text-[10px] font-black px-2.5 py-1 rounded-[.5rem] uppercase tracking-widest ${new Date(p.expiryDate) < new Date() ? 'bg-red-50 text-red-600' : 'bg-amber-50 text-amber-600'}`}>
-                          {new Date(p.expiryDate) < new Date() ? 'Expired' : `Exp: ${new Date(p.expiryDate).toLocaleDateString()}`}
-                        </span>
-                      )}
+                    
+                    <div className="p-3">
+                      <div className="mb-2">
+                        <p className="text-[7px] font-black text-slate-400 uppercase tracking-widest mb-0.5">{p.category}</p>
+                        <h4 className="text-[11px] font-black text-slate-900 leading-tight group-hover:text-[#0D4A3E] transition-colors truncate">{p.name}</h4>
+                      </div>
+                      <div className="flex items-end justify-between">
+                         <div>
+                            <p className="text-[12px] font-black text-[#0D4A3E] hl-mono -mb-1">KES {Number(p.price).toLocaleString()}</p>
+                         </div>
+                         <div className={`h-1.5 w-1.5 rounded-full ${p.stockLevel < 10 ? 'bg-red-500 animate-pulse' : 'bg-emerald-500'}`} />
+                      </div>
                     </div>
-                  </td>
-                  <td className="px-8 py-5 text-center">
-                    <span className={`text-sm font-black hl-mono ${p.stockLevel < 10 ? 'text-red-600' : 'text-slate-900'}`}>{p.stockLevel}</span>
-                  </td>
-                  <td className="px-8 py-5 text-right font-bold text-slate-400 text-xs hl-mono">KES {Number(p.buyingPrice || 0).toLocaleString()}</td>
-                  <td className="px-8 py-5 text-right font-black text-[#0D4A3E] text-sm hl-mono">KES {Number(p.price).toLocaleString()}</td>
-                  <td className="px-8 py-5 text-right">
-                    <div className="flex justify-end gap-2">
-                      <button 
-                        onClick={(e) => { e.stopPropagation(); setEditingProduct(p) }}
-                        className="p-2 hover:bg-white hover:shadow-lg rounded-[.5rem] transition-all text-slate-300 hover:text-emerald-600"
-                      >
-                        <Edit size={16} />
-                      </button>
-                      <button 
-                        onClick={(e) => { e.stopPropagation(); setConfirmDeleteId(p.id) }}
-                        disabled={deleteMutation.isPending}
-                        className="p-2 hover:bg-white hover:shadow-lg rounded-[.5rem] transition-all text-slate-300 hover:text-red-600 disabled:opacity-50"
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              )) : (
-                <tr>
-                  <td colSpan={6} className="py-20 text-center text-gray-400 font-bold text-xs uppercase tracking-widest">No products found</td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="py-20 text-center text-gray-400 font-bold text-xs uppercase tracking-widest">No products found</div>
+            )}
+          </div>
+        )}
 
         {productsData && productsData.pages > 1 && (
           <div className="p-6 bg-gray-50/30 border-t border-gray-50">
