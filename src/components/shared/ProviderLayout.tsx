@@ -429,7 +429,7 @@ export default function ProviderLayout() {
       {!isSidebarOpen && (
         <button
           onClick={() => setIsSidebarOpen(true)}
-          className="lg:hidden fixed bottom-8 left-8 z-[100] h-14 w-14 bg-[#0D4A3E] text-white rounded-full flex items-center justify-center shadow-2xl hover:scale-110 active:scale-95 transition-all animate-in zoom-in-0 duration-300 border-4 border-white/20"
+          className="lg:hidden fixed bottom-8 left-8 z-[100] h-14 w-14 bg-[#0D4A3E] text-white rounded-full flex items-center justify-center shadow-2xl hover:scale-110 active:scale-95 transition-all animate-in zoom-in-0 duration-300 "
         >
           <PanelLeftOpen size={24} />
         </button>
