@@ -38,6 +38,7 @@ export default function ProviderLayout() {
   const [reviewRating, setReviewRating] = useState(0);
   const [reviewText, setReviewText] = useState("");
   const [isSubmittingReview, setIsSubmittingReview] = useState(false);
+  const [isMobileExpanded, setIsMobileExpanded] = useState(false);
 
   // Inactivity timer: 5 minutes (300,000 ms) - ONLY ON MOBILE
   useEffect(() => {
@@ -409,9 +410,9 @@ export default function ProviderLayout() {
         onMouseLeave={() => setIsHovered(false)}
         className={`
           flex flex-col transition-all duration-700
-          fixed inset-y-0 left-0 z-50 lg:relative lg:translate-x-0
+          fixed inset-y-0 left-0 z-[70] lg:relative lg:translate-x-0
           ${!isSidebarOpen ? '-translate-x-full opacity-0 w-0' : 'translate-x-0 opacity-100'}
-          ${isCollapsed && !isHovered ? 'w-[60px] lg:w-[64px]' : 'w-[312px]'}
+          ${isCollapsed && !isHovered && !isMobileExpanded ? 'w-[60px] lg:w-[64px]' : 'w-[312px]'}
         `}
       >
         <div className={`
@@ -434,6 +435,26 @@ export default function ProviderLayout() {
         </button>
       )}
 
+      {/* ── MOBILE EXPAND HANDLE ── */}
+      {isSidebarOpen && isCollapsed && !isMobileExpanded && (
+        <motion.div
+          drag="x"
+          dragConstraints={{ left: 0, right: 0 }}
+          onDragEnd={(_, info) => {
+            if (info.offset.x > 30) setIsMobileExpanded(true);
+          }}
+          className="lg:hidden fixed inset-y-0 left-0 w-[60px] z-[80] cursor-grab active:cursor-grabbing"
+        />
+      )}
+
+      {/* ── MOBILE EXPANDED BACKDROP ── */}
+      {isMobileExpanded && (
+        <div 
+          className="fixed inset-0 z-[65] bg-black/5 lg:hidden"
+          onClick={() => setIsMobileExpanded(false)}
+        />
+      )}
+
       {/* ── MOBILE SWIPE HANDLE ── */}
       <motion.div
         drag="x"
@@ -445,7 +466,7 @@ export default function ProviderLayout() {
       />
 
       {/* ── MAIN CONTENT ── */}
-      <div className={`flex-1 flex flex-col min-w-0 overflow-hidden relative transition-all duration-700 ${isSidebarOpen && isCollapsed && !isHovered ? 'pl-[60px] lg:pl-0' : 'pl-0'}`}>
+      <div className={`flex-1 flex flex-col min-w-0 overflow-hidden relative transition-all duration-700 ${isSidebarOpen && isCollapsed && !isHovered && !isMobileExpanded && window.innerWidth < 1024 ? 'pl-[60px]' : 'pl-0'}`}>
         {isCritical && user?.role === 'PROVIDER' && (
           <div className="bg-red-600 text-white px-8 py-3 flex items-center justify-between animate-in slide-in-from-top duration-700 z-[100] shadow-2xl">
             <div className="flex items-center gap-4">
