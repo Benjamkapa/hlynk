@@ -409,7 +409,7 @@ export default function ProviderLayout() {
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
         className={`
-          flex flex-col transition-all duration-700
+          flex flex-col transition-all duration-300
           fixed inset-y-0 left-0 z-[70] lg:relative lg:translate-x-0
           ${!isSidebarOpen ? '-translate-x-full opacity-0 w-0' : 'translate-x-0 opacity-100'}
           ${isCollapsed && !isHovered && !isMobileExpanded ? 'w-[60px] lg:w-[64px]' : 'w-[312px]'}
@@ -421,7 +421,7 @@ export default function ProviderLayout() {
           ${isCollapsed && isHovered ? 'w-[280px] shadow-2xl z-[60]' : 'w-full'}
           ${window.innerWidth < 1024 ? 'hl-sidebar-floating' : 'border-r border-slate-100'}
         `}>
-          <SidebarContent collapsed={isCollapsed && !isHovered} />
+          <SidebarContent collapsed={isCollapsed && !isHovered && !isMobileExpanded} />
         </div>
       </aside>
 
@@ -466,7 +466,7 @@ export default function ProviderLayout() {
       />
 
       {/* ── MAIN CONTENT ── */}
-      <div className={`flex-1 flex flex-col min-w-0 overflow-hidden relative transition-all duration-700 ${isSidebarOpen && isCollapsed && !isHovered && !isMobileExpanded && window.innerWidth < 1024 ? 'pl-[60px]' : 'pl-0'}`}>
+      <div className={`flex-1 flex flex-col min-w-0 overflow-hidden relative transition-all duration-300 ${isSidebarOpen && isCollapsed && !isHovered && !isMobileExpanded && window.innerWidth < 1024 ? 'pl-[60px]' : 'pl-0'}`}>
         {isCritical && user?.role === 'PROVIDER' && (
           <div className="bg-red-600 text-white px-8 py-3 flex items-center justify-between animate-in slide-in-from-top duration-700 z-[100] shadow-2xl">
             <div className="flex items-center gap-4">
