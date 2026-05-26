@@ -46,7 +46,7 @@ export default function Pagination({ page, pages, total, onPageChange, label = '
               <button
                 key={pageNum}
                 onClick={() => onPageChange(pageNum)}
-                className={`h-10 w-10 rounded-xl text-[10px] font-black transition-all ${
+                className={`h-10 w-10 rounded-[.5rem] text-[10px] font-black transition-all ${
                   page === pageNum 
                   ? 'bg-slate-900 text-white shadow-lg' 
                   : 'text-slate-400 hover:bg-slate-100'
