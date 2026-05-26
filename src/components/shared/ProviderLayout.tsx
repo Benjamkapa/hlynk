@@ -435,35 +435,35 @@ export default function ProviderLayout() {
         </button>
       )}
 
-      {/* ── MOBILE EXPAND HANDLE ── */}
-      {isSidebarOpen && isCollapsed && !isMobileExpanded && (
-        <motion.div
-          drag="x"
-          dragConstraints={{ left: 0, right: 0 }}
-          onDragEnd={(_, info) => {
-            if (info.offset.x > 30) setIsMobileExpanded(true);
-          }}
-          className="lg:hidden fixed inset-y-0 left-0 w-3 z-[80] cursor-grab active:cursor-grabbing hover:bg-emerald-500/10 transition-colors"
-        />
-      )}
+      {/* ── MOBILE SWIPE HANDLES ── */}
+      {isSidebarOpen && (
+        <>
+          {/* Swipe RIGHT to Expand */}
+          {isCollapsed && !isMobileExpanded && (
+            <motion.div
+              drag="x"
+              dragConstraints={{ left: 0, right: 0 }}
+              onDragEnd={(_, info) => {
+                if (info.offset.x > 30) setIsMobileExpanded(true);
+              }}
+              className="lg:hidden fixed inset-y-0 left-0 w-4 z-[80] cursor-grab active:cursor-grabbing hover:bg-emerald-500/10 transition-colors"
+            />
+          )}
 
-      {/* ── MOBILE EXPANDED BACKDROP ── */}
-      {isMobileExpanded && (
-        <div
-          className="fixed inset-0 z-[65] bg-black/5 lg:hidden"
-          onClick={() => setIsMobileExpanded(false)}
-        />
+          {/* Swipe LEFT to Collapse */}
+          {isMobileExpanded && (
+            <motion.div
+              drag="x"
+              dragConstraints={{ left: 0, right: 0 }}
+              onDragEnd={(_, info) => {
+                if (info.offset.x < -30) setIsMobileExpanded(false);
+              }}
+              className="lg:hidden fixed inset-y-0 right-0 w-full z-[80] cursor-grab active:cursor-grabbing"
+              style={{ left: 60 }} // Offset so we don't block the actual icons
+            />
+          )}
+        </>
       )}
-
-      {/* ── MOBILE SWIPE HANDLE ── */}
-      <motion.div
-        drag="x"
-        dragConstraints={{ left: 0, right: 0 }}
-        onDragEnd={(_, info) => {
-          if (info.offset.x > 50) setIsMobileOpen(true);
-        }}
-        className="fixed inset-y-0 left-0 w-4 z-[60] lg:hidden cursor-grab active:cursor-grabbing"
-      />
 
       {/* ── MAIN CONTENT ── */}
       <div className={`flex-1 flex flex-col min-w-0 overflow-hidden relative transition-all duration-300 ${isSidebarOpen && isCollapsed && !isHovered && !isMobileExpanded && window.innerWidth < 1024 ? 'pl-[60px]' : 'pl-0'}`}>
