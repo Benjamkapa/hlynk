@@ -60,7 +60,7 @@ export default function SalesHistoryPage() {
 
   const { data: salesData, isLoading, error } = useQuery<PaginatedResponse<any> & { stats: any }>({
     queryKey: ['sales-history', search, selectedDate, page, status, sortBy, sortOrder],
-    queryFn: () => salesApi.list({ search, date: selectedDate, page, limit: 10, status: status || undefined, sortBy, sortOrder }),
+    queryFn: () => salesApi.list({ search, date: selectedDate, page, limit: 10, status: status || undefined, sortBy, sortOrder, includeStats: true }),
     refetchInterval: 15_000,       // live refresh every 15s
     refetchIntervalInBackground: false,
     staleTime: 10_000,

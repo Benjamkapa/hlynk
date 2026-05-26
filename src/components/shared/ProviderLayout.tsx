@@ -443,7 +443,7 @@ export default function ProviderLayout() {
           onDragEnd={(_, info) => {
             if (info.offset.x > 30) setIsMobileExpanded(true);
           }}
-          className="lg:hidden fixed inset-y-0 left-0 w-[60px] z-[80] cursor-grab active:cursor-grabbing"
+          className="lg:hidden fixed inset-y-0 left-0 w-3 z-[80] cursor-grab active:cursor-grabbing hover:bg-emerald-500/10 transition-colors"
         />
       )}
 

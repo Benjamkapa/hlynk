@@ -7,22 +7,24 @@ export default function OfflineBanner() {
   if (isOnline && pendingCount === 0) return null
 
   return (
-    <div className={`fixed top-0 left-0 right-0 z-[9999] px-4 py-2 flex items-center justify-center gap-3 animate-in slide-in-from-top duration-500 shadow-lg ${
-      !isOnline 
-        ? 'bg-rose-600 text-white' 
-        : 'bg-emerald-600 text-white'
-    }`}>
-      {!isOnline ? (
-        <>
-          <CloudOff size={16} className="animate-pulse" />
-          <span className="text-xs font-black uppercase tracking-widest">You are currently offline</span>
-        </>
-      ) : (
-        <>
-          <Wifi size={16} />
-          <span className="text-xs font-black uppercase tracking-widest">Back online</span>
-        </>
-      )}
+    <div className="fixed bottom-6 right-6 z-[100] pointer-events-none">
+      <div className={`px-4 py-2 rounded-full flex items-center justify-center gap-2 animate-in slide-in-from-right-4 duration-500 shadow-xl border pointer-events-auto ${
+        !isOnline 
+          ? 'bg-white text-rose-600 border-rose-100' 
+          : 'bg-white text-emerald-600 border-emerald-100'
+      }`}>
+        {!isOnline ? (
+          <>
+            <CloudOff size={14} className="animate-pulse" />
+            <span className="text-[9px] font-black uppercase tracking-widest leading-none">Offline</span>
+          </>
+        ) : (
+          <>
+            <Wifi size={14} />
+            <span className="text-[9px] font-black uppercase tracking-widest leading-none">Online</span>
+          </>
+        )}
+      </div>
 
       {pendingCount > 0 && (
         <div className="flex items-center gap-2 bg-white/20 px-3 py-1 rounded-full">
