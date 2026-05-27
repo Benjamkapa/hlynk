@@ -405,9 +405,20 @@ export default function ProviderLayout() {
       )}
 
       {/* ── SIDEBAR ── */}
-      <aside
+      <motion.aside
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
+        onPanEnd={(_, info) => {
+          if (window.innerWidth >= 1024) return;
+          // Swipe Right to Expand
+          if (isCollapsed && !isMobileExpanded && info.offset.x > 40) {
+            setIsMobileExpanded(true);
+          }
+          // Swipe Left to Collapse
+          if (isMobileExpanded && info.offset.x < -40) {
+            setIsMobileExpanded(false);
+          }
+        }}
         className={`
           flex flex-col transition-all duration-300
           fixed inset-y-0 left-0 z-[70] lg:relative lg:translate-x-0
@@ -423,7 +434,7 @@ export default function ProviderLayout() {
         `}>
           <SidebarContent collapsed={isCollapsed && !isHovered && !isMobileExpanded} />
         </div>
-      </aside>
+      </motion.aside>
 
       {/* ── LAUNCHER ICON ── */}
       {!isSidebarOpen && (
@@ -435,35 +446,6 @@ export default function ProviderLayout() {
         </button>
       )}
 
-      {/* ── MOBILE SWIPE HANDLES ── */}
-      {isSidebarOpen && (
-        <>
-          {/* Swipe RIGHT to Expand */}
-          {isCollapsed && !isMobileExpanded && (
-            <motion.div
-              drag="x"
-              dragConstraints={{ left: 0, right: 0 }}
-              onDragEnd={(_, info) => {
-                if (info.offset.x > 30) setIsMobileExpanded(true);
-              }}
-              className="lg:hidden fixed inset-y-0 left-0 w-4 z-[80] cursor-grab active:cursor-grabbing hover:bg-emerald-500/10 transition-colors"
-            />
-          )}
-
-          {/* Swipe LEFT to Collapse */}
-          {isMobileExpanded && (
-            <motion.div
-              drag="x"
-              dragConstraints={{ left: 0, right: 0 }}
-              onDragEnd={(_, info) => {
-                if (info.offset.x < -30) setIsMobileExpanded(false);
-              }}
-              className="lg:hidden fixed inset-y-0 right-0 w-full z-[80] cursor-grab active:cursor-grabbing"
-              style={{ left: 60 }} // Offset so we don't block the actual icons
-            />
-          )}
-        </>
-      )}
 
       {/* ── MAIN CONTENT ── */}
       <div className={`flex-1 flex flex-col min-w-0 overflow-hidden relative transition-all duration-300 ${isSidebarOpen && isCollapsed && !isHovered && !isMobileExpanded && window.innerWidth < 1024 ? 'pl-[60px]' : 'pl-0'}`}>
