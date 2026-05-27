@@ -34,7 +34,7 @@ export default function SettingsPage() {
         category: d.category || '',
         location: d.location || '',
         notificationSettings: d.notificationSettings || { emailAlerts: true, smsNotifications: true, marketing: false },
-        operationalSettings: d.operationalSettings || { taxInclusive: true, autoPrint: false }
+        operationalSettings: d.operationalSettings || { taxInclusive: true, autoPrint: false, lowStockThreshold: 5 }
       })
     }
   }, [profile])
@@ -264,6 +264,19 @@ export default function SettingsPage() {
                         operationalSettings: { ...formData.operationalSettings, autoPrint: v }
                       })}
                     />
+                    <div className="md:col-span-2 mt-4">
+                       <InputGroup
+                         label="Low Stock Alert Threshold"
+                         placeholder="e.g. 5"
+                         type="number"
+                         value={formData.operationalSettings?.lowStockThreshold || ''}
+                         onChange={(v: string) => setFormData({
+                           ...formData,
+                           operationalSettings: { ...formData.operationalSettings, lowStockThreshold: parseInt(v) || 0 }
+                         })}
+                       />
+                       <p className="text-[10px] text-gray-400 font-bold mt-2 uppercase tracking-widest">Products with stock level below this will trigger a dashboard alert.</p>
+                    </div>
                   </div>
                 </div>
               </div>

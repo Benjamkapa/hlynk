@@ -30,18 +30,26 @@ export default defineConfig({
         navigateFallback: '/index.html',
         runtimeCaching: [
           {
-            urlPattern: /^https:\/\/api\.hlynk\.com\/.*/i,
+            urlPattern: ({ url }) => url.pathname.startsWith('/api/v1'),
             handler: 'NetworkFirst',
             options: {
               cacheName: 'api-cache',
-              expiration: { maxEntries: 50, maxAgeSeconds: 300 },
-              networkTimeoutSeconds: 3,
+              expiration: { maxEntries: 100, maxAgeSeconds: 86400 }, // Cache for 24h
+              networkTimeoutSeconds: 5,
             },
           },
+          {
+            urlPattern: /\.(?:png|jpg|jpeg|svg|gif)$/,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'image-cache',
+              expiration: { maxEntries: 100, maxAgeSeconds: 30 * 24 * 60 * 60 },
+            },
+          }
         ],
       },
     }),
-  ],
+],
   resolve: {
     alias: { '@': path.resolve(__dirname, './src') },
   },

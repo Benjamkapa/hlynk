@@ -286,13 +286,13 @@ function StaffForm({ staff, onClose }: { staff?: any; onClose: () => void }) {
         <InputGroup label="Work Email" placeholder="Required for Google Login" value={form.email} onChange={(v: string) => setForm({ ...form, email: v })} />
       </div>
       
-      <InputGroup 
+      {/* <InputGroup 
         label={staff ? "Change Password" : "Manual Password (Optional if Email is set)"} 
         placeholder="••••••••" 
         type="password"
         value={form.password} 
         onChange={(v: string) => setForm({ ...form, password: v })} 
-      />
+      /> */}
 
       <div className="border-t border-slate-100 pt-6 mt-2">
         <h3 className="text-xs font-black uppercase text-slate-800 mb-4 tracking-widest flex items-center gap-2"><DollarSign size={14} /> Commission Settings</h3>

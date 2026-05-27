@@ -15,6 +15,7 @@ import { PaginatedResponse } from '../../lib/types/api'
 export default function CustomersPage() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   const [editingCustomer, setEditingCustomer] = useState<any>(null)
+  const [viewingCustomer, setViewingCustomer] = useState<any>(null)
   const [search, setSearch] = useState('')
   const [page, setPage] = useState(1)
   const [sortBy, setSortBy] = useState('createdAt')
@@ -149,10 +150,11 @@ export default function CustomersPage() {
                     {c.lastVisit ? new Date(c.lastVisit).toLocaleDateString() : 'Never'}
                   </td>
                   <td className="px-8 py-6 text-right">
-                    <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-all">
+                    <div className="flex justify-end gap-2 transition-all">
                       <button
-                        onClick={() => toast.info('Customer insights coming soon!', { description: 'Full performance and purchase history will be viewable here.'})}
+                        onClick={() => setViewingCustomer(c)}
                         className="p-2 hover:bg-white hover:shadow-lg rounded-[.5rem] transition-all text-slate-400 hover:text-blue-500"
+                        title="View Insights"
                       >
                         <Eye size={18} />
                       </button>
@@ -193,11 +195,26 @@ export default function CustomersPage() {
         />
       </div>
 
-      <SlideOver isOpen={isAddModalOpen || !!editingCustomer} onClose={() => { setIsAddModalOpen(false); setEditingCustomer(null) }} title={editingCustomer ? "Edit Customer" : "Add New Customer"}>
-        <CustomerForm
-          customer={editingCustomer}
-          onClose={() => { setIsAddModalOpen(false); setEditingCustomer(null) }}
-        />
+      <SlideOver 
+        isOpen={isAddModalOpen || !!editingCustomer || !!viewingCustomer} 
+        onClose={() => { 
+          setIsAddModalOpen(false); 
+          setEditingCustomer(null);
+          setViewingCustomer(null);
+        }} 
+        title={viewingCustomer ? "Customer Insights" : editingCustomer ? "Edit Customer" : "Add New Customer"}
+      >
+        {viewingCustomer ? (
+          <CustomerInsights 
+            customer={viewingCustomer} 
+            onClose={() => setViewingCustomer(null)} 
+          />
+        ) : (
+          <CustomerForm
+            customer={editingCustomer}
+            onClose={() => { setIsAddModalOpen(false); setEditingCustomer(null) }}
+          />
+        )}
       </SlideOver>
 
       <ConfirmModal
@@ -285,4 +302,68 @@ function InputGroup({ label, placeholder, value, onChange }: any) {
 
 function TrendingUpIcon(props: any) {
   return <Star {...props} />
+}
+
+function CustomerInsights({ customer, onClose }: { customer: any; onClose: () => void }) {
+  const { data: salesData, isLoading } = useQuery({
+    queryKey: ['customer-sales', customer.id],
+    queryFn: () => customersApi.getSales(customer.id),
+    enabled: !!customer.id
+  })
+
+  const sales = salesData?.data || []
+
+  return (
+    <div className="space-y-10">
+      <div className="bg-emerald-50 rounded-[1.5rem] p-8 border border-emerald-100 flex items-center gap-6">
+        <div className="h-20 w-20 rounded-2xl bg-white flex items-center justify-center p-2 shadow-sm border border-emerald-100">
+           <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${customer.name}`} alt="avatar" />
+        </div>
+        <div>
+          <h3 className="text-2xl font-black text-slate-800 tracking-tight">{customer.name}</h3>
+          <p className="text-xs font-bold text-emerald-600 uppercase tracking-widest hl-mono">Pulse Active</p>
+          <p className="text-xs font-bold text-slate-500 mt-1">{customer.phone}</p>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
+        <div className="bg-white p-6 rounded-[1rem] border border-slate-100 shadow-sm text-center">
+           <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Total Spent</p>
+           <h4 className="text-xl font-black text-slate-900 hl-mono">KES {Number(customer.totalSpend || 0).toLocaleString()}</h4>
+        </div>
+        <div className="bg-white p-6 rounded-[1rem] border border-slate-100 shadow-sm text-center">
+           <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Visits</p>
+           <h4 className="text-xl font-black text-slate-900 hl-mono">{sales.length} Purchases</h4>
+        </div>
+      </div>
+
+      <div className="space-y-4">
+        <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest border-l-4 border-emerald-500 pl-3">Recent Transactions</h4>
+        {isLoading ? (
+          <div className="py-10 text-center text-slate-300 text-xs font-black uppercase">Loading activity...</div>
+        ) : sales.length > 0 ? (
+          <div className="space-y-3">
+            {sales.slice(0, 5).map((sale: any) => (
+              <div key={sale.id} className="p-4 rounded-[1rem] bg-slate-50 border border-slate-100 flex justify-between items-center group hover:bg-white hover:shadow-xl transition-all">
+                <div className="text-xs font-black text-slate-800">#{sale.id.slice(-6).toUpperCase()}</div>
+                <div className="text-right">
+                   <p className="text-sm font-black text-emerald-600 hl-mono">KES {Number(sale.totalAmount).toLocaleString()}</p>
+                   <p className="text-[9px] font-black uppercase text-slate-400">{new Date(sale.createdAt).toLocaleDateString()}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="py-10 text-center bg-slate-50 rounded-[1rem] border-2 border-dashed border-slate-100 text-slate-300 text-[10px] font-black uppercase">No history found</div>
+        )}
+      </div>
+
+      <button 
+        onClick={onClose}
+        className="w-full py-5 bg-slate-900 text-white rounded-[1rem] font-black text-xs uppercase tracking-widest shadow-xl shadow-slate-900/10 hover:bg-black transition-all"
+      >
+        Close Pulse View
+      </button>
+    </div>
+  )
 }

@@ -26,6 +26,13 @@ export default function DashboardPage() {
     queryFn: providersApi.getStats
   })
 
+  const { data: profile } = useQuery({
+    queryKey: ['my-profile'],
+    queryFn: providersApi.getMyProfile
+  })
+
+  const threshold = profile?.data?.operationalSettings?.lowStockThreshold || 5;
+
   const { data: salesResponse, isLoading: salesLoading, error: salesError } = useQuery<PaginatedResponse<any>>({
     queryKey: ['recent-sales'],
     queryFn: () => salesApi.list({ limit: 5 })
@@ -65,20 +72,6 @@ export default function DashboardPage() {
           <h1 className="text-5xl font-black text-slate-900 tracking-tighter">Business Pulse</h1>
           <p className="text-slate-500 font-medium text-xl">Overview of your store performance today</p>
         </div>
-        <div className="flex items-center gap-4 bg-white p-3 rounded-[.5rem] border border-slate-100 shadow-sm">
-           {/* <div className="h-10 w-10 bg-emerald-100 text-emerald-600 rounded-[.5rem] flex items-center justify-center">
-              <Star size={20} className="fill-emerald-600" />
-           </div> */}
-           {/* <div>
-              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Store Rating</p>
-              <StarRating 
-                rating={Number(stats?.rating || 0)} 
-                count={stats?.reviewCount || 0} 
-                showText 
-                size={14} 
-              />
-           </div> */}
-        </div>
       </div>
 
       {/* KPI Grid */}
@@ -86,7 +79,7 @@ export default function DashboardPage() {
         <StoreKpi title="Daily Sales" value={`KES ${stats?.dailySales?.toLocaleString() || '0'}`} sub={`${stats?.dailyTransactions || 0} transactions`} icon={Zap} color="emerald" trend="" />
         <StoreKpi title="New Customers" value={stats?.newCustomers || '0'} sub="Total registered" icon={Users} color="blue" trend="" />
         <FeatureGate feature="low_stock_alerts" variant="tease">
-          <StoreKpi title="Out of Stock" value={stats?.outOfStockCount || '0'} sub="Items below 5 qty" icon={Package} color="red" trend="" />
+          <StoreKpi title="Out of Stock" value={stats?.outOfStockCount || '0'} sub={`Items below ${threshold} qty`} icon={Package} color="red" trend="" />
         </FeatureGate>
         <StoreKpi title="Daily Profit" value={`KES ${stats?.profit?.toLocaleString() || '0'}`} sub="Sales minus expenses" icon={TrendingUp} color="purple" trend="" />
       </div>

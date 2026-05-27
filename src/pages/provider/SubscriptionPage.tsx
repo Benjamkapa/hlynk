@@ -461,9 +461,9 @@ export default function SubscriptionPage() {
                 <thead>
                   <tr className="border-b-2 border-gray-50">
                     <th className="py-6 text-[10px] font-black text-gray-400 uppercase tracking-widest">Feature</th>
-                    <th className="py-6 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Lite</th>
-                    <th className="py-6 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Plus</th>
-                    <th className="py-6 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Max</th>
+                    <th className="py-6 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Starter</th>
+                    <th className="py-6 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Growth</th>
+                    <th className="py-6 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Business Pro</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
