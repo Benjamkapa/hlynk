@@ -211,7 +211,7 @@ export default function SettingsPage() {
                   <InputGroup
                     label="Email"
                     value={formData.email}
-                    onChange={(v: string) => setFormData({ ...formData, email: v })}
+                    disabled
                   />
                   <InputGroup
                     label="Phone"
@@ -361,7 +361,7 @@ export default function SettingsPage() {
                   <div className="p-8 rounded-[.5rem] bg-red-50 border border-red-100 flex items-center justify-between">
                     <div>
                       <p className="text-sm font-black text-red-900">Deactivate Account</p>
-                      <p className="text-[10px] text-red-600 font-bold mt-1">This will immediately revoke access for all your stuffs.</p>
+                      <p className="text-[10px] text-red-600 font-bold mt-1">This will immediately revoke access for all your staff.</p>
                     </div>
                     <button 
                       onClick={() => setConfirmDeleteId('deactivate')}
@@ -395,16 +395,17 @@ export default function SettingsPage() {
   )
 }
 
-function InputGroup({ label, value, onChange, placeholder, type = "text", mono = false }: any) {
+function InputGroup({ label, value, onChange, placeholder, type = "text", mono = false, disabled = false }: any) {
   return (
-    <div className="space-y-2">
+    <div className={`space-y-2 ${disabled ? 'opacity-60' : ''}`}>
       <label className="text-xs font-black text-gray-400 uppercase tracking-widest">{label}</label>
       <input
         type={type}
         value={value}
         onChange={(e) => onChange?.(e.target.value)}
         placeholder={placeholder}
-        className={`w-full bg-gray-50 border-none rounded-[.5rem] py-3.5 px-4 outline-none focus:ring-2 focus:ring-emerald-500/10 transition-all text-sm font-bold ${mono ? 'hl-mono' : ''}`}
+        disabled={disabled}
+        className={`w-full bg-gray-50 border-none rounded-[.5rem] py-3.5 px-4 outline-none focus:ring-2 focus:ring-emerald-500/10 transition-all text-sm font-bold ${mono ? 'hl-mono' : ''} ${disabled ? 'cursor-not-allowed select-none' : ''}`}
       />
     </div>
   )

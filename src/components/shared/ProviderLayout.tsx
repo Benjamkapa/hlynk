@@ -32,7 +32,6 @@ export default function ProviderLayout() {
   const location = useLocation();
   const [isCollapsed, setIsCollapsed] = useState(true);
   const [isHovered, setIsHovered] = useState(false);
-  const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [reviewRating, setReviewRating] = useState(0);
@@ -401,36 +400,16 @@ export default function ProviderLayout() {
         </div>
       )}
 
-      {/* ── MOBILE BACKDROP ── */}
-      {isMobileOpen && (
-        <div
-          className="fixed inset-0 z-50 bg-gray-900/40 backdrop-blur-sm lg:hidden"
-          onClick={() => setIsMobileOpen(false)}
-        />
-      )}
+
 
       {/* ── SIDEBAR ── */}
       <motion.aside
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
-        onPanEnd={(_, info) => {
-          if (window.innerWidth >= 1024) return;
-          const { x: offsetX } = info.offset;
-          const { x: velocityX } = info.velocity;
-
-          // Expand: Swipe Right OR High Velocity Right
-          if (isCollapsed && !isMobileExpanded && (offsetX > 30 || velocityX > 400)) {
-            setIsMobileExpanded(true);
-          }
-          // Collapse: Swipe Left OR High Velocity Left
-          if (isMobileExpanded && (offsetX < -30 || velocityX < -400)) {
-            setIsMobileExpanded(false);
-          }
-        }}
         className={`
           flex flex-col transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)]
           fixed inset-y-0 left-0 z-[70] lg:relative lg:translate-x-0
-          ${!isSidebarOpen ? '-translate-x-full' : 'translate-x-0'}
+          translate-x-0
           ${isCollapsed && !isHovered && !isMobileExpanded ? 'w-[60px] lg:w-[68px]' : 'w-[300px] lg:w-[312px]'}
         `}
       >
