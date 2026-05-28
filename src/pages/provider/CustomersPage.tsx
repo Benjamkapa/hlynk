@@ -195,19 +195,19 @@ export default function CustomersPage() {
         />
       </div>
 
-      <SlideOver 
-        isOpen={isAddModalOpen || !!editingCustomer || !!viewingCustomer} 
-        onClose={() => { 
-          setIsAddModalOpen(false); 
+      <SlideOver
+        isOpen={isAddModalOpen || !!editingCustomer || !!viewingCustomer}
+        onClose={() => {
+          setIsAddModalOpen(false);
           setEditingCustomer(null);
           setViewingCustomer(null);
-        }} 
+        }}
         title={viewingCustomer ? "Customer Insights" : editingCustomer ? "Edit Customer" : "Add New Customer"}
       >
         {viewingCustomer ? (
-          <CustomerInsights 
-            customer={viewingCustomer} 
-            onClose={() => setViewingCustomer(null)} 
+          <CustomerInsights
+            customer={viewingCustomer}
+            onClose={() => setViewingCustomer(null)}
           />
         ) : (
           <CustomerForm
@@ -311,13 +311,13 @@ function CustomerInsights({ customer, onClose }: { customer: any; onClose: () =>
     enabled: !!customer.id
   })
 
-  const sales = salesData?.data || []
+  const sales = salesData?.items || []
 
   return (
     <div className="space-y-10">
       <div className="bg-emerald-50 rounded-[1.5rem] p-8 border border-emerald-100 flex items-center gap-6">
         <div className="h-20 w-20 rounded-2xl bg-white flex items-center justify-center p-2 shadow-sm border border-emerald-100">
-           <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${customer.name}`} alt="avatar" />
+          <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${customer.name}`} alt="avatar" />
         </div>
         <div>
           <h3 className="text-2xl font-black text-slate-800 tracking-tight">{customer.name}</h3>
@@ -328,12 +328,12 @@ function CustomerInsights({ customer, onClose }: { customer: any; onClose: () =>
 
       <div className="grid grid-cols-2 gap-4">
         <div className="bg-white p-6 rounded-[1rem] border border-slate-100 shadow-sm text-center">
-           <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Total Spent</p>
-           <h4 className="text-xl font-black text-slate-900 hl-mono">KES {Number(customer.totalSpend || 0).toLocaleString()}</h4>
+          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Total Spent</p>
+          <h4 className="text-xl font-black text-slate-900 hl-mono">KES {Number(customer.totalSpend || 0).toLocaleString()}</h4>
         </div>
         <div className="bg-white p-6 rounded-[1rem] border border-slate-100 shadow-sm text-center">
-           <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Visits</p>
-           <h4 className="text-xl font-black text-slate-900 hl-mono">{sales.length} Purchases</h4>
+          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Visits</p>
+          <h4 className="text-xl font-black text-slate-900 hl-mono">{sales.length} Purchases</h4>
         </div>
       </div>
 
@@ -347,8 +347,8 @@ function CustomerInsights({ customer, onClose }: { customer: any; onClose: () =>
               <div key={sale.id} className="p-4 rounded-[1rem] bg-slate-50 border border-slate-100 flex justify-between items-center group hover:bg-white hover:shadow-xl transition-all">
                 <div className="text-xs font-black text-slate-800">#{sale.id.slice(-6).toUpperCase()}</div>
                 <div className="text-right">
-                   <p className="text-sm font-black text-emerald-600 hl-mono">KES {Number(sale.totalAmount).toLocaleString()}</p>
-                   <p className="text-[9px] font-black uppercase text-slate-400">{new Date(sale.createdAt).toLocaleDateString()}</p>
+                  <p className="text-sm font-black text-emerald-600 hl-mono">KES {Number(sale.totalAmount).toLocaleString()}</p>
+                  <p className="text-[9px] font-black uppercase text-slate-400">{new Date(sale.createdAt).toLocaleDateString()}</p>
                 </div>
               </div>
             ))}
@@ -358,7 +358,7 @@ function CustomerInsights({ customer, onClose }: { customer: any; onClose: () =>
         )}
       </div>
 
-      <button 
+      <button
         onClick={onClose}
         className="w-full py-5 bg-slate-900 text-white rounded-[1rem] font-black text-xs uppercase tracking-widest shadow-xl shadow-slate-900/10 hover:bg-black transition-all"
       >

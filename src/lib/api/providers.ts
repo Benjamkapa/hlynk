@@ -37,7 +37,7 @@ export const providersApi = {
 }
 
 export const salesApi = {
-  list: (params?: { page?: number; search?: string; date?: string; status?: string; limit?: number; sortBy?: string; sortOrder?: string; includeStats?: boolean }) => api.get('/sales', { params }).then(r => r.data),
+  list: (params?: { customerId?: string; page?: number; search?: string; date?: string; status?: string; limit?: number; sortBy?: string; sortOrder?: string; includeStats?: boolean }) => api.get('/sales', { params }).then(r => r.data),
   create: (data: any) => api.post('/sales', data).then(r => r.data),
   getDetails: (id: string) => api.get(`/sales/${id}`).then(r => r.data),
   vendorMpesaPush: (data: { phone: string; amount: number; reference: string; saleId?: string; customerName?: string }) => api.post('/sales/mpesa-push', data).then(r => r.data),
@@ -80,6 +80,7 @@ export const customersApi = {
   create: (data: any) => api.post('/customers', data).then(r => r.data),
   update: (id: string, data: any) => api.put(`/customers/${id}`, data).then(r => r.data),
   delete: (id: string) => api.delete(`/customers/${id}`).then(r => r.data),
+  getSales: (id: string) => api.get('/sales', { params: { customerId: id } }).then(r => r.data),
 }
 
 export const servicesApi = {
