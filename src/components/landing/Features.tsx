@@ -52,7 +52,7 @@ export default function Features() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {features.map((f, i) => (
-            <FadeUp key={f.title} delay={i * 0.1}>
+            <FadeUp key={f.title} delay={i * 0.25}>
               <div className="p-10 rounded-2xl bg-slate-50 border border-slate-100 hover:border-emerald-200 transition-all group hover:bg-white hover:shadow-2xl hover:shadow-emerald-900/5 h-full">
                 <div className="w-16 h-16 rounded-xl bg-white border border-slate-100 flex items-center justify-center text-emerald-600 mb-8 group-hover:scale-110 transition-transform shadow-sm group-hover:bg-emerald-600 group-hover:text-white group-hover:border-emerald-600">
                   {f.icon}

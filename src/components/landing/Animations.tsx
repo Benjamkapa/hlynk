@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react"
 
-export function useInView(threshold = 0.15) {
+export function useInView(threshold = 0.2) {
   const ref = useRef<HTMLDivElement>(null)
   const [inView, setInView] = useState(false)
   useEffect(() => {
@@ -17,10 +17,53 @@ export function FadeUp({ children, delay = 0, className = "", style = {} }: { ch
     <div ref={ref} className={className} style={{
       ...style,
       opacity: inView ? 1 : 0, 
-      transform: inView ? "translateY(0)" : "translateY(24px)",
-      transition: `opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1) ${delay}s, transform 0.8s cubic-bezier(0.16, 1, 0.3, 1) ${delay}s`
+      transform: inView ? "translateY(0)" : "translateY(60px)",
+      transition: `opacity 2s cubic-bezier(0.16, 1, 0.3, 1) ${delay}s, transform 2s cubic-bezier(0.16, 1, 0.3, 1) ${delay}s`
     }}>
       {children}
+    </div>
+  )
+}
+
+export function ScaleIn({ children, delay = 0, className = "", style = {} }: { children: React.ReactNode; delay?: number; className?: string; style?: React.CSSProperties }) {
+  const { ref, inView } = useInView()
+  return (
+    <div ref={ref} className={className} style={{
+      ...style,
+      opacity: inView ? 1 : 0, 
+      transform: inView ? "scale(1)" : "scale(0.85)",
+      transition: `opacity 2s cubic-bezier(0.16, 1, 0.3, 1) ${delay}s, transform 2s cubic-bezier(0.16, 1, 0.3, 1) ${delay}s`
+    }}>
+      {children}
+    </div>
+  )
+}
+
+export function SlideIn({ children, delay = 0, direction = "left", className = "", style = {} }: { children: React.ReactNode; delay?: number; direction?: "left" | "right"; className?: string; style?: React.CSSProperties }) {
+  const { ref, inView } = useInView()
+  return (
+    <div ref={ref} className={className} style={{
+      ...style,
+      opacity: inView ? 1 : 0, 
+      transform: inView ? "translateX(0)" : direction === "left" ? "translateX(-60px)" : "translateX(60px)",
+      transition: `opacity 2s cubic-bezier(0.16, 1, 0.3, 1) ${delay}s, transform 2s cubic-bezier(0.16, 1, 0.3, 1) ${delay}s`
+    }}>
+      {children}
+    </div>
+  )
+}
+
+export function Reveal({ children, delay = 0, className = "" }: { children: React.ReactNode; delay?: number; className?: string }) {
+  const { ref, inView } = useInView()
+  return (
+    <div ref={ref} className={`relative overflow-hidden ${className}`}>
+      <div style={{
+        opacity: inView ? 1 : 0,
+        transform: inView ? "translateY(0)" : "translateY(100%)",
+        transition: `opacity 2s cubic-bezier(0.16, 1, 0.3, 1) ${delay}s, transform 2s cubic-bezier(0.16, 1, 0.3, 1) ${delay}s`
+      }}>
+        {children}
+      </div>
     </div>
   )
 }

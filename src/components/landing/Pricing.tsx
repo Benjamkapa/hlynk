@@ -81,7 +81,7 @@ export default function Pricing() {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch max-w-7xl mx-auto">
           {pricingPlans.map((p, i) => (
-            <FadeUp key={p.name} delay={i * 0.1}>
+            <FadeUp key={p.name} delay={i * 0.4}>
               <div className={`${p.color} p-8 md:p-10 rounded-[.5rem] flex flex-col h-full transition-all hover:scale-[1.02] duration-500 shadow-2xl relative overflow-hidden group ${p.badge ? '' : ''}`}>
                 {/* Decorative Pattern */}
                 <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 transition-all duration-700">

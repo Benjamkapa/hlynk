@@ -9,6 +9,7 @@ import FAQ from '../components/landing/FAQ'
 import Contact from '../components/landing/Contact'
 import Footer from '../components/landing/Footer'
 import IndustryDetailsModal from '../components/landing/IndustryDetailsModal'
+import { FadeUp, ScaleIn, SlideIn } from '../components/landing/Animations'
 import { useState } from 'react'
 
 export default function LandingPage() {
@@ -31,17 +32,29 @@ export default function LandingPage() {
           <WhoUses onSelectCategory={handleSelectCategory} />
         </div>
 
-        <About />
+        <ScaleIn>
+          <About />
+        </ScaleIn>
 
-        <Features />
+        <FadeUp>
+          <Features />
+        </FadeUp>
 
-        <HowItWorks />
+        <SlideIn direction="right">
+          <HowItWorks />
+        </SlideIn>
 
-        <Pricing />
+        <ScaleIn>
+          <Pricing />
+        </ScaleIn>
 
-        <FAQ />
+        <FadeUp>
+          <FAQ />
+        </FadeUp>
 
-        <Contact />
+        <FadeUp>
+          <Contact />
+        </FadeUp>
       </main>
 
       <Footer />

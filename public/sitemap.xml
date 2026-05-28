@@ -12,9 +12,14 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://hlynk.co.ke/register</loc>
+    <loc>https://hlynk.co.ke/privacy-policy</loc>
     <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://hlynk.co.ke/terms-conditions</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
   </url>
   <!-- Add additional public pages here as they are created -->
 </urlset>
