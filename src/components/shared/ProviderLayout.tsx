@@ -1,10 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useAuth } from "../../lib/auth/AuthContext";
 import {
   LayoutDashboard, Calendar, BarChart2, Users,
   Settings, LogOut, Package, ShoppingCart,
-  Zap, PanelLeftClose, PanelLeftOpen, Clock, AlertTriangle,
-  Lock, Code, Shield, X, Star, Loader2, Terminal, ShieldCheck
+  Zap, Clock, AlertTriangle,
+  Lock, Shield, X, Star, Loader2, Terminal, ShieldCheck
 } from "lucide-react";
 import { useLocation, Outlet, NavLink, Link } from "react-router-dom";
 import TopNav from "./TopNav";
@@ -27,61 +27,59 @@ interface NavGroup {
   items: NavItem[];
 }
 
+// ─── Breakpoint hook ───────────────────────────────────────────────────────────
+function useIsDesktop() {
+  const [isDesktop, setIsDesktop] = useState(() => window.innerWidth >= 1024);
+  useEffect(() => {
+    const fn = () => setIsDesktop(window.innerWidth >= 1024);
+    window.addEventListener("resize", fn);
+    return () => window.removeEventListener("resize", fn);
+  }, []);
+  return isDesktop;
+}
+
 export default function ProviderLayout() {
   const { user, logout } = useAuth();
   const location = useLocation();
+  const isDesktop = useIsDesktop();
+
+  /**
+   * Sidebar state — unified, two-axis model:
+   *
+   *  Desktop:
+   *    isCollapsed = true  → icon rail (68px)
+   *    isCollapsed = false → full panel (280px)
+   *    isHovered = true while isCollapsed → expand temporarily (no click needed)
+   *
+   *  Mobile:
+   *    mobileOpen = false  → icon rail slides in from left (60px)
+   *    mobileOpen = true   → full drawer (280px) + backdrop
+   *    click-away / nav → mobileOpen = false
+   */
   const [isCollapsed, setIsCollapsed] = useState(true);
   const [isHovered, setIsHovered] = useState(false);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  // Close mobile drawer on route change
+  useEffect(() => { setMobileOpen(false); }, [location.pathname]);
+
+  // Inactivity auto-collapse on mobile (5 min)
+  useEffect(() => {
+    if (isDesktop || !mobileOpen) return;
+    let t: ReturnType<typeof setTimeout>;
+    const reset = () => { clearTimeout(t); t = setTimeout(() => setMobileOpen(false), 300_000); };
+    reset();
+    window.addEventListener("mousemove", reset);
+    window.addEventListener("keydown", reset);
+    window.addEventListener("click", reset);
+    return () => { clearTimeout(t); window.removeEventListener("mousemove", reset); window.removeEventListener("keydown", reset); window.removeEventListener("click", reset); };
+  }, [mobileOpen, isDesktop]);
+
+  // Review modal state
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [reviewRating, setReviewRating] = useState(0);
   const [reviewText, setReviewText] = useState("");
   const [isSubmittingReview, setIsSubmittingReview] = useState(false);
-  const [isMobileExpanded, setIsMobileExpanded] = useState(false);
-
-  // Inactivity timer: 5 minutes (300,000 ms) - ONLY ON MOBILE
-  useEffect(() => {
-    const isSmallScreen = window.innerWidth < 1024;
-    if (!isSmallScreen) {
-      setIsSidebarOpen(true);
-      return;
-    }
-
-    let timer: any;
-    const resetTimer = () => {
-      if (timer) clearTimeout(timer);
-      timer = setTimeout(() => {
-        setIsMobileExpanded(false); // Collapse on inactivity instead of closing completely
-      }, 300000);
-    };
-
-    if (isMobileExpanded) {
-      resetTimer();
-      window.addEventListener('mousemove', resetTimer);
-      window.addEventListener('keydown', resetTimer);
-      window.addEventListener('click', resetTimer);
-    }
-
-    return () => {
-      if (timer) clearTimeout(timer);
-      window.removeEventListener('mousemove', resetTimer);
-      window.removeEventListener('keydown', resetTimer);
-      window.removeEventListener('click', resetTimer);
-    };
-  }, [isMobileExpanded]);
-
-  // Ensure sidebar is open on window resize to desktop
-  useEffect(() => {
-    const checkSize = () => {
-      if (window.innerWidth >= 1024) setIsSidebarOpen(true);
-    };
-    window.addEventListener('resize', checkSize);
-    return () => window.removeEventListener('resize', checkSize);
-  }, []);
-
-  useEffect(() => {
-    setIsMobileExpanded(false);
-  }, [location.pathname]);
 
   const navGroups: NavGroup[] = [
     {
@@ -122,79 +120,44 @@ export default function ProviderLayout() {
     },
   ];
 
+  const getPlanWeight = (p: string) => p.includes('MAX') ? 3 : p.includes('PLUS') ? 2 : 1;
+
   const filteredGroups = navGroups.map(group => ({
     ...group,
     items: group.items.map(item => {
-      // Super admin sees everything as unlocked
-      if (user?.role === 'SUPER_ADMIN') return { ...item, isLocked: false }
+      if (user?.role === 'SUPER_ADMIN') return { ...item, isLocked: false };
 
-      // If user is STAFF, we hide everything they don't have permission for
       if (user?.role === 'STAFF') {
-        // Hlynk Rule: Staff ONLY see what they are allowed to use. 
-        // If they don't have the permission, hide it (return null).
-        if (item.permission && !user.permissions?.includes(item.permission)) {
-          return null;
-        }
-
-        // Administrative/Owner-only areas are always hidden from staff
-        if (item.to.includes('subscription') || item.to.includes('developer') || (item as any).role === 'PROVIDER') {
-          return null;
-        }
+        if (item.permission && !user.permissions?.includes(item.permission)) return null;
+        if (item.to.includes('subscription') || item.to.includes('developer') || (item as any).role === 'PROVIDER') return null;
       }
 
-      // Default lock state for everyone else (Providers see everything but locked)
-      let isLocked = false
+      let isLocked = false;
+      const currentPlan = (user?.subscription?.planName || 'LITE').toUpperCase();
+      const userWeight = getPlanWeight(currentPlan);
+      const requiredWeight = item.plan ? getPlanWeight(item.plan) : 1;
+      if (userWeight < requiredWeight && user?.role !== 'STAFF') isLocked = true;
+      if (user?.role !== 'STAFF' && (item as any).role && user?.role !== (item as any).role) isLocked = true;
 
-      const currentPlanRaw = user?.subscription?.planName || 'LITE'
-      const currentPlan = currentPlanRaw.toUpperCase()
-      const isTrial = Number(user?.subscription?.status) === 2 || user?.subscription?.status === 'TRIAL'
-
-      const getPlanWeight = (p: string) => {
-        if (p.includes('MAX')) return 3
-        if (p.includes('PLUS')) return 2
-        return 1
-      }
-
-      const userWeight = getPlanWeight(currentPlan)
-      const requiredWeight = item.plan ? getPlanWeight(item.plan) : 1
-
-      if (userWeight < requiredWeight && user?.role !== 'STAFF') {
-        isLocked = true
-      }
-
-      // Role restrictions for non-staff (e.g. Providers seeing special roles)
-      if (user?.role !== 'STAFF' && (item as any).role && user?.role !== (item as any).role) {
-        isLocked = true
-      }
-
-      return { ...item, isLocked }
+      return { ...item, isLocked };
     }).filter((item): item is any => item !== null)
   })).filter(group => group.items.length > 0);
 
+  // Subscription helpers
   const isTrial = Number(user?.subscription?.status) === 2 || user?.subscription?.status === 'TRIAL';
   const targetEndDate = isTrial ? user?.subscription?.trialEndDate : user?.subscription?.endDate;
-
-  const timeRemainingMs = targetEndDate
-    ? new Date(targetEndDate).getTime() - new Date().getTime()
-    : 0;
-
-  const daysRemaining = Math.max(0, Math.ceil(timeRemainingMs / (1000 * 60 * 60 * 24)));
+  const timeRemainingMs = targetEndDate ? new Date(targetEndDate).getTime() - Date.now() : 0;
+  const daysRemaining = Math.max(0, Math.ceil(timeRemainingMs / 86_400_000));
   const isCritical = daysRemaining < 3 && timeRemainingMs > 0;
   const isExpiringSoon = daysRemaining <= 5 && timeRemainingMs > 0;
   const isExpired = Number(user?.subscription?.status) === 1;
   const isTrialExpired = isTrial && isExpired;
 
   useEffect(() => {
-    // Unique key for the current expiry period
     const reviewKey = `hlynk_reviewed_${user?.tenantId}_${targetEndDate}`;
-    const alreadyReviewed = localStorage.getItem(reviewKey);
-
-    if (user?.role === 'PROVIDER' && (isExpired || isTrialExpired) && !alreadyReviewed) {
-      setShowReviewModal(true);
-    } else if (isExpiringSoon && !alreadyReviewed) {
-      const timer = setTimeout(() => setShowReviewModal(true), 5000); // 5s delay for better UX
-      return () => clearTimeout(timer);
-    }
+    if (localStorage.getItem(reviewKey)) return;
+    if (user?.role === 'PROVIDER' && (isExpired || isTrialExpired)) { setShowReviewModal(true); return; }
+    if (isExpiringSoon) { const t = setTimeout(() => setShowReviewModal(true), 5000); return () => clearTimeout(t); }
   }, [user, isExpiringSoon, isExpired, isTrialExpired, targetEndDate]);
 
   const handleSubmitReview = async () => {
@@ -203,9 +166,7 @@ export default function ProviderLayout() {
     try {
       await providersApi.submitReview({ rating: reviewRating, reviewText });
       toast.success("Thank you for your feedback!");
-
-      const reviewKey = `hlynk_reviewed_${user?.tenantId}_${targetEndDate}`;
-      localStorage.setItem(reviewKey, 'true');
+      localStorage.setItem(`hlynk_reviewed_${user?.tenantId}_${targetEndDate}`, 'true');
       setShowReviewModal(false);
     } catch (err: any) {
       toast.error(err.message || "Failed to submit review");
@@ -214,72 +175,107 @@ export default function ProviderLayout() {
     }
   };
 
-  const SidebarContent = ({ collapsed }: { collapsed: boolean }) => (
-    <div className={`flex flex-col h-full bg-white transition-all duration-300 ${collapsed ? 'w-[60px] lg:w-[68px]' : 'w-[280px]'}`}>
-      <div className={`h-16 lg:h-20 flex items-center ${collapsed ? 'justify-center' : 'px-4'}`}>
-        <div className="flex-shrink-0">
-          {collapsed ? (
-            <img src="/fav.png" alt="hlynk" className="h-6 w-6 lg:h-7 lg:w-7 transition-all object-contain" />
+  // The real "is expanded" state for rendering sidebar content
+  const sidebarExpanded = isDesktop
+    ? (!isCollapsed || isHovered)   // desktop: manual toggle OR hover
+    : mobileOpen;                   // mobile: tap toggle only
+
+  // Sidebar width values
+  const RAIL_W = isDesktop ? 68 : 60;
+  const FULL_W = 280;
+
+  // ── Sidebar inner content ────────────────────────────────────────────────────
+  const SidebarContent = () => (
+    <div className="flex flex-col h-full">
+      {/* Logo */}
+      <div className={`h-16 lg:h-20 flex items-center flex-shrink-0 ${sidebarExpanded ? 'px-5' : 'justify-center'}`}>
+        <AnimatePresence mode="wait" initial={false}>
+          {sidebarExpanded ? (
+            <motion.img
+              key="full"
+              src="/logo.png"
+              alt="hlynk"
+              className="h-6 lg:h-7 w-auto object-contain"
+              initial={{ opacity: 0, x: -8 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -8 }}
+              transition={{ duration: 0.18 }}
+            />
           ) : (
-            <img src="/logo.png" alt="hlynk" className="h-6 lg:h-7 w-auto transition-all object-contain" />
+            <motion.img
+              key="icon"
+              src="/fav.png"
+              alt="hlynk"
+              className="h-6 w-6 lg:h-7 lg:w-7 object-contain"
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.8 }}
+              transition={{ duration: 0.15 }}
+            />
           )}
-        </div>
+        </AnimatePresence>
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 px-4 space-y-4 overflow-y-auto overflow-x-hidden pt-4 custom-scrollbar">
+      <nav className="flex-1 px-3 space-y-4 overflow-y-auto overflow-x-hidden pt-2 custom-scrollbar">
         {filteredGroups.map((group) => (
           <div key={group.label}>
-            <AnimatePresence mode="wait">
-              {!collapsed && (
+            <AnimatePresence>
+              {sidebarExpanded && (
                 <motion.p
-                  initial={{ opacity: 0, x: -10 }}
+                  initial={{ opacity: 0, x: -6 }}
                   animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -10 }}
-                  className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400 px-4 mb-2 whitespace-nowrap"
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.15 }}
+                  className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400 px-3 mb-2 whitespace-nowrap"
                 >
                   {group.label}
                 </motion.p>
               )}
             </AnimatePresence>
-            <div className="space-y-1">
+
+            <div className="space-y-0.5">
               {group.items.map((item) => {
-                const ItemContent = (
-                  <>
-                    <div className="relative">
-                      <item.icon className={`transition-all ${collapsed ? 'w-[16px] lg:w-[20px] h-[16px] lg:h-[20px]' : 'w-[18px] h-[18px] shrink-0'}`} />
-                      {item.isLocked && (
-                        <div className="absolute -top-1 -right-1 h-3 w-3 bg-amber-500 rounded-full flex items-center justify-center border-2 border-white">
-                          <Lock size={6} className="text-white fill-white" />
-                        </div>
-                      )}
-                    </div>
-                    {!collapsed ? (
-                      <div className="flex items-center justify-between flex-1 min-w-0">
-                        <span className="text-sm font-bold whitespace-nowrap truncate">{item.label}</span>
-                        {item.isLocked && (
-                          <span className="text-[7px] font-black bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-full uppercase tracking-widest ml-2">
-                            {item.plan === 'MAX' ? 'Business Pro' : 'Growth'}
-                          </span>
-                        )}
-                      </div>
-                    ) : (
-                      <div className="absolute left-[calc(100%+10px)] bg-slate-900 text-white px-3 py-1.5 rounded-[.4rem] text-[10px] font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 invisible group-hover:visible translate-x-3 group-hover:translate-x-0 transition-all pointer-events-none whitespace-nowrap z-[100] shadow-2xl">
-                        {item.label}
-                        <div className="absolute top-1/2 -left-1 -translate-y-1/2 border-y-4 border-y-transparent border-r-4 border-r-slate-900" />
+                const iconEl = (
+                  <div className="relative flex-shrink-0">
+                    <item.icon className={`${sidebarExpanded ? 'w-[18px] h-[18px]' : 'w-[18px] h-[18px] lg:w-[20px] lg:h-[20px]'}`} />
+                    {item.isLocked && (
+                      <div className="absolute -top-1 -right-1 h-3 w-3 bg-amber-500 rounded-full flex items-center justify-center border-2 border-white">
+                        <Lock size={6} className="text-white fill-white" />
                       </div>
                     )}
-                  </>
+                  </div>
                 );
+
+                const labelEl = sidebarExpanded && (
+                  <motion.div
+                    initial={{ opacity: 0, x: -6 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    className="flex items-center justify-between flex-1 min-w-0 ml-3"
+                  >
+                    <span className="text-sm font-bold whitespace-nowrap truncate">{item.label}</span>
+                    {item.isLocked && (
+                      <span className="text-[7px] font-black bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-full uppercase tracking-widest ml-2 flex-shrink-0">
+                        {item.plan === 'MAX' ? 'Pro' : 'Growth'}
+                      </span>
+                    )}
+                  </motion.div>
+                );
+
+                // Tooltip shown only on collapsed desktop rail
+                const tooltip = !sidebarExpanded && isDesktop && (
+                  <div className="absolute left-[calc(100%+10px)] bg-slate-900 text-white px-3 py-1.5 rounded-[.4rem] text-[10px] font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 invisible group-hover:visible translate-x-2 group-hover:translate-x-0 transition-all pointer-events-none whitespace-nowrap z-[200] shadow-2xl">
+                    {item.label}
+                    <div className="absolute top-1/2 -left-1 -translate-y-1/2 border-y-4 border-y-transparent border-r-4 border-r-slate-900" />
+                  </div>
+                );
+
+                const baseClass = `group relative flex items-center rounded-[.45rem] transition-all duration-150 ${sidebarExpanded ? 'px-3 py-2.5' : 'justify-center py-2.5 px-0'}`;
 
                 if (item.isLocked) {
                   return (
-                    <div
-                      key={item.label}
-                      className={`hl-sidebar-item opacity-60 grayscale-[0.8] cursor-not-allowed ${collapsed ? 'justify-center px-0' : ''}`}
-                      title={`${item.plan} required`}
-                    >
-                      {ItemContent}
+                    <div key={item.label} className={`${baseClass} opacity-50 cursor-not-allowed`}>
+                      {iconEl}{labelEl}{tooltip}
                     </div>
                   );
                 }
@@ -290,10 +286,12 @@ export default function ProviderLayout() {
                     to={item.to}
                     end={item.end}
                     className={({ isActive }) =>
-                      `hl-sidebar-item ${isActive ? 'active' : ''} ${collapsed ? 'justify-center px-0' : ''}`
+                      `${baseClass} ${isActive
+                        ? 'bg-emerald-50 text-emerald-700'
+                        : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800'}`
                     }
                   >
-                    {ItemContent}
+                    {iconEl}{labelEl}{tooltip}
                   </NavLink>
                 );
               })}
@@ -302,148 +300,211 @@ export default function ProviderLayout() {
         ))}
       </nav>
 
-      {/* Profile Summary */}
-      <div className="p-4 mt-auto border-t border-slate-50">
+      {/* Footer */}
+      <div className={`flex-shrink-0 p-3 mt-auto border-t border-slate-100 ${sidebarExpanded ? '' : 'flex justify-center'}`}>
         <AnimatePresence>
-          {!collapsed && (
-            <div
-              className="bg-emerald-900 rounded-[.5rem] p-3 shadow-md shadow-emerald-950/20 mb-3 relative overflow-hidden"
+          {sidebarExpanded && (
+            <motion.div
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 6 }}
+              className="bg-emerald-900 rounded-[.5rem] p-3 mb-3"
             >
-              <div className="relative z-10">
-                <div className="flex justify-between items-center mb-2">
-                  <p className="text-[8px] text-emerald-400 font-black uppercase tracking-widest">
-                    {user?.subscription?.planName === 'MAX' ? 'Business Pro' : user?.subscription?.planName === 'PLUS' ? 'Growth' : 'Starter'} Tier
-                  </p>
-                  {isCritical && <AlertTriangle size={10} className="text-amber-400 animate-pulse" />}
-                </div>
-                <CountdownTimer expiryDate={targetEndDate} />
+              <div className="flex justify-between items-center mb-2">
+                <p className="text-[8px] text-emerald-400 font-black uppercase tracking-widest">
+                  {user?.subscription?.planName === 'MAX' ? 'Business Pro' : user?.subscription?.planName === 'PLUS' ? 'Growth' : 'Starter'} Tier
+                </p>
+                {isCritical && <AlertTriangle size={10} className="text-amber-400 animate-pulse" />}
               </div>
-            </div>
+              <CountdownTimer expiryDate={targetEndDate} />
+            </motion.div>
           )}
         </AnimatePresence>
-        <div className="flex gap-2">
-          <NavLink to="/dashboard/settings" className="flex-1 h-12 bg-slate-50 rounded-[.5rem] flex items-center justify-center text-slate-400 hover:bg-emerald-50 hover:text-emerald-600 transition-all border border-slate-100">
-            <Settings size={20} />
-          </NavLink>
-        </div>
+
+        <NavLink
+          to="/dashboard/settings"
+          className={`h-10 bg-slate-50 rounded-[.45rem] flex items-center justify-center text-slate-400 hover:bg-emerald-50 hover:text-emerald-600 transition-all border border-slate-100 ${sidebarExpanded ? 'w-full' : 'w-10'}`}
+        >
+          <Settings size={18} />
+        </NavLink>
       </div>
     </div>
   );
 
   return (
-    <div className="flex h-screen overflow-hidden hl-dash bg-slate-50/50">
+    <div className="flex h-screen overflow-hidden bg-slate-50/50">
 
-      {/* ── REVIEW MODAL ── */}
-      {showReviewModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-gray-900/60 backdrop-blur-sm p-4 animate-in fade-in duration-300">
-          <div className="bg-white rounded-[.5rem] w-full max-w-md p-8 relative shadow-2xl animate-in zoom-in-95 duration-300">
-            {!isTrialExpired && (
-              <button
-                onClick={() => {
-                  setShowReviewModal(false);
-                  const reviewKey = `hlynk_reviewed_${user?.tenantId}_${targetEndDate}`;
-                  localStorage.setItem(reviewKey, 'true');
-                }}
-                className="absolute top-6 right-6 text-slate-400 hover:text-slate-900 transition-colors"
-              >
-                <X size={20} />
-              </button>
-            )}
-
-            <div className="text-center mb-8">
-              <div className="h-16 w-16 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Star size={32} className="fill-emerald-600" />
-              </div>
-              <h2 className="text-2xl font-black text-slate-900 tracking-tight mb-2">
-                {isTrialExpired ? "Your Trial has Completed!" : "How are we doing?"}
-              </h2>
-              <p className="text-xs text-slate-500 font-medium leading-relaxed">
-                {isTrialExpired
-                  ? "To keep using hlynk and help us grow, please share a quick rating of your experience so far!"
-                  : "Your subscription is renewing soon. We'd love to know how hlynk has helped your business grow!"}
-              </p>
-            </div>
-
-            <div className="flex justify-center gap-2 mb-8">
-              {[1, 2, 3, 4, 5].map((star) => (
+      {/* ── REVIEW MODAL ────────────────────────────────────────────────────── */}
+      <AnimatePresence>
+        {showReviewModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-gray-900/60 backdrop-blur-sm p-4"
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-white rounded-[.5rem] w-full max-w-md p-8 relative shadow-2xl"
+            >
+              {!isTrialExpired && (
                 <button
-                  key={star}
-                  onClick={() => setReviewRating(star)}
-                  className="transition-transform hover:scale-110 focus:outline-none"
+                  onClick={() => {
+                    setShowReviewModal(false);
+                    localStorage.setItem(`hlynk_reviewed_${user?.tenantId}_${targetEndDate}`, 'true');
+                  }}
+                  className="absolute top-6 right-6 text-slate-400 hover:text-slate-900 transition-colors"
                 >
-                  <Star
-                    size={40}
-                    className={`${reviewRating >= star ? 'text-[#0D4A3E] fill-[#0D4A3E]' : 'text-slate-200 fill-slate-200'} transition-colors`}
-                  />
+                  <X size={20} />
                 </button>
+              )}
+              <div className="text-center mb-8">
+                <div className="h-16 w-16 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Star size={32} className="fill-emerald-600" />
+                </div>
+                <h2 className="text-2xl font-black text-slate-900 tracking-tight mb-2">
+                  {isTrialExpired ? "Your Trial has Completed!" : "How are we doing?"}
+                </h2>
+                <p className="text-xs text-slate-500 font-medium leading-relaxed">
+                  {isTrialExpired
+                    ? "To keep using hlynk and help us grow, please share a quick rating of your experience so far!"
+                    : "Your subscription is renewing soon. We'd love to know how hlynk has helped your business grow!"}
+                </p>
+              </div>
+              <div className="flex justify-center gap-2 mb-8">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <button key={star} onClick={() => setReviewRating(star)} className="transition-transform hover:scale-110 focus:outline-none">
+                    <Star size={40} className={`${reviewRating >= star ? 'text-[#0D4A3E] fill-[#0D4A3E]' : 'text-slate-200 fill-slate-200'} transition-colors`} />
+                  </button>
+                ))}
+              </div>
+              <div className="mb-8">
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 block">Your Feedback (Optional)</label>
+                <textarea
+                  value={reviewText}
+                  onChange={e => setReviewText(e.target.value)}
+                  placeholder="What do you love? What could we improve?"
+                  className="w-full bg-slate-50 border border-slate-100 rounded-[.5rem] p-4 text-sm font-medium text-slate-700 outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all resize-none h-28"
+                />
+              </div>
+              <button
+                onClick={handleSubmitReview}
+                disabled={isSubmittingReview || reviewRating === 0}
+                className="w-full h-14 bg-[#0D4A3E] text-white rounded-[.5rem] font-black text-sm uppercase tracking-widest hover:bg-[#0A3D33] transition-all flex items-center justify-center shadow-xl shadow-emerald-900/20 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isSubmittingReview ? <Loader2 className="animate-spin" size={20} /> : 'Submit Review'}
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ── MOBILE BACKDROP ─────────────────────────────────────────────────── */}
+      <AnimatePresence>
+        {!isDesktop && mobileOpen && (
+          <motion.div
+            key="backdrop"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 z-[65] bg-slate-900/40 backdrop-blur-[2px] lg:hidden"
+            onClick={() => setMobileOpen(false)}
+            aria-label="Close sidebar"
+          />
+        )}
+      </AnimatePresence>
+
+      {/* ── SIDEBAR ─────────────────────────────────────────────────────────── */}
+      {isDesktop ? (
+        /* ── DESKTOP: sticky rail that expands on hover or toggle ── */
+        <motion.aside
+          animate={{ width: sidebarExpanded ? FULL_W : RAIL_W }}
+          transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
+          onMouseEnter={() => setIsHovered(true)}
+          onMouseLeave={() => setIsHovered(false)}
+          className="relative flex-shrink-0 h-screen border-r border-slate-100 bg-white overflow-visible z-[70]"
+          style={{ minWidth: RAIL_W }}
+        >
+          {/* Expand beyond allocated width when hovered-while-collapsed */}
+          <motion.div
+            animate={{ width: sidebarExpanded ? FULL_W : RAIL_W }}
+            transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
+            className={`absolute inset-y-0 left-0 bg-white overflow-hidden ${isCollapsed && isHovered ? 'shadow-2xl shadow-slate-200 border-r border-slate-100' : ''}`}
+          >
+            <SidebarContent />
+          </motion.div>
+        </motion.aside>
+      ) : (
+        /* ── MOBILE: icon rail always visible, drawer slides over content ── */
+        <>
+          {/* Permanent thin rail (always visible, not overlay) */}
+          <div
+            className="relative flex-shrink-0 h-screen bg-white border-r border-slate-100 z-[70] overflow-visible"
+            style={{ width: RAIL_W }}
+          >
+            {/* Tap rail to open drawer */}
+            <div
+              className="absolute inset-0 z-10"
+              onClick={() => setMobileOpen(true)}
+              aria-label="Open sidebar"
+            />
+            {/* Show icons only in the rail */}
+            <div className="flex flex-col h-full items-center pt-4 pb-4 gap-1 overflow-hidden">
+              <img src="/fav.png" alt="hlynk" className="h-6 w-6 object-contain mb-4 mt-2" />
+              {filteredGroups.flatMap(g => g.items).map(item => (
+                <div
+                  key={item.label}
+                  className="relative w-10 h-10 flex items-center justify-center rounded-[.4rem] text-slate-400"
+                >
+                  <item.icon className="w-[18px] h-[18px]" />
+                  {item.isLocked && (
+                    <div className="absolute top-1 right-1 h-2 w-2 bg-amber-500 rounded-full" />
+                  )}
+                </div>
               ))}
             </div>
-
-            <div className="mb-8">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 block">Your Feedback (Optional)</label>
-              <textarea
-                value={reviewText}
-                onChange={e => setReviewText(e.target.value)}
-                placeholder="What do you love? What could we improve?"
-                className="w-full bg-slate-50 border border-slate-100 rounded-[.5rem] p-4 text-sm font-medium text-slate-700 outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all resize-none h-28"
-              />
-            </div>
-
-            <button
-              onClick={handleSubmitReview}
-              disabled={isSubmittingReview || reviewRating === 0}
-              className="w-full h-14 bg-[#0D4A3E] text-white rounded-[.5rem] font-black text-sm uppercase tracking-widest hover:bg-[#0A3D33] transition-all flex items-center justify-center shadow-xl shadow-emerald-900/20 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isSubmittingReview ? <Loader2 className="animate-spin" size={20} /> : 'Submit Review'}
-            </button>
           </div>
-        </div>
+
+          {/* Full mobile drawer — slides over content from the left */}
+          <AnimatePresence>
+            {mobileOpen && (
+              <motion.div
+                key="drawer"
+                initial={{ x: -FULL_W }}
+                animate={{ x: 0 }}
+                exit={{ x: -FULL_W }}
+                transition={{ duration: 0.28, ease: [0.4, 0, 0.2, 1] }}
+                className="fixed inset-y-0 left-0 z-[80] bg-white shadow-2xl"
+                style={{ width: FULL_W }}
+              >
+                {/* Close button inside drawer (top-right) */}
+                <button
+                  onClick={() => setMobileOpen(false)}
+                  className="absolute top-4 right-4 z-10 h-8 w-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 hover:bg-slate-200 transition-colors"
+                  aria-label="Close sidebar"
+                >
+                  <X size={16} />
+                </button>
+                <SidebarContent />
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </>
       )}
 
-
-
-      {/* ── MOBILE BACKDROP ── */}
-      {isMobileExpanded && (
-        <div
-          className="fixed inset-0 z-[65] bg-slate-900/40 backdrop-blur-sm lg:hidden animate-in fade-in duration-300"
-          onClick={() => setIsMobileExpanded(false)}
-        />
-      )}
-
-      {/* ── SIDEBAR ── */}
-      <motion.aside
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
-        className={`
-          flex flex-col transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)]
-          fixed inset-y-0 left-0 z-[70] lg:relative lg:translate-x-0
-          translate-x-0
-          ${isCollapsed && !isHovered && !isMobileExpanded ? 'w-[60px] lg:w-[68px]' : 'w-[300px] lg:w-[312px]'}
-        `}
-      >
-        <div className={`
-          absolute inset-y-0 left-0 flex flex-col bg-white
-          transition-all duration-300 ease-in-out overflow-hidden
-          ${isCollapsed && isHovered ? 'w-[280px] shadow-2xl z-[60]' : 'w-full'}
-          ${window.innerWidth < 1024 ? 'hl-sidebar-floating' : 'border-r border-slate-100'}
-        `}>
-          <SidebarContent collapsed={isCollapsed && !isHovered && !isMobileExpanded} />
-        </div>
-      </motion.aside>
-
-
-
-
-      {/* ── MAIN CONTENT ── */}
-      <div className={`flex-1 flex flex-col min-w-0 overflow-hidden relative transition-all duration-300 ${isSidebarOpen && isCollapsed && !isHovered && !isMobileExpanded && window.innerWidth < 1024 ? 'pl-[60px]' : 'pl-0'}`}>
+      {/* ── MAIN CONTENT ────────────────────────────────────────────────────── */}
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {isCritical && user?.role === 'PROVIDER' && (
-          <div className="bg-red-600 text-white px-8 py-3 flex items-center justify-between animate-in slide-in-from-top duration-700 z-[100] shadow-2xl">
-            <div className="flex items-center gap-4">
-              <div className="h-8 w-8 rounded-full bg-white/20 flex items-center justify-center">
-                <AlertTriangle size={18} className="animate-bounce" />
+          <div className="bg-red-600 text-white px-6 py-3 flex items-center justify-between z-[60] shadow-2xl flex-shrink-0">
+            <div className="flex items-center gap-3">
+              <div className="h-8 w-8 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
+                <AlertTriangle size={16} className="animate-bounce" />
               </div>
               <div>
-                <p className="text-[11px] font-black uppercase tracking-widest leading-none mb-1">
+                <p className="text-[11px] font-black uppercase tracking-widest leading-none mb-0.5">
                   {isTrial ? "Critical: Free Trial Expiry Imminent" : "Critical: Subscription Expiry Imminent"}
                 </p>
                 <p className="text-[9px] font-medium opacity-80 uppercase tracking-widest leading-none">
@@ -453,25 +514,29 @@ export default function ProviderLayout() {
                 </p>
               </div>
             </div>
-            <Link to="/dashboard/subscription" className="px-6 py-2 bg-white text-red-600 rounded-[.5rem] text-[10px] font-black uppercase tracking-widest hover:bg-red-50 transition-all shadow-lg active:scale-95">
+            <Link to="/dashboard/subscription" className="ml-4 flex-shrink-0 px-5 py-2 bg-white text-red-600 rounded-[.5rem] text-[10px] font-black uppercase tracking-widest hover:bg-red-50 transition-all shadow-lg active:scale-95">
               {isTrial ? "Upgrade Now" : "Top Up Now"}
             </Link>
           </div>
         )}
+
         <TopNav
-          isMobileOpen={isMobileExpanded}
-          onMobileMenuToggle={() => setIsMobileExpanded(!isMobileExpanded)}
+          isMobileOpen={mobileOpen}
+          onMobileMenuToggle={() => setMobileOpen(v => !v)}
           isCollapsed={isCollapsed}
-          onToggleCollapse={() => setIsCollapsed(!isCollapsed)}
+          onToggleCollapse={() => { setIsCollapsed(v => !v); setIsHovered(false); }}
           showMail={true}
           extraActions={
-            <Link to="/dashboard/sales/new" className="hidden lg:flex items-center gap-2 px-6 py-3 bg-[#0D4A3E] text-white rounded-[.5rem] font-black text-xs uppercase tracking-widest shadow-xl shadow-emerald-900/10 hover:bg-[#064E3B] hover:-translate-y-0.5 transition-all">
-              <Zap size={16} /> Record Sale
+            <Link
+              to="/dashboard/sales/new"
+              className="hidden lg:flex items-center gap-2 px-5 py-2.5 bg-[#0D4A3E] text-white rounded-[.5rem] font-black text-xs uppercase tracking-widest shadow-xl shadow-emerald-900/10 hover:bg-[#064E3B] hover:-translate-y-0.5 transition-all"
+            >
+              <Zap size={15} /> Record Sale
             </Link>
           }
         />
 
-        <main className="flex-1 overflow-y-auto px-8 lg:px-12 py-12 bg-slate-50/30 relative">
+        <main className="flex-1 overflow-y-auto px-5 lg:px-10 py-8 bg-slate-50/30">
           <Outlet />
         </main>
       </div>
@@ -479,45 +544,39 @@ export default function ProviderLayout() {
   );
 }
 
+// ─── Countdown Timer ─────────────────────────────────────────────────────────
 function CountdownTimer({ expiryDate }: { expiryDate: string | undefined }) {
-  const calculate = (date: string) => {
-    const distance = new Date(date).getTime() - new Date().getTime();
-    if (distance < 0) return { d: 0, h: 0, m: 0, s: 0 };
+  const calc = (d: string) => {
+    const dist = new Date(d).getTime() - Date.now();
+    if (dist < 0) return { d: 0, h: 0, m: 0, s: 0 };
     return {
-      d: Math.floor(distance / (1000 * 60 * 60 * 24)),
-      h: Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
-      m: Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60)),
-      s: Math.floor((distance % (1000 * 60)) / 1000)
+      d: Math.floor(dist / 86_400_000),
+      h: Math.floor((dist % 86_400_000) / 3_600_000),
+      m: Math.floor((dist % 3_600_000) / 60_000),
+      s: Math.floor((dist % 60_000) / 1000),
     };
   };
 
-  const [timeLeft, setTimeLeft] = useState(() => expiryDate ? calculate(expiryDate) : null);
+  const [t, setT] = useState(() => expiryDate ? calc(expiryDate) : null);
 
   useEffect(() => {
     if (!expiryDate) return;
-    const timer = setInterval(() => setTimeLeft(calculate(expiryDate)), 1000);
-    return () => clearInterval(timer);
+    const id = setInterval(() => setT(calc(expiryDate)), 1000);
+    return () => clearInterval(id);
   }, [expiryDate]);
 
-  if (!timeLeft) return (
+  if (!t) return (
     <div className="h-8 flex items-center justify-center gap-1">
-      <div className="w-1 h-4 bg-emerald-800 animate-pulse rounded-full" />
-      <div className="w-1 h-6 bg-emerald-800 animate-pulse rounded-full delay-75" />
-      <div className="w-1 h-4 bg-emerald-800 animate-pulse rounded-full delay-150" />
+      {[0, 1, 2].map(i => <div key={i} className="w-1 h-4 bg-emerald-800 animate-pulse rounded-full" style={{ animationDelay: `${i * 75}ms` }} />)}
     </div>
   );
 
   return (
     <div className="flex justify-between gap-1">
-      {[
-        { v: timeLeft.d, l: 'd' },
-        { v: timeLeft.h, l: 'h' },
-        { v: timeLeft.m, l: 'm' },
-        { v: timeLeft.s, l: 's' }
-      ].map((t, i) => (
-        <div key={i} className="flex-1 flex flex-col items-center bg-white/5 rounded-[.5rem] py-1 border border-white/5">
-          <span className="text-[11px] font-black text-white hl-mono leading-none">{t.v.toString().padStart(2, '0')}</span>
-          <span className="text-[6px] font-black text-emerald-400 uppercase opacity-50">{t.l}</span>
+      {[{ v: t.d, l: 'd' }, { v: t.h, l: 'h' }, { v: t.m, l: 'm' }, { v: t.s, l: 's' }].map((seg, i) => (
+        <div key={i} className="flex-1 flex flex-col items-center bg-white/5 rounded-[.4rem] py-1 border border-white/5">
+          <span className="text-[11px] font-black text-white leading-none">{seg.v.toString().padStart(2, '0')}</span>
+          <span className="text-[6px] font-black text-emerald-400 uppercase opacity-50">{seg.l}</span>
         </div>
       ))}
     </div>
