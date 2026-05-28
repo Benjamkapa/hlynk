@@ -86,38 +86,38 @@ export default function ProviderLayout() {
 
   const navGroups: NavGroup[] = [
     {
-      label: 'My Shop',
+      label: 'Main',
       items: [
-        { to: '/dashboard/sales/new', label: 'New Sale', icon: Zap, permission: 'sales' },
-        { to: '/dashboard/sales', label: 'Sales History', icon: Package, end: true, permission: 'sales' },
-        { to: '/dashboard/expenses', label: 'Track Expenses', icon: ShoppingCart, permission: 'sales' },
+        { to: '/dashboard/sales/new', label: 'Sell Now', icon: Zap, permission: 'sales' },
+        { to: '/dashboard/sales', label: 'History', icon: Package, end: true, permission: 'sales' },
+        { to: '/dashboard/expenses', label: 'Expenses', icon: ShoppingCart, permission: 'sales' },
       ],
     },
     {
-      label: 'Stock & People',
+      label: 'Store & Staff',
       items: [
-        { to: '/dashboard', label: 'Overview', icon: LayoutDashboard, end: true, permission: 'overview' },
-        { to: '/dashboard/products', label: 'Products & Services', icon: Package, permission: 'products' },
+        { to: '/dashboard', label: 'Home', icon: LayoutDashboard, end: true, permission: 'overview' },
+        { to: '/dashboard/products', label: 'Items & Price', icon: Package, permission: 'products' },
         { to: '/dashboard/customers', label: 'Customers', icon: Users, permission: 'customers' },
       ],
     },
     {
-      label: 'Reports',
+      label: 'Performance',
       items: [
-        { to: '/dashboard/reports', label: 'Business Reports', icon: BarChart2, permission: 'reports', plan: 'PLUS' }
+        { to: '/dashboard/reports', label: 'View Growth', icon: BarChart2, permission: 'reports', plan: 'PLUS' }
       ],
     },
     {
       label: 'Team',
       items: [
-        { to: '/dashboard/staff', label: 'Staff Management', icon: Users, permission: 'staff', plan: 'PLUS' },
+        { to: '/dashboard/staff', label: 'Manage Staff', icon: Users, permission: 'staff', plan: 'PLUS' },
       ],
     },
     {
-      label: 'System',
+      label: 'Settings',
       items: [
         { to: '/dashboard/logs', label: 'Staff Activity', icon: ShieldCheck, permission: 'logs', plan: 'MAX' },
-        { to: '/dashboard/subscription', label: 'Billing Plan', icon: Calendar, role: 'PROVIDER' },
+        { to: '/dashboard/subscription', label: 'My Plan', icon: Calendar, role: 'PROVIDER' },
         { to: '/dashboard/developer', label: 'M-Pesa Setup', icon: Terminal, role: 'PROVIDER', plan: 'PLUS' },
       ],
     },
@@ -248,14 +248,14 @@ export default function ProviderLayout() {
                 const ItemContent = (
                   <>
                     <div className="relative">
-                      <item.icon className={`transition-all ${collapsed ? 'w-[16px] lg:w-[18px] h-[16px] lg:h-[18px]' : 'w-[18px] h-[18px] shrink-0'}`} />
+                      <item.icon className={`transition-all ${collapsed ? 'w-[16px] lg:w-[20px] h-[16px] lg:h-[20px]' : 'w-[18px] h-[18px] shrink-0'}`} />
                       {item.isLocked && (
                         <div className="absolute -top-1 -right-1 h-3 w-3 bg-amber-500 rounded-full flex items-center justify-center border-2 border-white">
                           <Lock size={6} className="text-white fill-white" />
                         </div>
                       )}
                     </div>
-                    {!collapsed && (
+                    {!collapsed ? (
                       <div className="flex items-center justify-between flex-1 min-w-0">
                         <span className="text-sm font-bold whitespace-nowrap truncate">{item.label}</span>
                         {item.isLocked && (
@@ -263,6 +263,11 @@ export default function ProviderLayout() {
                             {item.plan === 'MAX' ? 'Business Pro' : 'Growth'}
                           </span>
                         )}
+                      </div>
+                    ) : (
+                      <div className="absolute left-[calc(100%+10px)] bg-slate-900 text-white px-3 py-1.5 rounded-[.4rem] text-[10px] font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 invisible group-hover:visible translate-x-3 group-hover:translate-x-0 transition-all pointer-events-none whitespace-nowrap z-[100] shadow-2xl">
+                        {item.label}
+                        <div className="absolute top-1/2 -left-1 -translate-y-1/2 border-y-4 border-y-transparent border-r-4 border-r-slate-900" />
                       </div>
                     )}
                   </>

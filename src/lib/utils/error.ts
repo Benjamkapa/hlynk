@@ -3,8 +3,10 @@ export const getErrorMessage = (err: any): string => {
 
   // Network error (server down, timeout, etc.)
   if (!err.response) {
+    if (typeof navigator !== 'undefined' && !navigator.onLine) {
+      return "OFFLINE_SILENT" // Unique token so callers can ignore it
+    }
     if (err.code === 'ECONNABORTED') return "The request timed out. Please check your internet connection."
-    // if (err.message === 'Network Error') return "Unable to connect to the server. Please ensure the backend is running."
     if (err.message === 'Network Error') return "Unable to connect to the server!"
     return err.message || "A network error occurred. Please try again."
   }

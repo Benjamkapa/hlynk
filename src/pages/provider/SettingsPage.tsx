@@ -204,17 +204,17 @@ export default function SettingsPage() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <InputGroup
-                    label="Full Name"
+                    label="Your Name"
                     value={formData.name}
                     onChange={(v: string) => setFormData({ ...formData, name: v })}
                   />
                   <InputGroup
-                    label="Email Address"
+                    label="Email"
                     value={formData.email}
                     onChange={(v: string) => setFormData({ ...formData, email: v })}
                   />
                   <InputGroup
-                    label="Phone Number"
+                    label="Phone"
                     value={formData.phone}
                     onChange={(v: string) => setFormData({ ...formData, phone: v })}
                     mono
@@ -231,17 +231,25 @@ export default function SettingsPage() {
                     value={formData.businessName}
                     onChange={(v: string) => setFormData({ ...formData, businessName: v })}
                   />
-                  <InputGroup
-                    label="Business Category"
-                    value={formData.category}
-                    onChange={(v: string) => setFormData({ ...formData, category: v })}
-                  />
+                  <div className="space-y-2">
+                    <label className="text-xs font-black text-gray-400 uppercase tracking-widest">Business Category</label>
+                    <select 
+                      value={formData.category}
+                      onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                      className="hl-select"
+                    >
+                      <option value="">Select Category</option>
+                      {['Retail', 'Groceries', 'Pharmacy', 'Hardware', 'Clothing', 'Electronics', 'Restaurant', 'Other'].map(c => (
+                        <option key={c} value={c}>{c}</option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
-                <InputGroup
-                  label="Physical Address"
-                  value={formData.location}
-                  onChange={(v: string) => setFormData({ ...formData, location: v })}
-                />
+                  <InputGroup
+                    label="Where are you located?"
+                    value={formData.location}
+                    onChange={(v: string) => setFormData({ ...formData, location: v })}
+                  />
 
                 <div className="pt-6 border-t border-gray-50">
                   <h4 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-6">Operational Settings</h4>
@@ -266,8 +274,8 @@ export default function SettingsPage() {
                     />
                     <div className="md:col-span-2 mt-4">
                        <InputGroup
-                         label="Low Stock Alert Threshold"
-                         placeholder="e.g. 5"
+                         label="Alert me when stock is below"
+                         placeholder="e.g. 10"
                          type="number"
                          value={formData.operationalSettings?.lowStockThreshold || ''}
                          onChange={(v: string) => setFormData({
@@ -275,7 +283,7 @@ export default function SettingsPage() {
                            operationalSettings: { ...formData.operationalSettings, lowStockThreshold: parseInt(v) || 0 }
                          })}
                        />
-                       <p className="text-[10px] text-gray-400 font-bold mt-2 uppercase tracking-widest">Products with stock level below this will trigger a dashboard alert.</p>
+                       <p className="text-[10px] text-gray-400 font-bold mt-2 uppercase tracking-widest">Type a number here. We will warn you when items in your store fall below this amount.</p>
                     </div>
                   </div>
                 </div>

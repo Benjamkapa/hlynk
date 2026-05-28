@@ -132,12 +132,12 @@ export default function ProductsPage() {
               className="w-full bg-gray-50 border-none rounded-[.5rem] py-3.5 pl-12 pr-4 outline-none focus:ring-2 focus:ring-emerald-500/10 transition-all text-sm font-medium" 
             />
           </div>
-          <div className="flex items-center gap-2 bg-gray-50 p-1.5 rounded-[.5rem] border border-gray-100">
+          <div className="flex items-center gap-2 bg-gray-50 p-1.5 rounded-[.5rem] border border-gray-100 pr-2">
              <Filter className="ml-2 text-slate-400" size={14} />
              <select 
                value={category}
                onChange={(e) => { setCategory(e.target.value); setPage(1); }}
-               className="bg-transparent border-none outline-none text-[10px] font-black uppercase tracking-widest text-slate-600 px-2 cursor-pointer"
+               className="hl-select !bg-transparent !border-none !py-0 !px-1 !pr-6 !h-auto !ring-0 text-[10px] font-black uppercase tracking-widest text-slate-600 cursor-pointer"
              >
                <option value="">All Categories</option>
                {['Groceries', 'Bakery', 'Dairy', 'Hardware', 'Electronics', 'Clothing', 'Services', 'Other'].map(c => (
@@ -430,7 +430,7 @@ function ProductForm({ onClose }: { onClose: () => void }) {
         <select 
           value={form.category}
           onChange={(e) => setForm({ ...form, category: e.target.value })}
-          className="w-full bg-slate-50 border-none rounded-xl py-4 px-4 outline-none focus:ring-4 focus:ring-emerald-500/5 transition-all font-bold appearance-none text-sm"
+          className="hl-select"
         >
            {['Groceries', 'Bakery', 'Dairy', 'Hardware', 'Electronics', 'Clothing', 'Services', 'Other'].map(c => (
              <option key={c}>{c}</option>
@@ -594,7 +594,7 @@ function EditProductForm({ product, onClose }: { product: any; onClose: () => vo
         <select 
           value={form.category}
           onChange={(e) => setForm({ ...form, category: e.target.value })}
-          className="w-full bg-slate-50 border-none rounded-[.5rem] py-4 px-4 outline-none focus:ring-4 focus:ring-emerald-500/5 transition-all font-bold appearance-none text-sm"
+          className="hl-select"
         >
            {['Groceries', 'Bakery', 'Dairy', 'Hardware', 'Electronics', 'Clothing', 'Services', 'Other'].map(c => (
              <option key={c}>{c}</option>
