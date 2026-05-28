@@ -33,7 +33,7 @@ export default function ProviderLayout() {
   const [isCollapsed, setIsCollapsed] = useState(true);
   const [isHovered, setIsHovered] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [reviewRating, setReviewRating] = useState(0);
   const [reviewText, setReviewText] = useState("");
@@ -52,11 +52,11 @@ export default function ProviderLayout() {
     const resetTimer = () => {
       if (timer) clearTimeout(timer);
       timer = setTimeout(() => {
-        setIsSidebarOpen(false);
+        setIsMobileExpanded(false); // Collapse on inactivity instead of closing completely
       }, 300000);
     };
 
-    if (isSidebarOpen) {
+    if (isMobileExpanded) {
       resetTimer();
       window.addEventListener('mousemove', resetTimer);
       window.addEventListener('keydown', resetTimer);
@@ -69,7 +69,7 @@ export default function ProviderLayout() {
       window.removeEventListener('keydown', resetTimer);
       window.removeEventListener('click', resetTimer);
     };
-  }, [isSidebarOpen]);
+  }, [isMobileExpanded]);
 
   // Ensure sidebar is open on window resize to desktop
   useEffect(() => {
@@ -81,7 +81,7 @@ export default function ProviderLayout() {
   }, []);
 
   useEffect(() => {
-    setIsMobileOpen(false);
+    setIsMobileExpanded(false);
   }, [location.pathname]);
 
   const navGroups: NavGroup[] = [
@@ -415,20 +415,23 @@ export default function ProviderLayout() {
         onMouseLeave={() => setIsHovered(false)}
         onPanEnd={(_, info) => {
           if (window.innerWidth >= 1024) return;
-          // Swipe Right to Expand
-          if (isCollapsed && !isMobileExpanded && info.offset.x > 40) {
+          const { x: offsetX } = info.offset;
+          const { x: velocityX } = info.velocity;
+
+          // Expand: Swipe Right OR High Velocity Right
+          if (isCollapsed && !isMobileExpanded && (offsetX > 30 || velocityX > 400)) {
             setIsMobileExpanded(true);
           }
-          // Swipe Left to Collapse
-          if (isMobileExpanded && info.offset.x < -40) {
+          // Collapse: Swipe Left OR High Velocity Left
+          if (isMobileExpanded && (offsetX < -30 || velocityX < -400)) {
             setIsMobileExpanded(false);
           }
         }}
         className={`
-          flex flex-col transition-all duration-300
+          flex flex-col transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)]
           fixed inset-y-0 left-0 z-[70] lg:relative lg:translate-x-0
-          ${!isSidebarOpen ? '-translate-x-full opacity-0 w-0' : 'translate-x-0 opacity-100'}
-          ${isCollapsed && !isHovered && !isMobileExpanded ? 'w-[60px] lg:w-[64px]' : 'w-[312px]'}
+          ${!isSidebarOpen ? '-translate-x-full' : 'translate-x-0'}
+          ${isCollapsed && !isHovered && !isMobileExpanded ? 'w-[60px] lg:w-[68px]' : 'w-[300px] lg:w-[312px]'}
         `}
       >
         <div className={`
@@ -441,15 +444,7 @@ export default function ProviderLayout() {
         </div>
       </motion.aside>
 
-      {/* ── LAUNCHER ICON ── */}
-      {!isSidebarOpen && (
-        <button
-          onClick={() => setIsSidebarOpen(true)}
-          className="lg:hidden fixed bottom-8 left-8 z-[100] h-14 w-14 bg-[#0D4A3E] text-white rounded-full flex items-center justify-center shadow-2xl hover:scale-110 active:scale-95 transition-all animate-in zoom-in-0 duration-300 "
-        >
-          <PanelLeftOpen size={24} />
-        </button>
-      )}
+
 
 
       {/* ── MAIN CONTENT ── */}
@@ -477,8 +472,8 @@ export default function ProviderLayout() {
           </div>
         )}
         <TopNav
-          isMobileOpen={isMobileOpen}
-          onMobileMenuToggle={undefined}
+          isMobileOpen={isMobileExpanded}
+          onMobileMenuToggle={() => setIsMobileExpanded(!isMobileExpanded)}
           isCollapsed={isCollapsed}
           onToggleCollapse={() => setIsCollapsed(!isCollapsed)}
           showMail={true}
