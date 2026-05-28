@@ -402,6 +402,14 @@ export default function ProviderLayout() {
 
 
 
+      {/* ── MOBILE BACKDROP ── */}
+      {isMobileExpanded && (
+        <div
+          className="fixed inset-0 z-[65] bg-slate-900/40 backdrop-blur-sm lg:hidden animate-in fade-in duration-300"
+          onClick={() => setIsMobileExpanded(false)}
+        />
+      )}
+
       {/* ── SIDEBAR ── */}
       <motion.aside
         onMouseEnter={() => setIsHovered(true)}
