@@ -308,15 +308,18 @@ export default function ProviderLayout() {
               initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 6 }}
-              className="bg-emerald-900 rounded-[.5rem] p-3 mb-3"
+              className="mb-3"
             >
-              <div className="flex justify-between items-center mb-2">
-                <p className="text-[8px] text-emerald-400 font-black uppercase tracking-widest">
-                  {user?.subscription?.planName === 'MAX' ? 'Business Pro' : user?.subscription?.planName === 'PLUS' ? 'Growth' : 'Starter'} Tier
-                </p>
-                {isCritical && <AlertTriangle size={10} className="text-amber-400 animate-pulse" />}
-              </div>
-              <CountdownTimer expiryDate={targetEndDate} />
+              <Link to="/dashboard/subscription" className="block bg-emerald-900 rounded-[.5rem] p-3 hover:bg-emerald-800 transition-colors shadow-lg relative group">
+                <div className="absolute inset-0 bg-white/0 group-hover:bg-white/5 transition-colors rounded-[.5rem]" />
+                <div className="flex justify-between items-center mb-2">
+                  <p className="text-[8px] text-emerald-400 font-black uppercase tracking-widest">
+                    {user?.subscription?.planName === 'MAX' ? 'Business Pro' : user?.subscription?.planName === 'PLUS' ? 'Growth' : 'Starter'} Tier
+                  </p>
+                  {isCritical && <AlertTriangle size={10} className="text-amber-400 animate-pulse" />}
+                </div>
+                <CountdownTimer expiryDate={targetEndDate} />
+              </Link>
             </motion.div>
           )}
         </AnimatePresence>
@@ -510,6 +513,13 @@ function MobileBottomNav({ user, filteredGroups, targetEndDate, isCritical, isTr
   daysRemaining: number;
 }) {
   const location = useLocation();
+  const [showBanner, setShowBanner] = useState(false);
+
+  useEffect(() => {
+    if (!showBanner) return;
+    const t = setTimeout(() => setShowBanner(false), 5000);
+    return () => clearTimeout(t);
+  }, [showBanner]);
 
   const bottomNavItems = [
     { to: '/dashboard/sales/new', label: 'Sell', icon: Zap, end: false },
@@ -525,53 +535,63 @@ function MobileBottomNav({ user, filteredGroups, targetEndDate, isCritical, isTr
   };
 
   return (
-    <div className="fixed inset-x-0 bottom-0 z-[90] lg:hidden">
+    <div className="fixed inset-x-0 bottom-5 z-[90] lg:hidden px-4 pointer-events-none flex flex-col items-center gap-3">
       {/* Subscription countdown banner */}
-      {targetEndDate && (
-        <div className="bg-[#0D4A3E] px-4 py-2 flex items-center justify-between">
-          <div>
-            <p className="text-[8px] font-black text-emerald-400 uppercase tracking-widest leading-none">
-              {user?.subscription?.planName === 'MAX' ? 'Business Pro' : user?.subscription?.planName === 'PLUS' ? 'Growth' : 'Starter'} Tier
-            </p>
-            <p className="text-[9px] font-medium text-emerald-200 mt-0.5">Your subscription is active</p>
-          </div>
-          <MiniCountdown expiryDate={targetEndDate} />
-        </div>
-      )}
+      <AnimatePresence>
+        {targetEndDate && showBanner && (
+          <motion.div
+            initial={{ opacity: 0, y: 10, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 10, scale: 0.95 }}
+            transition={{ duration: 0.2 }}
+            className="w-[90%] max-w-[360px]"
+          >
+            <Link to="/dashboard/subscription" className="pointer-events-auto bg-[#0D4A3E]/95 backdrop-blur-xl px-4 py-2.5 rounded-[20px] flex items-center justify-between shadow-[0_8px_30px_rgba(13,74,62,0.25)] border border-white/10">
+              <div>
+                <p className="text-[7px] font-black text-emerald-400 uppercase tracking-widest leading-none">
+                  {user?.subscription?.planName === 'MAX' ? 'Business Pro' : user?.subscription?.planName === 'PLUS' ? 'Growth' : 'Starter'}
+                </p>
+                <p className="text-[9px] font-medium text-emerald-200 mt-0.5">Subscription active</p>
+              </div>
+              <MiniCountdown expiryDate={targetEndDate} />
+            </Link>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Tab bar */}
-      <div
-        className="bg-white border-t border-slate-100 flex items-stretch"
-        style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
-      >
-        {bottomNavItems.map((item) => {
-          const active = isActive(item);
-          const isHome = item.label === 'Home';
-          return (
-            <NavLink
-              key={item.label}
-              to={item.to}
-              end={item.end}
-              className="flex-1 flex flex-col items-center justify-center py-2 gap-0.5 relative"
-            >
-              {isHome ? (
-                /* Home gets an elevated pill */
-                <div className={`h-12 w-12 rounded-[.6rem] flex items-center justify-center -mt-5 shadow-xl shadow-slate-900/20 transition-all ${active ? 'bg-[#0D4A3E]' : 'bg-slate-800'}`}>
-                  <item.icon className="w-5 h-5 text-white" />
-                </div>
-              ) : (
-                <div className={`h-9 w-9 flex items-center justify-center rounded-[.5rem] transition-all ${active ? 'bg-emerald-50' : ''}`}>
-                  <item.icon className={`w-[18px] h-[18px] transition-colors ${active ? 'text-[#0D4A3E]' : 'text-slate-400'}`} />
-                </div>
-              )}
-              <span className={`text-[9px] font-black uppercase tracking-wider transition-colors ${
-                isHome ? 'mt-1' : ''
-              } ${active ? 'text-[#0D4A3E]' : 'text-slate-400'}`}>
-                {item.label}
-              </span>
-            </NavLink>
-          );
-        })}
+      <div className="w-full max-w-[360px] pointer-events-auto" style={{ filter: 'drop-shadow(0 10px 25px rgba(0,0,0,0.12))' }}>
+        <div
+          className="w-full bg-white/80 backdrop-blur-2xl flex items-center justify-between px-2 h-14 relative rounded-full border border-white/60"
+          onTouchStart={() => setShowBanner(true)}
+          onMouseEnter={() => setShowBanner(true)}
+        >
+          {bottomNavItems.map((item) => {
+            const active = isActive(item);
+            return (
+              <NavLink
+                key={item.label}
+                to={item.to}
+                end={item.end}
+                className="flex-1 flex flex-col items-center justify-center h-full relative group"
+              >
+                {active ? (
+                  /* Active state: Green circular background with shadow */
+                  <div 
+                    className="h-10 w-10 flex items-center justify-center bg-[#0D4A3E] rounded-full transition-all duration-300 shadow-[0_4px_12px_rgba(13,74,62,0.4)] scale-105"
+                  >
+                    <item.icon className="w-[18px] h-[18px] text-white" strokeWidth={2.5} />
+                  </div>
+                ) : (
+                  /* Inactive state: Greyish circular ring with shadow */
+                  <div className="h-10 w-10 flex items-center justify-center rounded-full bg-slate-50 border border-slate-200/60 shadow-sm transition-all duration-300 group-hover:scale-105 hover:bg-slate-100">
+                    <item.icon className="w-[18px] h-[18px] text-slate-400 group-hover:text-slate-600 transition-colors" strokeWidth={2} />
+                  </div>
+                )}
+              </NavLink>
+            );
+          })}
+        </div>
       </div>
     </div>
   );

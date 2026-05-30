@@ -193,10 +193,68 @@ export default function AdminLayout() {
         // }
         />
 
-        <main className="flex-1 overflow-y-auto px-8 lg:px-12 py-12 bg-slate-50/30">
+        <main className="flex-1 overflow-y-auto px-8 lg:px-12 py-12 bg-slate-50/30 pb-24">
           <Outlet />
         </main>
       </div>
+
+      {/* ── MOBILE BOTTOM NAV ── */}
+      <MobileBottomAdminNav />
     </div>
   )
+}
+
+// ─── Mobile Bottom Navigation ────────────────────────────────────────────────
+function MobileBottomAdminNav() {
+  const location = useLocation();
+
+  const bottomNavItems = [
+    { to: '/admin', label: 'Home', icon: LayoutDashboard, end: true },
+    { to: '/admin/businesses', label: 'Businesses', icon: Briefcase, end: false },
+    { to: '/admin/user-operations', label: 'Users', icon: Users, end: false },
+    { to: '/admin/financials', label: 'Financials', icon: DollarSign, end: false },
+    { to: '/admin/settings', label: 'Settings', icon: Settings, end: false },
+  ];
+
+  const isActive = (item: typeof bottomNavItems[0]) => {
+    if (item.end) return location.pathname === item.to;
+    return location.pathname.startsWith(item.to);
+  };
+
+  return (
+    <div className="fixed inset-x-0 bottom-5 z-[90] lg:hidden px-4 pointer-events-none flex flex-col items-center gap-3">
+      {/* Tab bar */}
+      <div className="w-full max-w-[360px] pointer-events-auto" style={{ filter: 'drop-shadow(0 10px 25px rgba(0,0,0,0.12))' }}>
+        <div
+          className="w-full bg-white/80 backdrop-blur-2xl flex items-center justify-between px-2 h-14 relative rounded-full border border-white/60"
+        >
+          {bottomNavItems.map((item) => {
+            const active = isActive(item);
+            return (
+              <NavLink
+                key={item.label}
+                to={item.to}
+                end={item.end}
+                className="flex-1 flex flex-col items-center justify-center h-full relative group"
+              >
+                {active ? (
+                  /* Active state: Green circular background with shadow */
+                  <div 
+                    className="h-10 w-10 flex items-center justify-center bg-[#0D4A3E] rounded-full transition-all duration-300 shadow-[0_4px_12px_rgba(13,74,62,0.4)] scale-105"
+                  >
+                    <item.icon className="w-[18px] h-[18px] text-white" strokeWidth={2.5} />
+                  </div>
+                ) : (
+                  /* Inactive state: Greyish circular ring with shadow */
+                  <div className="h-10 w-10 flex items-center justify-center rounded-full bg-slate-50 border border-slate-200/60 shadow-sm transition-all duration-300 group-hover:scale-105 hover:bg-slate-100">
+                    <item.icon className="w-[18px] h-[18px] text-slate-400 group-hover:text-slate-600 transition-colors" strokeWidth={2} />
+                  </div>
+                )}
+              </NavLink>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
 }
