@@ -96,7 +96,6 @@ function ReviewPanel() {
 
   if (reviews.length === 0 || !isShowing) return null
 
-  // Desktop-only panel
   return (
     <div className="hidden lg:block">
       <div
@@ -115,7 +114,6 @@ function ReviewPanel() {
   )
 }
 
-// ── Mobile: borderless, runs once through reviews then disappears ─────────────
 function MobileReviewStrip() {
   const [reviews, setReviews] = useState<PlatformReview[]>([])
   const [idx, setIdx] = useState(0)
@@ -128,14 +126,12 @@ function MobileReviewStrip() {
       .catch(console.error)
   }, [])
 
-  // Start showing after a short settle delay
   useEffect(() => {
     if (!reviews.length) return
     const t = setTimeout(() => setVisible(true), 1200)
     return () => clearTimeout(t)
   }, [reviews.length])
 
-  // Advance through reviews one by one, then disappear
   useEffect(() => {
     if (!visible || !reviews.length) return
     const DURATION = 10000
@@ -169,7 +165,6 @@ function MobileReviewStrip() {
             exit={{ opacity: 0, y: -6 }}
             transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
           >
-            {/* Quote */}
             <p style={{
               fontFamily: "'Cormorant Garamond', serif",
               fontSize: 18,
@@ -180,9 +175,8 @@ function MobileReviewStrip() {
               textShadow: '0 1px 6px rgba(0,0,0,0.3)',
               marginBottom: 10,
             }}>
-              “{review.comment}”
+              "{review.comment}"
             </p>
-            {/* Attribution */}
             {review.businessName && (
               <p style={{
                 fontSize: 10,
@@ -195,7 +189,6 @@ function MobileReviewStrip() {
                 — {review.businessName}
               </p>
             )}
-            {/* Progress pills */}
             <div style={{ display: 'flex', gap: 4 }}>
               {reviews.map((_, i) => (
                 <div
@@ -248,7 +241,6 @@ export default function LoginPage() {
     }
   }, [user, requiresRegistration, navigate])
 
-
   const urlParams = new URLSearchParams(window.location.search)
   const requestedPlan = (urlParams.get('plan') as 'LITE' | 'PLUS' | 'MAX') || 'LITE'
 
@@ -293,7 +285,6 @@ export default function LoginPage() {
         .lp-serif { font-family: 'Cormorant Garamond', serif; }
         .lp-sans  { font-family: 'Outfit', sans-serif; }
 
-        /* ── DESKTOP (unchanged) ───────────────────────────────────────────── */
         .lp-page {
           min-height: 100vh;
           width: 100%;
@@ -372,18 +363,31 @@ export default function LoginPage() {
         .lp-btn-submit:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 15px 40px rgba(0,0,0,0.2); }
         .lp-btn-submit:active { transform: translateY(0); }
 
-        /* ── MOBILE OVERRIDE (≤ 1024px) ───────────────────────────────────── */
+        /* ── Desktop: unified auth block so Google button + EULA share the same width ── */
+        .desktop-auth-block {
+          width: 100%;
+          display: flex;
+          flex-direction: column;
+          gap: 0;
+          margin-bottom: 10px;
+        }
+        /* Force the Google Identity iframe/button to stretch full width */
+        .desktop-auth-block > .google-btn-wrap,
+        .desktop-auth-block > .google-btn-wrap > div,
+        .desktop-auth-block > .google-btn-wrap iframe {
+          width: 100% !important;
+          max-width: 100% !important;
+        }
+
         @media (max-width: 1024px) {
           .lp-left { display: none !important; }
 
-          /* Page shows the background image + emerald gradient at the bottom */
           .lp-page {
             padding: 0;
             background: url(${authBg}) center/cover no-repeat fixed;
             background-attachment: scroll;
             align-items: flex-start;
           }
-          /* Frosted-glass dark overlay on top of the image (top ~55%) */
           .lp-page::before {
             content: '';
             position: fixed;
@@ -415,7 +419,6 @@ export default function LoginPage() {
             z-index: 1;
           }
 
-          /* Right panel is transparent — image shows through */
           .lp-right {
             width: 100%;
             padding: 0;
@@ -425,7 +428,6 @@ export default function LoginPage() {
             flex-direction: column;
           }
 
-          /* ── Mobile top nav ── */
           .mob-nav {
             display: flex !important;
             align-items: center;
@@ -433,7 +435,6 @@ export default function LoginPage() {
             padding: 20px 24px 0;
           }
 
-          /* ── Mobile hero text — white text over the image ── */
           .mob-hero {
             padding: 28px 24px 24px;
           }
@@ -454,11 +455,9 @@ export default function LoginPage() {
             line-height: 1.6;
           }
 
-          /* Hide the desktop logo/heading inside lp-right on mobile */
           .lp-right .lp-right-logo { display: none !important; }
           .lp-right .lp-right-heading { display: none !important; }
 
-          /* ── Wave + auth section at bottom ── */
           .mob-wave {
             display: flex !important;
             flex-direction: column;
@@ -468,7 +467,6 @@ export default function LoginPage() {
             position: relative;
           }
 
-          /* Hollow rounded rect peeking above the wave */
           .mob-wave::before {
             content: '';
             position: absolute;
@@ -483,8 +481,6 @@ export default function LoginPage() {
             pointer-events: none;
           }
 
-
-          /* Google button */
           .mob-google-btn {
             display: flex !important;
             width: 100%; height: 54px;
@@ -509,15 +505,16 @@ export default function LoginPage() {
           }
           .mob-google-btn.enabled:active { transform: scale(0.98); }
 
-          /* Hide the desktop auth card and EULA on mobile */
-          .lp-right .desktop-auth-card { display: none !important; }
-          .lp-right .desktop-eula      { display: none !important; }
-          .lp-right .desktop-back-link { display: none !important; }
+          .lp-right .desktop-auth-block { display: none !important; }
+          .lp-right .desktop-eula       { display: none !important; }
+          .lp-right .desktop-back-link  { display: none !important; }
 
-          /* Registration form on mobile — plain white, standard padding */
-          .lp-right .mob-form-wrap {
-            padding: 28px 24px 120px;
+          .lp-right .innerSection {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px);
             flex: 1;
+            border-radius: 1rem;
+            padding: 32px 24px;
           }
         }
 
@@ -541,7 +538,7 @@ export default function LoginPage() {
           animate={{ opacity: 1, y: 0, scale: 1 }}
           transition={{ duration: 0.6, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
         >
-          {/* ── LEFT PANEL (desktop only, completely unchanged) ───────────── */}
+          {/* ── LEFT PANEL (desktop only) ───────────────────────────────── */}
           <div className="lp-left hidden lg:flex">
             <div className="relative z-10 w-full">
               <div className="h-[2px] w-24 bg-white/50 mb-16" />
@@ -604,14 +601,16 @@ export default function LoginPage() {
                     <p className="mob-hero-sub">Your business dashboard is one tap away.</p>
                   </div>
 
-                  {/* Borderless review strip — fades through reviews once then vanishes */}
                   <MobileReviewStrip />
 
-                  {/* Mobile EULA & Google button section */}
+                  {/* Mobile EULA & Google button — unified block */}
                   <div className="flex flex-col mt-auto pb-8 z-10 px-6 gap-4">
+                    {/* EULA */}
                     <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/10 mx-auto max-w-sm w-full">
                       <label className="flex items-start gap-3 cursor-pointer group">
-                        <input type="checkbox" className="mt-1 accent-[#0D4A3E] w-5 h-5 cursor-pointer rounded-md border-white/20 flex-shrink-0 bg-white/20"
+                        <input
+                          type="checkbox"
+                          className="mt-1 accent-[#0D4A3E] w-5 h-5 cursor-pointer rounded-md border-white/20 flex-shrink-0 bg-white/20"
                           checked={acceptedEula}
                           onChange={e => {
                             setAcceptedEula(e.target.checked)
@@ -625,6 +624,7 @@ export default function LoginPage() {
                       </label>
                     </div>
 
+                    {/* Google button — same max-w-sm width as EULA above */}
                     <div className={`mx-auto max-w-sm w-full transition-all duration-300 ${acceptedEula ? 'opacity-100' : 'opacity-50 pointer-events-none grayscale'}`}>
                       <MobileGoogleAuth
                         googleLoading={googleLoading}
@@ -644,7 +644,7 @@ export default function LoginPage() {
                 >
                   <nav className="mob-nav hidden" style={{ display: 'flex' }}>
                     <img src={logo} alt="hlynk" style={{ height: 32, objectFit: 'contain' }} />
-                    <button onClick={() => { setRequiresRegistration(false); setGoogleCredential('') }} style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, fontWeight: 700, color: '#94a3b8', background: 'none', border: 'none', textTransform: 'uppercase', letterSpacing: '0.14em', cursor: 'pointer' }}>
+                    <button onClick={() => { setRequiresRegistration(false); setGoogleCredential('') }} style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, fontWeight: 700, background: 'none', border: 'none', textTransform: 'capitalize', letterSpacing: '0.14em', cursor: 'pointer' }}>
                       <ArrowLeft size={10} /> Back
                     </button>
                   </nav>
@@ -652,10 +652,10 @@ export default function LoginPage() {
                   <div className="mob-form-wrap">
                     <div style={{ marginBottom: 28 }}>
                       <h2 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 40, fontWeight: 400, color: '#111', lineHeight: 1.05, marginBottom: 8 }}>Setup<br /><em style={{ fontStyle: 'italic', fontWeight: 300 }}>Your Shop</em></h2>
-                      <p style={{ fontSize: 13, color: '#94a3b8', fontWeight: 300 }}>Tell us about your biashara to get started.</p>
+                      <p style={{ fontSize: 13, fontWeight: 300 }}>Tell us about your biashara to get started.</p>
                     </div>
 
-                    <form onSubmit={handleRegistrationSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+                    <form onSubmit={handleRegistrationSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 0 }} className='innerSection'>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginBottom: 28 }}>
                         <Field label="Biashara Name" icon={Building2}>
                           <input type="text" value={formData.businessName} onChange={e => setFormData({ ...formData, businessName: e.target.value })} className={inputCls} placeholder="e.g. Mama Mboga Pro" required />
@@ -712,31 +712,52 @@ export default function LoginPage() {
                       <p className="text-[#94a3b8] font-light text-[15px]">Your business dashboard is just one click away.</p>
                     </div>
 
-                    <div className="desktop-auth-card bg-white lg:bg-transparent rounded-[.5rem] lg:rounded-none shadow-[0_2px_20px_rgba(0,0,0,0.07)] lg:shadow-none p-5 lg:p-0 mb-4 lg:mb-0">
-                      <div className={acceptedEula ? 'opacity-100' : 'opacity-80 pointer-events-none grayscale'}>
-                        <GoogleAuthButton text="continue_with" onCredential={handleGoogleAuth} disabled={googleLoading || !acceptedEula} />
+                    {/*
+                      ── FIXED: Single unified container so Google button and EULA
+                         share the exact same width (100% of max-w-[380px] parent).
+                         The old split into desktop-auth-card + desktop-eula siblings
+                         caused the Google iframe to render at its own intrinsic width
+                         while the EULA label stretched to the container full width.
+                    ── */}
+                    <div className="desktop-auth-block">
+                      {/* Google button — wrapper forces full container width */}
+                      <div
+                        className={`google-btn-wrap w-full mb-6 ${acceptedEula ? '' : 'opacity-80 pointer-events-none grayscale'}`}
+                        style={{ width: '100%' }}
+                      >
+                        <GoogleAuthButton
+                          text="continue_with"
+                          onCredential={handleGoogleAuth}
+                          disabled={googleLoading || !acceptedEula}
+                          width={380}
+                        />
                       </div>
-                      <div className="flex items-center gap-4 my-6 lg:my-8">
+
+                      {/* Divider */}
+                      <div className="flex items-center gap-4 mb-6">
                         <div className="h-[1px] flex-1 bg-[#f1f5f9]" />
                         <span className="text-[9px] text-[#cbd5e1] tracking-[0.34em] font-bold uppercase">Biashara Hub</span>
                         <div className="h-[1px] flex-1 bg-[#f1f5f9]" />
                       </div>
-                    </div>
 
-                    <div className="desktop-eula bg-white lg:bg-transparent rounded-[.5rem] lg:rounded-none shadow-[0_2px_20px_rgba(0,0,0,0.07)] lg:shadow-none px-5 py-4 lg:p-0 mb-4 lg:mb-10">
-                      <label className="flex items-start gap-3 cursor-pointer group">
-                        <input type="checkbox" className="mt-1 accent-black w-5 h-5 cursor-pointer rounded-md border-gray-200 flex-shrink-0"
-                          checked={acceptedEula}
-                          onChange={e => {
-                            setAcceptedEula(e.target.checked)
-                            if (e.target.checked) localStorage.setItem('hlynk_eula_accepted', 'true')
-                            else localStorage.removeItem('hlynk_eula_accepted')
-                          }}
-                        />
-                        <span className="text-[12px] px-1 pt-1 leading-relaxed font-light">
-                          I agree to the <a href="/terms-conditions" className="text-black hover:text-emerald-600 underline transition-colors">Terms of Service</a> and <a href="/privacy-policy" className="text-black hover:text-emerald-600 underline transition-colors">Privacy Policy</a>
-                        </span>
-                      </label>
+                      {/* EULA — sits in the same container, naturally matches full width */}
+                      <div className="desktop-eula w-full">
+                        <label className="flex items-start gap-3 cursor-pointer group">
+                          <input
+                            type="checkbox"
+                            className="mt-1 accent-black w-5 h-5 cursor-pointer rounded-md border-gray-200 flex-shrink-0"
+                            checked={acceptedEula}
+                            onChange={e => {
+                              setAcceptedEula(e.target.checked)
+                              if (e.target.checked) localStorage.setItem('hlynk_eula_accepted', 'true')
+                              else localStorage.removeItem('hlynk_eula_accepted')
+                            }}
+                          />
+                          <span className="text-[12px] px-1 pt-1 leading-relaxed font-light">
+                            I agree to the <a href="/terms-conditions" className="text-black hover:text-emerald-600 underline transition-colors">Terms of Service</a> and <a href="/privacy-policy" className="text-black hover:text-emerald-600 underline transition-colors">Privacy Policy</a>
+                          </span>
+                        </label>
+                      </div>
                     </div>
 
                     <a href="/" className="desktop-back-link hidden lg:flex text-right items-center mt-8 cursor-pointer text-black font-normal pl-5 hover:underline">
@@ -797,8 +818,6 @@ export default function LoginPage() {
           </div>
         </motion.div>
       </motion.div>
-
-
     </>
   )
 }
