@@ -159,7 +159,7 @@ function MobileReviewStrip() {
   const review = reviews[idx]
 
   return (
-    <div className="lg:hidden flex-1 flex flex-col justify-center px-6 py-4 min-h-[130px]" style={{ background: 'linear-gradient(to bottom, rgba(0,0,0,0.18) 0%, rgba(0,0,0,0.28) 100%)', backdropFilter: 'blur(2px)' }}>
+    <div className="lg:hidden mx-5 mb-4 mt-auto rounded-3xl flex flex-col justify-center px-6 py-5 min-h-[130px]" style={{ background: 'linear-gradient(to bottom, rgba(0,0,0,0.12) 0%, rgba(0,0,0,0.25) 100%)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.1)' }}>
       <AnimatePresence mode="wait">
         {visible && (
           <motion.div
@@ -593,7 +593,7 @@ export default function LoginPage() {
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                       <img src={logo} alt="hlynk" style={{ height: 32, objectFit: 'contain' }} />
                     </div>
-                    <a href="/" style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, fontWeight: 700, color: '#0c3d2eff', textDecoration: 'none', textTransform: 'uppercase', letterSpacing: '0.14em' }}>
+                    <a href="/" style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, fontWeight: 700, color: '#0c3d2eff', textDecoration: 'none', letterSpacing: '0.14em' }}>
                       <ArrowLeft size={10} /> Website
                     </a>
                   </nav>
@@ -607,12 +607,30 @@ export default function LoginPage() {
                   {/* Borderless review strip — fades through reviews once then vanishes */}
                   <MobileReviewStrip />
 
-                  {/* Wave section — Google button only */}
-                  <div className="mob-wave hidden" style={{ display: 'flex' }}>
-                    <MobileGoogleAuth
-                      googleLoading={googleLoading}
-                      handleGoogleAuth={handleGoogleAuth}
-                    />
+                  {/* Mobile EULA & Google button section */}
+                  <div className="flex flex-col mt-auto pb-8 z-10 px-6 gap-4">
+                    <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/10 mx-auto max-w-sm w-full">
+                      <label className="flex items-start gap-3 cursor-pointer group">
+                        <input type="checkbox" className="mt-1 accent-[#0D4A3E] w-5 h-5 cursor-pointer rounded-md border-white/20 flex-shrink-0 bg-white/20"
+                          checked={acceptedEula}
+                          onChange={e => {
+                            setAcceptedEula(e.target.checked)
+                            if (e.target.checked) localStorage.setItem('hlynk_eula_accepted', 'true')
+                            else localStorage.removeItem('hlynk_eula_accepted')
+                          }}
+                        />
+                        <span className="text-[12px] px-1 pt-1 font-light text-white/90">
+                          I agree to the <a href="/terms-conditions" className="text-white hover:text-emerald-300 font-medium underline transition-colors">Terms of Service</a> and <a href="/privacy-policy" className="text-white hover:text-emerald-300 font-medium underline transition-colors">Privacy Policy</a>
+                        </span>
+                      </label>
+                    </div>
+
+                    <div className={`mx-auto max-w-sm w-full transition-all duration-300 ${acceptedEula ? 'opacity-100' : 'opacity-50 pointer-events-none grayscale'}`}>
+                      <MobileGoogleAuth
+                        googleLoading={googleLoading}
+                        handleGoogleAuth={handleGoogleAuth}
+                      />
+                    </div>
                   </div>
                 </motion.div>
               ) : (
@@ -796,9 +814,10 @@ function MobileGoogleAuth({
   return (
     <GoogleAuthButton
       text="continue_with"
+      variant="pill-right-icon"
       onCredential={handleGoogleAuth}
       disabled={googleLoading}
-      className="mob-google-btn enabled"
+      className=""
     />
   )
 }

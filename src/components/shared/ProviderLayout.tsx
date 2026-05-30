@@ -562,7 +562,7 @@ function MobileBottomNav({ user, filteredGroups, targetEndDate, isCritical, isTr
       {/* Tab bar */}
       <div className="w-full max-w-[360px] pointer-events-auto" style={{ filter: 'drop-shadow(0 10px 25px rgba(0,0,0,0.12))' }}>
         <div
-          className="w-full bg-white/80 backdrop-blur-2xl flex items-center justify-between px-2 h-14 relative rounded-full border border-white/60"
+          className="w-full bg-white/80 backdrop-blur-2xl flex items-center justify-between px-2 py-2 relative rounded-[2.5rem] border border-white/60"
           onTouchStart={() => setShowBanner(true)}
           onMouseEnter={() => setShowBanner(true)}
         >
@@ -573,7 +573,7 @@ function MobileBottomNav({ user, filteredGroups, targetEndDate, isCritical, isTr
                 key={item.label}
                 to={item.to}
                 end={item.end}
-                className="flex-1 flex flex-col items-center justify-center h-full relative group"
+                className="flex-1 flex flex-col items-center justify-center relative group gap-1"
               >
                 {active ? (
                   /* Active state: Green circular background with shadow */
@@ -588,6 +588,9 @@ function MobileBottomNav({ user, filteredGroups, targetEndDate, isCritical, isTr
                     <item.icon className="w-[18px] h-[18px] text-slate-400 group-hover:text-slate-600 transition-colors" strokeWidth={2} />
                   </div>
                 )}
+                <span className={`text-[9px] font-black uppercase tracking-wider transition-colors ${active ? 'text-[#0D4A3E]' : 'text-slate-400 group-hover:text-slate-600'}`}>
+                  {item.label}
+                </span>
               </NavLink>
             );
           })}
@@ -597,24 +600,25 @@ function MobileBottomNav({ user, filteredGroups, targetEndDate, isCritical, isTr
   );
 }
 
-// ─── Mini Countdown (3 segments: d, h, m) ────────────────────────────────────
+// ─── Mini Countdown (4 segments: d, h, m, s) ────────────────────────────────────
 function MiniCountdown({ expiryDate }: { expiryDate: string }) {
   const calc = (d: string) => {
     const dist = new Date(d).getTime() - Date.now();
-    if (dist < 0) return { d: 0, h: 0, m: 0 };
+    if (dist < 0) return { d: 0, h: 0, m: 0, s: 0 };
     return {
       d: Math.floor(dist / 86_400_000),
       h: Math.floor((dist % 86_400_000) / 3_600_000),
       m: Math.floor((dist % 3_600_000) / 60_000),
+      s: Math.floor((dist % 60_000) / 1000),
     };
   };
   const [t, setT] = useState(() => calc(expiryDate));
   useEffect(() => {
     let raf: number;
-    let lastMin = -1;
+    let lastSec = -1;
     const tick = () => {
       const now = calc(expiryDate);
-      if (now.m !== lastMin) { lastMin = now.m; setT(now); }
+      if (now.s !== lastSec) { lastSec = now.s; setT(now); }
       raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
@@ -622,11 +626,11 @@ function MiniCountdown({ expiryDate }: { expiryDate: string }) {
   }, [expiryDate]);
   return (
     <div className="flex gap-1.5">
-      {[{ v: t.d, l: 'd' }, { v: t.h, l: 'h' }, { v: t.m, l: 'm' }].map((seg, i) => (
+      {[{ v: t.d, l: 'd' }, { v: t.h, l: 'h' }, { v: t.m, l: 'm' }, { v: t.s, l: 's' }].map((seg, i) => (
         <div key={i} className="flex items-baseline gap-0.5">
           <span className="text-[13px] font-black text-white leading-none hl-mono">{seg.v.toString().padStart(2, '0')}</span>
           <span className="text-[8px] font-black text-emerald-400 uppercase">{seg.l}</span>
-          {i < 2 && <span className="text-[10px] font-black text-emerald-600 ml-0.5">:</span>}
+          {i < 3 && <span className="text-[10px] font-black text-emerald-600 ml-0.5">:</span>}
         </div>
       ))}
     </div>

@@ -226,7 +226,7 @@ function MobileBottomAdminNav() {
       {/* Tab bar */}
       <div className="w-full max-w-[360px] pointer-events-auto" style={{ filter: 'drop-shadow(0 10px 25px rgba(0,0,0,0.12))' }}>
         <div
-          className="w-full bg-white/80 backdrop-blur-2xl flex items-center justify-between px-2 h-14 relative rounded-full border border-white/60"
+          className="w-full bg-white/80 backdrop-blur-2xl flex items-center justify-between px-2 py-2 relative rounded-[2.5rem] border border-white/60"
         >
           {bottomNavItems.map((item) => {
             const active = isActive(item);
@@ -235,7 +235,7 @@ function MobileBottomAdminNav() {
                 key={item.label}
                 to={item.to}
                 end={item.end}
-                className="flex-1 flex flex-col items-center justify-center h-full relative group"
+                className="flex-1 flex flex-col items-center justify-center relative group gap-1"
               >
                 {active ? (
                   /* Active state: Green circular background with shadow */
@@ -250,6 +250,9 @@ function MobileBottomAdminNav() {
                     <item.icon className="w-[18px] h-[18px] text-slate-400 group-hover:text-slate-600 transition-colors" strokeWidth={2} />
                   </div>
                 )}
+                <span className={`text-[9px] font-black uppercase tracking-wider transition-colors ${active ? 'text-[#0D4A3E]' : 'text-slate-400 group-hover:text-slate-600'}`}>
+                  {item.label}
+                </span>
               </NavLink>
             );
           })}
