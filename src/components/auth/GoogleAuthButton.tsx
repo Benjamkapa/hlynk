@@ -50,11 +50,12 @@ export default function GoogleAuthButton({
       if (!containerRef.current || !window.google?.accounts?.id || cancelled) return
 
       containerRef.current.innerHTML = ''
+      const btnWidth = containerRef.current.getBoundingClientRect().width || 320
       window.google.accounts.id.renderButton(containerRef.current, {
         theme: 'outline',
         size: 'large',
         text,
-        width: 320,
+        width: btnWidth,
       })
     }
 

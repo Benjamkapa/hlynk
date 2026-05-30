@@ -16,12 +16,53 @@ const logo = '/logo.png'
 const authBg = '/img.png'
 
 const COUNTIES = [
-  'Nairobi', 'Mombasa', 'Kwale', 'Kilifi', 'Tana River', 'Lamu', 'Taita/Taveta', 'Garissa',
-  'Wajir', 'Mandera', 'Marsabit', 'Isiolo', 'Meru', 'Tharaka-Nithi', 'Embu', 'Kitui',
-  'Machakos', 'Makueni', 'Nyandarua', 'Nyeri', 'Kirinyaga', "Murang'a", 'Kiambu', 'Turkana',
-  'West Pokot', 'Samburu', 'Trans Nzoia', 'Uasin Gishu', 'Elgeyo/Marakwet', 'Nandi', 'Baringo',
-  'Laikipia', 'Nakuru', 'Narok', 'Kajiado', 'Kericho', 'Bomet', 'Kakamega', 'Vihiga', 'Bungoma',
-  'Busia', 'Siaya', 'Kisumu', 'Homa Bay', 'Migori', 'Kisii', 'Nyamira',
+  'Baringo',
+  'Bomet',
+  'Bungoma',
+  'Busia',
+  'Elgeyo/Marakwet',
+  'Embu',
+  'Garissa',
+  'Homa Bay',
+  'Isiolo',
+  'Kajiado',
+  'Kakamega',
+  'Kericho',
+  'Kiambu',
+  'Kilifi',
+  'Kirinyaga',
+  'Kisii',
+  'Kisumu',
+  'Kitui',
+  'Kwale',
+  'Laikipia',
+  'Lamu',
+  'Machakos',
+  'Makueni',
+  'Mandera',
+  'Marsabit',
+  'Meru',
+  'Migori',
+  'Mombasa',
+  "Murang'a",
+  'Nairobi',
+  'Nakuru',
+  'Nandi',
+  'Narok',
+  'Nyamira',
+  'Nyandarua',
+  'Nyeri',
+  'Samburu',
+  'Siaya',
+  'Taita/Taveta',
+  'Tana River',
+  'Tharaka-Nithi',
+  'Trans Nzoia',
+  'Turkana',
+  'Uasin Gishu',
+  'Vihiga',
+  'Wajir',
+  'West Pokot',
 ]
 
 const CATEGORIES = [
@@ -29,11 +70,111 @@ const CATEGORIES = [
   'Electrical', 'Mechanic', 'Consultancy', 'Tailoring', 'Restaurant', 'Hotel', 'Hospital', 'School', 'College', 'University', 'Other',
 ]
 
-type RegisterFormState = {
-  businessName: string; ownerName: string; phone: string
-  category: string; county: string; location: string; planName: 'LITE' | 'PLUS' | 'MAX'
-  referredBy?: string;
-}
+const CATEGORIES = [
+  // Retail & Commerce
+  'Retail Store',
+  'Wholesale Shop',
+  'Supermarket',
+  'Mini Mart',
+  'Pharmacy',
+  'Agrovet',
+  'Hardware Store',
+  'Electronics Shop',
+  'Mobile Phone Shop',
+  'Fashion & Boutique',
+
+  // Food & Hospitality
+  'Restaurant',
+  'Cafe',
+  'Bakery',
+  'Fast Food',
+  'Hotel',
+  'Guest House',
+  'Lounge & Bar',
+  'Catering Services',
+
+  // Beauty & Personal Care
+  'Barber Shop',
+  'Salon',
+  'Spa & Beauty',
+  'Cosmetics Shop',
+
+  // Professional Services
+  'Consultancy',
+  'Accounting & Tax Services',
+  'Legal Services',
+  'Insurance Agency',
+  'Real Estate Agency',
+  'Marketing Agency',
+  'Cyber Cafe',
+  'Printing & Branding',
+
+  // Technical Services
+  'Electrical Services',
+  'Plumbing Services',
+  'Mechanic Garage',
+  'Car Wash',
+  'Welding & Fabrication',
+  'Construction Services',
+  'Interior Design',
+
+  // Technology
+  'Software Development',
+  'IT Services',
+  'Cyber Security',
+  'Internet Service Provider',
+  'Digital Agency',
+
+  // Education
+  'Daycare',
+  'School',
+  'College',
+  'University',
+  'Training Centre',
+  'Driving School',
+
+  // Health
+  'Hospital',
+  'Clinic',
+  'Dental Clinic',
+  'Optical Clinic',
+  'Veterinary Clinic',
+
+  // Manufacturing
+  'Manufacturing',
+  'Tailoring & Fashion Design',
+  'Furniture Workshop',
+  'Art & Craft Business',
+
+  // Agriculture
+  'Farm',
+  'Dairy Business',
+  'Poultry Farm',
+  'Agricultural Cooperative',
+
+  // Logistics
+  'Transport Services',
+  'Courier Services',
+  'Travel Agency',
+
+  // Financial Services
+  'SACCO',
+  'Microfinance',
+  'Financial Services',
+
+  // Religious & NGOs
+  'Church',
+  'Mosque',
+  'NGO',
+  'Community Organization',
+
+  // Online
+  'E-commerce Business',
+  'Online Business',
+  'Freelancer',
+
+  'Other',
+]
 
 function ReviewCard({ review }: { review: any }) {
   return (
@@ -370,6 +511,14 @@ export default function LoginPage() {
           flex-direction: column;
           gap: 0;
           margin-bottom: 10px;
+        }
+        /* Auth blur styling to match the reviews panel visual */
+        .auth-blur {
+          background: linear-gradient(135deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.01) 100%);
+          backdrop-filter: blur(18px);
+          -webkit-backdrop-filter: blur(18px);
+          border: 1px solid rgba(255,255,255,0.06);
+          box-shadow: inset 0 0 40px rgba(255,255,255,0.03), 0 30px 80px rgba(0,0,0,0.08);
         }
         /* Force the Google Identity iframe/button to stretch full width */
         .desktop-auth-block > .google-btn-wrap,
@@ -720,6 +869,7 @@ export default function LoginPage() {
                          while the EULA label stretched to the container full width.
                     ── */}
                     <div className="desktop-auth-block">
+                      <div className="auth-blur p-6 rounded-2xl">
                       {/* Google button — wrapper forces full container width */}
                       <div
                         className={`google-btn-wrap w-full mb-6 ${acceptedEula ? '' : 'opacity-80 pointer-events-none grayscale'}`}
@@ -729,7 +879,6 @@ export default function LoginPage() {
                           text="continue_with"
                           onCredential={handleGoogleAuth}
                           disabled={googleLoading || !acceptedEula}
-                          width={380}
                         />
                       </div>
 
@@ -758,6 +907,7 @@ export default function LoginPage() {
                           </span>
                         </label>
                       </div>
+                    </div>
                     </div>
 
                     <a href="/" className="desktop-back-link hidden lg:flex text-right items-center mt-8 cursor-pointer text-black font-normal pl-5 hover:underline">
