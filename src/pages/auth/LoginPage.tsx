@@ -66,11 +66,6 @@ const COUNTIES = [
 ]
 
 const CATEGORIES = [
-  'Retail Store', 'Barber & Salon', 'Cleaning Services', 'Plumbing',
-  'Electrical', 'Mechanic', 'Consultancy', 'Tailoring', 'Restaurant', 'Hotel', 'Hospital', 'School', 'College', 'University', 'Other',
-]
-
-const CATEGORIES = [
   // Retail & Commerce
   'Retail Store',
   'Wholesale Shop',
@@ -175,6 +170,12 @@ const CATEGORIES = [
 
   'Other',
 ]
+
+type RegisterFormState = {
+  businessName: string; ownerName: string; phone: string
+  category: string; county: string; location: string; planName: 'LITE' | 'PLUS' | 'MAX'
+  referredBy?: string;
+}
 
 function ReviewCard({ review }: { review: any }) {
   return (
