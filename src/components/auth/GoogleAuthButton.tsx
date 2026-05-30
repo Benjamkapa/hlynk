@@ -5,6 +5,7 @@ import { loadGoogleIdentityScript } from '../../lib/google/identity'
 interface GoogleAuthButtonProps {
   clientId?: string
   disabled?: boolean
+  className?: string
   text?: 'continue_with' | 'signin_with' | 'signup_with'
   onCredential: (credential: string) => Promise<void> | void
 }
@@ -12,6 +13,7 @@ interface GoogleAuthButtonProps {
 export default function GoogleAuthButton({
   clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID,
   disabled = false,
+  className = '',
   text = 'signin_with',
   onCredential,
 }: GoogleAuthButtonProps) {
@@ -108,7 +110,7 @@ export default function GoogleAuthButton({
   const isButtonDisabled = disabled || isLoading || isOffline || !isReady
 
   return (
-    <div className="relative w-full h-[48px] rounded-[12px] group select-none">
+    <div className={`relative w-full h-[48px] rounded-[12px] group select-none ${className}`}>
       {/* Custom styled UI matching the app's look and feel */}
       <div
         className={`absolute inset-0 flex items-center justify-center gap-3 border transition-all
