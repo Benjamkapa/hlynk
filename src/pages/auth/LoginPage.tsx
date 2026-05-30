@@ -16,159 +16,33 @@ const logo = '/logo.png'
 const authBg = '/img.png'
 
 const COUNTIES = [
-  'Baringo',
-  'Bomet',
-  'Bungoma',
-  'Busia',
-  'Elgeyo/Marakwet',
-  'Embu',
-  'Garissa',
-  'Homa Bay',
-  'Isiolo',
-  'Kajiado',
-  'Kakamega',
-  'Kericho',
-  'Kiambu',
-  'Kilifi',
-  'Kirinyaga',
-  'Kisii',
-  'Kisumu',
-  'Kitui',
-  'Kwale',
-  'Laikipia',
-  'Lamu',
-  'Machakos',
-  'Makueni',
-  'Mandera',
-  'Marsabit',
-  'Meru',
-  'Migori',
-  'Mombasa',
-  "Murang'a",
-  'Nairobi',
-  'Nakuru',
-  'Nandi',
-  'Narok',
-  'Nyamira',
-  'Nyandarua',
-  'Nyeri',
-  'Samburu',
-  'Siaya',
-  'Taita/Taveta',
-  'Tana River',
-  'Tharaka-Nithi',
-  'Trans Nzoia',
-  'Turkana',
-  'Uasin Gishu',
-  'Vihiga',
-  'Wajir',
-  'West Pokot',
+  'Baringo', 'Bomet', 'Bungoma', 'Busia', 'Elgeyo/Marakwet', 'Embu', 'Garissa',
+  'Homa Bay', 'Isiolo', 'Kajiado', 'Kakamega', 'Kericho', 'Kiambu', 'Kilifi',
+  'Kirinyaga', 'Kisii', 'Kisumu', 'Kitui', 'Kwale', 'Laikipia', 'Lamu',
+  'Machakos', 'Makueni', 'Mandera', 'Marsabit', 'Meru', 'Migori', 'Mombasa',
+  "Murang'a", 'Nairobi', 'Nakuru', 'Nandi', 'Narok', 'Nyamira', 'Nyandarua',
+  'Nyeri', 'Samburu', 'Siaya', 'Taita/Taveta', 'Tana River', 'Tharaka-Nithi',
+  'Trans Nzoia', 'Turkana', 'Uasin Gishu', 'Vihiga', 'Wajir', 'West Pokot',
 ]
 
 const CATEGORIES = [
-  // Retail & Commerce
-  'Retail Store',
-  'Wholesale Shop',
-  'Supermarket',
-  'Mini Mart',
-  'Pharmacy',
-  'Agrovet',
-  'Hardware Store',
-  'Electronics Shop',
-  'Mobile Phone Shop',
-  'Fashion & Boutique',
-
-  // Food & Hospitality
-  'Restaurant',
-  'Cafe',
-  'Bakery',
-  'Fast Food',
-  'Hotel',
-  'Guest House',
-  'Lounge & Bar',
-  'Catering Services',
-
-  // Beauty & Personal Care
-  'Barber Shop',
-  'Salon',
-  'Spa & Beauty',
-  'Cosmetics Shop',
-
-  // Professional Services
-  'Consultancy',
-  'Accounting & Tax Services',
-  'Legal Services',
-  'Insurance Agency',
-  'Real Estate Agency',
-  'Marketing Agency',
-  'Cyber Cafe',
-  'Printing & Branding',
-
-  // Technical Services
-  'Electrical Services',
-  'Plumbing Services',
-  'Mechanic Garage',
-  'Car Wash',
-  'Welding & Fabrication',
-  'Construction Services',
-  'Interior Design',
-
-  // Technology
-  'Software Development',
-  'IT Services',
-  'Cyber Security',
-  'Internet Service Provider',
-  'Digital Agency',
-
-  // Education
-  'Daycare',
-  'School',
-  'College',
-  'University',
-  'Training Centre',
-  'Driving School',
-
-  // Health
-  'Hospital',
-  'Clinic',
-  'Dental Clinic',
-  'Optical Clinic',
-  'Veterinary Clinic',
-
-  // Manufacturing
-  'Manufacturing',
-  'Tailoring & Fashion Design',
-  'Furniture Workshop',
-  'Art & Craft Business',
-
-  // Agriculture
-  'Farm',
-  'Dairy Business',
-  'Poultry Farm',
-  'Agricultural Cooperative',
-
-  // Logistics
-  'Transport Services',
-  'Courier Services',
-  'Travel Agency',
-
-  // Financial Services
-  'SACCO',
-  'Microfinance',
-  'Financial Services',
-
-  // Religious & NGOs
-  'Church',
-  'Mosque',
-  'NGO',
-  'Community Organization',
-
-  // Online
-  'E-commerce Business',
-  'Online Business',
-  'Freelancer',
-
-  'Other',
+  'Retail Store', 'Wholesale Shop', 'Supermarket', 'Mini Mart', 'Pharmacy',
+  'Agrovet', 'Hardware Store', 'Electronics Shop', 'Mobile Phone Shop', 'Fashion & Boutique',
+  'Restaurant', 'Cafe', 'Bakery', 'Fast Food', 'Hotel', 'Guest House', 'Lounge & Bar', 'Catering Services',
+  'Barber Shop', 'Salon', 'Spa & Beauty', 'Cosmetics Shop',
+  'Consultancy', 'Accounting & Tax Services', 'Legal Services', 'Insurance Agency',
+  'Real Estate Agency', 'Marketing Agency', 'Cyber Cafe', 'Printing & Branding',
+  'Electrical Services', 'Plumbing Services', 'Mechanic Garage', 'Car Wash',
+  'Welding & Fabrication', 'Construction Services', 'Interior Design',
+  'Software Development', 'IT Services', 'Cyber Security', 'Internet Service Provider', 'Digital Agency',
+  'Daycare', 'School', 'College', 'University', 'Training Centre', 'Driving School',
+  'Hospital', 'Clinic', 'Dental Clinic', 'Optical Clinic', 'Veterinary Clinic',
+  'Manufacturing', 'Tailoring & Fashion Design', 'Furniture Workshop', 'Art & Craft Business',
+  'Farm', 'Dairy Business', 'Poultry Farm', 'Agricultural Cooperative',
+  'Transport Services', 'Courier Services', 'Travel Agency',
+  'SACCO', 'Microfinance', 'Financial Services',
+  'Church', 'Mosque', 'NGO', 'Community Organization',
+  'E-commerce Business', 'Online Business', 'Freelancer', 'Other',
 ]
 
 type RegisterFormState = {
@@ -232,7 +106,8 @@ function ReviewPanel() {
         }, 600)
       }, itemDuration)
     }
-    cycleTimeout = setTimeout(startReviewLoop, cycleTime)
+    // Show immediately on desktop instead of waiting 5 minutes for first cycle
+    startReviewLoop()
     return () => { clearInterval(itemInterval); clearTimeout(cycleTimeout) }
   }, [reviews.length, reviews])
 
@@ -256,6 +131,7 @@ function ReviewPanel() {
   )
 }
 
+// Mobile: runs once through reviews then disappears
 function MobileReviewStrip() {
   const [reviews, setReviews] = useState<PlatformReview[]>([])
   const [idx, setIdx] = useState(0)
@@ -297,7 +173,8 @@ function MobileReviewStrip() {
   const review = reviews[idx]
 
   return (
-    <div className="lg:hidden mx-5 mb-4 mt-auto rounded-3xl flex flex-col justify-center px-6 py-5 min-h-[130px]" style={{ background: 'linear-gradient(to bottom, rgba(0,0,0,0.12) 0%, rgba(0,0,0,0.25) 100%)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.1)' }}>
+    <div className="lg:hidden mx-5 mb-4 mt-auto rounded-3xl flex flex-col justify-center px-6 py-5 min-h-[130px]"
+      style={{ background: 'linear-gradient(to bottom, rgba(0,0,0,0.12) 0%, rgba(0,0,0,0.25) 100%)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.1)' }}>
       <AnimatePresence mode="wait">
         {visible && (
           <motion.div
@@ -309,40 +186,28 @@ function MobileReviewStrip() {
           >
             <p style={{
               fontFamily: "'Cormorant Garamond', serif",
-              fontSize: 18,
-              fontWeight: 300,
-              fontStyle: 'italic',
-              color: 'rgba(255,255,255,0.92)',
-              lineHeight: 1.65,
-              textShadow: '0 1px 6px rgba(0,0,0,0.3)',
-              marginBottom: 10,
+              fontSize: 18, fontWeight: 300, fontStyle: 'italic',
+              color: 'rgba(255,255,255,0.92)', lineHeight: 1.65,
+              textShadow: '0 1px 6px rgba(0,0,0,0.3)', marginBottom: 10,
             }}>
               "{review.comment}"
             </p>
             {review.businessName && (
               <p style={{
-                fontSize: 10,
-                fontWeight: 700,
-                color: 'rgba(255,255,255,0.55)',
-                textTransform: 'uppercase',
-                letterSpacing: '0.2em',
-                marginBottom: 14,
+                fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.55)',
+                textTransform: 'uppercase', letterSpacing: '0.2em', marginBottom: 14,
               }}>
                 — {review.businessName}
               </p>
             )}
             <div style={{ display: 'flex', gap: 4 }}>
               {reviews.map((_, i) => (
-                <div
-                  key={i}
-                  style={{
-                    height: 2,
-                    borderRadius: 2,
-                    width: i === idx ? 20 : 4,
-                    background: i === idx ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.25)',
-                    transition: 'all 0.4s ease',
-                  }}
-                />
+                <div key={i} style={{
+                  height: 2, borderRadius: 2,
+                  width: i === idx ? 20 : 4,
+                  background: i === idx ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.25)',
+                  transition: 'all 0.4s ease',
+                }} />
               ))}
             </div>
           </motion.div>
@@ -387,7 +252,8 @@ export default function LoginPage() {
   const requestedPlan = (urlParams.get('plan') as 'LITE' | 'PLUS' | 'MAX') || 'LITE'
 
   const [formData, setFormData] = useState<RegisterFormState>({
-    businessName: '', ownerName: '', phone: '', category: '', county: '', location: '', planName: requestedPlan, referredBy: ''
+    businessName: '', ownerName: '', phone: '', category: '', county: '',
+    location: '', planName: requestedPlan, referredBy: ''
   })
 
   const handleGoogleAuth = async (credential: string) => {
@@ -420,6 +286,8 @@ export default function LoginPage() {
     finally { setFormLoading(false) }
   }
 
+  const eulaWarning = () => toast.warning('Please accept the Terms of Service first.')
+
   return (
     <>
       <style>{`
@@ -428,75 +296,43 @@ export default function LoginPage() {
         .lp-sans  { font-family: 'Outfit', sans-serif; }
 
         .lp-page {
-          min-height: 100vh;
-          width: 100%;
+          min-height: 100vh; width: 100%;
           background-image: url(${authBg});
-          background-size: cover;
-          background-position: center;
+          background-size: cover; background-position: center;
           background-attachment: fixed;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          padding: 20px;
-          box-sizing: border-box;
-          position: relative;
-          overflow-x: hidden;
+          display: flex; align-items: center; justify-content: center;
+          padding: 20px; box-sizing: border-box;
+          position: relative; overflow-x: hidden;
         }
         .lp-container {
-          width: 100%;
-          max-width: 1300px;
-          min-height: 740px;
-          background: white;
-          border-radius: 2rem;
-          display: flex;
-          overflow: hidden;
-          box-shadow: 0 60px 150px rgba(0,0,0,0.8);
-          position: relative;
-          z-index: 10;
+          width: 100%; max-width: 1300px; min-height: 740px;
+          background: white; border-radius: 2rem; display: flex;
+          overflow: hidden; box-shadow: 0 60px 150px rgba(0,0,0,0.8);
+          position: relative; z-index: 10;
         }
         .lp-left {
-          flex: 1;
-          margin: .5em;
-          position: relative;
-          border-radius: 2rem;
-          background-image: url(${authBg});
-          background-size: cover;
-          background-position: center;
-          background-attachment: fixed;
-          display: flex;
-          flex-direction: column;
-          justify-content: space-between;
-          padding: 60px;
-          overflow: hidden;
+          flex: 1; margin: .5em; position: relative; border-radius: 2rem;
+          background-image: url(${authBg}); background-size: cover;
+          background-position: center; background-attachment: fixed;
+          display: flex; flex-direction: column; justify-content: space-between;
+          padding: 60px; overflow: hidden;
         }
         .lp-left::before {
-          content: '';
-          position: absolute;
-          inset: 0;
-          background: linear-gradient(rgba(0,0,0,0.1), rgba(0,0,0,0.5));
-          z-index: 1;
+          content: ''; position: absolute; inset: 0;
+          background: linear-gradient(rgba(0,0,0,0.1), rgba(0,0,0,0.5)); z-index: 1;
         }
         .lp-right {
-          width: 650px;
-          background: white;
-          display: flex;
-          flex-direction: column;
-          justify-content: center;
-          padding: 60px;
-          position: relative;
-          z-index: 10;
+          width: 650px; background: white; display: flex;
+          flex-direction: column; justify-content: center;
+          padding: 60px; position: relative; z-index: 10;
         }
         .lp-title {
           font-family: 'Cormorant Garamond', serif;
           font-size: clamp(48px, 4vw, 72px);
-          line-height: 0.95;
-          font-weight: 500;
-          color: white;
-          margin-bottom: 24px;
+          line-height: 0.95; font-weight: 500; color: white; margin-bottom: 24px;
         }
         .lp-btn-submit {
-          width: 100%; height: 56px;
-          background: #000; color: #fff;
+          width: 100%; height: 56px; background: #000; color: #fff;
           border-radius: 14px; font-weight: 600; font-size: 15px;
           display: flex; align-items: center; justify-content: center; gap: 8px;
           transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
@@ -505,28 +341,44 @@ export default function LoginPage() {
         .lp-btn-submit:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 15px 40px rgba(0,0,0,0.2); }
         .lp-btn-submit:active { transform: translateY(0); }
 
-        /* ── Desktop: unified auth block so Google button + EULA share the same width ── */
-        .desktop-auth-block {
+        /* Shared auth card styling */
+        .auth-card {
           width: 100%;
           display: flex;
           flex-direction: column;
           gap: 0;
           margin-bottom: 10px;
         }
-        /* Auth blur styling to match the reviews panel visual */
         .auth-blur {
           background: linear-gradient(135deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.01) 100%);
-          backdrop-filter: blur(18px);
-          -webkit-backdrop-filter: blur(18px);
+          backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
           border: 1px solid rgba(255,255,255,0.06);
           box-shadow: inset 0 0 40px rgba(255,255,255,0.03), 0 30px 80px rgba(0,0,0,0.08);
         }
-        /* Force the Google Identity iframe/button to stretch full width */
-        .desktop-auth-block > .google-btn-wrap,
-        .desktop-auth-block > .google-btn-wrap > div,
-        .desktop-auth-block > .google-btn-wrap iframe {
+
+        /*
+          .google-btn-wrap — position:relative container used on BOTH mobile and desktop.
+          .google-btn-blocker — transparent absolute overlay that sits on top of the Google
+          iframe when EULA is unchecked. This is required because pointer-events:none on a
+          parent div does NOT propagate into a cross-origin <iframe>'s event loop.
+          The blocker intercepts the click at the host-page DOM level before it reaches the iframe.
+        */
+        .google-btn-wrap {
+          position: relative;
+          width: 100%;
+        }
+        .google-btn-wrap > div,
+        .google-btn-wrap iframe {
           width: 100% !important;
           max-width: 100% !important;
+        }
+        .google-btn-blocker {
+          position: absolute;
+          inset: 0;
+          z-index: 10;
+          cursor: not-allowed;
+          border-radius: 4px;
+          /* transparent — visually invisible, blocks events only */
         }
 
         @media (max-width: 1024px) {
@@ -534,144 +386,59 @@ export default function LoginPage() {
 
           .lp-page {
             padding: 0;
-            background: url(${authBg}) center/cover no-repeat fixed;
+            background: url(${authBg}) center/cover no-repeat;
             background-attachment: scroll;
             align-items: flex-start;
           }
           .lp-page::before {
-            content: '';
-            position: fixed;
-            inset: 0;
+            content: ''; position: fixed; inset: 0;
             background: linear-gradient(
               to bottom,
-              rgba(13, 74, 62, 0.38) 0%,
-              rgba(13, 74, 62, 0.18) 40%,
-              rgba(13, 74, 62, 0.1) 58%,
-              rgba(232, 245, 238, 0.32) 75%,
+              rgba(13, 74, 62, 0.38) 0%, rgba(13, 74, 62, 0.18) 40%,
+              rgba(13, 74, 62, 0.1) 58%, rgba(232, 245, 238, 0.32) 75%,
               rgba(126, 201, 162, 0.92) 100%
             );
-            backdrop-filter: blur(0);
             -webkit-backdrop-filter: blur(2px);
-            pointer-events: none;
-            z-index: 0;
+            pointer-events: none; z-index: 0;
           }
-
           .lp-container {
-            min-height: 100dvh;
-            border-radius: 0;
-            box-shadow: none;
-            background: transparent;
-            width: 100%;
-            flex-direction: column;
-            overflow-y: auto;
-            overflow-x: hidden;
-            position: relative;
-            z-index: 1;
+            min-height: 100dvh; border-radius: 0; box-shadow: none;
+            background: transparent; width: 100%; flex-direction: column;
+            overflow-y: auto; overflow-x: hidden; position: relative; z-index: 1;
           }
-
           .lp-right {
-            width: 100%;
-            padding: 0;
-            background: transparent;
-            justify-content: flex-start;
-            display: flex;
-            flex-direction: column;
+            width: 100%; padding: 0; background: transparent;
+            justify-content: flex-start; display: flex; flex-direction: column;
           }
-
           .mob-nav {
-            display: flex !important;
-            align-items: center;
-            justify-content: space-between;
-            padding: 20px 24px 0;
+            display: flex !important; align-items: center;
+            justify-content: space-between; padding: 20px 24px 0;
           }
-
-          .mob-hero {
-            padding: 28px 24px 24px;
-          }
+          .mob-hero { padding: 28px 24px 24px; }
           .mob-hero-title {
             font-family: 'Cormorant Garamond', serif;
-            font-size: clamp(44px, 12vw, 54px);
-            font-weight: 400;
-            line-height: 1.0;
-            color: #fff;
-            margin-bottom: 8px;
+            font-size: clamp(44px, 12vw, 54px); font-weight: 400;
+            line-height: 1.0; color: #fff; margin-bottom: 8px;
             text-shadow: 0 2px 12px rgba(0,0,0,0.25);
           }
           .mob-hero-title em { font-style: italic; font-weight: 300; }
-          .mob-hero-sub {
-            font-size: 13px;
-            color: rgba(255,255,255,0.8);
-            font-weight: 300;
-            line-height: 1.6;
-          }
+          .mob-hero-sub { font-size: 13px; color: rgba(255,255,255,0.8); font-weight: 300; line-height: 1.6; }
 
-          .lp-right .lp-right-logo { display: none !important; }
+          .lp-right .lp-right-logo    { display: none !important; }
           .lp-right .lp-right-heading { display: none !important; }
-
-          .mob-wave {
-            display: flex !important;
-            flex-direction: column;
-            border-radius: 40% 40% 0 0 / 16% 16% 0 0;
-            padding: 52px 24px 32px;
-            margin-top: auto;
-            position: relative;
-          }
-
-          .mob-wave::before {
-            content: '';
-            position: absolute;
-            top: -46px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 92px;
-            height: 92px;
-            border-radius: 22px;
-            border: 1.5px solid rgba(255,255,255,0.6);
-            background: transparent;
-            pointer-events: none;
-          }
-
-          .mob-google-btn {
-            display: flex !important;
-            width: 100%; height: 54px;
-            border-radius: 50px;
-            background: #fff;
-            border: none;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            font-size: 14.5px;
-            font-weight: 500;
-            color: #1e293b;
-            font-family: 'Outfit', sans-serif;
-            cursor: pointer;
-            transition: transform 0.18s ease;
-            opacity: 0.45;
-            pointer-events: none;
-          }
-          .mob-google-btn.enabled {
-            opacity: 1;
-            pointer-events: auto;
-          }
-          .mob-google-btn.enabled:active { transform: scale(0.98); }
-
-          .lp-right .desktop-auth-block { display: none !important; }
-          .lp-right .desktop-eula       { display: none !important; }
-          .lp-right .desktop-back-link  { display: none !important; }
+          /* Hide desktop-only auth block on mobile */
+          .lp-right .desktop-only     { display: none !important; }
 
           .lp-right .innerSection {
             background: rgba(255, 255, 255, 0.7);
             backdrop-filter: blur(12px);
-            flex: 1;
-            border-radius: 1rem;
-            padding: 32px 24px;
+            flex: 1; border-radius: 1rem; padding: 32px 24px;
           }
         }
 
         @media (max-width: 500px) {
           .mob-hero { padding: 24px 20px 20px; }
-          .mob-wave  { padding: 52px 20px 28px; }
-          .mob-nav   { padding: 18px 20px 0; }
+          .mob-nav  { padding: 18px 20px 0; }
           .lp-right .mob-form-wrap { padding: 24px 20px 100px; }
         }
       `}</style>
@@ -688,7 +455,7 @@ export default function LoginPage() {
           animate={{ opacity: 1, y: 0, scale: 1 }}
           transition={{ duration: 0.6, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
         >
-          {/* ── LEFT PANEL (desktop only) ───────────────────────────────── */}
+          {/* ── LEFT PANEL (desktop only) ────────────────────────────────────── */}
           <div className="lp-left hidden lg:flex">
             <div className="relative z-10 w-full">
               <div className="h-[2px] w-24 bg-white/50 mb-16" />
@@ -706,7 +473,7 @@ export default function LoginPage() {
                   'Instant Setup, No Fees to Start',
                 ].map((item) => (
                   <div key={item} className="flex items-center gap-4 text-white group">
-                    <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-content:center group-hover:bg-white/40 transition-colors">
+                    <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center group-hover:bg-white/40 transition-colors">
                       <Check size={14} strokeWidth={3} />
                     </div>
                     <span className="text-[15px] font-semibold tracking-wide">{item}</span>
@@ -714,25 +481,22 @@ export default function LoginPage() {
                 ))}
               </div>
             </div>
+            {/* ReviewPanel now always starts immediately */}
             <div className="relative z-10 w-full max-w-[340px]">
               <ReviewPanel />
             </div>
           </div>
 
-          {/* ── RIGHT PANEL ───────────────────────────────────────────────── */}
+          {/* ── RIGHT PANEL ──────────────────────────────────────────────────── */}
           <div className="lp-right">
 
-            {/* ════════════════════════════════════════════════
-                MOBILE-ONLY STRUCTURE (hidden on lg+)
-            ════════════════════════════════════════════════ */}
+            {/* ═══════════════ MOBILE (hidden on lg+) ════════════════════════ */}
             <AnimatePresence mode="wait">
               {!requiresRegistration ? (
                 <motion.div
                   key="mob-login"
                   className="flex flex-col min-h-[100dvh] lg:hidden"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
+                  initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                   transition={{ duration: 0.3 }}
                 >
                   {/* Nav */}
@@ -753,10 +517,14 @@ export default function LoginPage() {
 
                   <MobileReviewStrip />
 
-                  {/* Mobile EULA & Google button — unified block */}
+                  {/* ── Mobile EULA + Google button ─────────────────────────
+                      Both use .google-btn-wrap + .google-btn-blocker pattern,
+                      identical to desktop, to physically block the iframe.
+                  ─────────────────────────────────────────────────────────── */}
                   <div className="flex flex-col mt-auto pb-8 z-10 px-6 gap-4">
-                    {/* EULA */}
-                    <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/10 mx-auto max-w-sm w-full">
+
+                    {/* EULA card */}
+                    <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/10 w-full">
                       <label className="flex items-start gap-3 cursor-pointer group">
                         <input
                           type="checkbox"
@@ -769,43 +537,52 @@ export default function LoginPage() {
                           }}
                         />
                         <span className="text-[12px] px-1 pt-1 font-light text-white/90">
-                          I agree to the <a href="/terms-conditions" className="text-white hover:text-emerald-300 font-medium underline transition-colors">Terms of Service</a> and <a href="/privacy-policy" className="text-white hover:text-emerald-300 font-medium underline transition-colors">Privacy Policy</a>
+                          I agree to the{' '}
+                          <a href="/terms-conditions" className="text-white hover:text-emerald-300 font-medium underline transition-colors">Terms of Service</a>
+                          {' '}and{' '}
+                          <a href="/privacy-policy" className="text-white hover:text-emerald-300 font-medium underline transition-colors">Privacy Policy</a>
                         </span>
                       </label>
                     </div>
 
-                    {/* Google button — same max-w-sm width as EULA above */}
-                    <div className={`mx-auto max-w-sm w-full transition-all duration-300 ${acceptedEula ? 'opacity-100' : 'opacity-50 pointer-events-none grayscale'}`}>
-                      <MobileGoogleAuth
-                        googleLoading={googleLoading}
-                        handleGoogleAuth={handleGoogleAuth}
-                      />
+                    {/* Google button — blocker overlay when EULA unchecked */}
+                    <div className={`w-full transition-all duration-300 ${!acceptedEula ? 'opacity-40 grayscale' : 'opacity-100'}`}>
+                      <div className="google-btn-wrap">
+                        {!acceptedEula && (
+                          <div className="google-btn-blocker" onClick={eulaWarning} />
+                        )}
+                        <MobileGoogleAuth googleLoading={googleLoading} handleGoogleAuth={handleGoogleAuth} />
+                      </div>
                     </div>
+
                   </div>
                 </motion.div>
               ) : (
                 <motion.div
                   key="mob-register"
                   className="flex flex-col min-h-[100dvh] lg:hidden"
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
+                  initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
                   transition={{ duration: 0.35 }}
                 >
                   <nav className="mob-nav hidden" style={{ display: 'flex' }}>
                     <img src={logo} alt="hlynk" style={{ height: 32, objectFit: 'contain' }} />
-                    <button onClick={() => { setRequiresRegistration(false); setGoogleCredential('') }} style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, fontWeight: 700, background: 'none', border: 'none', textTransform: 'capitalize', letterSpacing: '0.14em', cursor: 'pointer' }}>
+                    <button
+                      onClick={() => { setRequiresRegistration(false); setGoogleCredential('') }}
+                      style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, fontWeight: 700, background: 'none', border: 'none', textTransform: 'capitalize', letterSpacing: '0.14em', cursor: 'pointer' }}
+                    >
                       <ArrowLeft size={10} /> Back
                     </button>
                   </nav>
 
                   <div className="mob-form-wrap">
                     <div style={{ marginBottom: 28 }}>
-                      <h2 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 40, fontWeight: 400, color: '#111', lineHeight: 1.05, marginBottom: 8 }}>Setup<br /><em style={{ fontStyle: 'italic', fontWeight: 300 }}>Your Shop</em></h2>
+                      <h2 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 40, fontWeight: 400, color: '#111', lineHeight: 1.05, marginBottom: 8 }}>
+                        Setup<br /><em style={{ fontStyle: 'italic', fontWeight: 300 }}>Your Shop</em>
+                      </h2>
                       <p style={{ fontSize: 13, fontWeight: 300 }}>Tell us about your biashara to get started.</p>
                     </div>
 
-                    <form onSubmit={handleRegistrationSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 0 }} className='innerSection'>
+                    <form onSubmit={handleRegistrationSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 0 }} className="innerSection">
                       <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginBottom: 28 }}>
                         <Field label="Biashara Name" icon={Building2}>
                           <input type="text" value={formData.businessName} onChange={e => setFormData({ ...formData, businessName: e.target.value })} className={inputCls} placeholder="e.g. Mama Mboga Pro" required />
@@ -840,9 +617,7 @@ export default function LoginPage() {
               )}
             </AnimatePresence>
 
-            {/* ════════════════════════════════════════════════
-                DESKTOP-ONLY STRUCTURE (hidden on mobile)
-            ════════════════════════════════════════════════ */}
+            {/* ═══════════════ DESKTOP (hidden on mobile) ════════════════════ */}
             <div className="hidden lg:flex w-full max-w-[380px] mx-auto flex-col h-full">
               <div className="lp-right-logo flex justify-center mb-12">
                 <img src={logo} alt="hlynk" className="h-12 object-contain" />
@@ -852,9 +627,7 @@ export default function LoginPage() {
                 {!requiresRegistration ? (
                   <motion.div
                     key="desktop-login"
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -20 }}
+                    initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
                     transition={{ duration: 0.35 }}
                   >
                     <div className="lp-right-heading text-center mb-10">
@@ -862,36 +635,29 @@ export default function LoginPage() {
                       <p className="text-[#94a3b8] font-light text-[15px]">Your business dashboard is just one click away.</p>
                     </div>
 
-                    {/*
-                      ── FIXED: Single unified container so Google button and EULA
-                         share the exact same width (100% of max-w-[380px] parent).
-                         The old split into desktop-auth-card + desktop-eula siblings
-                         caused the Google iframe to render at its own intrinsic width
-                         while the EULA label stretched to the container full width.
-                    ── */}
-                    <div className="desktop-auth-block">
+                    <div className="auth-card desktop-only">
                       <div className="auth-blur p-6 rounded-2xl">
-                      {/* Google button — wrapper forces full container width */}
-                      <div
-                        className={`google-btn-wrap w-full mb-6 ${acceptedEula ? '' : 'opacity-80 pointer-events-none grayscale'}`}
-                        style={{ width: '100%' }}
-                      >
-                        <GoogleAuthButton
-                          text="continue_with"
-                          onCredential={handleGoogleAuth}
-                          disabled={googleLoading || !acceptedEula}
-                        />
-                      </div>
 
-                      {/* Divider */}
-                      <div className="flex items-center gap-4 mb-6">
-                        <div className="h-[1px] flex-1 bg-[#f1f5f9]" />
-                        <span className="text-[9px] text-[#cbd5e1] tracking-[0.34em] font-bold uppercase">Biashara Hub</span>
-                        <div className="h-[1px] flex-1 bg-[#f1f5f9]" />
-                      </div>
+                        {/* Google button — blocker overlay when EULA unchecked */}
+                        <div className={`google-btn-wrap mb-6 transition-all duration-300 ${!acceptedEula ? 'opacity-50 grayscale' : ''}`}>
+                          {!acceptedEula && (
+                            <div className="google-btn-blocker" onClick={eulaWarning} />
+                          )}
+                          <GoogleAuthButton
+                            text="continue_with"
+                            onCredential={handleGoogleAuth}
+                            disabled={googleLoading || !acceptedEula}
+                          />
+                        </div>
 
-                      {/* EULA — sits in the same container, naturally matches full width */}
-                      <div className="desktop-eula w-full">
+                        {/* Divider */}
+                        <div className="flex items-center gap-4 mb-6">
+                          <div className="h-[1px] flex-1 bg-[#f1f5f9]" />
+                          <span className="text-[9px] text-[#cbd5e1] tracking-[0.34em] font-bold uppercase">Biashara Hub</span>
+                          <div className="h-[1px] flex-1 bg-[#f1f5f9]" />
+                        </div>
+
+                        {/* EULA */}
                         <label className="flex items-start gap-3 cursor-pointer group">
                           <input
                             type="checkbox"
@@ -904,14 +670,17 @@ export default function LoginPage() {
                             }}
                           />
                           <span className="text-[12px] px-1 pt-1 leading-relaxed font-light">
-                            I agree to the <a href="/terms-conditions" className="text-black hover:text-emerald-600 underline transition-colors">Terms of Service</a> and <a href="/privacy-policy" className="text-black hover:text-emerald-600 underline transition-colors">Privacy Policy</a>
+                            I agree to the{' '}
+                            <a href="/terms-conditions" className="text-black hover:text-emerald-600 underline transition-colors">Terms of Service</a>
+                            {' '}and{' '}
+                            <a href="/privacy-policy" className="text-black hover:text-emerald-600 underline transition-colors">Privacy Policy</a>
                           </span>
                         </label>
+
                       </div>
                     </div>
-                    </div>
 
-                    <a href="/" className="desktop-back-link hidden lg:flex text-right items-center mt-8 cursor-pointer text-black font-normal pl-5 hover:underline">
+                    <a href="/" className="hidden lg:flex items-center mt-8 cursor-pointer text-black font-normal pl-5 hover:underline">
                       <ArrowLeft size={12} className="mr-2" />
                       Back to Website
                     </a>
@@ -919,9 +688,7 @@ export default function LoginPage() {
                 ) : (
                   <motion.div
                     key="desktop-register"
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -20 }}
+                    initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
                     transition={{ duration: 0.35 }}
                   >
                     <form onSubmit={handleRegistrationSubmit} className="flex flex-col h-full">
@@ -973,7 +740,6 @@ export default function LoginPage() {
   )
 }
 
-/* ── Extracted mobile auth section (Google button only) ───────────────────── */
 function MobileGoogleAuth({
   googleLoading,
   handleGoogleAuth,
