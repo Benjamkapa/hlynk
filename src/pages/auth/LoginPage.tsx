@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   Building2, MapPin, Phone, Tag,
-  Loader2, Check, ShieldCheck, Lock, Sparkles, ArrowLeft, X
+  Loader2, Check, ArrowLeft,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { authApi } from '../../lib/api/auth'
@@ -10,9 +10,6 @@ import { useAuth } from '../../lib/auth/AuthContext'
 import { getErrorMessage } from '../../lib/utils/error'
 import GoogleAuthButton from '../../components/auth/GoogleAuthButton'
 import { platformApi, type PlatformReview } from '../../lib/api/platform'
-import StarRating from '../../components/shared/StarRating'
-import { FadeUp } from '../../components/landing/Animations'
-import { Link } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 
 const logo = '/logo.png'
@@ -58,24 +55,17 @@ function ReviewPanel() {
   const [idx, setIdx] = useState(0)
   const [isShowing, setIsShowing] = useState(false)
   const [visible, setVisible] = useState(true)
-  const [mounted, setMounted] = useState(false)
 
-  // Initial Fetch
   useEffect(() => {
     platformApi.getReviews({ limit: 10 })
-      .then(res => {
-        if (res.items?.length) setReviews(res.items)
-      })
+      .then(res => { if (res.items?.length) setReviews(res.items) })
       .catch(console.error)
   }, [])
 
-  // 5 Minute Interval Logic
   useEffect(() => {
     if (!reviews.length) return
-
-    const cycleTime = 1000 * 60 * 5 // 5 minutes
-    const itemDuration = 8000 // 8s per review
-
+    const cycleTime = 1000 * 60 * 5
+    const itemDuration = 8000
     let currentIdx = 0
     let itemInterval: any
     let cycleTimeout: any
@@ -85,15 +75,12 @@ function ReviewPanel() {
       currentIdx = 0
       setIdx(0)
       setVisible(true)
-
       itemInterval = setInterval(() => {
         setVisible(false)
         setTimeout(() => {
           if (currentIdx >= reviews.length - 1) {
-            // Cycle finished
             clearInterval(itemInterval)
             setIsShowing(false)
-            // Schedule next cycle
             cycleTimeout = setTimeout(startReviewLoop, cycleTime)
           } else {
             currentIdx++
@@ -103,88 +90,130 @@ function ReviewPanel() {
         }, 600)
       }, itemDuration)
     }
-
-    // First cycle after 5 minutes
     cycleTimeout = setTimeout(startReviewLoop, cycleTime)
-
-    return () => {
-      clearInterval(itemInterval)
-      clearTimeout(cycleTimeout)
-    }
+    return () => { clearInterval(itemInterval); clearTimeout(cycleTimeout) }
   }, [reviews.length, reviews])
 
   if (reviews.length === 0 || !isShowing) return null
 
-  const DesktopPanel = (
-    <div 
-      className={`
-        bg-white/5 backdrop-blur-[20px] border border-white/10 
-        rounded-br-[.5rem] rounded-tl-[.5rem] rounded-tr-[.5rem] rounded-bl-[1.5rem] 
-        p-8 shadow-[0_30px_100px_rgba(0,0,0,0.3)] 
-        transition-all duration-1000 animate-in fade-in slide-in-from-bottom-4
-      `}
-      style={{
-        boxShadow: 'inset 0 0 40px rgba(255,255,255,0.05)',
-        background: 'linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 100%)'
-      }}
-    >
-      <div className="flex items-center gap-3 mb-6">
-        <span className="text-[8px] tracking-[0.4em] uppercase font-black text-white/30">Community</span>
-        <div className="h-[1px] flex-1 bg-white/5" />
-      </div>
-      <div style={{ opacity: visible ? 1 : 0, transition: 'opacity 0.6s ease' }}>
-        <ReviewCard review={reviews[idx]} />
+  // Desktop-only panel
+  return (
+    <div className="hidden lg:block">
+      <div
+        className="bg-white/5 backdrop-blur-[20px] border border-white/10 rounded-br-[.5rem] rounded-tl-[.5rem] rounded-tr-[.5rem] rounded-bl-[1.5rem] p-8 shadow-[0_30px_100px_rgba(0,0,0,0.3)] transition-all duration-1000 animate-in fade-in slide-in-from-bottom-4"
+        style={{ boxShadow: 'inset 0 0 40px rgba(255,255,255,0.05)', background: 'linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 100%)' }}
+      >
+        <div className="flex items-center gap-3 mb-6">
+          <span className="text-[8px] tracking-[0.4em] uppercase font-black text-white/30">Community</span>
+          <div className="h-[1px] flex-1 bg-white/5" />
+        </div>
+        <div style={{ opacity: visible ? 1 : 0, transition: 'opacity 0.6s ease' }}>
+          <ReviewCard review={reviews[idx]} />
+        </div>
       </div>
     </div>
   )
+}
 
-  const MobileWidget = (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.8, x: -20 }}
-      animate={{ opacity: 1, scale: 1, x: 0 }}
-      exit={{ opacity: 0, scale: 0.8, x: -20 }}
-      className="lg:hidden fixed bottom-6 left-6 z-[100] w-[calc(100%-48px)] max-w-[320px] bg-black/60 backdrop-blur-md border border-white/10 rounded-[1.5rem] p-6 shadow-2xl overflow-hidden"
-    >
-      <div 
-        className="absolute inset-0 opacity-20 pointer-events-none"
-        style={{ background: 'linear-gradient(135deg, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0) 100%)' }}
-      />
-      
-      <button 
-        onClick={() => setIsShowing(false)}
-        className="absolute top-4 right-4 h-6 w-6 rounded-full bg-white/5 flex items-center justify-center text-white/40 hover:text-white transition-all border border-white/5"
-      >
-        <X size={12} />
-      </button>
+// ── Mobile: borderless, runs once through reviews then disappears ─────────────
+function MobileReviewStrip() {
+  const [reviews, setReviews] = useState<PlatformReview[]>([])
+  const [idx, setIdx] = useState(0)
+  const [visible, setVisible] = useState(false)
+  const [done, setDone] = useState(false)
 
-      <div className="flex items-center gap-3 mb-4 relative z-10">
-        <div className="h-1.5 w-1.5 rounded-full bg-white/40 animate-pulse" />
-        <span className="text-[9px] tracking-[0.3em] uppercase font-black text-white/40">Community</span>
-      </div>
+  useEffect(() => {
+    platformApi.getReviews({ limit: 10 })
+      .then(res => { if (res.items?.length) setReviews(res.items) })
+      .catch(console.error)
+  }, [])
 
-      <div className="relative z-10 transition-opacity duration-500" style={{ opacity: visible ? 1 : 0 }}>
-        <ReviewCard review={reviews[idx]} />
-      </div>
+  // Start showing after a short settle delay
+  useEffect(() => {
+    if (!reviews.length) return
+    const t = setTimeout(() => setVisible(true), 1200)
+    return () => clearTimeout(t)
+  }, [reviews.length])
 
-      <div className="mt-6 flex justify-between items-center relative z-10">
-        <div className="flex gap-1">
-          {reviews.slice(0, 5).map((_, i) => (
-            <div key={i} className={`h-0.5 rounded-full transition-all duration-500 ${i === idx % 5 ? 'w-3 bg-white' : 'w-0.5 bg-white/10'}`} />
-          ))}
-        </div>
-      </div>
-    </motion.div>
-  )
+  // Advance through reviews one by one, then disappear
+  useEffect(() => {
+    if (!visible || !reviews.length) return
+    const DURATION = 10000
+    const FADE = 500
+    const t = setTimeout(() => {
+      setVisible(false)
+      setTimeout(() => {
+        if (idx >= reviews.length - 1) {
+          setDone(true)
+        } else {
+          setIdx(i => i + 1)
+          setVisible(true)
+        }
+      }, FADE)
+    }, DURATION)
+    return () => clearTimeout(t)
+  }, [visible, idx, reviews.length])
+
+  if (!reviews.length || done) return null
+
+  const review = reviews[idx]
 
   return (
-    <>
-      <div className="hidden lg:block">
-        {DesktopPanel}
-      </div>
-      <div className="lg:hidden">
-        {MobileWidget}
-      </div>
-    </>
+    <div className="lg:hidden flex-1 flex flex-col justify-center px-6 py-4 min-h-[130px]" style={{ background: 'linear-gradient(to bottom, rgba(0,0,0,0.18) 0%, rgba(0,0,0,0.28) 100%)', backdropFilter: 'blur(2px)' }}>
+      <AnimatePresence mode="wait">
+        {visible && (
+          <motion.div
+            key={idx}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -6 }}
+            transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+          >
+            {/* Quote */}
+            <p style={{
+              fontFamily: "'Cormorant Garamond', serif",
+              fontSize: 18,
+              fontWeight: 300,
+              fontStyle: 'italic',
+              color: 'rgba(255,255,255,0.92)',
+              lineHeight: 1.65,
+              textShadow: '0 1px 6px rgba(0,0,0,0.3)',
+              marginBottom: 10,
+            }}>
+              “{review.comment}”
+            </p>
+            {/* Attribution */}
+            {review.businessName && (
+              <p style={{
+                fontSize: 10,
+                fontWeight: 700,
+                color: 'rgba(255,255,255,0.55)',
+                textTransform: 'uppercase',
+                letterSpacing: '0.2em',
+                marginBottom: 14,
+              }}>
+                — {review.businessName}
+              </p>
+            )}
+            {/* Progress pills */}
+            <div style={{ display: 'flex', gap: 4 }}>
+              {reviews.map((_, i) => (
+                <div
+                  key={i}
+                  style={{
+                    height: 2,
+                    borderRadius: 2,
+                    width: i === idx ? 20 : 4,
+                    background: i === idx ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.25)',
+                    transition: 'all 0.4s ease',
+                  }}
+                />
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
   )
 }
 
@@ -211,25 +240,17 @@ export default function LoginPage() {
   const [formLoading, setFormLoading] = useState(false)
   const [requiresRegistration, setRequiresRegistration] = useState(false)
   const [googleCredential, setGoogleCredential] = useState('')
-  const [googleProfile, setGoogleProfile] = useState<{ email: string; name: string; picture: string } | null>(null)
   const [acceptedEula, setAcceptedEula] = useState(() => localStorage.getItem('hlynk_eula_accepted') === 'true')
-  const [platformStats, setPlatformStats] = useState({ totalBusinesses: 1000, averageRating: 4.9 })
 
-  // Auto-redirect if already logged in
   useEffect(() => {
     if (user && !requiresRegistration) {
       navigate(user.role === 'SUPER_ADMIN' ? '/admin' : '/dashboard', { replace: true })
     }
   }, [user, requiresRegistration, navigate])
 
-  useEffect(() => {
-    platformApi.getStats()
-      .then(res => res && res.success && res.data && setPlatformStats(res.data))
-      .catch(() => { })
-  }, [])
 
-  const urlParams = new URLSearchParams(window.location.search);
-  const requestedPlan = (urlParams.get('plan') as 'LITE' | 'PLUS' | 'MAX') || 'LITE';
+  const urlParams = new URLSearchParams(window.location.search)
+  const requestedPlan = (urlParams.get('plan') as 'LITE' | 'PLUS' | 'MAX') || 'LITE'
 
   const [formData, setFormData] = useState<RegisterFormState>({
     businessName: '', ownerName: '', phone: '', category: '', county: '', location: '', planName: requestedPlan, referredBy: ''
@@ -241,7 +262,6 @@ export default function LoginPage() {
       const res = await authApi.googleAuth({ credential })
       if (res.data.action === 'REQUIRES_REGISTRATION') {
         setGoogleCredential(credential)
-        setGoogleProfile(res.data.googleDetails)
         setFormData(f => ({ ...f, ownerName: res.data.googleDetails.name || '' }))
         setRequiresRegistration(true)
         toast.info('Google account verified. Setup your business profile.')
@@ -271,8 +291,9 @@ export default function LoginPage() {
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Outfit:wght@300;400;500;600&display=swap');
         .lp-serif { font-family: 'Cormorant Garamond', serif; }
-        .lp-sans { font-family: 'Outfit', sans-serif; }
+        .lp-sans  { font-family: 'Outfit', sans-serif; }
 
+        /* ── DESKTOP (unchanged) ───────────────────────────────────────────── */
         .lp-page {
           min-height: 100vh;
           width: 100%;
@@ -288,7 +309,6 @@ export default function LoginPage() {
           position: relative;
           overflow-x: hidden;
         }
-
         .lp-container {
           width: 100%;
           max-width: 1300px;
@@ -301,7 +321,6 @@ export default function LoginPage() {
           position: relative;
           z-index: 10;
         }
-
         .lp-left {
           flex: 1;
           margin: .5em;
@@ -317,7 +336,6 @@ export default function LoginPage() {
           padding: 60px;
           overflow: hidden;
         }
-
         .lp-left::before {
           content: '';
           position: absolute;
@@ -325,7 +343,6 @@ export default function LoginPage() {
           background: linear-gradient(rgba(0,0,0,0.1), rgba(0,0,0,0.5));
           z-index: 1;
         }
-
         .lp-right {
           width: 650px;
           background: white;
@@ -336,7 +353,6 @@ export default function LoginPage() {
           position: relative;
           z-index: 10;
         }
-
         .lp-title {
           font-family: 'Cormorant Garamond', serif;
           font-size: clamp(48px, 4vw, 72px);
@@ -345,7 +361,6 @@ export default function LoginPage() {
           color: white;
           margin-bottom: 24px;
         }
-
         .lp-btn-submit {
           width: 100%; height: 56px;
           background: #000; color: #fff;
@@ -357,16 +372,160 @@ export default function LoginPage() {
         .lp-btn-submit:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 15px 40px rgba(0,0,0,0.2); }
         .lp-btn-submit:active { transform: translateY(0); }
 
+        /* ── MOBILE OVERRIDE (≤ 1024px) ───────────────────────────────────── */
         @media (max-width: 1024px) {
-          .lp-left { display: none; }
-          .lp-right { width: 100%; padding: 48px; height: auto; min-height: 600px; }
-          .lp-container { min-height: auto; border-radius: 2rem; flex-direction: column; overflow-y: auto; max-height: 95vh; }
+          .lp-left { display: none !important; }
+
+          /* Page shows the background image + emerald gradient at the bottom */
+          .lp-page {
+            padding: 0;
+            background: url(${authBg}) center/cover no-repeat fixed;
+            background-attachment: scroll;
+            align-items: flex-start;
+          }
+          /* Frosted-glass dark overlay on top of the image (top ~55%) */
+          .lp-page::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background: linear-gradient(
+              to bottom,
+              rgba(13, 74, 62, 0.38) 0%,
+              rgba(13, 74, 62, 0.18) 40%,
+              rgba(13, 74, 62, 0.1) 58%,
+              rgba(232, 245, 238, 0.32) 75%,
+              rgba(126, 201, 162, 0.92) 100%
+            );
+            backdrop-filter: blur(0);
+            -webkit-backdrop-filter: blur(2px);
+            pointer-events: none;
+            z-index: 0;
+          }
+
+          .lp-container {
+            min-height: 100dvh;
+            border-radius: 0;
+            box-shadow: none;
+            background: transparent;
+            width: 100%;
+            flex-direction: column;
+            overflow-y: auto;
+            overflow-x: hidden;
+            position: relative;
+            z-index: 1;
+          }
+
+          /* Right panel is transparent — image shows through */
+          .lp-right {
+            width: 100%;
+            padding: 0;
+            background: transparent;
+            justify-content: flex-start;
+            display: flex;
+            flex-direction: column;
+          }
+
+          /* ── Mobile top nav ── */
+          .mob-nav {
+            display: flex !important;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px 24px 0;
+          }
+
+          /* ── Mobile hero text — white text over the image ── */
+          .mob-hero {
+            padding: 28px 24px 24px;
+          }
+          .mob-hero-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: clamp(44px, 12vw, 54px);
+            font-weight: 400;
+            line-height: 1.0;
+            color: #fff;
+            margin-bottom: 8px;
+            text-shadow: 0 2px 12px rgba(0,0,0,0.25);
+          }
+          .mob-hero-title em { font-style: italic; font-weight: 300; }
+          .mob-hero-sub {
+            font-size: 13px;
+            color: rgba(255,255,255,0.8);
+            font-weight: 300;
+            line-height: 1.6;
+          }
+
+          /* Hide the desktop logo/heading inside lp-right on mobile */
+          .lp-right .lp-right-logo { display: none !important; }
+          .lp-right .lp-right-heading { display: none !important; }
+
+          /* ── Wave + auth section at bottom ── */
+          .mob-wave {
+            display: flex !important;
+            flex-direction: column;
+            border-radius: 40% 40% 0 0 / 16% 16% 0 0;
+            padding: 52px 24px 32px;
+            margin-top: auto;
+            position: relative;
+          }
+
+          /* Hollow rounded rect peeking above the wave */
+          .mob-wave::before {
+            content: '';
+            position: absolute;
+            top: -46px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 92px;
+            height: 92px;
+            border-radius: 22px;
+            border: 1.5px solid rgba(255,255,255,0.6);
+            background: transparent;
+            pointer-events: none;
+          }
+
+
+          /* Google button */
+          .mob-google-btn {
+            display: flex !important;
+            width: 100%; height: 54px;
+            border-radius: 50px;
+            background: #fff;
+            border: none;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-size: 14.5px;
+            font-weight: 500;
+            color: #1e293b;
+            font-family: 'Outfit', sans-serif;
+            cursor: pointer;
+            transition: transform 0.18s ease;
+            opacity: 0.45;
+            pointer-events: none;
+          }
+          .mob-google-btn.enabled {
+            opacity: 1;
+            pointer-events: auto;
+          }
+          .mob-google-btn.enabled:active { transform: scale(0.98); }
+
+          /* Hide the desktop auth card and EULA on mobile */
+          .lp-right .desktop-auth-card { display: none !important; }
+          .lp-right .desktop-eula      { display: none !important; }
+          .lp-right .desktop-back-link { display: none !important; }
+
+          /* Registration form on mobile — plain white, standard padding */
+          .lp-right .mob-form-wrap {
+            padding: 28px 24px 120px;
+            flex: 1;
+          }
         }
 
         @media (max-width: 500px) {
-          .lp-page { padding: 12px; }
-          .lp-container { border-radius: 2rem; }
-          .lp-right { padding: 40px 24px; }
+          .mob-hero { padding: 24px 20px 20px; }
+          .mob-wave  { padding: 52px 20px 28px; }
+          .mob-nav   { padding: 18px 20px 0; }
+          .lp-right .mob-form-wrap { padding: 24px 20px 100px; }
         }
       `}</style>
 
@@ -382,7 +541,7 @@ export default function LoginPage() {
           animate={{ opacity: 1, y: 0, scale: 1 }}
           transition={{ duration: 0.6, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
         >
-          {/* Left section: The "Window" inside the white card */}
+          {/* ── LEFT PANEL (desktop only, completely unchanged) ───────────── */}
           <div className="lp-left hidden lg:flex">
             <div className="relative z-10 w-full">
               <div className="h-[2px] w-24 bg-white/50 mb-16" />
@@ -397,10 +556,10 @@ export default function LoginPage() {
                   'M-Pesa Friendly Sales Tracking',
                   'Zero Manual Record Books Needed',
                   'Automated Insights to Cut Costs',
-                  'Instant Setup, No Fees to Start'
-                ].map((item, i) => (
+                  'Instant Setup, No Fees to Start',
+                ].map((item) => (
                   <div key={item} className="flex items-center gap-4 text-white group">
-                    <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center group-hover:bg-white/40 transition-colors">
+                    <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-content:center group-hover:bg-white/40 transition-colors">
                       <Check size={14} strokeWidth={3} />
                     </div>
                     <span className="text-[15px] font-semibold tracking-wide">{item}</span>
@@ -408,62 +567,168 @@ export default function LoginPage() {
                 ))}
               </div>
             </div>
-
             <div className="relative z-10 w-full max-w-[340px]">
               <ReviewPanel />
             </div>
           </div>
 
+          {/* ── RIGHT PANEL ───────────────────────────────────────────────── */}
           <div className="lp-right">
-            <div className="w-full max-w-[380px] mx-auto flex flex-col h-full">
-              <div className="flex justify-center mb-12">
+
+            {/* ════════════════════════════════════════════════
+                MOBILE-ONLY STRUCTURE (hidden on lg+)
+            ════════════════════════════════════════════════ */}
+            <AnimatePresence mode="wait">
+              {!requiresRegistration ? (
+                <motion.div
+                  key="mob-login"
+                  className="flex flex-col min-h-[100dvh] lg:hidden"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  {/* Nav */}
+                  <nav className="mob-nav hidden" style={{ display: 'flex' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <img src={logo} alt="hlynk" style={{ height: 32, objectFit: 'contain' }} />
+                    </div>
+                    <a href="/" style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, fontWeight: 700, color: '#0c3d2eff', textDecoration: 'none', textTransform: 'uppercase', letterSpacing: '0.14em' }}>
+                      <ArrowLeft size={10} /> Website
+                    </a>
+                  </nav>
+
+                  {/* Hero */}
+                  <div className="mob-hero hidden" style={{ display: 'block' }}>
+                    <h1 className="mob-hero-title">Welcome<br /><em>Back</em></h1>
+                    <p className="mob-hero-sub">Your business dashboard is one tap away.</p>
+                  </div>
+
+                  {/* Borderless review strip — fades through reviews once then vanishes */}
+                  <MobileReviewStrip />
+
+                  {/* Wave section — Google button only */}
+                  <div className="mob-wave hidden" style={{ display: 'flex' }}>
+                    <MobileGoogleAuth
+                      googleLoading={googleLoading}
+                      handleGoogleAuth={handleGoogleAuth}
+                    />
+                  </div>
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="mob-register"
+                  className="flex flex-col min-h-[100dvh] lg:hidden"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  transition={{ duration: 0.35 }}
+                >
+                  <nav className="mob-nav hidden" style={{ display: 'flex' }}>
+                    <img src={logo} alt="hlynk" style={{ height: 32, objectFit: 'contain' }} />
+                    <button onClick={() => { setRequiresRegistration(false); setGoogleCredential('') }} style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, fontWeight: 700, color: '#94a3b8', background: 'none', border: 'none', textTransform: 'uppercase', letterSpacing: '0.14em', cursor: 'pointer' }}>
+                      <ArrowLeft size={10} /> Back
+                    </button>
+                  </nav>
+
+                  <div className="mob-form-wrap">
+                    <div style={{ marginBottom: 28 }}>
+                      <h2 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 40, fontWeight: 400, color: '#111', lineHeight: 1.05, marginBottom: 8 }}>Setup<br /><em style={{ fontStyle: 'italic', fontWeight: 300 }}>Your Shop</em></h2>
+                      <p style={{ fontSize: 13, color: '#94a3b8', fontWeight: 300 }}>Tell us about your biashara to get started.</p>
+                    </div>
+
+                    <form onSubmit={handleRegistrationSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginBottom: 28 }}>
+                        <Field label="Biashara Name" icon={Building2}>
+                          <input type="text" value={formData.businessName} onChange={e => setFormData({ ...formData, businessName: e.target.value })} className={inputCls} placeholder="e.g. Mama Mboga Pro" required />
+                        </Field>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                          <Field label="County" icon={MapPin}>
+                            <select value={formData.county} onChange={e => setFormData({ ...formData, county: e.target.value })} className={inputCls} required>
+                              <option value="">County?</option>
+                              {COUNTIES.map(c => <option key={c}>{c}</option>)}
+                            </select>
+                          </Field>
+                          <Field label="Category" icon={Tag}>
+                            <select value={formData.category} onChange={e => setFormData({ ...formData, category: e.target.value })} className={inputCls} required>
+                              <option value="">Type?</option>
+                              {CATEGORIES.map(c => <option key={c}>{c}</option>)}
+                            </select>
+                          </Field>
+                        </div>
+                        <Field label="Town / Area" icon={MapPin}>
+                          <input type="text" value={formData.location} onChange={e => setFormData({ ...formData, location: e.target.value })} className={inputCls} placeholder="e.g. Westlands, Nairobi" required />
+                        </Field>
+                        <Field label="M-Pesa Number" icon={Phone}>
+                          <input type="tel" value={formData.phone} onChange={e => setFormData({ ...formData, phone: e.target.value })} className={inputCls} placeholder="07xx xxx xxx" required />
+                        </Field>
+                      </div>
+                      <button type="submit" disabled={formLoading} className="lp-btn-submit">
+                        {formLoading ? <Loader2 size={18} className="animate-spin" /> : 'Launch My Biashara'}
+                      </button>
+                    </form>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* ════════════════════════════════════════════════
+                DESKTOP-ONLY STRUCTURE (hidden on mobile)
+            ════════════════════════════════════════════════ */}
+            <div className="hidden lg:flex w-full max-w-[380px] mx-auto flex-col h-full">
+              <div className="lp-right-logo flex justify-center mb-12">
                 <img src={logo} alt="hlynk" className="h-12 object-contain" />
               </div>
 
               <AnimatePresence mode="wait">
                 {!requiresRegistration ? (
                   <motion.div
-                    key="login"
+                    key="desktop-login"
                     initial={{ opacity: 0, x: 20 }}
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: -20 }}
                     transition={{ duration: 0.35 }}
                   >
-                    <div className="text-center mb-10">
+                    <div className="lp-right-heading text-center mb-10">
                       <h2 className="lp-serif text-[52px] leading-tight text-black mb-2">Welcome Back</h2>
                       <p className="text-[#94a3b8] font-light text-[15px]">Your business dashboard is just one click away.</p>
                     </div>
 
-                    <div className={acceptedEula ? 'opacity-100' : 'opacity-80 pointer-events-none grayscale'}>
-                      <GoogleAuthButton text="continue_with" onCredential={handleGoogleAuth} disabled={googleLoading || !acceptedEula} />
+                    <div className="desktop-auth-card bg-white lg:bg-transparent rounded-[.5rem] lg:rounded-none shadow-[0_2px_20px_rgba(0,0,0,0.07)] lg:shadow-none p-5 lg:p-0 mb-4 lg:mb-0">
+                      <div className={acceptedEula ? 'opacity-100' : 'opacity-80 pointer-events-none grayscale'}>
+                        <GoogleAuthButton text="continue_with" onCredential={handleGoogleAuth} disabled={googleLoading || !acceptedEula} />
+                      </div>
+                      <div className="flex items-center gap-4 my-6 lg:my-8">
+                        <div className="h-[1px] flex-1 bg-[#f1f5f9]" />
+                        <span className="text-[9px] text-[#cbd5e1] tracking-[0.34em] font-bold uppercase">Biashara Hub</span>
+                        <div className="h-[1px] flex-1 bg-[#f1f5f9]" />
+                      </div>
                     </div>
 
-                    <div className="flex items-center gap-4 my-8">
-                      <div className="h-[1px] flex-1 bg-[#f1f5f9]" />
-                      <span className="text-[9px] text-[#cbd5e1] tracking-[0.34em] font-bold uppercase">Biashara Hub</span>
-                      <div className="h-[1px] flex-1 bg-[#f1f5f9]" />
+                    <div className="desktop-eula bg-white lg:bg-transparent rounded-[.5rem] lg:rounded-none shadow-[0_2px_20px_rgba(0,0,0,0.07)] lg:shadow-none px-5 py-4 lg:p-0 mb-4 lg:mb-10">
+                      <label className="flex items-start gap-3 cursor-pointer group">
+                        <input type="checkbox" className="mt-1 accent-black w-5 h-5 cursor-pointer rounded-md border-gray-200 flex-shrink-0"
+                          checked={acceptedEula}
+                          onChange={e => {
+                            setAcceptedEula(e.target.checked)
+                            if (e.target.checked) localStorage.setItem('hlynk_eula_accepted', 'true')
+                            else localStorage.removeItem('hlynk_eula_accepted')
+                          }}
+                        />
+                        <span className="text-[12px] px-1 pt-1 leading-relaxed font-light">
+                          I agree to the <a href="/terms-conditions" className="text-black hover:text-emerald-600 underline transition-colors">Terms of Service</a> and <a href="/privacy-policy" className="text-black hover:text-emerald-600 underline transition-colors">Privacy Policy</a>
+                        </span>
+                      </label>
                     </div>
 
-                    <label className="flex items-start gap-4 mb-10 cursor-pointer group">
-                      <input type="checkbox" className="mt-1 accent-black w-5 h-5 cursor-pointer rounded-md border-gray-200"
-                        checked={acceptedEula} onChange={e => {
-                          setAcceptedEula(e.target.checked)
-                          if (e.target.checked) localStorage.setItem('hlynk_eula_accepted', 'true')
-                          else localStorage.removeItem('hlynk_eula_accepted')
-                        }} />
-                      <span className="text-[12px] px-2 pt-1 leading-relaxed font-light">
-                        I agree to the <a href="/terms-conditions" className="text-black hover:text-emerald-600 underline transition-colors">Terms of Service</a> and <a href="/privacy-policy" className="text-black hover:text-emerald-600 underline transition-colors">Privacy Policy</a>
-                      </span>
-                    </label>
-
-                    <a href="/" className="text-right flex items-center mt-8 cursor-pointer text-black font-normal pl-5 hover:underline">
+                    <a href="/" className="desktop-back-link hidden lg:flex text-right items-center mt-8 cursor-pointer text-black font-normal pl-5 hover:underline">
                       <ArrowLeft size={12} className="mr-2" />
                       Back to Website
                     </a>
                   </motion.div>
                 ) : (
                   <motion.div
-                    key="register"
+                    key="desktop-register"
                     initial={{ opacity: 0, x: 20 }}
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: -20 }}
@@ -474,7 +739,6 @@ export default function LoginPage() {
                         <h2 className="lp-serif text-[42px] leading-tight text-black mb-2">Setup Shop</h2>
                         <p className="text-gray-400 font-light text-sm">Tell us about your biashara to get started.</p>
                       </div>
-
                       <div className="flex flex-col gap-4 mb-8">
                         <Field label="Biashara Name" icon={Building2}>
                           <input type="text" value={formData.businessName} onChange={e => setFormData({ ...formData, businessName: e.target.value })} className={inputCls} placeholder="e.g. Mama Mboga Pro" required />
@@ -500,21 +764,10 @@ export default function LoginPage() {
                           <input type="tel" value={formData.phone} onChange={e => setFormData({ ...formData, phone: e.target.value })} className={inputCls} placeholder="07xx xxx xxx" required />
                         </Field>
                       </div>
-
                       <button type="submit" disabled={formLoading} className="lp-btn-submit">
                         {formLoading ? <Loader2 size={18} className="animate-spin" /> : 'Launch My biashara'}
                       </button>
-
-                      <button
-                        type="button"
-                        disabled={formLoading}
-                        onClick={() => {
-                          setRequiresRegistration(false)
-                          setGoogleCredential('')
-                          setGoogleProfile(null)
-                        }}
-                        className="text-left mt-8 cursor-pointer text-black font-normal pl-5 hover:underline"
-                      >
+                      <button type="button" disabled={formLoading} onClick={() => { setRequiresRegistration(false); setGoogleCredential('') }} className="text-left mt-8 cursor-pointer text-black font-normal pl-5 hover:underline">
                         Back to Login
                       </button>
                     </form>
@@ -522,9 +775,30 @@ export default function LoginPage() {
                 )}
               </AnimatePresence>
             </div>
+
           </div>
         </motion.div>
       </motion.div>
+
+
     </>
+  )
+}
+
+/* ── Extracted mobile auth section (Google button only) ───────────────────── */
+function MobileGoogleAuth({
+  googleLoading,
+  handleGoogleAuth,
+}: {
+  googleLoading: boolean
+  handleGoogleAuth: (credential: string) => void
+}) {
+  return (
+    <GoogleAuthButton
+      text="continue_with"
+      onCredential={handleGoogleAuth}
+      disabled={googleLoading}
+      className="mob-google-btn enabled"
+    />
   )
 }

@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import { Bell, User, LogOut, ChevronDown, Menu, Sparkles, X, Maximize2, Minimize2 } from 'lucide-react'
+import { Bell, User, LogOut, ChevronDown, Menu, Sparkles, X, Maximize2, Minimize2, Zap } from 'lucide-react'
 import { useAuth } from '../../lib/auth/AuthContext'
 import { useMobileViewport } from '../../lib/MobileViewportContext'
 import { Link, useNavigate } from 'react-router-dom'
@@ -48,7 +48,8 @@ export default function TopNav({ isMobileOpen, onMobileMenuToggle, isCollapsed, 
   })
 
   const notifications = notifyRes?.data || []
-  const unreadCount = notifications.filter((n: any) => !n.isRead).length
+  const salesNotifications = notifications.filter((n: any) => n.action?.toLowerCase().includes('sale'))
+  const unreadCount = salesNotifications.filter((n: any) => !n.isRead).length
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -68,18 +69,14 @@ export default function TopNav({ isMobileOpen, onMobileMenuToggle, isCollapsed, 
   }
 
   return (
-    <header className="h-24 bg-transparent flex items-center justify-between z-[100] px-6 sm:px-8 relative">
+    <header className="h-16 lg:h-24 bg-transparent flex items-center justify-between z-[100] px-4 sm:px-8 relative">
       
-      {/* LEFT: TOGGLES */}
+      {/* LEFT: logo on mobile / toggles on desktop */}
       <div className="flex items-center gap-4">
-        {onMobileMenuToggle && (
-          <button 
-            onClick={onMobileMenuToggle} 
-            className="lg:hidden h-12 w-12 rounded-full bg-white flex items-center justify-center text-slate-400 hover:text-emerald-600 transition-all shadow-md active:scale-95 z-[110]"
-          >
-            {isMobileOpen ? <X size={20} /> : <Menu size={20} />}
-          </button>
-        )}
+        {/* Mobile: show favicon in original colors, no dark box */}
+        <div className="lg:hidden flex items-center">
+          <img src="/fav.png" alt="hlynk" className="h-7 w-7 object-contain" />
+        </div>
 
         {onToggleCollapse && (
           <button 
@@ -96,6 +93,7 @@ export default function TopNav({ isMobileOpen, onMobileMenuToggle, isCollapsed, 
           </div>
         )}
       </div>
+
 
       {/* RIGHT: ACTIONS & IDENTITY */}
       <div className="flex items-center gap-2 sm:gap-4">
@@ -127,18 +125,18 @@ export default function TopNav({ isMobileOpen, onMobileMenuToggle, isCollapsed, 
             <div className="fixed sm:absolute top-24 sm:top-16 right-4 sm:right-0 w-[calc(100vw-2rem)] sm:w-[340px] bg-white border border-slate-100 rounded-[.5rem] shadow-2xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200 z-[200]">
               <div className="p-5 bg-slate-50/50 border-b border-slate-100 flex justify-between items-center">
                 <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">System Notifications</span>
-                {notifications.length > 0 && (
+                {salesNotifications.length > 0 && (
                   <button onClick={() => deleteNotificationsMutation.mutate()} className="text-[10px] font-black text-red-600 uppercase tracking-widest hover:text-red-800 transition-colors">Wipe History</button>
                 )}
               </div>
               <div className="max-h-[400px] overflow-y-auto">
                 {notifyLoading ? (
                    <div className="p-12 text-center animate-pulse text-slate-400 font-black text-[9px] uppercase tracking-widest">Fetching...</div>
-                ) : notifications.length === 0 ? (
-                  <div className="p-16 text-center text-sm font-black text-slate-400 italic">No recent alerts</div>
+                ) : salesNotifications.length === 0 ? (
+                  <div className="p-16 text-center text-sm font-black text-slate-400 italic">No recent sales</div>
                 ) : (
                   <div className="divide-y divide-slate-50">
-                    {notifications.map((n: any) => (
+                    {salesNotifications.map((n: any) => (
                       <div key={n.id} className="p-5 hover:bg-slate-50 transition-colors cursor-pointer" onClick={() => !n.isRead && markReadMutation.mutate(n.id)}>
                         <div className="flex gap-4">
                           <div className="h-8 w-8 shrink-0 bg-white border border-slate-100 rounded-[.4rem] p-1.5 shadow-sm flex items-center justify-center">

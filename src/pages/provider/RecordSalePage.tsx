@@ -55,10 +55,10 @@ export default function RecordSalePage() {
         console.log('[POS] Offline: Loading inventory from IndexedDB')
         const cached = await getCachedInventory()
         // Simple client-side search if offline
-        const filtered = search 
+        const filtered = search
           ? cached.filter(p => p.name.toLowerCase().includes(search.toLowerCase()) || p.category.toLowerCase().includes(search.toLowerCase()))
           : cached
-        
+
         return {
           items: filtered,
           total: filtered.length,
@@ -68,7 +68,7 @@ export default function RecordSalePage() {
       }
 
       const res = await inventoryApi.list({ search, page, limit: 100 })
-      
+
       // Background cache if it was a broad search (page 1, no search or just a few chars)
       if (res.items && page === 1 && !search) {
         cacheInventory(res.items).catch(err => console.error('Failed to cache inventory:', err))
@@ -94,19 +94,19 @@ export default function RecordSalePage() {
     queryFn: async () => {
       if (!isOnline) {
         const cached = await getCachedCustomers()
-        const filtered = customerSearch 
+        const filtered = customerSearch
           ? cached.filter(c => c.name.toLowerCase().includes(customerSearch.toLowerCase()) || c.phone?.includes(customerSearch))
           : cached
         return { items: filtered.slice(0, 10), total: filtered.length }
       }
 
       const res = await customersApi.list({ search: customerSearch, limit: 10 })
-      
+
       // Cache customers in background if we fetched them
       if (res.items && !customerSearch) {
         cacheCustomers(res.items).catch(err => console.error('Failed to cache customers:', err))
       }
-      
+
       return res
     },
     enabled: isOnline ? customerSearch.length > 1 : true
@@ -218,7 +218,7 @@ export default function RecordSalePage() {
   useEffect(() => {
     if (handleCompleteSale.error) {
       const errorMsg = getErrorMessage(handleCompleteSale.error)
-      
+
       // If it's a network error and we are offline, it's already handled or should be
       if (!navigator.onLine) {
         // Silently consume or handle differently
@@ -245,7 +245,7 @@ export default function RecordSalePage() {
     }
 
     const offlineId = crypto.randomUUID()
-    
+
     await enqueueSale({
       id: offlineId,
       createdAt: Date.now(),
@@ -369,50 +369,45 @@ export default function RecordSalePage() {
         {/* Left: Product Selection */}
         <div className={`flex-1 space-y-6 md:space-y-10 min-w-0 w-full ${activeTab === 'cart' ? 'hidden xl:block' : 'block'}`}>
           {/* Sticky Header and Search */}
-          <div className="sticky top-0 z-30 bg-white/80 backdrop-blur-md p-2 pb-8 space-y-8">
-            <div className="flex justify-between items-center gap-1 px-2">
-              <div className="space-y-0.5">
-                <p className="text-slate-500 font-medium text-[10px] md:text-sm uppercase tracking-widest opacity-60">Tap items to add to cart</p>
-              </div>
-              <div className="flex items-center gap-3 self-stretch md:self-auto">
-                <div className="flex bg-slate-100 p-1 rounded-[.5rem]">
-                  <button
-                    onClick={() => setViewMode('grid')}
-                    className={`p-1 rounded-[.5rem] transition-all ${viewMode === 'grid' ? 'bg-white shadow-sm text-emerald-600' : 'text-slate-400 hover:text-slate-600'}`}
-                  >
-                    <LayoutGrid size={20} />
-                  </button>
-                  <button
-                    onClick={() => setViewMode('list')}
-                    className={`p-2 rounded-[.5rem] transition-all ${viewMode === 'list' ? 'bg-white shadow-sm text-emerald-600' : 'text-slate-400 hover:text-slate-600'}`}
-                  >
-                    <List size={20} />
-                  </button>
-                </div>
-              </div>
-            </div>
 
-            <div className="relative group grid grid-cols-2 md:grid-cols-2 gap-2 md:gap-8">
-              <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-emerald-500 transition-colors" size={20} />
-              <input
-                type="text"
-                placeholder="Search items..."
-                value={searchInput}
-                onChange={(e) => setSearchInput(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && filteredProducts.length === 1) {
-                    addToCart(filteredProducts[0])
-                    setSearchInput('')
-                    setSearch('')
-                  }
-                }}
-                className="w-full ml-auto mr-auto bg-slate-50 border border-slate-200 shadow-lg shadow-slate-900/5 rounded-full py-4 pl-14 pr-6 text-base font-bold focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all placeholder:text-slate-300"
-              />
-              <div className="flex justify-end px-3 py-1">
-                <div className="flex items-center gap-3 bg-slate-100 shadow-lg shadow-slate-900/5 px-2 rounded-[.5rem]">
-                  <span className="text-black-900 font-medium text-[10px] md:text-sm tracking-widest opacity-60">{user?.businessName || 'Your Store'}</span>
-                </div>
+          <div className="sticky top-0 z-30 backdrop-blur-md py-2 rounded-l-full rounded-r-[5rem]">
+            <div className="flex items-center justify-between px-2 w-full">
+
+              {/* Search wrapper — constrained width, not full stretch */}
+              <div className="relative group w-64 md:w-80">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-emerald-500 transition-colors" size={16} />
+                <input
+                  type="text"
+                  placeholder="Search items..."
+                  value={searchInput}
+                  onChange={(e) => setSearchInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && filteredProducts.length === 1) {
+                      addToCart(filteredProducts[0])
+                      setSearchInput('')
+                      setSearch('')
+                    }
+                  }}
+                  className="w-full bg-slate-50 border border-slate-200 shadow-sm rounded-full py-1.5 pl-9 pr-4 text-sm font-normal focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all placeholder:text-slate-300"
+                />
               </div>
+
+              {/* Grid/List toggle — on the far right */}
+              <div className="flex bg-slate-100 p-1 shrink-0 rounded-md">
+                <button
+                  onClick={() => setViewMode('grid')}
+                  className={`p-1 rounded transition-all ${viewMode === 'grid' ? 'bg-white shadow-sm text-emerald-600' : 'text-slate-400 hover:text-slate-600'}`}
+                >
+                  <LayoutGrid size={15} />
+                </button>
+                <button
+                  onClick={() => setViewMode('list')}
+                  className={`p-1 rounded transition-all ${viewMode === 'list' ? 'bg-white shadow-sm text-emerald-600' : 'text-slate-400 hover:text-slate-600'}`}
+                >
+                  <List size={15} />
+                </button>
+              </div>
+
             </div>
           </div>
 
@@ -435,46 +430,47 @@ export default function RecordSalePage() {
                 const cartQty = cart.find(i => i.id === product.id)?.quantity || 0;
                 const availableStock = product.stockLevel - cartQty;
                 return (
-                <div
-                  key={product.id}
-                  onClick={() => addToCart(product)}
-                  className="group relative bg-white rounded-[.5rem] md:rounded-[.5rem] cursor-pointer transition-all hover:shadow-2xl hover:shadow-emerald-900/20 overflow-hidden border border-slate-100 h-[240px] md:h-[380px]"
-                >
-                  {/* Image Region */}
-                  {product.imageUrl ? (
-                    <img src={product.imageUrl} alt={product.name} className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110" />
-                  ) : (
-                    <div className="h-full w-full bg-slate-50 flex items-center justify-center text-slate-200">
-                      <Package size={80} />
-                    </div>
-                  )}
-
-                  {/* Stock/Service Badge */}
-                  <div className="absolute top-4 right-4 z-20">
-                    {product.type === 'SERVICE' ? (
-                      <span className="px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest shadow-lg bg-emerald-100 text-emerald-800 border border-emerald-200">
-                        Service
-                      </span>
+                  <div
+                    key={product.id}
+                    onClick={() => addToCart(product)}
+                    className="group relative bg-white rounded-[.5rem] md:rounded-[.5rem] cursor-pointer transition-all hover:shadow-2xl hover:shadow-emerald-900/20 overflow-hidden border border-slate-100 h-[240px] md:h-[380px]"
+                  >
+                    {/* Image Region */}
+                    {product.imageUrl ? (
+                      <img src={product.imageUrl} alt={product.name} className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110" />
                     ) : (
-                      <span className={`px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest shadow-lg ${availableStock <= 0 ? 'bg-red-600 text-white animate-pulse' : availableStock < 10 ? 'bg-amber-500 text-white' : 'bg-white/90 backdrop-blur-md text-slate-900'}`}>
-                        {availableStock <= 0 ? 'Out of Stock' : `${availableStock} in stock`}
-                      </span>
+                      <div className="h-full w-full bg-slate-50 flex items-center justify-center text-slate-200">
+                        <Package size={80} />
+                      </div>
                     )}
-                  </div>
 
-                  {/* Faded Detail Overlay */}
-                  <div className="absolute inset-x-0 bottom-0 p-4 md:p-8 bg-gradient-to-t from-slate-900 via-slate-900/60 to-transparent pt-12 md:pt-20">
-                    <p className="text-[8px] md:text-[10px] text-emerald-400 font-black uppercase tracking-widest mb-0.5 md:mb-1">{product.category}</p>
-                    <h4 className="text-sm md:text-xl font-black text-white mb-1 md:mb-2 line-clamp-1">{product.name}</h4>
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm md:text-2xl font-black text-white hl-mono">KES {Number(product.price).toLocaleString()}</span>
-                      <div className="h-8 w-8 md:h-12 md:w-12 rounded-[.5rem] md:rounded-[.5rem] bg-emerald-500 text-white flex items-center justify-center shadow-lg shadow-emerald-500/40 opacity-0 md:group-hover:opacity-100 transition-all transform translate-y-2 group-hover:translate-y-0">
-                        <Plus size={16} />
+                    {/* Stock/Service Badge */}
+                    <div className="absolute top-4 right-4 z-20">
+                      {product.type === 'SERVICE' ? (
+                        <span className="px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest shadow-lg bg-emerald-100 text-emerald-800 border border-emerald-200">
+                          Service
+                        </span>
+                      ) : (
+                        <span className={`px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest shadow-lg ${availableStock <= 0 ? 'bg-red-600 text-white animate-pulse' : availableStock < 10 ? 'bg-amber-500 text-white' : 'bg-white/90 backdrop-blur-md text-slate-900'}`}>
+                          {availableStock <= 0 ? 'Out of Stock' : `${availableStock} in stock`}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Faded Detail Overlay */}
+                    <div className="absolute inset-x-0 bottom-0 p-4 md:p-8 bg-gradient-to-t from-slate-900 via-slate-900/60 to-transparent pt-12 md:pt-20">
+                      <p className="text-[8px] md:text-[10px] text-emerald-400 font-black uppercase tracking-widest mb-0.5 md:mb-1">{product.category}</p>
+                      <h4 className="text-sm md:text-xl font-black text-white mb-1 md:mb-2 line-clamp-1">{product.name}</h4>
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm md:text-2xl font-black text-white hl-mono">KES {Number(product.price).toLocaleString()}</span>
+                        <div className="h-8 w-8 md:h-12 md:w-12 rounded-[.5rem] md:rounded-[.5rem] bg-emerald-500 text-white flex items-center justify-center shadow-lg shadow-emerald-500/40 opacity-0 md:group-hover:opacity-100 transition-all transform translate-y-2 group-hover:translate-y-0">
+                          <Plus size={16} />
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              )})}
+                )
+              })}
             </div>
           ) : (
             <div className="bg-white rounded-[.5rem] border border-slate-100 shadow-xl shadow-slate-900/5 overflow-hidden">
@@ -493,43 +489,44 @@ export default function RecordSalePage() {
                     const cartQty = cart.find(i => i.id === product.id)?.quantity || 0;
                     const availableStock = product.stockLevel - cartQty;
                     return (
-                    <tr
-                      key={product.id}
-                      onClick={() => addToCart(product)}
-                      className="hover:bg-emerald-50/30 cursor-pointer transition-colors group"
-                    >
-                      <td className="px-8 py-5">
-                        <div className="flex items-center gap-3">
-                          {product.imageUrl ? (
-                            <img src={product.imageUrl} alt={product.name} className="h-8 w-8 rounded-[.5rem] object-cover border border-slate-100" />
+                      <tr
+                        key={product.id}
+                        onClick={() => addToCart(product)}
+                        className="hover:bg-emerald-50/30 cursor-pointer transition-colors group"
+                      >
+                        <td className="px-8 py-5">
+                          <div className="flex items-center gap-3">
+                            {product.imageUrl ? (
+                              <img src={product.imageUrl} alt={product.name} className="h-8 w-8 rounded-[.5rem] object-cover border border-slate-100" />
+                            ) : (
+                              <div className="h-8 w-8 rounded-[.5rem] bg-slate-50 flex items-center justify-center text-slate-300">
+                                <Package size={14} />
+                              </div>
+                            )}
+                            <span className="text-sm font-black text-slate-900">{product.name}</span>
+                          </div>
+                        </td>
+                        <td className="px-8 py-5">
+                          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{product.category}</span>
+                        </td>
+                        <td className="px-8 py-5">
+                          {product.type === 'SERVICE' ? (
+                            <span className="text-[10px] font-black text-emerald-600 uppercase tracking-widest">Service</span>
                           ) : (
-                            <div className="h-8 w-8 rounded-[.5rem] bg-slate-50 flex items-center justify-center text-slate-300">
-                              <Package size={14} />
-                            </div>
+                            <span className={`text-[10px] font-black hl-mono ${availableStock < 10 ? 'text-red-600' : 'text-slate-600'}`}>{availableStock}</span>
                           )}
-                          <span className="text-sm font-black text-slate-900">{product.name}</span>
-                        </div>
-                      </td>
-                      <td className="px-8 py-5">
-                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{product.category}</span>
-                      </td>
-                      <td className="px-8 py-5">
-                        {product.type === 'SERVICE' ? (
-                          <span className="text-[10px] font-black text-emerald-600 uppercase tracking-widest">Service</span>
-                        ) : (
-                          <span className={`text-[10px] font-black hl-mono ${availableStock < 10 ? 'text-red-600' : 'text-slate-600'}`}>{availableStock}</span>
-                        )}
-                      </td>
-                      <td className="px-8 py-5 text-right">
-                        <span className="text-sm font-black text-[#0D4A3E] hl-mono">KES {Number(product.price).toLocaleString()}</span>
-                      </td>
-                      <td className="px-8 py-5 text-right">
-                        <div className="inline-flex h-8 w-8 rounded-full bg-slate-100 text-slate-400 items-center justify-center group-hover:bg-emerald-500 group-hover:text-white transition-all">
-                          <Plus size={16} />
-                        </div>
-                      </td>
-                    </tr>
-                  )})}
+                        </td>
+                        <td className="px-8 py-5 text-right">
+                          <span className="text-sm font-black text-[#0D4A3E] hl-mono">KES {Number(product.price).toLocaleString()}</span>
+                        </td>
+                        <td className="px-8 py-5 text-right">
+                          <div className="inline-flex h-8 w-8 rounded-full bg-slate-100 text-slate-400 items-center justify-center group-hover:bg-emerald-500 group-hover:text-white transition-all">
+                            <Plus size={16} />
+                          </div>
+                        </td>
+                      </tr>
+                    )
+                  })}
                 </tbody>
               </table>
             </div>
@@ -756,7 +753,7 @@ export default function RecordSalePage() {
                         <p className="text-[10px] text-amber-700 font-medium leading-tight">Accept payment via Pochi la Biashara or Paybill, then record here.</p>
                       </div>
                     </div>
-                    
+
                     <div className="space-y-3 pt-2 border-t border-amber-200/50">
                       <div className="flex justify-between items-center text-[10px]">
                         <span className="font-bold text-amber-800/60 uppercase">Instruction</span>
@@ -821,7 +818,7 @@ export default function RecordSalePage() {
               }}
               className={`w-full py-6 rounded-[.5rem] font-black text-sm uppercase tracking-widest shadow-2xl transition-all flex items-center justify-center gap-4 ${cart.length === 0 || handleCompleteSale.isPending || isProcessingMpesa
                 ? 'bg-slate-100 text-slate-300 cursor-not-allowed shadow-none'
-                : isOnline 
+                : isOnline
                   ? 'bg-slate-900 text-white hover:bg-black shadow-slate-900/20 active:scale-[0.98]'
                   : 'bg-amber-600 text-white hover:bg-amber-700 shadow-amber-900/20 active:scale-[0.98]'
                 }`}

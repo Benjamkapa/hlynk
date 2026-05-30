@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { toast } from 'sonner'
-import { Loader2, ShieldCheck, ArrowRight, ArrowLeft } from 'lucide-react'
+import { Loader2, ShieldCheck, ArrowRight, ArrowLeft, Home } from 'lucide-react'
 import { authApi } from '../../lib/api/auth'
 import { useAuth } from '../../lib/auth/AuthContext'
 import { getErrorMessage } from '../../lib/utils/error'
@@ -101,6 +101,12 @@ export default function VerifyOtpPage() {
             >
               <ArrowLeft size={14} /> Back to Register
             </Link>
+            <a
+              href="/"
+              className="flex items-center justify-center gap-1.5 text-[10px] font-black text-slate-300 uppercase tracking-widest hover:text-slate-500 transition-colors"
+            >
+              <Home size={11} /> Back to Website
+            </a>
           </div>
         </div>
 

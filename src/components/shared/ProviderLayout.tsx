@@ -437,63 +437,7 @@ export default function ProviderLayout() {
             <SidebarContent />
           </motion.div>
         </motion.aside>
-      ) : (
-        /* ── MOBILE: icon rail always visible, drawer slides over content ── */
-        <>
-          {/* Permanent thin rail (always visible, not overlay) */}
-          <div
-            className="relative flex-shrink-0 h-screen bg-white border-r border-slate-100 z-[70] overflow-visible"
-            style={{ width: RAIL_W }}
-          >
-            {/* Tap rail to open drawer */}
-            <div
-              className="absolute inset-0 z-10"
-              onClick={() => setMobileOpen(true)}
-              aria-label="Open sidebar"
-            />
-            {/* Show icons only in the rail */}
-            <div className="flex flex-col h-full items-center pt-4 pb-4 gap-1 overflow-hidden">
-              <img src="/fav.png" alt="hlynk" className="h-6 w-6 object-contain mb-4 mt-2" />
-              {filteredGroups.flatMap(g => g.items).map(item => (
-                <div
-                  key={item.label}
-                  className="relative w-10 h-10 flex items-center justify-center rounded-[.4rem] text-slate-400"
-                >
-                  <item.icon className="w-[18px] h-[18px]" />
-                  {item.isLocked && (
-                    <div className="absolute top-1 right-1 h-2 w-2 bg-amber-500 rounded-full" />
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Full mobile drawer — slides over content from the left */}
-          <AnimatePresence>
-            {mobileOpen && (
-              <motion.div
-                key="drawer"
-                initial={{ x: -FULL_W }}
-                animate={{ x: 0 }}
-                exit={{ x: -FULL_W }}
-                transition={{ duration: 0.28, ease: [0.4, 0, 0.2, 1] }}
-                className="fixed inset-y-0 left-0 z-[80] bg-white shadow-2xl"
-                style={{ width: FULL_W }}
-              >
-                {/* Close button inside drawer (top-right) */}
-                <button
-                  onClick={() => setMobileOpen(false)}
-                  className="absolute top-4 right-4 z-10 h-8 w-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 hover:bg-slate-200 transition-colors"
-                  aria-label="Close sidebar"
-                >
-                  <X size={16} />
-                </button>
-                <SidebarContent />
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </>
-      )}
+      ) : null /* Mobile: No sidebar — we use bottom nav instead */}
 
       {/* ── MAIN CONTENT ────────────────────────────────────────────────────── */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
@@ -536,10 +480,135 @@ export default function ProviderLayout() {
           }
         />
 
-        <main className="flex-1 overflow-y-auto px-5 lg:px-10 py-8 bg-slate-50/30">
+        <main className="flex-1 overflow-y-auto px-4 lg:px-10 py-4 lg:py-8 bg-slate-50/30 pb-24 lg:pb-8">
           <Outlet />
         </main>
       </div>
+
+      {/* ── MOBILE BOTTOM NAV ───────────────────────────────────────────────── */}
+      {!isDesktop && (
+        <MobileBottomNav
+          user={user}
+          filteredGroups={filteredGroups}
+          targetEndDate={targetEndDate}
+          isCritical={isCritical}
+          isTrial={isTrial}
+          daysRemaining={daysRemaining}
+        />
+      )}
+    </div>
+  );
+}
+
+// ─── Mobile Bottom Navigation ────────────────────────────────────────────────
+function MobileBottomNav({ user, filteredGroups, targetEndDate, isCritical, isTrial, daysRemaining }: {
+  user: any;
+  filteredGroups: any[];
+  targetEndDate: string | undefined;
+  isCritical: boolean;
+  isTrial: boolean;
+  daysRemaining: number;
+}) {
+  const location = useLocation();
+
+  const bottomNavItems = [
+    { to: '/dashboard/sales/new', label: 'Sell', icon: Zap, end: false },
+    { to: '/dashboard/sales', label: 'History', icon: Clock, end: true },
+    { to: '/dashboard', label: 'Home', icon: LayoutDashboard, end: true },
+    { to: '/dashboard/products', label: 'Items', icon: Package, end: false },
+    { to: '/dashboard/settings', label: 'Settings', icon: Settings, end: false },
+  ];
+
+  const isActive = (item: typeof bottomNavItems[0]) => {
+    if (item.end) return location.pathname === item.to;
+    return location.pathname.startsWith(item.to);
+  };
+
+  return (
+    <div className="fixed inset-x-0 bottom-0 z-[90] lg:hidden">
+      {/* Subscription countdown banner */}
+      {targetEndDate && (
+        <div className="bg-[#0D4A3E] px-4 py-2 flex items-center justify-between">
+          <div>
+            <p className="text-[8px] font-black text-emerald-400 uppercase tracking-widest leading-none">
+              {user?.subscription?.planName === 'MAX' ? 'Business Pro' : user?.subscription?.planName === 'PLUS' ? 'Growth' : 'Starter'} Tier
+            </p>
+            <p className="text-[9px] font-medium text-emerald-200 mt-0.5">Your subscription is active</p>
+          </div>
+          <MiniCountdown expiryDate={targetEndDate} />
+        </div>
+      )}
+
+      {/* Tab bar */}
+      <div
+        className="bg-white border-t border-slate-100 flex items-stretch"
+        style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
+      >
+        {bottomNavItems.map((item) => {
+          const active = isActive(item);
+          const isHome = item.label === 'Home';
+          return (
+            <NavLink
+              key={item.label}
+              to={item.to}
+              end={item.end}
+              className="flex-1 flex flex-col items-center justify-center py-2 gap-0.5 relative"
+            >
+              {isHome ? (
+                /* Home gets an elevated pill */
+                <div className={`h-12 w-12 rounded-[.6rem] flex items-center justify-center -mt-5 shadow-xl shadow-slate-900/20 transition-all ${active ? 'bg-[#0D4A3E]' : 'bg-slate-800'}`}>
+                  <item.icon className="w-5 h-5 text-white" />
+                </div>
+              ) : (
+                <div className={`h-9 w-9 flex items-center justify-center rounded-[.5rem] transition-all ${active ? 'bg-emerald-50' : ''}`}>
+                  <item.icon className={`w-[18px] h-[18px] transition-colors ${active ? 'text-[#0D4A3E]' : 'text-slate-400'}`} />
+                </div>
+              )}
+              <span className={`text-[9px] font-black uppercase tracking-wider transition-colors ${
+                isHome ? 'mt-1' : ''
+              } ${active ? 'text-[#0D4A3E]' : 'text-slate-400'}`}>
+                {item.label}
+              </span>
+            </NavLink>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ─── Mini Countdown (3 segments: d, h, m) ────────────────────────────────────
+function MiniCountdown({ expiryDate }: { expiryDate: string }) {
+  const calc = (d: string) => {
+    const dist = new Date(d).getTime() - Date.now();
+    if (dist < 0) return { d: 0, h: 0, m: 0 };
+    return {
+      d: Math.floor(dist / 86_400_000),
+      h: Math.floor((dist % 86_400_000) / 3_600_000),
+      m: Math.floor((dist % 3_600_000) / 60_000),
+    };
+  };
+  const [t, setT] = useState(() => calc(expiryDate));
+  useEffect(() => {
+    let raf: number;
+    let lastMin = -1;
+    const tick = () => {
+      const now = calc(expiryDate);
+      if (now.m !== lastMin) { lastMin = now.m; setT(now); }
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [expiryDate]);
+  return (
+    <div className="flex gap-1.5">
+      {[{ v: t.d, l: 'd' }, { v: t.h, l: 'h' }, { v: t.m, l: 'm' }].map((seg, i) => (
+        <div key={i} className="flex items-baseline gap-0.5">
+          <span className="text-[13px] font-black text-white leading-none hl-mono">{seg.v.toString().padStart(2, '0')}</span>
+          <span className="text-[8px] font-black text-emerald-400 uppercase">{seg.l}</span>
+          {i < 2 && <span className="text-[10px] font-black text-emerald-600 ml-0.5">:</span>}
+        </div>
+      ))}
     </div>
   );
 }
@@ -561,8 +630,15 @@ function CountdownTimer({ expiryDate }: { expiryDate: string | undefined }) {
 
   useEffect(() => {
     if (!expiryDate) return;
-    const id = setInterval(() => setT(calc(expiryDate)), 1000);
-    return () => clearInterval(id);
+    let raf: number;
+    let lastSec = -1;
+    const tick = () => {
+      const now = calc(expiryDate);
+      if (now.s !== lastSec) { lastSec = now.s; setT(now); }
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
   }, [expiryDate]);
 
   if (!t) return (

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { toast } from 'sonner'
-import { Phone, Loader2, ArrowLeft, CheckCircle2, ArrowRight } from 'lucide-react'
+import { Phone, Loader2, ArrowLeft, CheckCircle2, ArrowRight, Home } from 'lucide-react'
 import { authApi } from '../../lib/api/auth'
 import { getErrorMessage } from '../../lib/utils/error'
 
@@ -52,6 +52,12 @@ export default function ForgotPasswordPage() {
           >
             Back to Sign In
           </Link>
+          <a
+            href="/"
+            className="flex items-center justify-center gap-1.5 mt-2 text-[10px] font-black text-slate-300 uppercase tracking-widest hover:text-slate-500 transition-colors"
+          >
+            <Home size={11} /> Back to Website
+          </a>
 
           <div className="mt-6 text-center text-[10px] font-bold uppercase tracking-[0.18em] text-slate-300">
             <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
@@ -113,6 +119,12 @@ export default function ForgotPasswordPage() {
           >
             <ArrowLeft size={14} /> Back to Sign In
           </Link>
+          <a
+            href="/"
+            className="flex items-center justify-center gap-1.5 mt-2 text-[10px] font-black text-slate-300 uppercase tracking-widest hover:text-slate-500 transition-colors"
+          >
+            <Home size={11} /> Back to Website
+          </a>
 
           <div className="fixed bottom-0.5 left-0 right-0 flex justify-center">
           <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-[10px] font-bold uppercase tracking-[0.18em] text-slate-700">

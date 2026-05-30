@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
-import { Lock, Phone, Eye, EyeOff, Loader2, ArrowRight, ShieldCheck } from 'lucide-react'
+import { Lock, Phone, Eye, EyeOff, Loader2, ArrowRight, ShieldCheck, Home } from 'lucide-react'
 import { authApi } from '../../lib/api/auth'
 import { getErrorMessage } from '../../lib/utils/error'
 
@@ -111,6 +111,12 @@ export default function ResetPasswordPage() {
           >
             Back to Sign In
           </Link>
+          <a
+            href="/"
+            className="flex items-center justify-center gap-1.5 mt-2 text-[10px] font-black text-slate-300 uppercase tracking-widest hover:text-slate-500 transition-colors"
+          >
+            <Home size={11} /> Back to Website
+          </a>
         </div>
       </div>
     </div>
