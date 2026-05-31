@@ -678,7 +678,7 @@ export default function SubscriptionPage() {
                     <p className="text-[10px] font-black text-emerald-800 uppercase tracking-widest mb-2">Instructions</p>
                     <div className="space-y-2">
                       <p className="text-xs font-medium text-emerald-700">1. Go to M-Pesa &gt; Lipa na M-Pesa</p>
-                      <p className="text-xs font-medium text-emerald-700 font-bold">2. Paybill: 4124967 (HudumaLynk)</p>
+                      <p className="text-xs font-medium text-emerald-700">2. Paybill: 4003431 </p>
                       <p className="text-xs font-medium text-emerald-700">3. Account: {user?.businessName?.slice(0, 5).toUpperCase() || 'HL'}</p>
                       <p className="text-xs font-medium text-emerald-700">4. Amount: KES {PLANS.find(p => p.id === subscription?.planName)?.price.toLocaleString()}</p>
                     </div>
