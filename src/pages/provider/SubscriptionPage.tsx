@@ -679,7 +679,7 @@ export default function SubscriptionPage() {
                     <div className="space-y-2">
                       <p className="text-xs font-medium text-emerald-700">1. Go to M-Pesa &gt; Lipa na M-Pesa</p>
                       <p className="text-xs font-medium text-emerald-700">2. Paybill: 4003431 </p>
-                      <p className="text-xs font-medium text-emerald-700">3. Account: {user?.businessName?.slice(0, 5).toUpperCase() || 'HL'}</p>
+                      <p className="text-xs font-medium text-emerald-700">3. Account: {user?.phone || 'Your Phone Number'}</p>
                       <p className="text-xs font-medium text-emerald-700">4. Amount: KES {PLANS.find(p => p.id === subscription?.planName)?.price.toLocaleString()}</p>
                     </div>
                   </div>
@@ -808,7 +808,7 @@ export default function SubscriptionPage() {
                             className="w-full bg-slate-50 border-none rounded-[.5em] py-4 px-6 outline-none focus:ring-4 focus:ring-emerald-500/5 text-lg font-black hl-mono uppercase"
                           />
                         </div>
-                        <p className="text-[9px] font-medium text-slate-400">Pay KES {selectedPlan.price.toLocaleString()} to Paybill 4124967</p>
+                        <p className="text-[9px] font-medium text-slate-400">Pay KES {selectedPlan.price.toLocaleString()} to Paybill 4003431 (Account: {user?.phone || 'Your Phone Number'})</p>
                       </div>
                     )}
 
