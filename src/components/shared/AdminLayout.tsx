@@ -210,9 +210,11 @@ function MobileBottomAdminNav() {
 
   const bottomNavItems = [
     { to: '/admin', label: 'Home', icon: LayoutDashboard, end: true },
-    { to: '/admin/businesses', label: 'Businesses', icon: Briefcase, end: false },
+    { to: '/admin/businesses', label: 'Business', icon: Briefcase, end: false },
     { to: '/admin/user-operations', label: 'Users', icon: Users, end: false },
-    { to: '/admin/financials', label: 'Financials', icon: DollarSign, end: false },
+    { to: '/admin/subscriptions', label: 'Subs', icon: CreditCard, end: false },
+    { to: '/admin/financials', label: 'Finance', icon: DollarSign, end: false },
+    { to: '/admin/community-reviews', label: 'Reviews', icon: MessageSquare, end: false },
     { to: '/admin/settings', label: 'Settings', icon: Settings, end: false },
   ];
 
@@ -222,11 +224,11 @@ function MobileBottomAdminNav() {
   };
 
   return (
-    <div className="fixed inset-x-0 bottom-5 z-[90] lg:hidden px-4 pointer-events-none flex flex-col items-center gap-3">
+    <div className="fixed inset-x-0 bottom-0 z-[90] lg:hidden w-full pointer-events-none flex flex-col items-center gap-0">
       {/* Tab bar */}
-      <div className="w-full max-w-[360px] pointer-events-auto" style={{ filter: 'drop-shadow(0 10px 25px rgba(0,0,0,0.12))' }}>
+      <div className="w-full pointer-events-auto" style={{ filter: 'drop-shadow(0 -4px 20px rgba(0,0,0,0.08))' }}>
         <div
-          className="w-full bg-white/80 backdrop-blur-2xl flex items-center justify-between px-2 py-2 relative rounded-[2.5rem] border border-white/60"
+          className="w-full bg-white/95 backdrop-blur-2xl flex items-center justify-between px-1 py-3 pb-safe relative border-t border-slate-200/60 overflow-x-auto custom-scrollbar"
         >
           {bottomNavItems.map((item) => {
             const active = isActive(item);
@@ -235,19 +237,19 @@ function MobileBottomAdminNav() {
                 key={item.label}
                 to={item.to}
                 end={item.end}
-                className="flex-1 flex flex-col items-center justify-center relative group gap-1"
+                className="flex-1 min-w-[55px] flex flex-col items-center justify-center relative group gap-1"
               >
                 {active ? (
                   /* Active state: Green circular background with shadow */
                   <div 
-                    className="h-10 w-10 flex items-center justify-center bg-[#0D4A3E] rounded-full transition-all duration-300 shadow-[0_4px_12px_rgba(13,74,62,0.4)] scale-105"
+                    className="h-[34px] w-[34px] flex items-center justify-center bg-[#0D4A3E] rounded-full transition-all duration-300 shadow-[0_4px_12px_rgba(13,74,62,0.4)] scale-105"
                   >
                     <item.icon className="w-[18px] h-[18px] text-white" strokeWidth={2.5} />
                   </div>
                 ) : (
                   /* Inactive state: Greyish circular ring with shadow */
-                  <div className="h-10 w-10 flex items-center justify-center rounded-full bg-slate-50 border border-slate-200/60 shadow-sm transition-all duration-300 group-hover:scale-105 hover:bg-slate-100">
-                    <item.icon className="w-[18px] h-[18px] text-slate-400 group-hover:text-slate-600 transition-colors" strokeWidth={2} />
+                  <div className="h-[34px] w-[34px] flex items-center justify-center rounded-full bg-slate-50 border border-slate-200/60 shadow-sm transition-all duration-300 group-hover:scale-105 hover:bg-slate-100">
+                    <item.icon className="w-[16px] h-[16px] text-slate-400 group-hover:text-slate-600 transition-colors" strokeWidth={2} />
                   </div>
                 )}
                 <span className={`text-[9px] font-black uppercase tracking-wider transition-colors ${active ? 'text-[#0D4A3E]' : 'text-slate-400 group-hover:text-slate-600'}`}>

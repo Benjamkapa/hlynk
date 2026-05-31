@@ -147,11 +147,11 @@ export default function GoogleAuthButton({
       {/* Custom styled UI matching the app's look and feel */}
       <div
         className={`absolute inset-0 flex items-center transition-all ${
-          variant === 'default' ? 'justify-center gap-3 border' : 'justify-between pl-6 pr-1 border border-slate-200'
+          variant === 'default' ? 'justify-center gap-3' : 'justify-between pl-6 pr-1'
         } ${
           isButtonDisabled 
-            ? 'opacity-80 bg-slate-50 border-slate-300 shadow-lg ' 
-            : `cursor-pointer ${variant === 'default' ? 'bg-[#faf8f5] border-[#e8e4db] hover:border-[#7A6F5A] shadow-lg group-hover:shadow-[0_2px_12px_rgba(122,111,90,0.1)]' : 'bg-white shadow-[0_8px_30px_rgba(0,0,0,0.12)]'}`
+            ? 'opacity-80 bg-slate-50 shadow-lg ' 
+            : `cursor-pointer ${variant === 'default' ? 'bg-[#faf8f5] shadow-lg group-hover:shadow-[0_2px_12px_rgba(122,111,90,0.1)]' : 'bg-white shadow-[0_8px_30px_rgba(0,0,0,0.12)]'}`
         }`}
         style={{ borderRadius: 'inherit' }}
       >
@@ -167,7 +167,7 @@ export default function GoogleAuthButton({
             <span className="text-[14px] font-bold tracking-[0.02em] text-[#0D4A3E]">
               {buttonText}
             </span>
-            <div className="w-10 h-10 rounded-full bg-slate-50 shadow-inner flex items-center justify-center border border-slate-100 group-hover:bg-white transition-colors">
+            <div className="w-10 h-10 rounded-full bg-slate-50 shadow-inner flex items-center justify-center group-hover:bg-white transition-colors">
               {iconMarkup}
             </div>
           </>
