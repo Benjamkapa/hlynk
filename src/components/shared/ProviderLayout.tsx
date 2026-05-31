@@ -492,11 +492,7 @@ export default function ProviderLayout() {
       {!isDesktop && (
         <MobileBottomNav
           user={user}
-          filteredGroups={filteredGroups}
           targetEndDate={targetEndDate}
-          isCritical={isCritical}
-          isTrial={isTrial}
-          daysRemaining={daysRemaining}
         />
       )}
     </div>
@@ -504,13 +500,9 @@ export default function ProviderLayout() {
 }
 
 // ─── Mobile Bottom Navigation ────────────────────────────────────────────────
-function MobileBottomNav({ user, filteredGroups, targetEndDate, isCritical, isTrial, daysRemaining }: {
+function MobileBottomNav({ user, targetEndDate }: {
   user: any;
-  filteredGroups: any[];
   targetEndDate: string | undefined;
-  isCritical: boolean;
-  isTrial: boolean;
-  daysRemaining: number;
 }) {
   const location = useLocation();
   const [showBanner, setShowBanner] = useState(false);
@@ -521,74 +513,94 @@ function MobileBottomNav({ user, filteredGroups, targetEndDate, isCritical, isTr
     return () => clearTimeout(t);
   }, [showBanner]);
 
-  const bottomNavItems = [
-    { to: '/dashboard/sales/new', label: 'Sell', icon: Zap, end: false },
-    { to: '/dashboard/sales', label: 'History', icon: Clock, end: true },
+  const navItems = [
     { to: '/dashboard', label: 'Home', icon: LayoutDashboard, end: true },
     { to: '/dashboard/products', label: 'Items', icon: Package, end: false },
-    { to: '/dashboard/settings', label: 'Settings', icon: Settings, end: false },
+    { to: '/dashboard/expenses', label: 'Spends', icon: ShoppingCart, end: false },
+    { to: '/dashboard/sales/new', label: 'Sell', icon: Zap, isCenter: true },
+    { to: '/dashboard/sales', label: 'History', icon: Clock, end: true },
+    { to: '/dashboard/reports', label: 'Growth', icon: BarChart2, end: false, plan: 'PLUS' },
+    { to: '/dashboard/settings', label: 'Tools', icon: Settings, end: false },
   ];
 
-  const isActive = (item: typeof bottomNavItems[0]) => {
+  const getPlanWeight = (p: string) => p.includes('MAX') ? 3 : p.includes('PLUS') ? 2 : 1;
+  const currentPlan = (user?.subscription?.planName || 'LITE').toUpperCase();
+  const userWeight = getPlanWeight(currentPlan);
+
+  const filteredNavItems = navItems.filter(item => {
+    if (item.plan) {
+      const requiredWeight = getPlanWeight(item.plan);
+      return userWeight >= requiredWeight;
+    }
+    return true;
+  });
+
+  const isActive = (item: any) => {
     if (item.end) return location.pathname === item.to;
     return location.pathname.startsWith(item.to);
   };
 
   return (
-    <div className="fixed inset-x-0 bottom-5 z-[90] lg:hidden px-4 pointer-events-none flex flex-col items-center gap-3">
-      {/* Subscription countdown banner */}
+    <div className="fixed inset-x-0 bottom-6 z-[95] lg:hidden px-4 flex flex-col items-center gap-4 pointer-events-none">
+      
+      {/* Banner */}
       <AnimatePresence>
         {targetEndDate && showBanner && (
           <motion.div
-            initial={{ opacity: 0, y: 10, scale: 0.95 }}
+            initial={{ opacity: 0, y: 20, scale: 0.9 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 10, scale: 0.95 }}
-            transition={{ duration: 0.2 }}
-            className="w-[90%] max-w-[360px]"
+            exit={{ opacity: 0, y: 20, scale: 0.9 }}
+            className="w-full max-w-[340px] pointer-events-auto"
           >
-            <Link to="/dashboard/subscription" className="pointer-events-auto bg-[#0D4A3E]/95 backdrop-blur-xl px-4 py-2.5 rounded-[20px] flex items-center justify-between shadow-[0_8px_30px_rgba(13,74,62,0.25)] border border-white/10">
-              <div>
-                <p className="text-[7px] font-black text-emerald-400 uppercase tracking-widest leading-none">
-                  {user?.subscription?.planName === 'MAX' ? 'Business Pro' : user?.subscription?.planName === 'PLUS' ? 'Growth' : 'Starter'}
-                </p>
-                <p className="text-[9px] font-medium text-emerald-200 mt-0.5">Subscription active</p>
-              </div>
-              <MiniCountdown expiryDate={targetEndDate} />
-            </Link>
+             <Link to="/dashboard/subscription" className="bg-[#0D4A3E] backdrop-blur-3xl border border-white/10 p-3 rounded-[1.5rem] flex items-center justify-between shadow-[0_20px_50px_rgba(13,74,61,0.4)]">
+                <div className="pl-2">
+                   <p className="text-[7px] font-black text-emerald-400 uppercase tracking-widest leading-none">Subscription Status</p>
+                   <p className="text-[9px] font-black text-white mt-1 uppercase tracking-tight">Active Plan</p>
+                </div>
+                <div className="bg-white/5 px-4 py-2 rounded-xl">
+                   <MiniCountdown expiryDate={targetEndDate} />
+                </div>
+             </Link>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Tab bar */}
-      <div className="w-full max-w-[360px] pointer-events-auto" style={{ filter: 'drop-shadow(0 10px 25px rgba(0,0,0,0.12))' }}>
-        <div
-          className="w-full bg-white/80 backdrop-blur-2xl flex items-center justify-between px-2 py-2 relative rounded-[2.5rem] border border-white/60"
-          onTouchStart={() => setShowBanner(true)}
-          onMouseEnter={() => setShowBanner(true)}
-        >
-          {bottomNavItems.map((item) => {
+      <div className="w-full max-w-[400px] pointer-events-auto">
+        <div className="relative h-20 bg-white/95 backdrop-blur-3xl border border-gray-100 rounded-[2.5rem] shadow-[0_25px_60px_-12px_rgba(0,0,0,0.18)] flex items-center justify-around px-2">
+          
+          {filteredNavItems.map((item, idx) => {
             const active = isActive(item);
+            
+            if (item.isCenter) {
+              return (
+                <NavLink
+                  key={item.label}
+                  to={item.to}
+                  className="relative -top-10 flex flex-col items-center group no-tap-highlight"
+                >
+                  <div className={`h-22 w-22 rounded-full flex items-center justify-center transition-all duration-500 shadow-2xl scale-110 ${active ? 'bg-emerald-600 shadow-emerald-600/40' : 'bg-[#0D4A3E] hover:scale-115 active:scale-95 shadow-slate-900/30'}`}>
+                    <item.icon className="w-9 h-9 text-white" strokeWidth={2.5} />
+                    <div className="absolute inset-0 rounded-full bg-white opacity-0 group-active:opacity-10 transition-opacity" />
+                  </div>
+                  <span className="mt-3 text-[10px] font-black text-white uppercase tracking-tight bg-[#0D4A3E] py-1 px-4 rounded-full shadow-lg border border-white/10">
+                    {item.label}
+                  </span>
+                </NavLink>
+              );
+            }
+
             return (
               <NavLink
                 key={item.label}
                 to={item.to}
                 end={item.end}
-                className="flex-1 flex flex-col items-center justify-center relative group gap-1"
+                className="flex-1 flex flex-col items-center justify-center gap-1 group no-tap-highlight h-full"
+                onTouchStart={() => setShowBanner(true)}
               >
-                {active ? (
-                  /* Active state: Green circular background with shadow */
-                  <div 
-                    className="h-10 w-10 flex items-center justify-center bg-[#0D4A3E] rounded-full transition-all duration-300 shadow-[0_4px_12px_rgba(13,74,62,0.4)] scale-105"
-                  >
-                    <item.icon className="w-[18px] h-[18px] text-white" strokeWidth={2.5} />
-                  </div>
-                ) : (
-                  /* Inactive state: Greyish circular ring with shadow */
-                  <div className="h-10 w-10 flex items-center justify-center rounded-full bg-slate-50 border border-slate-200/60 shadow-sm transition-all duration-300 group-hover:scale-105 hover:bg-slate-100">
-                    <item.icon className="w-[18px] h-[18px] text-slate-400 group-hover:text-slate-600 transition-colors" strokeWidth={2} />
-                  </div>
-                )}
-                <span className={`text-[9px] font-black uppercase tracking-wider transition-colors ${active ? 'text-[#0D4A3E]' : 'text-slate-400 group-hover:text-slate-600'}`}>
+                <div className={`p-2.5 rounded-2xl transition-all duration-300 ${active ? 'bg-emerald-50 text-emerald-600 shadow-inner' : 'text-slate-400 group-hover:text-slate-600'}`}>
+                  <item.icon className="w-6 h-6" strokeWidth={active ? 2.5 : 2} />
+                </div>
+                <span className={`text-[8px] font-black uppercase tracking-widest transition-all ${active ? 'text-emerald-700 opacity-100 scale-105 font-black' : 'text-slate-400 opacity-60'}`}>
                   {item.label}
                 </span>
               </NavLink>

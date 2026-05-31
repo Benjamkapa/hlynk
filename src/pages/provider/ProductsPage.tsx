@@ -4,7 +4,7 @@ import { ConfirmModal } from '../../components/shared/ConfirmModal'
 import { SlideOver } from '../../components/shared/SlideOver'
 import { toast } from 'sonner'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { inventoryApi } from '../../lib/api/providers'
+import { inventoryApi, providersApi } from '../../lib/api/providers'
 import { getErrorMessage } from '../../lib/utils/error'
 import { exportToCSV } from '../../lib/utils/export'
 import FeatureGate from '../../components/shared/FeatureGate'
@@ -31,6 +31,13 @@ export default function ProductsPage() {
     queryFn: () => inventoryApi.list({ search, page, limit: 10, sortBy, sortOrder, category: category || undefined, includeStats: true }),
     placeholderData: keepPreviousData
   })
+
+  const { data: profile } = useQuery({
+    queryKey: ['my-profile'],
+    queryFn: providersApi.getMyProfile
+  })
+
+  const threshold = profile?.data?.operationalSettings?.lowStockThreshold || 10;
 
   useEffect(() => {
     if (error) toast.error(getErrorMessage(error))
@@ -210,7 +217,7 @@ export default function ProductsPage() {
                       </div>
                     </td>
                     <td className="px-8 py-5 text-center">
-                      <span className={`text-sm font-black hl-mono ${p.stockLevel < 10 ? 'text-red-600' : 'text-slate-900'}`}>{p.stockLevel}</span>
+                      <span className={`text-sm font-black hl-mono ${p.stockLevel < threshold ? 'text-red-600' : 'text-slate-900'}`}>{p.stockLevel}</span>
                     </td>
                     <td className="px-8 py-5 text-right font-bold text-slate-400 text-xs hl-mono">KES {Number(p.buyingPrice || 0).toLocaleString()}</td>
                     <td className="px-8 py-5 text-right font-black text-[#0D4A3E] text-sm hl-mono">KES {Number(p.price).toLocaleString()}</td>
@@ -293,7 +300,7 @@ export default function ProductsPage() {
                          <div>
                             <p className="text-[12px] font-black text-[#0D4A3E] hl-mono -mb-1">KES {Number(p.price).toLocaleString()}</p>
                          </div>
-                         <div className={`h-1.5 w-1.5 rounded-full ${p.stockLevel < 10 ? 'bg-red-500 animate-pulse' : 'bg-emerald-500'}`} />
+                         <div className={`h-1.5 w-1.5 rounded-full ${p.stockLevel < threshold ? 'bg-red-500 animate-pulse' : 'bg-emerald-500'}`} />
                       </div>
                     </div>
                   </div>

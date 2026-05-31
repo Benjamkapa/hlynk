@@ -1,10 +1,11 @@
 import { useState, useRef, useEffect } from 'react'
-import { User, Store, Bell, Lock, Save, Camera, Loader2, LogOut, Trash2, Users, Shield, Mail, Phone, ArrowRight, Plus, CheckCircle2, Edit, FileText, RefreshCcw, Code, Sparkles, Eye, AlertTriangle } from 'lucide-react'
+import { User, Store, Bell, Lock, Save, Camera, Loader2, LogOut, Trash2, Users, Shield, Mail, Phone, ArrowRight, Plus, CheckCircle2, Edit, FileText, RefreshCcw, Code, Sparkles, Eye, AlertTriangle, Terminal } from 'lucide-react'
 import { ConfirmModal } from '../../components/shared/ConfirmModal'
 import { toast } from 'sonner'
 import { useAuth } from '../../lib/auth/AuthContext'
 import { providersApi } from '../../lib/api/providers'
 import { getErrorMessage } from '../../lib/utils/error'
+import { useLocation, NavLink, Link } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import FeatureGate from '../../components/shared/FeatureGate'
 
@@ -103,19 +104,29 @@ export default function SettingsPage() {
     name: string
     icon: any
     role?: string[]
+    plan?: 'PLUS' | 'MAX'
   }
 
   const allTabs: SettingsTab[] = [
     { name: 'Profile', icon: User },
     { name: 'Business', icon: Store, role: ['PROVIDER', 'SUPER_ADMIN'] },
+    { name: 'Staff Management', icon: Users, role: ['PROVIDER', 'SUPER_ADMIN'], plan: 'PLUS' },
     { name: 'Data Management', icon: Trash2, role: ['PROVIDER', 'SUPER_ADMIN'] },
-    // { name: 'Notifications', icon: Bell, role: ['PROVIDER', 'SUPER_ADMIN'] },
     { name: 'Security', icon: Lock },
   ]
 
   const tabs = allTabs.filter(tab => {
     // Role-based filtering
     if (tab.role && !tab.role.includes(user?.role || '')) return false
+
+    // Plan-based filtering
+    if (tab.plan) {
+      const getPlanWeight = (p: string) => p.includes('MAX') ? 3 : p.includes('PLUS') ? 2 : 1;
+      const currentPlan = (user?.subscription?.planName || 'LITE').toUpperCase();
+      const userWeight = getPlanWeight(currentPlan);
+      const requiredWeight = getPlanWeight(tab.plan);
+      if (userWeight < requiredWeight) return false;
+    }
 
     return true
   })
@@ -273,86 +284,45 @@ export default function SettingsPage() {
                         operationalSettings: { ...formData.operationalSettings, autoPrint: v }
                       })}
                     />
-                    <div className="md:col-span-2 mt-4">
-                       <InputGroup
-                         label="Alert me when stock is below"
-                         placeholder="e.g. 10"
-                         type="number"
-                         value={formData.operationalSettings?.lowStockThreshold || ''}
-                         onChange={(v: string) => setFormData({
-                           ...formData,
-                           operationalSettings: { ...formData.operationalSettings, lowStockThreshold: parseInt(v) || 0 }
-                         })}
-                       />
-                       <p className="text-[10px] text-gray-400 font-bold mt-2 uppercase tracking-widest">Type a number here. We will warn you when items in your store fall below this amount.</p>
-                    </div>
+                        <InputGroup
+                          label="Low Stock Threshold"
+                          placeholder="e.g. 5"
+                          type="number"
+                          value={formData.operationalSettings?.lowStockThreshold || ''}
+                          onChange={(v: string) => setFormData({
+                            ...formData,
+                            operationalSettings: { ...formData.operationalSettings, lowStockThreshold: parseInt(v) || 0 }
+                          })}
+                        />
+                        <div className="mt-4 p-4 bg-emerald-50 rounded-[.5rem] border border-emerald-100">
+                          <p className="text-[10px] text-emerald-800 font-bold uppercase tracking-widest leading-relaxed">
+                            <Sparkles size={12} className="inline mr-1" />
+                            Smart Tuning: Setting this to <span className="text-emerald-900 font-black">{formData.operationalSettings?.lowStockThreshold || 0}</span> means we will flag items in your inventory as "Low Stock" when their quantity drops below this number.
+                          </p>
+                        </div>
+                     </div>
                   </div>
+                </div>
+            )}
+
+            {activeTab === 'Staff Management' && (
+              <div className="space-y-6">
+                <div className="flex justify-between items-center mb-4">
+                  <div>
+                    <h4 className="text-lg font-black text-gray-900">Your Team</h4>
+                    <p className="text-xs text-gray-500">Configure who has access to your workshop</p>
+                  </div>
+                  <Link to="/dashboard/staff" className="text-[10px] font-black text-emerald-600 uppercase tracking-widest hover:underline flex items-center gap-1">
+                    Manage in full screen <ArrowRight size={12} />
+                  </Link>
+                </div>
+                <div className="h-[500px] overflow-hidden rounded-[.5rem] border border-gray-100 bg-gray-50">
+                   <iframe src="/dashboard/staff" className="w-full h-full border-none pointer-events-auto" />
                 </div>
               </div>
             )}
 
-            {activeTab === 'Notifications' && (
-              <div className="space-y-8">
-                <div>
-                  <h4 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-6">Alert Preferences</h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <ToggleItem
-                      title="Email Notifications"
-                      desc="Receive daily business summaries via email"
-                      active={formData.operationalSettings?.notifications?.email}
-                      onToggle={(v: boolean) => setFormData({
-                        ...formData,
-                        operationalSettings: { 
-                          ...formData.operationalSettings, 
-                          notifications: { ...formData.operationalSettings.notifications, email: v }
-                        }
-                      })}
-                    />
-                    <ToggleItem
-                      title="SMS Alerts"
-                      desc="Get critical stock alerts on your phone"
-                      active={formData.operationalSettings?.notifications?.sms}
-                      onToggle={(v: boolean) => setFormData({
-                        ...formData,
-                        operationalSettings: { 
-                          ...formData.operationalSettings, 
-                          notifications: { ...formData.operationalSettings.notifications, sms: v }
-                        }
-                      })}
-                    />
-                  </div>
-                </div>
-                <div>
-                  <h4 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-6">Event Tracking</h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <ToggleItem
-                      title="Sales Notifications"
-                      desc="Real-time alerts for every recorded sale"
-                      active={formData.operationalSettings?.notifications?.sales}
-                      onToggle={(v: boolean) => setFormData({
-                        ...formData,
-                        operationalSettings: { 
-                          ...formData.operationalSettings, 
-                          notifications: { ...formData.operationalSettings.notifications, sales: v }
-                        }
-                      })}
-                    />
-                    <ToggleItem
-                      title="Inventory Alerts"
-                      desc="Notify when stock falls below threshold"
-                      active={formData.operationalSettings?.notifications?.inventory}
-                      onToggle={(v: boolean) => setFormData({
-                        ...formData,
-                        operationalSettings: { 
-                          ...formData.operationalSettings, 
-                          notifications: { ...formData.operationalSettings.notifications, inventory: v }
-                        }
-                      })}
-                    />
-                  </div>
-                </div>
-              </div>
-            )}
+
 
             {activeTab === 'Data Management' && (
               <div className="space-y-8 animate-in fade-in slide-in-from-top-4 duration-500">
