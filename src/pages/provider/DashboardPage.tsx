@@ -108,43 +108,44 @@ export default function DashboardPage() {
           
           <div className="h-[200px] lg:h-[350px] w-full">
             <ResponsiveContainer width="100%" height="100%" minWidth={0} debounce={100}>
-              <AreaChart data={salesData}>
+              <AreaChart data={salesData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                 <defs>
                   <linearGradient id="colorSales" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#1e293b" stopOpacity={0.15}/>
+                    <stop offset="5%" stopColor="#1e293b" stopOpacity={0.08}/>
                     <stop offset="95%" stopColor="#1e293b" stopOpacity={0}/>
                   </linearGradient>
                   <linearGradient id="colorProfit" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#F59E0B" stopOpacity={0.15}/>
+                    <stop offset="5%" stopColor="#F59E0B" stopOpacity={0.08}/>
                     <stop offset="95%" stopColor="#F59E0B" stopOpacity={0}/>
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F1F5F9" />
-                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fontSize: 9, fill: '#94A3B8', fontWeight: 700, fontFamily: 'JetBrains Mono'}} dy={10} />
+                <CartesianGrid strokeDasharray="0" vertical={false} stroke="#F8FAFC" />
+                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fontSize: 9, fill: '#CBD5E1', fontWeight: 700, fontFamily: 'JetBrains Mono'}} dy={10} />
                 <YAxis hide={true} />
                 <Tooltip 
-                  contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.1)', padding: '12px 16px' }}
+                  cursor={{ stroke: '#F1F5F9', strokeWidth: 1 }}
+                  contentStyle={{ borderRadius: '12px', border: '1px solid #f1f5f9', boxShadow: '0 20px 40px -12px rgba(0,0,0,0.05)', padding: '12px 16px' }}
                   itemStyle={{ fontWeight: 800, fontFamily: 'JetBrains Mono', fontSize: 11 }}
                 />
                 <Area 
                   type="monotone" 
                   dataKey="sales" 
                   stroke="#1e293b" 
-                  strokeWidth={2} 
+                  strokeWidth={1} 
                   fillOpacity={1} 
                   fill="url(#colorSales)" 
-                  dot={{ r: 3, fill: '#1e293b', strokeWidth: 2, stroke: '#fff' }}
-                  activeDot={{ r: 5, strokeWidth: 0 }}
+                  dot={false}
+                  activeDot={{ r: 4, fill: '#1e293b', strokeWidth: 2, stroke: '#fff' }}
                 />
                 <Area 
                   type="monotone" 
                   dataKey="profit" 
                   stroke="#F59E0B" 
-                  strokeWidth={2} 
+                  strokeWidth={1} 
                   fillOpacity={1} 
                   fill="url(#colorProfit)" 
-                  dot={{ r: 3, fill: '#F59E0B', strokeWidth: 2, stroke: '#fff' }}
-                  activeDot={{ r: 5, strokeWidth: 0 }}
+                  dot={false}
+                  activeDot={{ r: 4, fill: '#F59E0B', strokeWidth: 2, stroke: '#fff' }}
                 />
               </AreaChart>
             </ResponsiveContainer>

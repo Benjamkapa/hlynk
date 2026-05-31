@@ -92,17 +92,17 @@ export default function FinancialsPage() {
           </div>
           <div className="h-[400px] relative z-10">
             <ResponsiveContainer width="100%" height="100%" minWidth={0} debounce={100}>
-              <BarChart data={revenueData}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F1F5F9" />
-                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fontSize: 10, fill: '#94A3B8', fontFamily: 'JetBrains Mono'}} dy={15} />
-                <YAxis axisLine={false} tickLine={false} tick={{fontSize: 10, fill: '#94A3B8', fontFamily: 'JetBrains Mono'}} />
+              <BarChart data={revenueData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="0" vertical={false} stroke="#F8FAFC" />
+                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fontSize: 9, fill: '#CBD5E1', fontWeight: 700, fontFamily: 'JetBrains Mono'}} dy={15} />
+                <YAxis axisLine={false} tickLine={false} tick={{fontSize: 9, fill: '#CBD5E1', fontWeight: 700, fontFamily: 'JetBrains Mono'}} dx={-10} />
                 <Tooltip 
-                  cursor={{fill: '#F8FAFC'}}
-                  contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)', padding: '20px' }}
-                  itemStyle={{ fontFamily: 'JetBrains Mono' }}
+                  cursor={{ fill: '#F8FAFC', opacity: 0.4 }}
+                  contentStyle={{ borderRadius: '12px', border: '1px solid #f1f5f9', boxShadow: '0 20px 40px -12px rgba(0,0,0,0.05)', padding: '12px 16px' }}
+                  itemStyle={{ fontFamily: 'JetBrains Mono', fontWeight: 800, fontSize: 11 }}
                 />
-                <Bar dataKey="revenue" fill="#10B981" radius={[4, 4, 0, 0]} barSize={40} />
-                <Bar dataKey="profit" fill="#E2E8F0" radius={[4, 4, 0, 0]} barSize={40} />
+                <Bar dataKey="revenue" fill="#10B981" radius={[4, 4, 0, 0]} barSize={32} />
+                <Bar dataKey="profit" fill="#E2E8F0" radius={[4, 4, 0, 0]} barSize={32} />
               </BarChart>
             </ResponsiveContainer>
           </div>

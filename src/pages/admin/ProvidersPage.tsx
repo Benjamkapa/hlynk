@@ -73,21 +73,22 @@ export default function ProvidersPage() {
             </div>
             <div className="h-[250px] w-full">
                <ResponsiveContainer width="100%" height="100%" minWidth={0}>
-                  <LineChart data={weeklyGrowth}>
-                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F1F5F9" />
-                     <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fontSize: 10, fill: '#94A3B8', fontWeight: 700, fontFamily: 'JetBrains Mono'}} dy={15} />
-                     <YAxis axisLine={false} tickLine={false} tick={{fontSize: 10, fill: '#94A3B8', fontWeight: 700, fontFamily: 'JetBrains Mono'}} />
+                  <LineChart data={weeklyGrowth} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                     <CartesianGrid strokeDasharray="0" vertical={false} stroke="#F8FAFC" />
+                     <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fontSize: 9, fill: '#CBD5E1', fontWeight: 700, fontFamily: 'JetBrains Mono'}} dy={15} />
+                     <YAxis axisLine={false} tickLine={false} tick={{fontSize: 9, fill: '#CBD5E1', fontWeight: 700, fontFamily: 'JetBrains Mono'}} dx={-10} />
                      <Tooltip 
-                       contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)', padding: '16px' }}
-                       itemStyle={{ fontWeight: 800, color: '#0D4A3E', fontFamily: 'JetBrains Mono' }}
+                       cursor={{ stroke: '#F1F5F9', strokeWidth: 1 }}
+                       contentStyle={{ borderRadius: '12px', border: '1px solid #f1f5f9', boxShadow: '0 20px 40px -12px rgba(0,0,0,0.05)', padding: '12px 16px' }}
+                       itemStyle={{ fontWeight: 800, color: '#0D4A3E', fontFamily: 'JetBrains Mono', fontSize: 11 }}
                      />
                      <Line 
                        type="monotone" 
                        dataKey="value" 
                        stroke="#0D4A3E" 
-                       strokeWidth={4} 
-                       dot={{ r: 4, fill: '#0D4A3E', strokeWidth: 2, stroke: '#fff' }}
-                       activeDot={{ r: 6, strokeWidth: 0 }}
+                       strokeWidth={1} 
+                       dot={false}
+                       activeDot={{ r: 4, fill: '#0D4A3E', strokeWidth: 2, stroke: '#fff' }}
                      />
                   </LineChart>
                </ResponsiveContainer>

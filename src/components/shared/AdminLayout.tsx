@@ -208,56 +208,69 @@ export default function AdminLayout() {
 function MobileBottomAdminNav() {
   const location = useLocation();
 
-  const bottomNavItems = [
+  const navItems = [
     { to: '/admin', label: 'Home', icon: LayoutDashboard, end: true },
     { to: '/admin/businesses', label: 'Business', icon: Briefcase, end: false },
     { to: '/admin/user-operations', label: 'Users', icon: Users, end: false },
-    { to: '/admin/subscriptions', label: 'Subs', icon: CreditCard, end: false },
+    { to: '/admin/subscriptions', label: 'Subs', icon: CreditCard, isCenter: true },
     { to: '/admin/financials', label: 'Finance', icon: DollarSign, end: false },
     { to: '/admin/community-reviews', label: 'Reviews', icon: MessageSquare, end: false },
-    { to: '/admin/settings', label: 'Settings', icon: Settings, end: false },
+    { to: '/admin/settings', label: 'Tools', icon: Settings, end: false },
   ];
 
-  const isActive = (item: typeof bottomNavItems[0]) => {
+  const isActive = (item: any) => {
     if (item.end) return location.pathname === item.to;
     return location.pathname.startsWith(item.to);
   };
 
   return (
-    <div className="fixed inset-x-0 bottom-0 z-[90] lg:hidden w-full pointer-events-none flex flex-col items-center gap-0">
-      {/* Tab bar */}
-      <div className="w-full pointer-events-auto" style={{ filter: 'drop-shadow(0 -4px 20px rgba(0,0,0,0.08))' }}>
-        <div
-          className="w-full bg-white/95 backdrop-blur-2xl flex items-center justify-between px-1 py-3 pb-safe relative border-t border-slate-200/60 overflow-x-auto custom-scrollbar"
-        >
-          {bottomNavItems.map((item) => {
+    <div className="fixed inset-x-0 bottom-6 z-[95] lg:hidden flex flex-col items-center pointer-events-none">
+      <div className="w-full px-[1px] pointer-events-auto">
+        <div className="relative h-20 bg-white/95 backdrop-blur-2xl border border-white/60 rounded-full shadow-[0_20px_50px_rgba(0,0,0,0.1)] flex items-center justify-around px-2">
+
+          {navItems.map((item) => {
             const active = isActive(item);
+
+            if (item.isCenter) {
+              return (
+                <NavLink
+                  key={item.label}
+                  to={item.to}
+                  className="flex-1 flex flex-col items-center justify-center gap-1 no-tap-highlight"
+                >
+                  <div className={`w-11 h-11 rounded-full flex items-center justify-center transition-all duration-300 active:scale-95 ${active ? 'bg-emerald-500 shadow-lg shadow-emerald-500/20' : 'bg-emerald-200'
+                    }`}>
+                    <item.icon className={`w-5 h-5 ${active ? 'text-white' : 'text-[#0D4A3E]'}`} strokeWidth={2.5} />
+                  </div>
+                  <span className={`text-[11px] font-bold ${active ? 'text-emerald-700' : 'text-[#0D4A3E] opacity-60'}`}>
+                    {item.label}
+                  </span>
+                </NavLink>
+              );
+            }
+
             return (
               <NavLink
                 key={item.label}
                 to={item.to}
                 end={item.end}
-                className="flex-1 min-w-[55px] flex flex-col items-center justify-center relative group gap-1"
+                className="flex-1 flex flex-col items-center justify-center gap-1 no-tap-highlight"
               >
-                {active ? (
-                  /* Active state: Green circular background with shadow */
-                  <div 
-                    className="h-[34px] w-[34px] flex items-center justify-center bg-[#0D4A3E] rounded-full transition-all duration-300 shadow-[0_4px_12px_rgba(13,74,62,0.4)] scale-105"
-                  >
-                    <item.icon className="w-[18px] h-[18px] text-white" strokeWidth={2.5} />
-                  </div>
-                ) : (
-                  /* Inactive state: Greyish circular ring with shadow */
-                  <div className="h-[34px] w-[34px] flex items-center justify-center rounded-full bg-slate-50 border border-slate-200/60 shadow-sm transition-all duration-300 group-hover:scale-105 hover:bg-slate-100">
-                    <item.icon className="w-[16px] h-[16px] text-slate-400 group-hover:text-slate-600 transition-colors" strokeWidth={2} />
-                  </div>
-                )}
-                <span className={`text-[9px] font-black uppercase tracking-wider transition-colors ${active ? 'text-[#0D4A3E]' : 'text-slate-400 group-hover:text-slate-600'}`}>
+                <div className={`w-11 h-11 rounded-[14px] flex items-center justify-center transition-all duration-300 ${active ? 'bg-emerald-500 shadow-lg shadow-emerald-500/10' : 'bg-emerald-50'
+                  }`}>
+                  <item.icon
+                    className={`w-5 h-5 transition-colors ${active ? 'text-white' : 'text-[#0D4A3E]'}`}
+                    strokeWidth={active ? 2.5 : 2}
+                  />
+                </div>
+                <span className={`text-[11px] font-bold transition-all ${active ? 'text-emerald-700 opacity-100' : 'text-[#0D4A3E] opacity-40'
+                  }`}>
                   {item.label}
                 </span>
               </NavLink>
             );
           })}
+
         </div>
       </div>
     </div>

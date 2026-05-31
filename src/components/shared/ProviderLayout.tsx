@@ -541,8 +541,8 @@ function MobileBottomNav({ user, targetEndDate }: {
   };
 
   return (
-    <div className="fixed inset-x-0 bottom-6 z-[95] lg:hidden px-4 flex flex-col items-center gap-4 pointer-events-none">
-      
+    <div className="fixed inset-x-0 bottom-6 z-[95] lg:hidden flex flex-col items-center pointer-events-none">
+
       {/* Banner */}
       <AnimatePresence>
         {targetEndDate && showBanner && (
@@ -550,39 +550,39 @@ function MobileBottomNav({ user, targetEndDate }: {
             initial={{ opacity: 0, y: 20, scale: 0.9 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.9 }}
-            className="w-full max-w-[340px] pointer-events-auto"
+            className="w-full max-w-[340px] pointer-events-auto mb-4 px-4"
           >
-             <Link to="/dashboard/subscription" className="bg-[#0D4A3E] backdrop-blur-3xl border border-white/10 p-3 rounded-[1.5rem] flex items-center justify-between shadow-[0_20px_50px_rgba(13,74,61,0.4)]">
-                <div className="pl-2">
-                   <p className="text-[7px] font-black text-emerald-400 uppercase tracking-widest leading-none">Subscription Status</p>
-                   <p className="text-[9px] font-black text-white mt-1 uppercase tracking-tight">Active Plan</p>
-                </div>
-                <div className="bg-white/5 px-4 py-2 rounded-xl">
-                   <MiniCountdown expiryDate={targetEndDate} />
-                </div>
-             </Link>
+            <Link to="/dashboard/subscription" className="bg-[#0D4A3E] backdrop-blur-3xl border border-white/10 p-3 rounded-[1.5rem] flex items-center justify-between shadow-[0_20px_50px_rgba(13,74,61,0.4)]">
+              <div className="pl-2">
+                <p className="text-[7px] font-black text-emerald-400 uppercase tracking-widest leading-none">Subscription Status</p>
+                <p className="text-[9px] font-black text-white mt-1 uppercase tracking-tight">Active Plan</p>
+              </div>
+              <div className="bg-white/5 px-4 py-2 rounded-xl">
+                <MiniCountdown expiryDate={targetEndDate} />
+              </div>
+            </Link>
           </motion.div>
         )}
       </AnimatePresence>
 
-      <div className="w-full max-w-[400px] pointer-events-auto">
-        <div className="relative h-20 bg-white/95 backdrop-blur-3xl border border-gray-100 rounded-[2.5rem] shadow-[0_25px_60px_-12px_rgba(0,0,0,0.18)] flex items-center justify-around px-2">
-          
-          {filteredNavItems.map((item, idx) => {
+      <div className="w-full px-[1rem] pointer-events-auto">
+        <div className="relative h-20 bg-white/95 backdrop-blur-2xl border border-white/60 rounded-full shadow-[0_20px_50px_rgba(0,0,0,0.1)] flex items-center justify-around px-2">
+
+          {filteredNavItems.map((item) => {
             const active = isActive(item);
-            
+
             if (item.isCenter) {
               return (
                 <NavLink
                   key={item.label}
                   to={item.to}
-                  className="relative -top-10 flex flex-col items-center group no-tap-highlight"
+                  className="flex-1 flex flex-col items-center justify-center gap-1 no-tap-highlight"
                 >
-                  <div className={`h-22 w-22 rounded-full flex items-center justify-center transition-all duration-500 shadow-2xl scale-110 ${active ? 'bg-emerald-600 shadow-emerald-600/40' : 'bg-[#0D4A3E] hover:scale-115 active:scale-95 shadow-slate-900/30'}`}>
-                    <item.icon className="w-9 h-9 text-white" strokeWidth={2.5} />
-                    <div className="absolute inset-0 rounded-full bg-white opacity-0 group-active:opacity-10 transition-opacity" />
+                  <div className={`w-11 h-11 rounded-full flex items-center justify-center transition-all duration-300 active:scale-95 ${active ? 'bg-emerald-500 shadow-lg shadow-emerald-500/20' : 'bg-emerald-200'
+                    }`}>
+                    <item.icon className={`w-5 h-5 ${active ? 'text-white' : 'text-[#0D4A3E]'}`} strokeWidth={2.5} />
                   </div>
-                  <span className="mt-3 text-[10px] font-black text-white uppercase tracking-tight bg-[#0D4A3E] py-1 px-4 rounded-full shadow-lg border border-white/10">
+                  <span className={`text-[11px] font-bold ${active ? 'text-emerald-700' : 'text-[#0D4A3E] opacity-60'}`}>
                     {item.label}
                   </span>
                 </NavLink>
@@ -594,20 +594,27 @@ function MobileBottomNav({ user, targetEndDate }: {
                 key={item.label}
                 to={item.to}
                 end={item.end}
-                className="flex-1 flex flex-col items-center justify-center gap-1 group no-tap-highlight h-full"
+                className="flex-1 flex flex-col items-center justify-center gap-1 no-tap-highlight"
                 onTouchStart={() => setShowBanner(true)}
               >
-                <div className={`p-2.5 rounded-2xl transition-all duration-300 ${active ? 'bg-emerald-50 text-emerald-600 shadow-inner' : 'text-slate-400 group-hover:text-slate-600'}`}>
-                  <item.icon className="w-6 h-6" strokeWidth={active ? 2.5 : 2} />
+                <div className={`w-11 h-11 rounded-[14px] flex items-center justify-center transition-all duration-300 ${active ? 'bg-emerald-500 shadow-lg shadow-emerald-500/10' : 'bg-emerald-50'
+                  }`}>
+                  <item.icon
+                    className={`w-5 h-5 transition-colors ${active ? 'text-white' : 'text-[#0D4A3E]'}`}
+                    strokeWidth={active ? 2.5 : 2}
+                  />
                 </div>
-                <span className={`text-[8px] font-black uppercase tracking-widest transition-all ${active ? 'text-emerald-700 opacity-100 scale-105 font-black' : 'text-slate-400 opacity-60'}`}>
+                <span className={`text-[11px] font-bold transition-all ${active ? 'text-emerald-700 opacity-100' : 'text-[#0D4A3E] opacity-40'
+                  }`}>
                   {item.label}
                 </span>
               </NavLink>
             );
           })}
+
         </div>
       </div>
+
     </div>
   );
 }
