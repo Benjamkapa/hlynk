@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import { User, Store, Bell, Lock, Save, Camera, Loader2, LogOut, Trash2, Users, Shield, Mail, Phone, ArrowRight, Plus, CheckCircle2, Edit, FileText, RefreshCcw, Code, Sparkles, Eye } from 'lucide-react'
+import { User, Store, Bell, Lock, Save, Camera, Loader2, LogOut, Trash2, Users, Shield, Mail, Phone, ArrowRight, Plus, CheckCircle2, Edit, FileText, RefreshCcw, Code, Sparkles, Eye, AlertTriangle } from 'lucide-react'
 import { ConfirmModal } from '../../components/shared/ConfirmModal'
 import { toast } from 'sonner'
 import { useAuth } from '../../lib/auth/AuthContext'
