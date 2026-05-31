@@ -167,7 +167,7 @@ export default function GoogleAuthButton({
             <span className="text-[14px] font-bold tracking-[0.02em] text-[#0D4A3E]">
               {buttonText}
             </span>
-            <div className="w-10 h-10 rounded-full bg-slate-50 shadow-inner flex items-center justify-center group-hover:bg-white transition-colors">
+            <div className="w-10 h-10 rounded-full border border-slate-200 shadow-inner flex items-center justify-center group-hover:bg-slate-100 transition-colors mr-2">
               {iconMarkup}
             </div>
           </>
