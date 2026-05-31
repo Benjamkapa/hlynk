@@ -393,9 +393,11 @@ export default function LoginPage() {
             content: ''; position: fixed; inset: 0;
             background: linear-gradient(
               to bottom,
-              rgba(13, 74, 62, 0.38) 0%, rgba(13, 74, 62, 0.18) 40%,
-              rgba(13, 74, 62, 0.1) 58%, rgba(232, 245, 238, 0.32) 75%,
-              rgba(126, 201, 162, 0.92) 100%
+              rgba(13, 74, 62, 0.38) 0%, 
+              rgba(13, 74, 62, 0.15) 30%,
+              rgba(13, 74, 62, 0.7) 60%, 
+              rgba(13, 74, 62, 0.98) 75%,
+              rgba(13, 74, 62, 1) 100%
             );
             -webkit-backdrop-filter: blur(2px);
             pointer-events: none; z-index: 0;
