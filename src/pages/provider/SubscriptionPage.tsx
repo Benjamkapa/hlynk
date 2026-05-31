@@ -652,7 +652,7 @@ export default function SubscriptionPage() {
                 onClick={() => setSubPaymentMethod('MANUAL')}
                 className={`flex-1 py-3 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${subPaymentMethod === 'MANUAL' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
               >
-                Manual / Pochi
+                Manual
               </button>
             </div>
 
@@ -777,7 +777,7 @@ export default function SubscriptionPage() {
                       onClick={() => setSubPaymentMethod('MANUAL')}
                       className={`flex-1 py-3 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${subPaymentMethod === 'MANUAL' ? 'bg-white text-emerald-600 shadow-sm border border-slate-100' : 'text-slate-400 hover:text-slate-600'}`}
                     >
-                      Manual / Pochi
+                      Manual
                     </button>
                   </div>
 
