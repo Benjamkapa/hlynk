@@ -353,7 +353,6 @@ export default function LoginPage() {
           background: linear-gradient(135deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.01) 100%);
           backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
           border: 1px solid rgba(255,255,255,0.06);
-          box-shadow: inset 0 0 40px rgba(255,255,255,0.03), 0 30px 80px rgba(0,0,0,0.08);
         }
 
         /*
@@ -551,7 +550,7 @@ export default function LoginPage() {
                         {!acceptedEula && (
                           <div className="google-btn-blocker" onClick={eulaWarning} />
                         )}
-                        <MobileGoogleAuth googleLoading={googleLoading} handleGoogleAuth={handleGoogleAuth} />
+                        <MobileGoogleAuth googleLoading={googleLoading} handleGoogleAuth={handleGoogleAuth} disabled={!acceptedEula} />
                       </div>
                     </div>
 
@@ -743,16 +742,18 @@ export default function LoginPage() {
 function MobileGoogleAuth({
   googleLoading,
   handleGoogleAuth,
+  disabled,
 }: {
   googleLoading: boolean
   handleGoogleAuth: (credential: string) => void
+  disabled?: boolean
 }) {
   return (
     <GoogleAuthButton
       text="continue_with"
       variant="pill-right-icon"
       onCredential={handleGoogleAuth}
-      disabled={googleLoading}
+      disabled={googleLoading || disabled}
       className=""
     />
   )
