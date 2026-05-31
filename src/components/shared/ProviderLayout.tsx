@@ -527,17 +527,19 @@ function MobileBottomNav({ user, targetEndDate }: {
   const currentPlan = (user?.subscription?.planName || 'LITE').toUpperCase();
   const userWeight = getPlanWeight(currentPlan);
 
-  const filteredNavItems = navItems.filter(item => {
-    if (item.plan) {
-      const requiredWeight = getPlanWeight(item.plan);
-      return userWeight >= requiredWeight;
-    }
-    return true;
-  });
-
   const isActive = (item: any) => {
     if (item.end) return location.pathname === item.to;
     return location.pathname.startsWith(item.to);
+  };
+
+  const handleLockedClick = (plan: string) => {
+    toast.error(`Upgrade to ${plan} to access this feature`, {
+      description: "Visit settings to manage your subscription",
+      action: {
+        label: "Upgrade",
+        onClick: () => window.location.href = "/dashboard/subscription"
+      }
+    });
   };
 
   return (
@@ -568,8 +570,9 @@ function MobileBottomNav({ user, targetEndDate }: {
       <div className="w-full px-[1rem] pointer-events-auto">
         <div className="relative h-20 bg-white/95 backdrop-blur-2xl border border-white/60 rounded-full shadow-[0_20px_50px_rgba(0,0,0,0.1)] flex items-center justify-around px-2">
 
-          {filteredNavItems.map((item) => {
+          {navItems.map((item) => {
             const active = isActive(item);
+            const isLocked = item.plan && userWeight < getPlanWeight(item.plan);
 
             if (item.isCenter) {
               return (
@@ -586,6 +589,23 @@ function MobileBottomNav({ user, targetEndDate }: {
                     {item.label}
                   </span>
                 </NavLink>
+              );
+            }
+
+            if (isLocked) {
+              return (
+                <button
+                  key={item.label}
+                  onClick={() => handleLockedClick(item.plan!)}
+                  className="flex-1 flex flex-col items-center justify-center gap-1 no-tap-highlight opacity-40 grayscale"
+                >
+                  <div className="w-11 h-11 rounded-[14px] bg-slate-100 flex items-center justify-center transition-all duration-300">
+                    <item.icon className="w-5 h-5 text-slate-400" strokeWidth={2} />
+                  </div>
+                  <span className="text-[11px] font-bold text-slate-400">
+                    {item.label}
+                  </span>
+                </button>
               );
             }
 
