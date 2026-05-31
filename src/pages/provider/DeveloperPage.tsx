@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Code, Sparkles, Loader2, Save, Terminal, Wallet, CheckCircle2, AlertTriangle, Info, X, HelpCircle, ExternalLink } from 'lucide-react'
+import { Code, Sparkles, Loader2, Save, Terminal, Wallet, CheckCircle2, AlertTriangle, Info, X, HelpCircle, ExternalLink, Smartphone } from 'lucide-react'
 import { useAuth } from '../../lib/auth/AuthContext'
 import { providersApi } from '../../lib/api/providers'
 import { getErrorMessage } from '../../lib/utils/error'
@@ -20,7 +20,7 @@ export default function DeveloperPage() {
   useEffect(() => {
     if (profile?.data) {
       setFormData({
-        operationalSettings: profile.data.operationalSettings || { taxInclusive: true, autoPrint: false }
+        operationalSettings: profile.data.operationalSettings || { taxInclusive: true, autoPrint: false, manualMpesa: { enabled: true, instructions: '' } }
       })
     }
   }, [profile])
@@ -204,6 +204,32 @@ export default function DeveloperPage() {
                       Ensure your Daraja App has the <strong>Lipa Na M-Pesa Online</strong> API enabled.
                       Transactions will use the Callback URL provided by hlynk automatically.
                     </p>
+                  </div>
+                </div>
+
+                <div className="h-px w-full bg-slate-100" />
+
+                <div className="space-y-6">
+                  <div className="flex items-center gap-3">
+                    <Smartphone className="text-emerald-600" size={24} />
+                    <h4 className="text-sm font-black text-slate-900 uppercase tracking-widest">Manual / Pochi la Biashara</h4>
+                  </div>
+                  <p className="text-xs text-slate-500 font-medium">If you don't have a Paybill with API access, you can still use M-Pesa recording via Manual mode. Set your instructions below for customers to see during checkout.</p>
+                  
+                  <div className="space-y-4">
+                    <InputGroup
+                       label="Payment Instructions"
+                       placeholder="e.g. Pay to Pochi 0722 000 000 (John Doe)"
+                       value={formData.operationalSettings?.manualMpesa?.instructions || ''}
+                       onChange={(v: string) => setFormData({
+                         ...formData,
+                         operationalSettings: {
+                           ...formData.operationalSettings,
+                           manualMpesa: { ...formData.operationalSettings?.manualMpesa, instructions: v }
+                         }
+                       })}
+                    />
+                    <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest leading-relaxed">These instructions will be displayed to your staff and customers when the "M-Pesa (Manual)" option is selected at checkout.</p>
                   </div>
                 </div>
               </div>

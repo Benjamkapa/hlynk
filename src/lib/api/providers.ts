@@ -6,6 +6,7 @@ export const providersApi = {
   updateSettings: (data: any) => api.put('/providers/me/settings', data).then(r => r.data),
   changePassword: (data: any) => api.post('/providers/me/security/password', data).then(r => r.data),
   deactivateAccount: () => api.post('/providers/me/security/deactivate').then(r => r.data),
+  clearData: () => api.post('/providers/me/clear-data').then(r => r.data),
   getActivityLogs: (params?: { page?: number; limit?: number }) => api.get('/providers/me/activity', { params }).then(r => r.data),
   getStats: () => api.get('/providers/stats').then(r => r.data),
   getStaff: () => api.get('/staff').then(r => r.data),

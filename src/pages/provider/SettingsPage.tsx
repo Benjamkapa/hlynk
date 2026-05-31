@@ -108,6 +108,7 @@ export default function SettingsPage() {
   const allTabs: SettingsTab[] = [
     { name: 'Profile', icon: User },
     { name: 'Business', icon: Store, role: ['PROVIDER', 'SUPER_ADMIN'] },
+    { name: 'Data Management', icon: Trash2, role: ['PROVIDER', 'SUPER_ADMIN'] },
     // { name: 'Notifications', icon: Bell, role: ['PROVIDER', 'SUPER_ADMIN'] },
     { name: 'Security', icon: Lock },
   ]
@@ -353,6 +354,43 @@ export default function SettingsPage() {
               </div>
             )}
 
+            {activeTab === 'Data Management' && (
+              <div className="space-y-8 animate-in fade-in slide-in-from-top-4 duration-500">
+                <div className="p-8 bg-amber-50 border border-amber-100 rounded-[.5rem] flex items-start gap-5">
+                  <AlertTriangle className="text-amber-600 shrink-0 mt-1" size={24} />
+                  <div>
+                    <h4 className="text-lg font-black text-amber-900 mb-2">Reset Business Data</h4>
+                    <p className="text-sm text-amber-800 leading-relaxed max-w-xl">
+                      This action will <strong>permanently delete</strong> all your sales records, history, added products, expenses, and customer logs. This is useful for clearing test data before you start your real business operations.
+                    </p>
+                    <div className="mt-8 flex flex-col sm:flex-row gap-4">
+                      <button
+                        onClick={() => setConfirmDeleteId('clear-workshop')}
+                        className="px-8 py-4 bg-amber-600 text-white rounded-[.5rem] font-black text-xs uppercase tracking-widest hover:bg-amber-700 transition-all shadow-xl shadow-amber-900/10 active:scale-95"
+                      >
+                        Reset Workshop Data
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 opacity-60 pointer-events-none">
+                  <div className="p-6 bg-slate-50 rounded-[.5rem] border border-slate-100">
+                    <h5 className="font-black text-slate-900 mb-2 flex items-center gap-2">
+                       <FileText size={16} /> Auto-Backup
+                    </h5>
+                    <p className="text-[10px] text-slate-500 font-medium">Export your data to CSV automatically every week.</p>
+                  </div>
+                  <div className="p-6 bg-slate-50 rounded-[.5rem] border border-slate-100">
+                    <h5 className="font-black text-slate-900 mb-2 flex items-center gap-2">
+                       <RefreshCcw size={16} /> Data Portability
+                    </h5>
+                    <p className="text-[10px] text-slate-500 font-medium">Import your products from Excel or CSV files.</p>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {activeTab === 'Security' && (
               <div className="space-y-10">
                 <ActivityLogViewer />
@@ -387,6 +425,15 @@ export default function SettingsPage() {
         confirmText="Delete"
         onConfirm={() => {
           if (confirmDeleteId === 'deactivate') deactivateMutation.mutate()
+          if (confirmDeleteId === 'clear-workshop') {
+            providersApi.clearData()
+              .then(() => {
+                toast.success('Workshop data cleared')
+                queryClient.invalidateQueries()
+                setActiveTab('Profile')
+              })
+              .catch(err => toast.error(getErrorMessage(err)))
+          }
           setConfirmDeleteId(null)
         }}
         onCancel={() => setConfirmDeleteId(null)}

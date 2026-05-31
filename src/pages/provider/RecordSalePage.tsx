@@ -3,7 +3,7 @@ import { Search, Plus, Minus, Trash2, CreditCard, Wallet, Banknote, Zap, CheckCi
 import FeatureGate, { FEATURE_PLANS } from '../../components/shared/FeatureGate'
 import { toast } from 'sonner'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { inventoryApi, salesApi, paymentsApi, customersApi } from '../../lib/api/providers'
+import { inventoryApi, salesApi, paymentsApi, customersApi, providersApi } from '../../lib/api/providers'
 import { getErrorMessage } from '../../lib/utils/error'
 import { keepPreviousData } from '@tanstack/react-query'
 import { useAuth } from '../../lib/auth/AuthContext'
@@ -13,6 +13,11 @@ import { enqueueSale, cacheInventory, getCachedInventory, cacheCustomers, getCac
 
 export default function RecordSalePage() {
   const { user } = useAuth()
+
+  const { data: profile } = useQuery({
+    queryKey: ['my-profile'],
+    queryFn: providersApi.getMyProfile
+  })
   const [search, setSearch] = useState('')
   const [searchInput, setSearchInput] = useState('')
   const [page, setPage] = useState(1)
@@ -681,7 +686,8 @@ export default function RecordSalePage() {
             <div className="grid grid-cols-2 gap-4">
               {[
                 { id: 'CASH', label: 'Cash', icon: Banknote, feature: null },
-                { id: 'MPESA', label: isOnline ? 'M-Pesa' : 'M-Pesa Manual', icon: Wallet, feature: 'mpesa_stk' },
+                { id: 'MPESA', label: 'M-Pesa Express', icon: Zap, feature: 'mpesa_stk' },
+                { id: 'MPESA_MANUAL', label: 'M-Pesa (Pochi/Till)', icon: Wallet, feature: null },
               ].map(method => (
                 <FeatureGate
                   key={method.id}
@@ -720,6 +726,34 @@ export default function RecordSalePage() {
               ))}
             </div>
 
+
+            {paymentMethod === 'MPESA_MANUAL' && (
+              <div className="space-y-4 animate-in slide-in-from-top-2 duration-300">
+                <div className="bg-emerald-50 border border-emerald-100 rounded-[.5rem] p-5 space-y-4">
+                  <div className="flex items-center gap-4">
+                    <div className="h-10 w-10 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center">
+                      <Smartphone size={20} />
+                    </div>
+                    <div>
+                      <p className="text-xs font-black text-emerald-900 uppercase tracking-tight">Manual M-Pesa Mode</p>
+                      <p className="text-[10px] text-emerald-700 font-medium leading-tight">Accept payment via Pochi, Personal # or Till, then record here.</p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-3 pt-2 border-t border-emerald-200/50">
+                    <div className="bg-white/50 p-3 rounded-lg border border-emerald-200">
+                      <p className="text-[10px] font-medium text-emerald-800 text-center italic">
+                        {profile?.data?.operationalSettings?.manualMpesa?.instructions || `"Ask the client to pay to your Till or Pochi number, then confirm you have received the SMS before completing."`}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                <div className="bg-slate-50 border border-slate-100 rounded-[.5rem] p-4 text-center">
+                  <p className="text-[10px] font-bold text-slate-500 mb-1 uppercase tracking-widest">Recording as</p>
+                  <p className="text-sm font-black text-slate-900">M-Pesa Transaction</p>
+                </div>
+              </div>
+            )}
 
             {paymentMethod === 'MPESA' ? (
               isOnline ? (
@@ -807,11 +841,10 @@ export default function RecordSalePage() {
             <button
               disabled={cart.length === 0 || handleCompleteSale.isPending || isProcessingMpesa}
               onClick={() => {
-                if (!isOnline) {
-                  // Allow offline recording for all methods (Cash or Manual M-Pesa)
-                  handleOfflineSale()
-                } else if (paymentMethod === 'MPESA') {
+                if (paymentMethod === 'MPESA' && isOnline) {
                   initiateMpesaPayment()
+                } else if (!isOnline) {
+                  handleOfflineSale()
                 } else {
                   handleCompleteSale.mutate(undefined)
                 }
