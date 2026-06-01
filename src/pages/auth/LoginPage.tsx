@@ -249,11 +249,13 @@ export default function LoginPage() {
   }, [user, requiresRegistration, navigate])
 
   const urlParams = new URLSearchParams(window.location.search)
+  const isTrialRequest = urlParams.get('trial') === 'true'
   const requestedPlan = (urlParams.get('plan') as 'LITE' | 'PLUS' | 'MAX') || 'LITE'
 
-  const [formData, setFormData] = useState<RegisterFormState>({
+  const [formData, setFormData] = useState<RegisterFormState & { isTrial?: boolean }>({
     businessName: '', ownerName: '', phone: '', category: '', county: '',
-    location: '', planName: requestedPlan, referredBy: ''
+    location: '', planName: requestedPlan, referredBy: '',
+    isTrial: isTrialRequest
   })
 
   const handleGoogleAuth = async (credential: string) => {
@@ -262,7 +264,7 @@ export default function LoginPage() {
       const res = await authApi.googleAuth({ credential })
       if (res.data.action === 'REQUIRES_REGISTRATION') {
         setGoogleCredential(credential)
-        setFormData(f => ({ ...f, ownerName: res.data.googleDetails.name || '' }))
+        setFormData(f => ({ ...f, ownerName: res.data.googleDetails.name || '', isTrial: isTrialRequest }))
         setRequiresRegistration(true)
         toast.info('Google account verified. Setup your business profile.')
       } else {
@@ -281,7 +283,7 @@ export default function LoginPage() {
       const res = await authApi.googleAuth({ credential: googleCredential, registration: formData })
       login({ accessToken: res.data.accessToken, refreshToken: res.data.refreshToken }, res.data.user)
       navigate('/dashboard', { replace: true })
-      toast.success('Your shop is now live on hlynk!')
+      toast.success(res.data.user.subscription?.status === 2 ? 'Your 14-day free trial has started!' : 'Your shop is now live on hlynk!')
     } catch (err: any) { toast.error(getErrorMessage(err)) }
     finally { setFormLoading(false) }
   }

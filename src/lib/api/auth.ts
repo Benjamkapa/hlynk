@@ -22,6 +22,7 @@ export interface AuthUser {
   usesPasswordAuth?: boolean
   hasReviewed?: boolean
   permissions?: string[]
+  isRented?: number
 }
 
 export interface RegisterPayload {

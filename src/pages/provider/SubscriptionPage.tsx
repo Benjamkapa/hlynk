@@ -53,6 +53,138 @@ const FEATURE_COMPARISON = [
 
 import { SubscriptionExpiredBanner } from '../../components/shared/SubscriptionGuard'
 import { ConfirmModal } from '../../components/shared/ConfirmModal'
+import { TrendingUp, CheckCircle2 as CheckIcon, CheckCircle, Smartphone as PhoneIcon } from 'lucide-react'
+
+function PayoutsTab() {
+  const { data: payoutsRes, isLoading } = useQuery({
+    queryKey: ['my-payouts'],
+    queryFn: subscriptionsApi.getPayouts
+  })
+
+  const stats = payoutsRes?.data?.summary
+  const history = payoutsRes?.data?.history || []
+
+  if (isLoading) {
+    return (
+      <div className="p-20 text-center animate-pulse text-slate-300 uppercase font-black text-[10px] tracking-widest">
+        Calculating Settlements...
+      </div>
+    )
+  }
+
+  return (
+    <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
+      
+      <div className="bg-[#0D4A3E] p-12 rounded-[.5em] text-white shadow-2xl shadow-emerald-900/10 relative overflow-hidden">
+        <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+          <div>
+            <span className="bg-white/10 text-emerald-200 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest mb-6 inline-block">Revenue Share Settlement</span>
+            <h2 className="text-4xl font-black mb-4 tracking-tight">Your Paybill Earnings</h2>
+            <p className="text-emerald-200/60 text-sm font-medium leading-relaxed max-w-sm">
+              Since you're using hlynk's shared Paybill infrastructures, a {((stats?.shareRate || 0) * 100).toFixed(0)}% platform fee is applied. We settle your net earnings every 7 days.
+            </p>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div className="bg-white/5 p-6 rounded-2xl border border-white/10 backdrop-blur-sm">
+              <p className="text-[10px] font-black opacity-50 uppercase tracking-widest mb-2">Unsettled (Net)</p>
+              <p className="text-2xl font-black hl-mono">KES {Math.floor(stats?.pendingNet || 0).toLocaleString()}</p>
+              <div className="h-1.5 w-full bg-white/10 rounded-full mt-4 overflow-hidden">
+                 <div className="h-full bg-emerald-400 w-[60%] shadow-[0_0_10px_rgba(52,211,153,0.5)]" />
+              </div>
+            </div>
+            <div className="bg-white/5 p-6 rounded-2xl border border-white/10 backdrop-blur-sm">
+              <p className="text-[10px] font-black opacity-50 uppercase tracking-widest mb-2">Total Settled</p>
+              <p className="text-2xl font-black hl-mono">KES {Math.floor(stats?.settledNet || 0).toLocaleString()}</p>
+              <div className="flex items-center gap-2 text-[10px] font-black text-emerald-400 uppercase tracking-widest mt-4">
+                 <CheckCircle2 size={12} /> Verified Payments
+              </div>
+            </div>
+          </div>
+        </div>
+        <TrendingUp size={240} className="absolute -right-20 -bottom-20 text-white opacity-5 rotate-12" />
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+         <div className="lg:col-span-2 space-y-6">
+            <div className="flex justify-between items-center">
+               <h3 className="text-xl font-black text-slate-900 tracking-tight">Settlement History</h3>
+               <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest hl-mono">{history.length} Batches Found</span>
+            </div>
+            
+            <div className="bg-white rounded-[.5em] border border-slate-100 shadow-sm overflow-hidden">
+               <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="bg-slate-50/50 border-b border-slate-100">
+                      <th className="p-8 text-[10px] font-black text-slate-400 uppercase tracking-widest">Period / Batch</th>
+                      <th className="p-8 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Gross Volume</th>
+                      <th className="p-8 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Net Payout</th>
+                      <th className="p-8 text-[10px] font-black text-slate-400 uppercase tracking-widest">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-50">
+                    {history.length === 0 ? (
+                      <tr><td colSpan={4} className="p-20 text-center text-slate-400 font-medium italic">No payouts processed yet. settlements occur weekly.</td></tr>
+                    ) : (
+                      history.map((row: any, i: number) => {
+                        const net = row.grossAmount * (1 - (stats?.shareRate || 0));
+                        return (
+                          <tr key={i} className="hover:bg-slate-50/50 transition-all group">
+                            <td className="p-8">
+                              <p className="font-bold text-slate-900 text-sm">
+                                {new Date(row.periodStart).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - {new Date(row.periodEnd).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                              </p>
+                              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1 italic">{row.txCount} payments bundled</p>
+                            </td>
+                            <td className="p-8 text-right font-black text-slate-400 hl-mono text-sm">KES {Number(row.grossAmount).toLocaleString()}</td>
+                            <td className="p-8 text-right font-black text-[#0D4A3E] hl-mono text-sm">KES {Math.floor(net).toLocaleString()}</td>
+                            <td className="p-8">
+                              <span className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${row.payoutStatus === 1 ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700 font-black animate-pulse'}`}>
+                                {row.payoutStatus === 1 ? 'Settled' : 'Unsettled'}
+                              </span>
+                            </td>
+                          </tr>
+                        );
+                      })
+                    )}
+                  </tbody>
+               </table>
+            </div>
+         </div>
+
+         <div className="space-y-6">
+            <h3 className="text-xl font-black text-slate-900 tracking-tight">Financial Summary</h3>
+            <div className="bg-white p-10 rounded-[.5em] border border-slate-100 shadow-sm space-y-10">
+               <div className="space-y-1">
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Gross Platform Intake</p>
+                  <p className="text-3xl font-black text-slate-900 hl-mono">KES {(Number(stats?.pendingGross || 0) + Number(stats?.settledGross || 0)).toLocaleString()}</p>
+               </div>
+               
+               <div className="space-y-6 pt-6 border-t border-slate-50">
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs font-bold text-slate-500">Platform Share (10%)</span>
+                    <span className="text-xs font-black text-red-500 hl-mono">- KES {Math.floor((Number(stats?.pendingGross || 0) + Number(stats?.settledGross || 0)) * 0.10).toLocaleString()}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs font-bold text-slate-500">Already Settled</span>
+                    <span className="text-xs font-black text-blue-500 hl-mono">KES {Math.floor(stats?.settledNet || 0).toLocaleString()}</span>
+                  </div>
+               </div>
+
+               <div className="bg-emerald-50 p-8 rounded-2xl border border-emerald-100">
+                  <div className="flex items-center gap-2 text-[10px] font-black text-[#0D4A3E] uppercase tracking-widest mb-2">
+                    <Smartphone size={14} /> Available for Withdrawal
+                  </div>
+                  <p className="text-3xl font-black text-emerald-900 hl-mono">KES {Math.floor(stats?.pendingNet || 0).toLocaleString()}</p>
+                  <p className="text-[10px] font-medium text-emerald-800/60 mt-4 leading-relaxed italic">
+                    Funds are automatically sent to your registered M-Pesa number upon Super Admin approval.
+                  </p>
+               </div>
+            </div>
+         </div>
+      </div>
+    </div>
+  )
+}
 
 export default function SubscriptionPage() {
   const queryClient = useQueryClient()
@@ -357,17 +489,25 @@ export default function SubscriptionPage() {
           >
             Billing History
           </button>
+          {user?.isRented === 1 && (
+            <button
+              onClick={() => setActiveTab('payouts' as any)}
+              className={`px-6 py-2 rounded-[.5em]lg text-xs font-black uppercase tracking-widest transition-all ${activeTab === ('payouts' as any) ? 'bg-white text-emerald-600 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
+            >
+              Payouts Hub
+            </button>
+          )}
         </div>
       </div>
 
       {activeTab === 'current' ? (
         <>
           {isTrial && !isExpired && (
-            <div className="bg-emerald-900 text-white p-8 rounded-[.5em] shadow-2xl shadow-emerald-900/20 flex flex-col md:flex-row justify-between items-center gap-6">
-              <div>
-                <h3 className="text-xl font-black tracking-tight">You're exploring hlynk on a 7-Day Free Trial</h3>
-                <p className="text-emerald-200 text-sm font-medium">No payment required. See your real profit before you pay.</p>
-              </div>
+             <div className="bg-emerald-900 text-white p-8 rounded-[.5em] shadow-2xl shadow-emerald-900/20 flex flex-col md:flex-row justify-between items-center gap-6">
+               <div>
+                 <h3 className="text-xl font-black tracking-tight">You're exploring hlynk on a 14-Day Free Trial</h3>
+                 <p className="text-emerald-200 text-sm font-medium">No payment required. See your real profit before you pay.</p>
+               </div>
               <div className="bg-emerald-800 px-6 py-3 rounded-[.5em] border border-emerald-700/50 flex flex-col items-center">
                 <p className="text-[10px] font-black uppercase tracking-widest opacity-60 mb-1">Trial Ends In</p>
                 <p className="text-2xl font-black hl-mono">
@@ -407,7 +547,7 @@ export default function SubscriptionPage() {
               </h2>
               <p className="text-gray-500 font-medium text-xl mb-12 leading-relaxed">
                 {isTrial 
-                  ? "Explore all Starter features free for 7 days. Grow your business risk-free."
+                  ? "Explore all Starter features free for 14 days. Grow your business risk-free."
                   : (PLANS.find(p => p.id === subscription?.planName)?.desc || 'Your current subscription plan details.')}
               </p>
 
@@ -504,7 +644,7 @@ export default function SubscriptionPage() {
             </div>
           </div>
         </>
-      ) : (
+      ) : activeTab === 'history' ? (
         <div className="space-y-6">
           {/* Filters */}
           <div className="flex flex-wrap gap-4 items-center bg-white p-6 rounded-[.5em] border border-gray-100">
@@ -625,6 +765,8 @@ export default function SubscriptionPage() {
             )}
           </div>
         </div>
+      ) : (
+        <PayoutsTab />
       )}
 
       {/* Renew Modal */}

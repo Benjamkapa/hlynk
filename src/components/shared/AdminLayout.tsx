@@ -3,7 +3,7 @@ import { useAuth } from '../../lib/auth/AuthContext'
 import {
   LayoutDashboard, BarChart2, Users,
   Settings, HelpCircle, LogOut, PanelLeftClose, PanelLeftOpen, CreditCard, MessageSquare,
-  Briefcase, ShieldCheck, Activity, DollarSign
+  Briefcase, ShieldCheck, Activity, DollarSign, Landmark
 } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import TopNav from './TopNav'
@@ -27,6 +27,7 @@ export default function AdminLayout() {
         { to: '/admin', label: 'Dashboard', icon: LayoutDashboard, end: true },
         { to: '/admin/system-performance', label: 'Performance', icon: Activity },
         { to: '/admin/financials', label: 'Financials', icon: DollarSign },
+        { to: '/admin/payments', label: 'Payments', icon: Landmark },
       ],
     },
     {
@@ -213,7 +214,7 @@ function MobileBottomAdminNav() {
     { to: '/admin/businesses', label: 'Business', icon: Briefcase, end: false },
     { to: '/admin/user-operations', label: 'Users', icon: Users, end: false },
     { to: '/admin/subscriptions', label: 'Subs', icon: CreditCard, isCenter: true },
-    { to: '/admin/financials', label: 'Finance', icon: DollarSign, end: false },
+    { to: '/admin/payments', label: 'Payments', icon: Landmark, end: false },
     { to: '/admin/community-reviews', label: 'Reviews', icon: MessageSquare, end: false },
     { to: '/admin/settings', label: 'Tools', icon: Settings, end: false },
   ];

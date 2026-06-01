@@ -12,34 +12,28 @@ const pricingPlans = [
     color: "bg-[#F472B6]", // Pink
     features: [
       "Manage Up to 15 Items",
-      "Record Sales",
-      "Track Expenses",
-      "Save Customer Records",
-      "Track Payments",
+      "Record Sales & Expenses",
+      "Paybill Rental Support",
       "Daily Profit Reports",
-      "Standard Support",
-      "7-Day Free Trial"
+      "Standard Support"
     ],
     limitations: [
       "No Staff Accounts"
     ],
-    buttonText: "Start Free Trial"
+    buttonText: "Choose Starter"
   },
   {
     id: "PLUS",
     name: "Growth",
-    badge: "Most Popular",
+    badge: "Scalable",
     monthlyPrice: "9,450",
     desc: "For growing businesses that need deeper reports and better business tracking.",
     color: "bg-[#2DD4BF]", // Teal/Emerald
     features: [
       "Manage Up to 100 Items",
       "Everything in Starter",
-      "Profit Analytics",
       "Sales Reports & Graphs",
-      "M-Pesa Paybill Integration",
-      "Customer Purchase Tracking",
-      "Business Performance Dashboard",
+      "M-Pesa Automation",
       "1 Staff Account",
       "Priority Support"
     ],
@@ -57,8 +51,7 @@ const pricingPlans = [
       "Unlimited Staff Accounts",
       "Staff Activity Tracking",
       "Roles & Permissions",
-      "Advanced Business Controls",
-      "Dedicated Account Assistance"
+      "Dedicated Assistance"
     ],
     buttonText: "Go Business Pro"
   }
@@ -71,11 +64,30 @@ export default function Pricing() {
         <div className="text-center mb-24">
           <FadeUp delay={0.1}>
             <h2 className="text-5xl md:text-6xl font-black font-thin text-slate-900 tracking-tighter mb-6 font-ubuntu">
-              Know Your Real Profit.
+              Simple, Transparent Pricing.
             </h2>
-            <p className="text-slate-500 font-medium text-lg italic max-w-2xl mx-auto">
+            <p className="text-slate-500 font-medium text-lg italic max-w-2xl mx-auto mb-10">
               "Track sales, expenses, stock, staff, and business performance in one place."
             </p>
+            
+            {/* INDEPENDENT TRIAL BANNER */}
+            <div className="inline-block p-1 rounded-2xl bg-slate-100 border border-slate-200 shadow-sm animate-in fade-in zoom-in duration-1000">
+              <div className="flex flex-col md:flex-row items-center gap-6 px-10 py-6 bg-white rounded-xl">
+                 <div className="h-14 w-14 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center shrink-0">
+                    <Star size={32} className="fill-emerald-600" />
+                 </div>
+                 <div className="text-left">
+                    <h4 className="text-xl font-black text-slate-900 leading-tight">Start with a 14-Day Full Free Trial</h4>
+                    <p className="text-sm font-medium text-slate-500 mt-1 italic">Experience everything hlynk has to offer—including Paybill Rental—before you commit.</p>
+                 </div>
+                 <Link 
+                   to="/register?trial=true"
+                   className="px-8 py-4 bg-emerald-600 text-white rounded-lg text-xs font-black uppercase tracking-widest hover:bg-emerald-700 hover:scale-105 transition-all shadow-xl shadow-emerald-200 whitespace-nowrap"
+                 >
+                   Gauage hlynk Now
+                 </Link>
+              </div>
+            </div>
           </FadeUp>
         </div>
 
@@ -131,6 +143,10 @@ export default function Pricing() {
                 >
                   {p.buttonText}
                 </Link>
+                
+                <div className="mt-8 pt-8 border-t border-black/10 text-[9px] font-black text-slate-900/40 uppercase tracking-widest text-center">
+                   * Paybill Rental available on all plans via revenue-share
+                </div>
               </div>
             </FadeUp>
           ))}

@@ -51,6 +51,7 @@ export const subscriptionsApi = {
   changePlan: (planName: string, phone: string) => api.post('/subscriptions/change-plan', { planName, phone }).then(r => r.data),
   verify: (paymentId: string) => api.get(`/subscriptions/verify/${paymentId}`).then(r => r.data),
   submitManualPayment: (data: { planName: string, mpesaCode: string, amount?: number, phone?: string }) => api.post('/subscriptions/manual', data).then(r => r.data),
+  getPayouts: () => api.get('/subscriptions/payouts').then(r => r.data),
   applyPromoCode: (code: string) => api.post('/subscriptions/promo/apply', { code }).then(r => r.data),
 }
 
@@ -148,5 +149,7 @@ export const adminApi = {
     api.post('/subscriptions/promo/generate', data).then(r => r.data),
   getReviews: (params?: { page?: number; limit?: number; status?: number }) => api.get('/admin/reviews', { params }).then(r => r.data),
   updateReviewStatus: (id: string, status: number) => api.patch(`/admin/reviews/${id}`, { status }).then(r => r.data),
+  getPayouts: () => api.get('/admin/payouts').then(r => r.data),
+  markPayoutPaid: (tenantId: string) => api.post(`/admin/payouts/${tenantId}/mark-paid`).then(r => r.data),
 }
 

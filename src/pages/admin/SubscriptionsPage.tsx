@@ -67,7 +67,7 @@ export default function SubscriptionsPage() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <StatCard title="Active Subs" value={stats?.overview?.payingProviders || '0'} sub="Businesses" icon={CheckCircle2} variant="emerald" />
         <StatCard title="MRR" value={`KES ${(stats?.overview?.revenueThisMonth || 0).toLocaleString()}`} sub="Monthly Revenue" icon={CreditCard} variant="blue" />
-        <StatCard title="Expiring Soon" value={stats?.overview?.expiringSoon || '0'} sub="Next 7 days" icon={Clock} variant="amber" />
+        <StatCard title="Expiring Soon" value={stats?.overview?.expiringSoon || '0'} sub="Next 14 days" icon={Clock} variant="amber" />
       </div>
 
       <div className="bg-white rounded-lg border border-gray-100 shadow-sm overflow-hidden">
