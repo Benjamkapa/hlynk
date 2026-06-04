@@ -34,7 +34,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (token && (!cached || cached === 'undefined')) return true
     return !!token
   })
-  const [isLocked, setIsLocked] = useState(false)
+  const [isLocked, setIsLocked] = useState(() => storage.getItem('session_locked') === 'true')
 
   useEffect(() => {
     const token = storage.getItem('accessToken')
@@ -86,6 +86,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     storage.setItem('user_profile', JSON.stringify(userData))
     queryClient.clear()
     setIsLocked(false)
+    storage.removeItem('session_locked')
     setUser(userData)
   }
 
@@ -103,6 +104,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (isOffline && !opts?.force) {
       // Don't destroy the session — just lock the screen
       setIsLocked(true)
+      storage.setItem('session_locked', 'true')
       return
     }
 
@@ -116,13 +118,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     clearOfflinePin()
     storage.removeItem('accessToken')
     storage.removeItem('user_profile')
+    storage.removeItem('session_locked')
     queryClient.clear()
     setIsLocked(false)
     setUser(null)
   }
 
   /** Lock the screen without ending the session */
-  const lock = () => setIsLocked(true)
+  const lock = () => {
+    setIsLocked(true)
+    storage.setItem('session_locked', 'true')
+  }
 
   /**
    * Attempt to unlock the session with a PIN.
@@ -130,7 +136,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
    */
   const unlock = async (pin: string): Promise<boolean> => {
     const valid = await verifyOfflinePin(pin)
-    if (valid) setIsLocked(false)
+    if (valid) {
+      setIsLocked(false)
+      storage.removeItem('session_locked')
+    }
     return valid
   }
 

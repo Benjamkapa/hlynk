@@ -4,6 +4,10 @@ import { Search, Plus, Minus, Trash2, CreditCard, Wallet, Banknote, Zap, CheckCi
 const KcbBankIcon = ({ className, size = 18 }: { className?: string, size?: number }) => (
   <img src="https://buni.kcbgroup.com/_nuxt/logo.71b8fc4b.svg" alt="KCB" style={{ width: size, height: size }} className={`${className || ''} object-contain shrink-0`} />
 );
+
+const MpesaBankIcon = ({ className, size = 18 }: { className?: string, size?: number }) => (
+  <img src="https://monisnapcontent.kinsta.cloud/wp-content/uploads/2021/09/M-PESA_LOGO-640x467.png?v=1632335437" alt="M-Pesa" style={{ width: size, height: size }} className={`${className || ''} object-contain shrink-0`} />
+);
 import FeatureGate, { FEATURE_PLANS } from '../../components/shared/FeatureGate'
 import { toast } from 'sonner'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
@@ -715,8 +719,8 @@ export default function RecordSalePage() {
             <div className="grid grid-cols-2 gap-4">
               {[
                 { id: 'CASH', label: 'Cash', icon: Banknote, feature: null },
-                { id: 'MPESA', label: 'M-Pesa Express', icon: Zap, feature: 'mpesa_stk' },
-                { id: 'KCB', label: 'KCB Mobile', icon: KcbBankIcon, feature: 'mpesa_stk' },
+                { id: 'MPESA', label: 'M-Pesa Express', icon: MpesaBankIcon, feature: 'mpesa_stk' },
+                { id: 'KCB', label: 'KCB Mobile', icon: KcbBankIcon, feature: 'kcb_settlement' },
                 { id: 'MPESA_MANUAL', label: 'M-Pesa (Pochi/Till)', icon: Wallet, feature: null },
               ].map(method => (
                 <FeatureGate

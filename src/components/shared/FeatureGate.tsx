@@ -11,6 +11,7 @@ type Feature =
   | 'staff_accounts'
   | 'advanced_reports'
   | 'audit_logs'
+  | 'kcb_settlement'
 
 interface FeatureGateProps {
   feature: Feature
@@ -27,6 +28,7 @@ export const FEATURE_PLANS: Record<Feature, string[]> = {
   staff_accounts: ['PLUS', 'MAX'],
   advanced_reports: ['PLUS', 'MAX'],
   audit_logs: ['MAX'],
+  kcb_settlement: ['MAX'],
 }
 
 export default function FeatureGate({ feature, children, fallback, variant = 'card' }: FeatureGateProps) {

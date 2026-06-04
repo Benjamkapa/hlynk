@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react'
-import { Code, Sparkles, Loader2, Save, Terminal, Wallet, CheckCircle2, AlertTriangle, Info, X, HelpCircle, ExternalLink, Smartphone } from 'lucide-react'
+import { Code, Sparkles, Loader2, Save, Terminal, Wallet, CheckCircle2, AlertTriangle, Info, X, HelpCircle, ExternalLink, Smartphone, Lock } from 'lucide-react'
 import { useAuth } from '../../lib/auth/AuthContext'
 import { providersApi } from '../../lib/api/providers'
 import { getErrorMessage } from '../../lib/utils/error'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import FeatureGate from '../../components/shared/FeatureGate'
+import { useSearchParams } from 'react-router-dom'
 
 export default function DeveloperPage() {
   const { user, refreshUser } = useAuth()
@@ -35,8 +36,20 @@ export default function DeveloperPage() {
     onError: (err) => toast.error(getErrorMessage(err))
   })
 
-  const [activeTab, setActiveTab] = useState<'mpesa' | 'kcb'>('mpesa');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [activeTab, setActiveTab] = useState<'mpesa' | 'kcb'>(searchParams.get('tab') === 'kcb' ? 'kcb' : 'mpesa');
   const [showHelpModal, setShowHelpModal] = useState(false);
+
+  useEffect(() => {
+    const tab = searchParams.get('tab');
+    if (tab === 'kcb') setActiveTab('kcb');
+    else setActiveTab('mpesa');
+  }, [searchParams]);
+
+  const handleTabChange = (tab: 'mpesa' | 'kcb') => {
+    setActiveTab(tab);
+    setSearchParams({ tab });
+  };
 
   const handleSave = () => {
     updateMutation.mutate(formData)
@@ -49,12 +62,15 @@ export default function DeveloperPage() {
       <div className="space-y-8 animate-in fade-in duration-500 pt-6">
         <div className="flex justify-between items-end">
           <div>
-            <div className="flex items-center gap-4 mb-2">
-               <img src="https://monisnapcontent.kinsta.cloud/wp-content/uploads/2021/09/M-PESA_LOGO-640x467.png?v=1632335437" alt="M-Pesa" className={`w-10 h-10 object-contain transition-opacity ${activeTab === 'mpesa' ? 'opacity-100' : 'opacity-30'}`} />
-               <img src="https://buni.kcbgroup.com/_nuxt/logo.71b8fc4b.svg" alt="KCB" className={`w-10 h-10 object-contain transition-opacity ${activeTab === 'kcb' ? 'opacity-100' : 'opacity-30'}`} />
+            <div className="flex items-center gap-6 mb-3">
+               <img src="https://monisnapcontent.kinsta.cloud/wp-content/uploads/2021/09/M-PESA_LOGO-640x467.png?v=1632335437" alt="M-Pesa" className={`w-14 h-14 object-contain transition-all duration-500 ${activeTab === 'mpesa' ? 'opacity-100 scale-110' : 'opacity-30'}`} />
+               <div className="h-8 w-px bg-slate-200" />
+               <FeatureGate feature="kcb_settlement" variant="inline">
+                 <img src="https://buni.kcbgroup.com/_nuxt/logo.71b8fc4b.svg" alt="KCB" className={`w-14 h-14 object-contain transition-all duration-500 ${activeTab === 'kcb' ? 'opacity-100 scale-110' : 'opacity-30'}`} />
+               </FeatureGate>
             </div>
             <h1 className="text-3xl font-black text-gray-900 tracking-tight flex items-center gap-3">
-              Payment Gateways
+              Payment Gateway
             </h1>
             <p className="text-gray-500 font-medium">Configure direct-to-merchant settlements</p>
           </div>
@@ -70,17 +86,19 @@ export default function DeveloperPage() {
 
         <div className="flex bg-gray-100 p-1 rounded-[.5em] w-fit mb-4">
            <button 
-             onClick={() => setActiveTab('mpesa')}
+             onClick={() => handleTabChange('mpesa')}
              className={`px-8 py-3 rounded-[.5em] text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'mpesa' ? 'bg-white text-emerald-600 shadow-sm' : 'text-gray-400'}`}
            >
              Safaricom Daraja
            </button>
-           <button 
-             onClick={() => setActiveTab('kcb')}
-             className={`px-8 py-3 rounded-[.5em] text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'kcb' ? 'bg-white text-emerald-600 shadow-sm' : 'text-gray-400'}`}
-           >
-             KCB Bank Buni
-           </button>
+           <FeatureGate feature="kcb_settlement" variant="inline">
+             <button 
+               onClick={() => handleTabChange('kcb')}
+               className={`px-8 py-3 rounded-[.5em] text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'kcb' ? 'bg-white text-emerald-600 shadow-sm' : 'text-gray-400'}`}
+             >
+               KCB Bank Buni
+             </button>
+           </FeatureGate>
         </div>
 
         <div className="bg-white rounded-[.5em] border border-slate-100 shadow-2xl shadow-slate-900/5 overflow-hidden">
