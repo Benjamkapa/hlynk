@@ -24,7 +24,7 @@ export default function SettingsPage() {
   const { user, refreshUser, logout } = useAuth()
   const queryClient = useQueryClient()
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
-  const [activeTab, setActiveTab] = useState('Profile')
+  const [activeTab, setActiveTab] = useState(() => window.innerWidth < 1024 ? 'Platform Hub' : 'Profile')
   const [uploading, setUploading] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [pinHasPin, setPinHasPin] = useState(() => hasOfflinePin())
@@ -122,6 +122,7 @@ export default function SettingsPage() {
   }
 
   const allTabs: SettingsTab[] = [
+    { name: 'Platform Hub', icon: Sparkles, mobileOnly: true }, // NEW: Mini Bar for all hidden features
     { name: 'Profile', icon: User },
     { name: 'Business', icon: Store, role: ['PROVIDER', 'SUPER_ADMIN'] },
     { name: 'Staff Management', icon: Users, role: ['PROVIDER', 'SUPER_ADMIN'], plan: 'PLUS' },
@@ -193,6 +194,31 @@ export default function SettingsPage() {
         <div className="lg:col-span-3">
           <div className="bg-white rounded-[.5rem] border border-gray-100 shadow-sm p-8">
             <h3 className="text-xl font-black text-gray-900 mb-8 border-b border-gray-50 pb-4">{activeTab} Details</h3>
+
+            {activeTab === 'Platform Hub' && (
+              <div className="space-y-8 animate-in fade-in slide-in-from-top-4 duration-500">
+                <div className="bg-emerald-900 text-white p-8 rounded-[.5rem] relative overflow-hidden">
+                   <div className="relative z-10">
+                      <h4 className="text-2xl font-black mb-2">Platform Modules Hub</h4>
+                      <p className="text-emerald-200 text-sm font-medium">Quick access to all system features and hidden configurations</p>
+                   </div>
+                   <Sparkles className="absolute -right-4 -bottom-4 text-white/10" size={120} />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <ModuleTile icon={FileText} label="Inventory" sub="Products & Stock" link="/dashboard/products" color="bg-blue-50 text-blue-600" />
+                  <ModuleTile icon={RefreshCcw} label="Sales" sub="History & Records" link="/dashboard/sales" color="bg-emerald-50 text-emerald-600" />
+                  <ModuleTile icon={EtimsIcon} label="KRA eTIMS" sub="Compliance" link="/dashboard/etims" color="bg-red-50 text-red-600" isImg />
+                  <ModuleTile icon={Users} label="Customers" sub="CRM Database" link="/dashboard/customers" color="bg-amber-50 text-amber-600" />
+                  <ModuleTile icon={MpesaIcon} label="M-Pesa" sub="Setup & Logs" link="/dashboard/developer" color="bg-green-50 text-green-600" isImg />
+                  <ModuleTile icon={Trash2} label="Expenses" sub="Cost Tracking" link="/dashboard/expenses" color="bg-purple-50 text-purple-600" />
+                  <ModuleTile icon={Shield} label="Security" sub="Activity Logs" link="/dashboard/logs" color="bg-slate-100 text-slate-600" />
+                  <ModuleTile icon={Plus} label="New Sale" sub="Terminal" link="/dashboard/record-sale" color="bg-rose-50 text-rose-600" />
+                  <ModuleTile icon={Users} label="Staff" sub="Team Control" link="/dashboard/staff" color="bg-indigo-50 text-indigo-600" />
+                  <ModuleTile icon={Mail} label="Help Desk" sub="Support Center" link="/dashboard/help" color="bg-cyan-50 text-cyan-600" />
+                </div>
+              </div>
+            )}
 
             {activeTab === 'Profile' && (
               <div className="space-y-8">
@@ -592,6 +618,21 @@ function Toggle({ active, onToggle }: { active: boolean; onToggle?: (v: boolean)
     >
       <div className={`w-4 h-4 bg-white rounded-full transition-all ${active ? 'translate-x-6' : 'translate-x-0'}`} />
     </div>
+  )
+}
+
+
+function ModuleTile({ icon: Icon, label, sub, link, color, isImg = false }: any) {
+  return (
+    <Link to={link} className="p-6 bg-gray-50 border border-gray-100 rounded-[.5rem] hover:bg-white hover:shadow-md transition-all group">
+      <div className={`h-12 w-12 rounded-[.5rem] flex items-center justify-center mb-4 transition-transform group-hover:scale-110 ${color}`}>
+        <Icon size={24} />
+      </div>
+      <div>
+        <p className="text-sm font-black text-gray-900 leading-none mb-1.5">{label}</p>
+        <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">{sub}</p>
+      </div>
+    </Link>
   )
 }
 

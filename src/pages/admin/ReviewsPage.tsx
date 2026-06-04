@@ -70,7 +70,6 @@ export default function ReviewsPage() {
             <thead>
               <tr className="bg-gray-50/50">
                 <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest">Provider</th>
-                <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest">Rating</th>
                 <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest">Review Content</th>
                 <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Status</th>
                 <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Date</th>
@@ -105,19 +104,17 @@ export default function ReviewsPage() {
                       </div>
                     </div>
                   </td>
-                  <td className="px-8 py-5">
-                    <div className="flex gap-0.5">
+                  <td className="px-8 py-5 max-w-md">
+                    <div className="flex gap-0.5 mb-2">
                       {[1, 2, 3, 4, 5].map((star) => (
                         <Star 
                           key={star} 
-                          size={12} 
+                          size={10} 
                           className={r.rating >= star ? 'text-amber-400 fill-amber-400' : 'text-gray-200'} 
                         />
                       ))}
                     </div>
-                  </td>
-                  <td className="px-8 py-5 max-w-md">
-                    <p className="text-sm text-gray-600 line-clamp-2 italic">"{r.reviewText}"</p>
+                    <p className="text-sm text-gray-600 line-clamp-3 italic">"{r.reviewText}"</p>
                   </td>
                   <td className="px-8 py-5 text-center">
                     <span className={`px-2.5 py-1 rounded-md text-[9px] font-black uppercase tracking-wider ${

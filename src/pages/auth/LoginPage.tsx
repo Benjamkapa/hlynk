@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   Building2, MapPin, Phone, Tag,
-  Loader2, Check, ArrowLeft,
+  Loader2, Check, ArrowLeft, Star
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { authApi } from '../../lib/api/auth'
@@ -54,6 +54,15 @@ type RegisterFormState = {
 function ReviewCard({ review }: { review: any }) {
   return (
     <div className="flex flex-col gap-3 p-1">
+      <div className="flex gap-0.5 mb-1">
+        {[1, 2, 3, 4, 5].map((s) => (
+          <Star 
+            key={s} 
+            size={12} 
+            className={review.rating >= s ? 'text-amber-400 fill-amber-400' : 'text-white/20'} 
+          />
+        ))}
+      </div>
       <p className="text-[15px] text-white leading-[1.6] font-light italic opacity-95 drop-shadow-sm line-clamp-4">
         "{review.comment}"
       </p>
@@ -184,6 +193,15 @@ function MobileReviewStrip() {
             exit={{ opacity: 0, y: -6 }}
             transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
           >
+            <div className="flex gap-0.5 mb-3">
+              {[1, 2, 3, 4, 5].map((s) => (
+                <Star 
+                  key={s} 
+                  size={12} 
+                  className={review.rating >= s ? 'text-amber-400 fill-amber-400' : 'text-white/20'} 
+                />
+              ))}
+            </div>
             <p style={{
               fontFamily: "'Cormorant Garamond', serif",
               fontSize: 18, fontWeight: 300, fontStyle: 'italic',

@@ -45,5 +45,5 @@ export function markPinPrompted(): void {
 /** Clear the PIN (called on full logout) */
 export function clearOfflinePin(): void {
   localStorage.removeItem(PIN_KEY)
-  localStorage.removeItem(PIN_PROMPTED_KEY)
+  // We keep the PIN_PROMPTED_KEY so we don't annoy the user on next login
 }
