@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { Search, Plus, Minus, Trash2, CreditCard, Wallet, Banknote, Zap, CheckCircle2, Package, Scan, ArrowRight, ShoppingCart, Loader2, LayoutGrid, List, ChevronLeft, ChevronRight, Lock, Smartphone, AlertTriangle, RefreshCcw, Wifi } from 'lucide-react'
 
 const KcbBankIcon = ({ className, size = 18 }: { className?: string, size?: number }) => (
-  <img src="https://sandbox.buni.kcbgroup.com/devportal/site/themes/wso2/images/logo-inverse.svg" alt="KCB" style={{ width: size, height: size, filter: 'invert(1)' }} className={`${className || ''} object-contain shrink-0`} />
+  <img src="https://buni.kcbgroup.com/_nuxt/logo.71b8fc4b.svg" alt="KCB" style={{ width: size, height: size }} className={`${className || ''} object-contain shrink-0`} />
 );
 import FeatureGate, { FEATURE_PLANS } from '../../components/shared/FeatureGate'
 import { toast } from 'sonner'

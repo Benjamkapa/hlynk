@@ -51,7 +51,7 @@ export default function DeveloperPage() {
           <div>
             <div className="flex items-center gap-4 mb-2">
                <img src="https://monisnapcontent.kinsta.cloud/wp-content/uploads/2021/09/M-PESA_LOGO-640x467.png?v=1632335437" alt="M-Pesa" className={`w-10 h-10 object-contain transition-opacity ${activeTab === 'mpesa' ? 'opacity-100' : 'opacity-30'}`} />
-               <img src="https://sandbox.buni.kcbgroup.com/devportal/site/themes/wso2/images/logo-inverse.svg" alt="KCB" className={`w-10 h-10 object-contain filter invert transition-opacity ${activeTab === 'kcb' ? 'opacity-100' : 'opacity-30'}`} />
+               <img src="https://buni.kcbgroup.com/_nuxt/logo.71b8fc4b.svg" alt="KCB" className={`w-10 h-10 object-contain transition-opacity ${activeTab === 'kcb' ? 'opacity-100' : 'opacity-30'}`} />
             </div>
             <h1 className="text-3xl font-black text-gray-900 tracking-tight flex items-center gap-3">
               Payment Gateways
