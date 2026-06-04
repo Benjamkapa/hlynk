@@ -48,8 +48,8 @@ export default function DeveloperPage() {
       <div className="space-y-8 animate-in fade-in duration-500 pt-6">
         <div className="flex justify-between items-end">
           <div>
+              <img src="https://monisnapcontent.kinsta.cloud/wp-content/uploads/2021/09/M-PESA_LOGO-640x467.png?v=1632335437" alt="M-Pesa" className="w-14 h-14 object-contain" />
             <h1 className="text-3xl font-black text-gray-900 tracking-tight flex items-center gap-3">
-              <Terminal className="text-emerald-600" size={32} />
               M-Pesa Setup
             </h1>
             <p className="text-gray-500 font-medium">Configure API integrations and advanced business logic</p>

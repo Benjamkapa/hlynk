@@ -5,6 +5,7 @@ import { ShieldCheck, UserX, Key, Search, ShieldAlert, ChevronLeft, ChevronRight
 import { useState, useEffect } from 'react'
 import { AdminStats } from '../../lib/types/api'
 import { exportToCSV } from '../../lib/utils/export'
+import CountUp from '../../components/shared/CountUp'
 
 export default function AuditSecurityPage() {
   const [logPage, setLogPage] = useState(1)
@@ -64,9 +65,9 @@ export default function AuditSecurityPage() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <SecurityCard title="Security Alerts" value={stats?.securityAlertsCount || '0'} sub={(stats?.securityAlertsCount || 0) > 0 ? 'Urgent attention' : 'All clear today'} icon={ShieldCheck} status={(stats?.securityAlertsCount || 0) > 0 ? 'danger' : 'safe'} />
-        <SecurityCard title="Failed Logins" value={stats?.failedLoginsCount || '0'} sub="Last 24 hours" icon={UserX} status={(stats?.failedLoginsCount || 0) > 5 ? 'warning' : 'safe'} />
-        <SecurityCard title="Active Protocols" value={stats?.activeProtocolsCount || '0'} sub="Encryption Active" icon={Key} status="safe" />
+        <SecurityCard title="Security Alerts" value={<CountUp end={Number(stats?.securityAlertsCount || 0)} />} sub={(stats?.securityAlertsCount || 0) > 0 ? 'Urgent attention' : 'All clear today'} icon={ShieldCheck} status={(stats?.securityAlertsCount || 0) > 0 ? 'danger' : 'safe'} />
+        <SecurityCard title="Failed Logins" value={<CountUp end={Number(stats?.failedLoginsCount || 0)} />} sub="Last 24 hours" icon={UserX} status={(stats?.failedLoginsCount || 0) > 5 ? 'warning' : 'safe'} />
+        <SecurityCard title="Active Protocols" value={<CountUp end={Number(stats?.activeProtocolsCount || 0)} />} sub="Encryption Active" icon={Key} status="safe" />
       </div>
 
       <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">

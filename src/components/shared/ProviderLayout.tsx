@@ -4,13 +4,21 @@ import {
   LayoutDashboard, Calendar, BarChart2, Users,
   Settings, LogOut, Package, ShoppingCart,
   Zap, Clock, AlertTriangle,
-  Lock, Shield, X, Star, Loader2, Terminal, ShieldCheck
+  Lock, Shield, X, Star, Loader2, Terminal, ShieldCheck, Receipt
 } from "lucide-react";
 import { useLocation, Outlet, NavLink, Link } from "react-router-dom";
 import TopNav from "./TopNav";
 import { providersApi } from "../../lib/api/providers";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
+
+const EtimsIcon = ({ className, size = 20 }: { className?: string, size?: number }) => (
+  <img src="https://etims.kra.go.ke/assets/images/logo.jpg" alt="eTIMS" style={{ width: size, height: size }} className={`${className || ''} object-contain mix-blend-darken shrink-0`} />
+);
+
+const MpesaIcon = ({ className, size = 20 }: { className?: string, size?: number }) => (
+  <img src="https://monisnapcontent.kinsta.cloud/wp-content/uploads/2021/09/M-PESA_LOGO-640x467.png?v=1632335437" alt="M-Pesa" style={{ width: size, height: size }} className={`${className || ''} object-contain shrink-0`} />
+);
 
 interface NavItem {
   to: string;
@@ -116,6 +124,7 @@ export default function ProviderLayout() {
         { to: '/dashboard/logs', label: 'Staff Activity', icon: ShieldCheck, permission: 'logs', plan: 'MAX' },
         { to: '/dashboard/subscription', label: 'My Plan', icon: Calendar, role: 'PROVIDER' },
         { to: '/dashboard/developer', label: 'M-Pesa Setup', icon: Terminal, role: 'PROVIDER', plan: 'PLUS' },
+        { to: '/dashboard/etims', label: 'KRA eTIMS', icon: Receipt, role: 'PROVIDER' },
       ],
     },
   ];

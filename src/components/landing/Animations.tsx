@@ -16,7 +16,7 @@ export function FadeUp({ children, delay = 0, className = "", style = {} }: { ch
   return (
     <div ref={ref} className={className} style={{
       ...style,
-      opacity: inView ? 1 : 0, 
+      opacity: inView ? 1 : 0,
       transform: inView ? "translateY(0)" : "translateY(60px)",
       transition: `opacity 2s cubic-bezier(0.16, 1, 0.3, 1) ${delay}s, transform 2s cubic-bezier(0.16, 1, 0.3, 1) ${delay}s`
     }}>
@@ -30,7 +30,7 @@ export function ScaleIn({ children, delay = 0, className = "", style = {} }: { c
   return (
     <div ref={ref} className={className} style={{
       ...style,
-      opacity: inView ? 1 : 0, 
+      opacity: inView ? 1 : 0,
       transform: inView ? "scale(1)" : "scale(0.85)",
       transition: `opacity 2s cubic-bezier(0.16, 1, 0.3, 1) ${delay}s, transform 2s cubic-bezier(0.16, 1, 0.3, 1) ${delay}s`
     }}>
@@ -44,7 +44,7 @@ export function SlideIn({ children, delay = 0, direction = "left", className = "
   return (
     <div ref={ref} className={className} style={{
       ...style,
-      opacity: inView ? 1 : 0, 
+      opacity: inView ? 1 : 0,
       transform: inView ? "translateX(0)" : direction === "left" ? "translateX(-60px)" : "translateX(60px)",
       transition: `opacity 2s cubic-bezier(0.16, 1, 0.3, 1) ${delay}s, transform 2s cubic-bezier(0.16, 1, 0.3, 1) ${delay}s`
     }}>
@@ -87,10 +87,10 @@ export function POSCanvas() {
     }
 
     type Particle = { x: number; y: number; vx: number; vy: number; size: number; alpha: number; color: string; twinkle: number; twinkleSpeed: number }
-    type Stream   = { x: number; y: number; len: number; speed: number; alpha: number; width: number; color: string }
-    type Hex      = { cx: number; cy: number; r: number; rot: number; rotSpeed: number; alpha: number; color: string; phase: number }
-    type Ring     = { cx: number; cy: number; r: number; maxR: number; speed: number; alpha: number; color: string; t: number }
-    type Floater  = { x: number; y: number; vy: number; alpha: number; size: number; text: string; color: string; phase: number }
+    type Stream = { x: number; y: number; len: number; speed: number; alpha: number; width: number; color: string }
+    type Hex = { cx: number; cy: number; r: number; rot: number; rotSpeed: number; alpha: number; color: string; phase: number }
+    type Ring = { cx: number; cy: number; r: number; maxR: number; speed: number; alpha: number; color: string; t: number }
+    type Floater = { x: number; y: number; vy: number; alpha: number; size: number; text: string; color: string; phase: number }
 
     let particles: Particle[], streams: Stream[], hexes: Hex[], rings: Ring[], floaters: Floater[]
 
@@ -98,7 +98,7 @@ export function POSCanvas() {
 
     function init() {
       if (!canvas) return
-      W = canvas.width  = canvas.offsetWidth  * dpr
+      W = canvas.width = canvas.offsetWidth * dpr
       H = canvas.height = canvas.offsetHeight * dpr
 
       particles = Array.from({ length: 40 }, () => ({
@@ -150,7 +150,7 @@ export function POSCanvas() {
       for (let i = 0; i < 6; i++) {
         const a = rot + (i / 6) * Math.PI * 2
         i === 0 ? ctx.moveTo(cx + Math.cos(a) * r, cy + Math.sin(a) * r)
-                : ctx.lineTo(cx + Math.cos(a) * r, cy + Math.sin(a) * r)
+          : ctx.lineTo(cx + Math.cos(a) * r, cy + Math.sin(a) * r)
       }
       ctx.closePath()
     }
@@ -227,4 +227,90 @@ export function POSCanvas() {
   }, [])
 
   return <canvas ref={canvasRef} className="absolute inset-0 w-full h-full pointer-events-none opacity-60 z-0" />
+}
+
+// ─── Stacked Scroll Sections ───────────────────────────────────────────────────
+// Each section sticks to the top and the next one slides over it, Apple-style.
+export function StackedSections({ children }: { children: React.ReactNode[] }) {
+  return (
+    <div className="relative">
+      {children.map((child, i) => (
+        <StackSection key={i} index={i} total={children.length}>
+          {child}
+        </StackSection>
+      ))}
+    </div>
+  )
+}
+
+function StackSection({
+  children,
+  index,
+  total,
+}: {
+  children: React.ReactNode
+  index: number
+  total: number
+}) {
+  const ref = useRef<HTMLDivElement>(null)
+  const [style, setStyle] = useState<React.CSSProperties>({})
+
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+
+    // Scale down slightly as newer cards stack over this one
+    const scaleStep = 0.03
+    const isLast = index === total - 1
+
+    function onScroll() {
+      if (!el) return
+      const rect = el.getBoundingClientRect()
+      const parentTop = el.offsetTop
+      const scrollY = window.scrollY
+
+      // How much the user has scrolled past this section's entry point
+      const progress = Math.max(0, Math.min(1, (scrollY - (parentTop - window.innerHeight * 0.8)) / (window.innerHeight * 0.5)))
+
+      // After this card is pinned, scale it down as user scrolls further
+      const pinned = rect.top <= 0
+      const distancePastTop = pinned ? Math.abs(rect.top) : 0
+      const sectionH = el.offsetHeight
+      const exitProgress = Math.min(1, distancePastTop / sectionH)
+      const scale = isLast ? 1 : Math.max(1 - scaleStep * (index + 1) * exitProgress * 3, 0.88)
+      const opacity = isLast ? 1 : Math.max(1 - exitProgress * 0.25, 0.75)
+
+      setStyle({
+        opacity: progress,
+        transform: `translateY(${(1 - progress) * 60}px) scale(${scale})`,
+        transformOrigin: 'top center',
+        filter: isLast ? 'none' : exitProgress > 0.05 ? `blur(${exitProgress * 1.5}px)` : 'none',
+      })
+    }
+
+    window.addEventListener('scroll', onScroll, { passive: true })
+    onScroll()
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [index, total])
+
+  return (
+    <div
+      ref={ref}
+      style={{
+        position: 'sticky',
+        top: `${index * 8}px`,
+        zIndex: 10 + index,
+      }}
+    >
+      <div
+        style={{
+          willChange: 'transform, opacity',
+          transition: 'transform 0.6s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.6s ease, filter 0.4s ease',
+          ...style,
+        }}
+      >
+        {children}
+      </div>
+    </div>
+  )
 }

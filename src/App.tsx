@@ -1,7 +1,11 @@
-import { lazy, Suspense } from 'react'
+import { lazy, Suspense, useState, useEffect } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
+import { AnimatePresence } from 'framer-motion'
 import { useAuth } from './lib/auth/AuthContext'
 import { Loader2 } from 'lucide-react'
+import { hasOfflinePin, hasPinBeenPrompted } from './lib/offline/offlinePin'
+import OfflineLockScreen from './components/auth/OfflineLockScreen'
+import PinSetupModal from './components/auth/PinSetupModal'
 
 // Layouts
 import ProviderLayout from './components/shared/ProviderLayout'
@@ -37,6 +41,7 @@ const PaymentsPageAdmin = lazy(() => import('./pages/admin/PaymentsPage'))
 const SettingsPageAdmin = lazy(() => import('./pages/admin/SettingsPage'))
 const HelpPageAdmin = lazy(() => import('./pages/admin/HelpPage'))
 const ReviewsPageAdmin = lazy(() => import('./pages/admin/ReviewsPage'))
+const CloudStoragePage = lazy(() => import('./pages/admin/CloudStoragePage'))
 
 // Provider Pages
 const RecordSalePage = lazy(() => import('./pages/provider/RecordSalePage'))
@@ -52,6 +57,7 @@ const SettingsPageProvider = lazy(() => import('./pages/provider/SettingsPage'))
 const HelpPageProvider = lazy(() => import('./pages/provider/HelpPage'))
 const DeveloperPage = lazy(() => import('./pages/provider/DeveloperPage'))
 const LogsPage = lazy(() => import('./pages/provider/MpesaLogsPage'))
+const EtimsPage = lazy(() => import('./pages/provider/EtimsPage'))
 
 function LoadingScreen() {
   return (
@@ -76,9 +82,33 @@ function AdminRoute({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
+  const { isLocked, user, isLoading } = useAuth()
+  const [showPinSetup, setShowPinSetup] = useState(false)
+
+  // After first successful login, prompt user to set an offline PIN (once)
+  useEffect(() => {
+    if (user && !isLoading && !hasOfflinePin() && !hasPinBeenPrompted()) {
+      // Small delay so the dashboard loads first
+      const t = setTimeout(() => setShowPinSetup(true), 2000)
+      return () => clearTimeout(t)
+    }
+  }, [user, isLoading])
+
   return (
     <Suspense fallback={<LoadingScreen />}>
       <OfflineBanner />
+
+      {/* Offline lock screen — shown when user logs out while offline */}
+      <AnimatePresence>
+        {isLocked && <OfflineLockScreen />}
+      </AnimatePresence>
+
+      {/* PIN setup modal — shown once after login if no PIN is set */}
+      <AnimatePresence>
+        {showPinSetup && !isLocked && (
+          <PinSetupModal onDone={() => setShowPinSetup(false)} />
+        )}
+      </AnimatePresence>
       <Routes>
         {/* Public */}
         <Route path="/" element={<LandingPage />} />
@@ -109,6 +139,7 @@ export default function App() {
           <Route path="settings" element={<SettingsPageProvider />} />
           <Route path="developer" element={<DeveloperPage />} />
           <Route path="logs" element={<LogsPage />} />
+          <Route path="etims" element={<EtimsPage />} />
           <Route path="help" element={<HelpPageProvider />} />
         </Route>
 
@@ -124,6 +155,7 @@ export default function App() {
           <Route path="forensic-audit" element={<AuditSecurityPage />} />
           <Route path="community-reviews" element={<ReviewsPageAdmin />} />
           <Route path="reports" element={<ReportsPageAdmin />} />
+          <Route path="storage" element={<CloudStoragePage />} />
           <Route path="settings" element={<SettingsPageAdmin />} />
           <Route path="help" element={<HelpPageAdmin />} />
         </Route>

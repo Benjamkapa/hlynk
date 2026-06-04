@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import { User, Store, Bell, Lock, Save, Camera, Loader2, LogOut, Trash2, Users, Shield, Mail, Phone, ArrowRight, Plus, CheckCircle2, Edit, FileText, RefreshCcw, Code, Sparkles, Eye, AlertTriangle, Terminal } from 'lucide-react'
+import { User, Store, Bell, Lock, Save, Camera, Loader2, LogOut, Trash2, Users, Shield, Mail, Phone, ArrowRight, Plus, CheckCircle2, Edit, FileText, RefreshCcw, Code, Sparkles, Eye, AlertTriangle, Terminal, ShieldCheck } from 'lucide-react'
 import { ConfirmModal } from '../../components/shared/ConfirmModal'
 import { toast } from 'sonner'
 import { useAuth } from '../../lib/auth/AuthContext'
@@ -8,6 +8,17 @@ import { getErrorMessage } from '../../lib/utils/error'
 import { useLocation, NavLink, Link } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import FeatureGate from '../../components/shared/FeatureGate'
+import { hasOfflinePin, clearOfflinePin } from '../../lib/offline/offlinePin'
+import PinSetupModal from '../../components/auth/PinSetupModal'
+import { AnimatePresence } from 'framer-motion'
+
+const EtimsIcon = ({ className, size = 18 }: { className?: string, size?: number }) => (
+  <img src="https://etims.kra.go.ke/assets/images/logo.jpg" alt="eTIMS" style={{ width: size, height: size }} className={`${className || ''} object-contain mix-blend-darken shrink-0`} />
+);
+
+const MpesaIcon = ({ className, size = 18 }: { className?: string, size?: number }) => (
+  <img src="https://monisnapcontent.kinsta.cloud/wp-content/uploads/2021/09/M-PESA_LOGO-640x467.png?v=1632335437" alt="M-Pesa" style={{ width: size, height: size }} className={`${className || ''} object-contain shrink-0`} />
+);
 
 export default function SettingsPage() {
   const { user, refreshUser, logout } = useAuth()
@@ -16,6 +27,8 @@ export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState('Profile')
   const [uploading, setUploading] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const [pinHasPin, setPinHasPin] = useState(() => hasOfflinePin())
+  const [showPinSetup, setShowPinSetup] = useState(false)
 
   const { data: profile, isLoading } = useQuery({
     queryKey: ['my-profile'],
@@ -105,12 +118,17 @@ export default function SettingsPage() {
     icon: any
     role?: string[]
     plan?: 'PLUS' | 'MAX'
+    mobileOnly?: boolean
   }
 
   const allTabs: SettingsTab[] = [
     { name: 'Profile', icon: User },
     { name: 'Business', icon: Store, role: ['PROVIDER', 'SUPER_ADMIN'] },
     { name: 'Staff Management', icon: Users, role: ['PROVIDER', 'SUPER_ADMIN'], plan: 'PLUS' },
+    { name: 'Customers', icon: Users, role: ['PROVIDER'], mobileOnly: true },
+    { name: 'M-Pesa Setup', icon: MpesaIcon, role: ['PROVIDER'], plan: 'PLUS', mobileOnly: true },
+    { name: 'KRA eTIMS', icon: EtimsIcon, role: ['PROVIDER'], mobileOnly: true },
+    { name: 'My Plan', icon: Sparkles, role: ['PROVIDER', 'SUPER_ADMIN'], mobileOnly: true },
     { name: 'Data Management', icon: Trash2, role: ['PROVIDER', 'SUPER_ADMIN'] },
     { name: 'Security', icon: Lock },
   ]
@@ -161,7 +179,7 @@ export default function SettingsPage() {
             <button
               key={tab.name}
               onClick={() => setActiveTab(tab.name)}
-              className={`w-full flex items-center gap-3 px-6 py-4 rounded-[.5rem] font-bold text-sm hover:shadow hover:bg-emerald-100/40 transition-all ${activeTab === tab.name
+              className={`w-full flex items-center gap-3 px-6 py-4 rounded-[.5rem] font-bold text-sm hover:shadow hover:bg-emerald-100/40 transition-all ${tab.mobileOnly ? 'lg:hidden ' : ''}${activeTab === tab.name
                   ? 'bg-white text-emerald-600 shadow-sm'
                   : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'
                 }`}
@@ -322,6 +340,71 @@ export default function SettingsPage() {
               </div>
             )}
 
+            {activeTab === 'Customers' && (
+              <div className="space-y-6 lg:hidden">
+                <div className="flex justify-between items-center mb-4">
+                  <div>
+                    <h4 className="text-lg font-black text-gray-900">Customers</h4>
+                    <p className="text-xs text-gray-500">Manage your customer database</p>
+                  </div>
+                  <Link to="/dashboard/customers" className="text-[10px] font-black text-emerald-600 uppercase tracking-widest hover:underline flex items-center gap-1">
+                    Manage in full screen <ArrowRight size={12} />
+                  </Link>
+                </div>
+                <div className="h-[600px] overflow-hidden rounded-[.5rem] border border-gray-100 bg-gray-50">
+                   <iframe src="/dashboard/customers" className="w-full h-full border-none pointer-events-auto" />
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'M-Pesa Setup' && (
+              <div className="space-y-6 lg:hidden">
+                <div className="flex justify-between items-center mb-4">
+                  <div>
+                    <h4 className="text-lg font-black text-gray-900">M-Pesa Intergration</h4>
+                  </div>
+                  <Link to="/dashboard/developer" className="text-[10px] font-black text-emerald-600 uppercase tracking-widest hover:underline flex items-center gap-1">
+                    Manage in full screen <ArrowRight size={12} />
+                  </Link>
+                </div>
+                <div className="h-[800px] overflow-hidden rounded-[.5rem] border border-gray-100 bg-gray-50">
+                   <iframe src="/dashboard/developer" className="w-full h-full border-none pointer-events-auto" />
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'KRA eTIMS' && (
+              <div className="space-y-6 lg:hidden">
+                <div className="flex justify-between items-center mb-4">
+                  <div>
+                    <h4 className="text-lg font-black text-gray-900">KRA eTIMS</h4>
+                  </div>
+                  <Link to="/dashboard/etims" className="text-[10px] font-black text-emerald-600 uppercase tracking-widest hover:underline flex items-center gap-1">
+                    Manage in full screen <ArrowRight size={12} />
+                  </Link>
+                </div>
+                <div className="h-[800px] overflow-hidden rounded-[.5rem] border border-gray-100 bg-gray-50">
+                   <iframe src="/dashboard/etims" className="w-full h-full border-none pointer-events-auto" />
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'My Plan' && (
+              <div className="space-y-6 lg:hidden">
+                <div className="flex justify-between items-center mb-4">
+                  <div>
+                    <h4 className="text-lg font-black text-gray-900">Subscription & Billing</h4>
+                  </div>
+                  <Link to="/dashboard/subscription" className="text-[10px] font-black text-emerald-600 uppercase tracking-widest hover:underline flex items-center gap-1">
+                    Open in full screen <ArrowRight size={12} />
+                  </Link>
+                </div>
+                <div className="h-[800px] overflow-hidden rounded-[.5rem] border border-gray-100 bg-gray-50">
+                   <iframe src="/dashboard/subscription" className="w-full h-full border-none pointer-events-auto" />
+                </div>
+              </div>
+            )}
+
 
 
             {activeTab === 'Data Management' && (
@@ -364,6 +447,55 @@ export default function SettingsPage() {
             {activeTab === 'Security' && (
               <div className="space-y-10">
                 <ActivityLogViewer />
+
+                {/* ── Offline PIN Management ─────────────────────────────────── */}
+                <div className="pt-10 border-t border-gray-100">
+                  <div className="flex items-center gap-3 mb-6">
+                    <ShieldCheck size={18} className="text-emerald-600" />
+                    <h4 className="text-xs font-black text-slate-700 uppercase tracking-widest">Offline PIN</h4>
+                  </div>
+                  <div className={`p-6 rounded-[.5rem] border flex items-center justify-between gap-4 ${
+                    pinHasPin
+                      ? 'bg-emerald-50 border-emerald-100'
+                      : 'bg-amber-50 border-amber-100'
+                  }`}>
+                    <div>
+                      <p className={`text-sm font-black mb-1 ${
+                        pinHasPin ? 'text-emerald-900' : 'text-amber-900'
+                      }`}>
+                        {pinHasPin ? '✓ Offline PIN is active' : 'No offline PIN set'}
+                      </p>
+                      <p className={`text-[10px] font-medium leading-relaxed max-w-md ${
+                        pinHasPin ? 'text-emerald-700' : 'text-amber-700'
+                      }`}>
+                        {pinHasPin
+                          ? 'Your session will lock (not log out) when you go offline. Enter your PIN to resume without internet.'
+                          : 'Without a PIN, you cannot log back in if you lose internet. Set one to protect your offline access.'}
+                      </p>
+                    </div>
+                    <div className="flex gap-2 flex-shrink-0">
+                      {pinHasPin && (
+                        <button
+                          onClick={() => {
+                            clearOfflinePin()
+                            setPinHasPin(false)
+                            toast.success('Offline PIN removed')
+                          }}
+                          className="px-4 py-2.5 border border-red-200 text-red-500 rounded-[.5rem] text-[10px] font-black uppercase tracking-widest hover:bg-red-50 transition-all"
+                        >
+                          Remove PIN
+                        </button>
+                      )}
+                      <button
+                        onClick={() => setShowPinSetup(true)}
+                        className="px-5 py-2.5 bg-[#0D4A3E] text-white rounded-[.5rem] text-[10px] font-black uppercase tracking-widest hover:bg-[#0A3D33] transition-all shadow-lg shadow-emerald-900/10"
+                      >
+                        {pinHasPin ? 'Change PIN' : 'Set PIN'}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
                 <div className="pt-10 border-t border-gray-100">
                   <h4 className="text-xs font-black text-red-500 uppercase tracking-widest mb-6">Danger Zone</h4>
                   <div className="p-8 rounded-[.5rem] bg-red-50 border border-red-100 flex items-center justify-between">
@@ -408,6 +540,18 @@ export default function SettingsPage() {
         }}
         onCancel={() => setConfirmDeleteId(null)}
       />
+
+      {/* PIN Setup Modal */}
+      <AnimatePresence>
+        {showPinSetup && (
+          <PinSetupModal
+            onDone={() => {
+              setShowPinSetup(false)
+              setPinHasPin(hasOfflinePin())
+            }}
+          />
+        )}
+      </AnimatePresence>
     </div>
   )
 }

@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import { Bell, User, LogOut, ChevronDown, Menu, Sparkles, X, Maximize2, Minimize2, Zap } from 'lucide-react'
+import { Bell, User, LogOut, ChevronDown, Maximize2, Minimize2, Lock as LockIcon } from 'lucide-react'
 import { useAuth } from '../../lib/auth/AuthContext'
 import { useMobileViewport } from '../../lib/MobileViewportContext'
 import { Link, useNavigate } from 'react-router-dom'
@@ -7,6 +7,7 @@ import { toast } from 'sonner'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { platformApi } from '../../lib/api/platform'
 import { PanelLeftClose, PanelLeftOpen } from 'lucide-react'
+import { hasOfflinePin } from '../../lib/offline/offlinePin'
 
 interface TopNavProps {
   isMobileOpen?: boolean
@@ -18,7 +19,7 @@ interface TopNavProps {
 }
 
 export default function TopNav({ isMobileOpen, onMobileMenuToggle, isCollapsed, onToggleCollapse, extraActions }: TopNavProps) {
-  const { user, logout } = useAuth()
+  const { user, logout, lock } = useAuth()
   const { isZoomedOut, toggleZoom } = useMobileViewport()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
@@ -47,9 +48,9 @@ export default function TopNav({ isMobileOpen, onMobileMenuToggle, isCollapsed, 
     }
   })
 
-  const notifications = notifyRes?.data || []
-  const salesNotifications = notifications.filter((n: any) => n.action?.toLowerCase().includes('sale'))
-  const unreadCount = salesNotifications.filter((n: any) => !n.isRead).length
+  const allNotifications = notifyRes?.data || []
+  const notifications = allNotifications.filter((n: any) => n.action?.toLowerCase().includes('sale') || n.title?.toLowerCase().includes('sale'))
+  const unreadCount = notifications.filter((n: any) => !n.isRead).length
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -63,9 +64,22 @@ export default function TopNav({ isMobileOpen, onMobileMenuToggle, isCollapsed, 
   }, [])
 
   const handleLogout = async () => {
+    const isOffline = !navigator.onLine
+    setShowUserMenu(false)
     await logout()
-    toast.success('Session terminated successfully')
-    navigate('/login')
+    if (!isOffline) {
+      // Full logout — navigate to login page
+      toast.success('Session terminated successfully')
+      navigate('/login')
+    } else {
+      // Offline — session is locked, not destroyed
+      toast.info('Session locked. Enter your PIN to continue.')
+    }
+  }
+
+  const handleLock = () => {
+    setShowUserMenu(false)
+    lock()
   }
 
   return (
@@ -125,18 +139,18 @@ export default function TopNav({ isMobileOpen, onMobileMenuToggle, isCollapsed, 
             <div className="fixed sm:absolute top-24 sm:top-16 right-4 sm:right-0 w-[calc(100vw-2rem)] sm:w-[340px] bg-white border border-slate-100 rounded-[.5rem] shadow-2xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200 z-[200]">
               <div className="p-5 bg-slate-50/50 border-b border-slate-100 flex justify-between items-center">
                 <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">System Notifications</span>
-                {salesNotifications.length > 0 && (
+                {notifications.length > 0 && (
                   <button onClick={() => deleteNotificationsMutation.mutate()} className="text-[10px] font-black text-red-600 uppercase tracking-widest hover:text-red-800 transition-colors">Wipe History</button>
                 )}
               </div>
               <div className="max-h-[400px] overflow-y-auto">
                 {notifyLoading ? (
                    <div className="p-12 text-center animate-pulse text-slate-400 font-black text-[9px] uppercase tracking-widest">Fetching...</div>
-                ) : salesNotifications.length === 0 ? (
-                  <div className="p-16 text-center text-sm font-black text-slate-400 italic">No recent sales</div>
+                ) : notifications.length === 0 ? (
+                  <div className="p-16 text-center text-sm font-black text-slate-400 italic">No notifications</div>
                 ) : (
                   <div className="divide-y divide-slate-50">
-                    {salesNotifications.map((n: any) => (
+                    {notifications.map((n: any) => (
                       <div key={n.id} className="p-5 hover:bg-slate-50 transition-colors cursor-pointer" onClick={() => !n.isRead && markReadMutation.mutate(n.id)}>
                         <div className="flex gap-4">
                           <div className="h-8 w-8 shrink-0 bg-white border border-slate-100 rounded-[.4rem] p-1.5 shadow-sm flex items-center justify-center">
@@ -194,12 +208,21 @@ export default function TopNav({ isMobileOpen, onMobileMenuToggle, isCollapsed, 
               <Link to="/dashboard/settings" onClick={() => setShowUserMenu(false)} className="flex items-center gap-3 px-4 py-3.5 rounded-[.5rem] text-xs font-black text-slate-500 uppercase tracking-widest hover:bg-emerald-50 hover:text-emerald-700">
                 <User size={16} className="opacity-50" /> Profile Security
               </Link>
+              {/* Lock screen shortcut — only shown if PIN is set */}
+              {hasOfflinePin() && (
+                <button
+                  onClick={handleLock}
+                  className="w-full flex items-center gap-3 px-4 py-3.5 rounded-[.5rem] text-xs font-black text-slate-500 uppercase tracking-widest hover:bg-slate-50"
+                >
+                  <LockIcon size={16} className="opacity-50" /> Lock Screen
+                </button>
+              )}
               <div className="h-px bg-slate-50 my-2 mx-2" />
               <button 
                 onClick={handleLogout} 
                 className="w-full flex items-center gap-3 px-4 py-3.5 rounded-[.5rem] text-xs font-black text-red-500 uppercase tracking-widest hover:bg-red-50"
               >
-                <LogOut size={16} /> Terminate Session
+                <LogOut size={16} /> {navigator.onLine ? 'Terminate Session' : 'Lock & Secure'}
               </button>
             </div>
           )}

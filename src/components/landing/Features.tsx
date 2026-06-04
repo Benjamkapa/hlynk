@@ -1,4 +1,4 @@
-import { TrendingUp, Receipt, PackageSearch, BarChart3, LayoutDashboard, Users } from 'lucide-react'
+import { TrendingUp, Receipt, PackageSearch, BarChart3, LayoutDashboard, Users, ShieldCheck } from 'lucide-react'
 import { FadeUp } from './Animations'
 
 const features = [
@@ -31,6 +31,11 @@ const features = [
     icon: <Users size={24} />,
     title: "Staff Management",
     desc: "Create sub-accounts for your staff with limited access. Keep your business secure while you delegate tasks."
+  },
+  {
+    icon: <img src="https://etims.kra.go.ke/assets/images/logo.jpg" alt="eTIMS" className="w-8 h-8 object-contain rounded-md" />,
+    title: "KRA eTIMS Integrated",
+    desc: "Stay fully compliant with KRA effortlessly. Optional direct system-to-system eTIMS integration pushes invoices automatically for your peace of mind."
   },
 ]
 

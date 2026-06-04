@@ -14,6 +14,7 @@ import { adminApi } from '../../lib/api/providers'
 import { toast } from 'sonner'
 import { Link } from 'react-router-dom'
 import Pagination from '../../components/shared/Pagination'
+import CountUp from '../../components/shared/CountUp'
 
 
 import { useEffect } from 'react'
@@ -101,10 +102,10 @@ export default function AdminDashboardPage() {
 
       {/* KPI Section */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-8 mb-8">
-        <KpiCard title="Platform Revenue" value={`KES ${stats?.revenue?.total?.toLocaleString() || '0'}`} sub="Subscription Income" icon={DollarSign} trend="up" color="emerald" />
-        <KpiCard title="Gross Volume (GMV)" value={`KES ${stats?.revenue?.platformVolume?.toLocaleString() || '0'}`} sub="Total sales processed" icon={Activity} trend="up" color="purple" />
-        <KpiCard title="Paybill Collections" value={`KES ${stats?.revenue?.mpesaCollections?.toLocaleString() || '0'}`} sub="M-Pesa system flow" icon={Landmark} trend="up" color="blue" />
-        <KpiCard title="Active Business" value={stats?.overview?.totalProviders?.toLocaleString() || '0'} sub={`${stats?.overview?.payingProviders || 0} Paying Subs`} icon={Users} trend="up" color="emerald" />
+        <KpiCard title="Platform Revenue" value={<CountUp end={Number(stats?.revenue?.total || 0)} formatter={(v: number) => `KES ${v.toLocaleString()}`} />} sub="Subscription Income" icon={DollarSign} trend="up" color="emerald" />
+        <KpiCard title="Gross Volume (GMV)" value={<CountUp end={Number(stats?.revenue?.platformVolume || 0)} formatter={(v: number) => `KES ${v.toLocaleString()}`} />} sub="Total sales processed" icon={Activity} trend="up" color="purple" />
+        <KpiCard title="Paybill Collections" value={<CountUp end={Number(stats?.revenue?.mpesaCollections || 0)} formatter={(v: number) => `KES ${v.toLocaleString()}`} />} sub="M-Pesa system flow" icon={Landmark} trend="up" color="blue" />
+        <KpiCard title="Active Business" value={<CountUp end={Number(stats?.overview?.totalProviders || 0)} />} sub={`${stats?.overview?.payingProviders || 0} Paying Subs`} icon={Users} trend="up" color="emerald" />
       </div>
 
 

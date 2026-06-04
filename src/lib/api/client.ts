@@ -9,6 +9,7 @@ export const api = axios.create({
   baseURL: `${API_URL}/api/v1`,
   headers: { 'Content-Type': 'application/json' },
   timeout: 60000, 
+  withCredentials: true, // required for httpOnly cookies
 })
 
 api.interceptors.request.use((config) => {
@@ -26,12 +27,11 @@ api.interceptors.response.use(
       original._retry = true
 
       try {
-        const refreshToken = storage.getItem('refreshToken')
-        if (!refreshToken) throw new Error('No refresh token')
-
+        // Refresh token is now handled via httpOnly cookie
         const { data } = await axios.post(
           `${API_URL}/api/v1/auth/refresh`,
-          { refreshToken },
+          {}, // Body no longer needs refreshToken
+          { withCredentials: true }
         )
 
         const newToken = data.data.accessToken
@@ -40,7 +40,6 @@ api.interceptors.response.use(
         return api(original)
       } catch {
         storage.removeItem('accessToken')
-        storage.removeItem('refreshToken')
         storage.removeItem('user_profile')
         queryClient.clear()
         window.location.href = '/login'

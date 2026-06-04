@@ -3,7 +3,7 @@ import { useAuth } from '../../lib/auth/AuthContext'
 import {
   LayoutDashboard, BarChart2, Users,
   Settings, HelpCircle, LogOut, PanelLeftClose, PanelLeftOpen, CreditCard, MessageSquare,
-  Briefcase, ShieldCheck, Activity, DollarSign, Landmark
+  Briefcase, ShieldCheck, Activity, DollarSign, Landmark, HardDrive
 } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import TopNav from './TopNav'
@@ -28,6 +28,7 @@ export default function AdminLayout() {
         { to: '/admin/system-performance', label: 'Performance', icon: Activity },
         { to: '/admin/financials', label: 'Financials', icon: DollarSign },
         { to: '/admin/payments', label: 'Payments', icon: Landmark },
+        { to: '/admin/storage', label: 'Cloud Storage', icon: HardDrive },
       ],
     },
     {

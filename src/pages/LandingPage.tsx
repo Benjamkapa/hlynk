@@ -60,10 +60,10 @@ export default function LandingPage() {
       <Footer />
 
       {/* Global Modal - High Z-Index */}
-      <IndustryDetailsModal 
-        isOpen={modalOpen} 
-        onClose={() => setModalOpen(false)} 
-        category={selectedCategory} 
+      <IndustryDetailsModal
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        category={selectedCategory}
       />
     </div>
   )

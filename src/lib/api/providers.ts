@@ -151,5 +151,7 @@ export const adminApi = {
   updateReviewStatus: (id: string, status: number) => api.patch(`/admin/reviews/${id}`, { status }).then(r => r.data),
   getPayouts: () => api.get('/admin/payouts').then(r => r.data),
   markPayoutPaid: (tenantId: string) => api.post(`/admin/payouts/${tenantId}/mark-paid`).then(r => r.data),
+  getMedia: () => api.get('/admin/media').then(r => r.data),
+  deleteMedia: (path: string) => api.post('/admin/media/delete', { path }).then(r => r.data),
 }
 

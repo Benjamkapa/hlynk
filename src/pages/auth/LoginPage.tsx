@@ -539,11 +539,14 @@ export default function LoginPage() {
                             else localStorage.removeItem('hlynk_eula_accepted')
                           }}
                         />
-                        <span className="text-[12px] px-1 pt-1 font-light text-white/90">
+                        <span className="text-[11px] px-1 pt-0.5 font-light text-white/90 leading-relaxed">
                           I agree to the{' '}
                           <a href="/terms-conditions" className="text-white hover:text-emerald-300 font-medium underline transition-colors">Terms of Service</a>
-                          {' '}and{' '}
+                          ,{' '}
                           <a href="/privacy-policy" className="text-white hover:text-emerald-300 font-medium underline transition-colors">Privacy Policy</a>
+                          {/* , <a href="/google/terms" className="text-white hover:text-emerald-300 font-medium underline transition-colors">Google Terms</a>
+                          {' '}and{' '}
+                          <a href="/google/privacy" className="text-white hover:text-emerald-300 font-medium underline transition-colors">Notice</a>. */}
                         </span>
                       </label>
                     </div>
@@ -672,11 +675,14 @@ export default function LoginPage() {
                               else localStorage.removeItem('hlynk_eula_accepted')
                             }}
                           />
-                          <span className="text-[12px] px-1 pt-1 leading-relaxed font-light">
+                          <span className="text-[11px] px-1 pt-0.5 leading-relaxed font-light text-slate-500">
                             I agree to the{' '}
-                            <a href="/terms-conditions" className="text-black hover:text-emerald-600 underline transition-colors">Terms of Service</a>
+                            <a href="/terms-conditions" className="text-black hover:text-emerald-600 underline font-medium transition-colors">Terms of Service</a>
+                            {' & '}
+                            <a href="/privacy-policy" className="text-black hover:text-emerald-600 underline font-medium transition-colors">Privacy Policy</a>
+                            {/* , <a href="/google/terms" className="text-black hover:text-emerald-600 underline font-medium transition-colors">Google Terms</a>
                             {' '}and{' '}
-                            <a href="/privacy-policy" className="text-black hover:text-emerald-600 underline transition-colors">Privacy Policy</a>
+                            <a href="/google/privacy" className="text-black hover:text-emerald-600 underline font-medium transition-colors">Notice</a>. */}
                           </span>
                         </label>
 

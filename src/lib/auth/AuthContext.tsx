@@ -2,12 +2,16 @@ import React, { createContext, useContext, useEffect, useState } from 'react'
 import { authApi, type AuthUser } from '../api/auth'
 import { queryClient } from '../query/queryClient'
 import { storage } from '../utils/storage'
+import { verifyOfflinePin, clearOfflinePin } from '../offline/offlinePin'
 
 interface AuthContextValue {
   user: AuthUser | null
   isLoading: boolean
-  login: (tokens: { accessToken: string; refreshToken: string }, user: AuthUser) => void
-  logout: () => Promise<void>
+  isLocked: boolean
+  login: (tokens: { accessToken: string; refreshToken?: string }, user: AuthUser) => void
+  logout: (opts?: { force?: boolean }) => Promise<void>
+  lock: () => void
+  unlock: (pin: string) => Promise<boolean>
   refreshUser: () => Promise<void>
 }
 
@@ -27,12 +31,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(() => {
     const token = storage.getItem('accessToken')
     const cached = storage.getItem('user_profile')
-    // If we have a token but no cached user, we MUST load
     if (token && (!cached || cached === 'undefined')) return true
-    // Even if we have a cached user, we might want to show loading to avoid stale gates
-    // but for "speed" we usually show cached. Let's force loading ONLY if we are in the initial mount
-    return !!token 
+    return !!token
   })
+  const [isLocked, setIsLocked] = useState(false)
 
   useEffect(() => {
     const token = storage.getItem('accessToken')
@@ -50,15 +52,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setUser(res.data)
           storage.setItem('user_profile', JSON.stringify(res.data))
         } else {
-          // If the server responded with an error (like 401), we logout
           throw new Error('Invalid session')
         }
       } catch (err: any) {
-        // IMPORTANT: Only clear tokens if the error is actually an auth error
-        // If it's a network error (offline), we keep the user logged in
+        // Only clear tokens if the error is actually an auth error
         if (err.response?.status === 401 || err.response?.status === 403) {
           storage.removeItem('accessToken')
-          storage.removeItem('refreshToken')
           storage.removeItem('user_profile')
           setUser(null)
         } else {
@@ -70,13 +69,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     if (token) {
-      // Initial fetch attempt
       fetchUser()
-      
-      // Periodically refresh, but only if online
+
       const intervalId = setInterval(() => {
         if (navigator.onLine) fetchUser()
-      }, 30000) // Increase interval to 30s to save battery/data
+      }, 30000)
 
       return () => clearInterval(intervalId)
     }
@@ -84,27 +81,57 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setIsLoading(false)
   }, [])
 
-  const login = (tokens: { accessToken: string; refreshToken: string }, userData: AuthUser) => {
+  const login = (tokens: { accessToken: string; refreshToken?: string }, userData: AuthUser) => {
     storage.setItem('accessToken', tokens.accessToken)
-    storage.setItem('refreshToken', tokens.refreshToken)
     storage.setItem('user_profile', JSON.stringify(userData))
-    // Clear all queries to ensure no stale data from a previous session remains
     queryClient.clear()
+    setIsLocked(false)
     setUser(userData)
   }
 
-  const logout = async () => {
+  /**
+   * Logout with offline-awareness.
+   * - When ONLINE: full logout — clears all tokens, session and PIN.
+   * - When OFFLINE (default): locks the screen instead so the user can
+   *   re-authenticate locally via their PIN without needing internet.
+   * - Pass { force: true } to force a full logout even when offline
+   *   (user accepts they cannot log back in until they are online again).
+   */
+  const logout = async (opts?: { force?: boolean }) => {
+    const isOffline = !navigator.onLine
+
+    if (isOffline && !opts?.force) {
+      // Don't destroy the session — just lock the screen
+      setIsLocked(true)
+      return
+    }
+
+    // Full logout (online, or forced)
     try {
       await authApi.logout()
     } catch {
-      // ignore
+      // ignore network errors
     }
 
+    clearOfflinePin()
     storage.removeItem('accessToken')
-    storage.removeItem('refreshToken')
     storage.removeItem('user_profile')
     queryClient.clear()
+    setIsLocked(false)
     setUser(null)
+  }
+
+  /** Lock the screen without ending the session */
+  const lock = () => setIsLocked(true)
+
+  /**
+   * Attempt to unlock the session with a PIN.
+   * Returns true on success, false on wrong PIN.
+   */
+  const unlock = async (pin: string): Promise<boolean> => {
+    const valid = await verifyOfflinePin(pin)
+    if (valid) setIsLocked(false)
+    return valid
   }
 
   const refreshUser = async () => {
@@ -113,7 +140,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (res.success && res.data) {
         setUser(res.data)
         storage.setItem('user_profile', JSON.stringify(res.data))
-        // Force re-fetch of all subscription-dependent queries
         queryClient.invalidateQueries()
       }
     } catch (err) {
@@ -122,7 +148,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, login, logout, refreshUser }}>
+    <AuthContext.Provider value={{ user, isLoading, isLocked, login, logout, lock, unlock, refreshUser }}>
       {children}
     </AuthContext.Provider>
   )

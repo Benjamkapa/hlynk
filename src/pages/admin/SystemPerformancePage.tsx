@@ -57,6 +57,72 @@ export default function SystemPerformancePage() {
         <MetricCard title="Incident Rate" value={health?.incidentRate || '0%'} sub="Critical Zero" icon={ShieldCheck} trend="none" color="purple" />
       </div>
 
+      {/* Infrastructure Capacity */}
+      <div className="bg-white p-10 rounded-lg border border-slate-100 shadow-sm">
+         <div className="flex items-center gap-3 mb-8">
+            <div className="h-10 w-10 rounded-md bg-slate-900 text-white flex items-center justify-center">
+               <Server size={20} />
+            </div>
+            <div>
+               <h3 className="text-xl font-black text-slate-900">Infrastructure Capacity</h3>
+               <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Real-time Resource Allocation & Cluster Availability</p>
+            </div>
+         </div>
+         
+         <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
+            {/* CPU */}
+            <div className="space-y-4">
+               <div className="flex justify-between items-end">
+                  <span className="text-xs font-black text-slate-500 uppercase tracking-widest">Computing Power</span>
+                  <span className="text-lg font-black hl-mono text-slate-900">{health?.cpuLoad || '0%'}</span>
+               </div>
+               <div className="h-3 w-full bg-slate-100 rounded-full overflow-hidden">
+                  <div 
+                    className="h-full bg-amber-500 transition-all duration-1000" 
+                    style={{ width: health?.cpuLoad || '0%' }}
+                  />
+               </div>
+               <p className="text-[10px] text-slate-400 font-medium">Processing load across all cluster nodes</p>
+            </div>
+
+            {/* Memory */}
+            <div className="space-y-4">
+               <div className="flex justify-between items-end">
+                  <span className="text-xs font-black text-slate-500 uppercase tracking-widest">Memory (RAM)</span>
+                  <div className="text-right">
+                     <span className="text-lg font-black hl-mono text-slate-900">{health?.memoryCapacity?.percent || 0}%</span>
+                     <p className="text-[10px] text-slate-400 font-bold uppercase leading-none">{health?.memoryCapacity?.used || '0MB'} / {health?.memoryCapacity?.total || '0MB'}</p>
+                  </div>
+               </div>
+               <div className="h-3 w-full bg-slate-100 rounded-full overflow-hidden">
+                  <div 
+                    className="h-full bg-blue-500 transition-all duration-1000" 
+                    style={{ width: `${health?.memoryCapacity?.percent || 0}%` }}
+                  />
+               </div>
+               <p className="text-[10px] text-slate-400 font-medium">Volatile memory utilization for runtime processes</p>
+            </div>
+
+            {/* Disk */}
+            <div className="space-y-4">
+               <div className="flex justify-between items-end">
+                  <span className="text-xs font-black text-slate-500 uppercase tracking-widest">Global Storage</span>
+                  <div className="text-right">
+                     <span className="text-lg font-black hl-mono text-slate-900">{health?.diskCapacity?.percent || 0}%</span>
+                     <p className="text-[10px] text-slate-400 font-bold uppercase leading-none">{health?.diskCapacity?.used || '0GB'} / {health?.diskCapacity?.total || '0GB'}</p>
+                  </div>
+               </div>
+               <div className="h-3 w-full bg-slate-100 rounded-full overflow-hidden">
+                  <div 
+                    className="h-full bg-emerald-500 transition-all duration-1000" 
+                    style={{ width: `${health?.diskCapacity?.percent || 0}%` }}
+                  />
+               </div>
+               <p className="text-[10px] text-slate-400 font-medium">Remaining capacity on primary storage nodes</p>
+            </div>
+         </div>
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
         <div className="bg-white p-10 rounded-lg border border-slate-100 shadow-sm relative overflow-hidden">
           <div className="flex justify-between items-center mb-10">
