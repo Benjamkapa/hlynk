@@ -155,7 +155,6 @@ export default function App() {
           <Route path="forensic-audit" element={<AuditSecurityPage />} />
           <Route path="community-reviews" element={<ReviewsPageAdmin />} />
           <Route path="reports" element={<ReportsPageAdmin />} />
-          <Route path="storage" element={<CloudStoragePage />} />
           <Route path="settings" element={<SettingsPageAdmin />} />
           <Route path="help" element={<HelpPageAdmin />} />
         </Route>

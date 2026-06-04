@@ -42,6 +42,7 @@ export const salesApi = {
   create: (data: any) => api.post('/sales', data).then(r => r.data),
   getDetails: (id: string) => api.get(`/sales/${id}`).then(r => r.data),
   vendorMpesaPush: (data: { phone: string; amount: number; reference: string; saleId?: string; customerName?: string }) => api.post('/sales/mpesa-push', data).then(r => r.data),
+  vendorKcbPush: (data: { phone: string; amount: number; reference: string; saleId?: string; customerName?: string }) => api.post('/sales/kcb-push', data).then(r => r.data),
 }
 
 export const subscriptionsApi = {
@@ -104,6 +105,8 @@ export const paymentsApi = {
     api.post('/payments/mpesa/stk-push', data).then(r => r.data),
   getMpesaLogs: (params?: { page?: number; limit?: number; sortOrder?: string }) =>
     api.get('/payments/mpesa/logs', { params }).then(r => r.data),
+  kcbStkPush: (data: { phone: string; amount: number; reference: string }) => 
+    api.post('/payments/kcb/stk-push', data).then(r => r.data),
 }
 
 export const adminApi = {

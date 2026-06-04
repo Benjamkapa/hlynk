@@ -1,5 +1,9 @@
 import { useState, useEffect } from 'react'
 import { Search, Plus, Minus, Trash2, CreditCard, Wallet, Banknote, Zap, CheckCircle2, Package, Scan, ArrowRight, ShoppingCart, Loader2, LayoutGrid, List, ChevronLeft, ChevronRight, Lock, Smartphone, AlertTriangle, RefreshCcw, Wifi } from 'lucide-react'
+
+const KcbBankIcon = ({ className, size = 18 }: { className?: string, size?: number }) => (
+  <img src="https://sandbox.buni.kcbgroup.com/devportal/site/themes/wso2/images/logo-inverse.svg" alt="KCB" style={{ width: size, height: size, filter: 'invert(1)' }} className={`${className || ''} object-contain shrink-0`} />
+);
 import FeatureGate, { FEATURE_PLANS } from '../../components/shared/FeatureGate'
 import { toast } from 'sonner'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
@@ -367,6 +371,31 @@ export default function RecordSalePage() {
     }
   }
 
+  const initiateKcbPayment = async () => {
+    if (!mpesaPhone || mpesaPhone.length < 10) {
+      toast.error('Please enter a valid phone number for KCB STK Push')
+      return
+    }
+
+    setIsProcessingMpesa(true)
+    try {
+      toast.info('KCB STK Prompt Sent', {
+        description: 'Waiting for customer to enter PIN...',
+      })
+
+      const res = await salesApi.vendorKcbPush({
+        phone: mpesaPhone,
+        amount: total,
+        reference: `KCB-${Date.now().toString().slice(-6)}`
+      })
+
+      handleCompleteSale.mutate({ status: 2, mpesaRequestId: res?.data?.CheckoutRequestID || res?.CheckoutRequestID })
+    } catch (err: any) {
+      toast.error(getErrorMessage(err))
+      setIsProcessingMpesa(false)
+    }
+  }
+
   return (
     <div className="relative min-h-[calc(100vh-100px)] pb-32 xl:pb-0">
       <div className="flex flex-col xl:flex-row gap-6 lg:gap-12 mx-auto items-start animate-in fade-in slide-in-from-bottom-4 duration-700">
@@ -687,6 +716,7 @@ export default function RecordSalePage() {
               {[
                 { id: 'CASH', label: 'Cash', icon: Banknote, feature: null },
                 { id: 'MPESA', label: 'M-Pesa Express', icon: Zap, feature: 'mpesa_stk' },
+                { id: 'KCB', label: 'KCB Mobile', icon: KcbBankIcon, feature: 'mpesa_stk' },
                 { id: 'MPESA_MANUAL', label: 'M-Pesa (Pochi/Till)', icon: Wallet, feature: null },
               ].map(method => (
                 <FeatureGate
@@ -755,7 +785,7 @@ export default function RecordSalePage() {
               </div>
             )}
 
-            {paymentMethod === 'MPESA' ? (
+            {paymentMethod === 'MPESA' && (
               isOnline ? (
                 <div className="space-y-4 animate-in slide-in-from-top-2 duration-300">
                   <div className="bg-emerald-50 border border-emerald-100 rounded-[.5rem] p-4 flex items-center gap-4">
@@ -787,24 +817,33 @@ export default function RecordSalePage() {
                         <p className="text-[10px] text-amber-700 font-medium leading-tight">Accept payment via Pochi la Biashara or Paybill, then record here.</p>
                       </div>
                     </div>
-
-                    <div className="space-y-3 pt-2 border-t border-amber-200/50">
-                      <div className="flex justify-between items-center text-[10px]">
-                        <span className="font-bold text-amber-800/60 uppercase">Instruction</span>
-                        <span className="font-black text-amber-900">Ask client for manual pay</span>
-                      </div>
-                      <div className="bg-white/50 p-3 rounded-lg border border-amber-200">
-                        <p className="text-[10px] font-medium text-amber-800 text-center italic">"Please pay via M-Pesa Till/Number and show me the confirmation message."</p>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="bg-slate-50 border border-slate-100 rounded-[.5rem] p-4">
-                    <p className="text-[10px] font-bold text-slate-500 mb-1 uppercase tracking-widest">Confirmation Source</p>
-                    <p className="text-sm font-black text-slate-900">SMS / Manual Verification</p>
                   </div>
                 </div>
               )
-            ) : (
+            )}
+
+            {paymentMethod === 'KCB' && isOnline && (
+              <div className="space-y-4 animate-in slide-in-from-top-2 duration-300">
+                <div className="bg-indigo-50 border border-indigo-100 rounded-[.5rem] p-4 flex items-center gap-4">
+                  <KcbBankIcon size={20} />
+                  <p className="text-[10px] font-medium text-indigo-800 leading-tight">
+                    KCB Mobile STK Push will be sent to the customer for direct settlement.
+                  </p>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1 block mb-2">Customer Phone Number</label>
+                  <input
+                    type="text"
+                    placeholder="254..."
+                    value={mpesaPhone}
+                    onChange={(e) => setMpesaPhone(e.target.value)}
+                    className="w-full bg-indigo-50/20 border border-indigo-100 rounded-[.5rem] py-4 px-6 text-sm font-bold focus:ring-4 focus:ring-indigo-500/5 outline-none transition-all hl-mono"
+                  />
+                </div>
+              </div>
+            )}
+
+            {paymentMethod === 'CASH' && (
               <div className="bg-amber-50 border border-amber-100 rounded-[.5rem] p-4 flex items-center gap-4 animate-in slide-in-from-top-2 duration-300">
                 <Banknote size={20} className="text-amber-700" />
                 <p className="text-[10px] font-medium text-amber-800 leading-tight">
@@ -843,6 +882,8 @@ export default function RecordSalePage() {
               onClick={() => {
                 if (paymentMethod === 'MPESA' && isOnline) {
                   initiateMpesaPayment()
+                } else if (paymentMethod === 'KCB' && isOnline) {
+                  initiateKcbPayment()
                 } else if (!isOnline) {
                   handleOfflineSale()
                 } else {
@@ -865,10 +906,10 @@ export default function RecordSalePage() {
                 <>
                   {!isOnline ? (
                     <>Record Offline <RefreshCcw size={20} /></>
-                  ) : paymentMethod === 'MPESA' ? (
+                  ) : paymentMethod === 'MPESA' || paymentMethod === 'KCB' ? (
                     <>Send STK Prompt <ArrowRight size={20} /></>
                   ) : (
-                    <>Complete Sale <ArrowRight size={20} /></>
+                    <span className="flex items-center gap-2">Complete Sale <ArrowRight size={20} /></span>
                   )}
                 </>
               )}

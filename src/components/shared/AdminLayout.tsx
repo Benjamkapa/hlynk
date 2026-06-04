@@ -28,7 +28,6 @@ export default function AdminLayout() {
         { to: '/admin/system-performance', label: 'Performance', icon: Activity },
         { to: '/admin/financials', label: 'Financials', icon: DollarSign },
         { to: '/admin/payments', label: 'Payments', icon: Landmark },
-        { to: '/admin/storage', label: 'Cloud Storage', icon: HardDrive },
       ],
     },
     {

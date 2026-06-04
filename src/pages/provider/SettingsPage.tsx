@@ -20,6 +20,10 @@ const MpesaIcon = ({ className, size = 18 }: { className?: string, size?: number
   <img src="https://monisnapcontent.kinsta.cloud/wp-content/uploads/2021/09/M-PESA_LOGO-640x467.png?v=1632335437" alt="M-Pesa" style={{ width: size, height: size }} className={`${className || ''} object-contain shrink-0`} />
 );
 
+const KcbIcon = ({ className, size = 18 }: { className?: string, size?: number }) => (
+  <img src="https://sandbox.buni.kcbgroup.com/devportal/site/themes/wso2/images/logo-inverse.svg" alt="KCB" style={{ width: size, height: size, filter: 'invert(1)' }} className={`${className || ''} object-contain shrink-0`} />
+);
+
 export default function SettingsPage() {
   const { user, refreshUser, logout } = useAuth()
   const queryClient = useQueryClient()
@@ -128,6 +132,7 @@ export default function SettingsPage() {
     { name: 'Staff Management', icon: Users, role: ['PROVIDER', 'SUPER_ADMIN'], plan: 'PLUS' },
     { name: 'Customers', icon: Users, role: ['PROVIDER'], mobileOnly: true },
     { name: 'M-Pesa Setup', icon: MpesaIcon, role: ['PROVIDER'], plan: 'PLUS', mobileOnly: true },
+    { name: 'KCB Setup', icon: KcbIcon, role: ['PROVIDER'], plan: 'PLUS', mobileOnly: true },
     { name: 'KRA eTIMS', icon: EtimsIcon, role: ['PROVIDER'], mobileOnly: true },
     { name: 'My Plan', icon: Sparkles, role: ['PROVIDER', 'SUPER_ADMIN'], mobileOnly: true },
     { name: 'Data Management', icon: Trash2, role: ['PROVIDER', 'SUPER_ADMIN'] },
@@ -210,7 +215,8 @@ export default function SettingsPage() {
                   <ModuleTile icon={RefreshCcw} label="Sales" sub="History & Records" link="/dashboard/sales" color="bg-emerald-50 text-emerald-600" />
                   <ModuleTile icon={EtimsIcon} label="KRA eTIMS" sub="Compliance" link="/dashboard/etims" color="bg-red-50 text-red-600" isImg />
                   <ModuleTile icon={Users} label="Customers" sub="CRM Database" link="/dashboard/customers" color="bg-amber-50 text-amber-600" />
-                  <ModuleTile icon={MpesaIcon} label="M-Pesa" sub="Setup & Logs" link="/dashboard/developer" color="bg-green-50 text-green-600" isImg />
+                  <ModuleTile icon={MpesaIcon} label="M-Pesa" sub="STK Setup" link="/dashboard/developer" color="bg-green-50 text-green-600" isImg />
+                  <ModuleTile icon={KcbIcon} label="KCB Bank" sub="STK Setup" link="/dashboard/developer" color="bg-indigo-50 text-indigo-600" isImg />
                   <ModuleTile icon={Trash2} label="Expenses" sub="Cost Tracking" link="/dashboard/expenses" color="bg-purple-50 text-purple-600" />
                   <ModuleTile icon={Shield} label="Security" sub="Activity Logs" link="/dashboard/logs" color="bg-slate-100 text-slate-600" />
                   <ModuleTile icon={Plus} label="New Sale" sub="Terminal" link="/dashboard/record-sale" color="bg-rose-50 text-rose-600" />
@@ -388,6 +394,22 @@ export default function SettingsPage() {
                 <div className="flex justify-between items-center mb-4">
                   <div>
                     <h4 className="text-lg font-black text-gray-900">M-Pesa Intergration</h4>
+                  </div>
+                  <Link to="/dashboard/developer" className="text-[10px] font-black text-emerald-600 uppercase tracking-widest hover:underline flex items-center gap-1">
+                    Manage in full screen <ArrowRight size={12} />
+                  </Link>
+                </div>
+                <div className="h-[800px] overflow-hidden rounded-[.5rem] border border-gray-100 bg-gray-50">
+                   <iframe src="/dashboard/developer" className="w-full h-full border-none pointer-events-auto" />
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'KCB Setup' && (
+              <div className="space-y-6 lg:hidden">
+                <div className="flex justify-between items-center mb-4">
+                  <div>
+                    <h4 className="text-lg font-black text-gray-900">KCB Bank Intergration</h4>
                   </div>
                   <Link to="/dashboard/developer" className="text-[10px] font-black text-emerald-600 uppercase tracking-widest hover:underline flex items-center gap-1">
                     Manage in full screen <ArrowRight size={12} />
