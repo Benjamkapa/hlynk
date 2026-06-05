@@ -53,7 +53,7 @@ export default function Navbar() {
           text-transform: uppercase;
           letter-spacing: 0.12em;
           text-decoration: none;
-          color: rgba(255,255,255,0.85);
+          color: rgba(255,255,255,0.8);
           transition: color 0.2s;
           white-space: nowrap;
         }
