@@ -48,8 +48,7 @@ export default function TopNav({ isMobileOpen, onMobileMenuToggle, isCollapsed, 
     }
   })
 
-  const allNotifications = notifyRes?.data || []
-  const notifications = allNotifications.filter((n: any) => n.action?.toLowerCase().includes('sale') || n.title?.toLowerCase().includes('sale'))
+  const notifications = notifyRes?.data || []
   const unreadCount = notifications.filter((n: any) => !n.isRead).length
 
   useEffect(() => {
