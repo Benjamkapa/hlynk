@@ -204,16 +204,24 @@ export default function ProviderLayout() {
       <div className={`h-16 lg:h-20 flex items-center flex-shrink-0 ${sidebarExpanded ? 'px-5' : 'justify-center'}`}>
         <AnimatePresence mode="wait" initial={false}>
           {sidebarExpanded ? (
-            <motion.img
+            <motion.div
               key="full"
-              src="/logo.png"
-              alt="hlynk"
-              className="h-6 lg:h-7 w-auto object-contain"
               initial={{ opacity: 0, x: -8 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -8 }}
               transition={{ duration: 0.18 }}
-            />
+              className="flex items-center gap-3 overflow-hidden"
+            >
+              <img src="/fav.png" alt="hlynk" className="h-8 w-8 lg:h-9 lg:w-9 object-contain" />
+              <div className="flex flex-col min-w-0">
+                <span className="text-sm font-black text-slate-900 truncate uppercase tracking-tight leading-none">
+                  {user?.businessName}
+                </span>
+                <span className="text-[10px] font-bold text-emerald-600/40 leading-none mt-1 uppercase tracking-[0.2em]">
+                  Management
+                </span>
+              </div>
+            </motion.div>
           ) : (
             <motion.img
               key="icon"

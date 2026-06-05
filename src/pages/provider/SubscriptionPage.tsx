@@ -15,8 +15,8 @@ const PLANS = [
     price: 4450,
     desc: 'For small businesses that want better control of daily sales and expenses.',
     color: 'emerald',
-    features: ['Manage up to 15 items', 'Record Sales', 'Track Expenses', 'Save Customer Records', 'Track Payments', 'Daily Profit Reports', 'Standard Support'],
-    notIncluded: ['Profit Analytics', 'M-Pesa Paybill Integration', 'Staff Accounts']
+    features: ['Manage up to 15 items', 'Record Sales', 'Track Expenses', 'Daily Profit Reports', 'Standard Support'],
+    notIncluded: ['eTIMS Compliance Hub', 'M-Pesa Express Automation', 'Staff Accounts']
   },
   {
     id: 'PLUS',
@@ -24,8 +24,8 @@ const PLANS = [
     price: 9450,
     desc: 'For growing businesses that need deeper reports and better business tracking.',
     color: 'blue',
-    features: ['Manage up to 100 items', 'Everything in Starter', 'Profit Analytics', 'Sales Reports & Graphs', 'M-Pesa Paybill Integration', '1 Staff Account', 'Priority Support'],
-    notIncluded: ['Unlimited Staff Accounts', 'Roles & Permissions']
+    features: ['Manage up to 100 items', 'Everything in Starter', 'Profit Analytics', 'Sales Reports & Graphs', 'M-Pesa Express Automation', 'eTIMS Compliance Hub', '1 Staff Account', 'Priority Support'],
+    notIncluded: ['KCB Buni Settlement', 'Unlimited Staff Accounts']
   },
   {
     id: 'MAX',
@@ -33,7 +33,7 @@ const PLANS = [
     price: 16999,
     desc: 'For businesses that need complete operational and staff management.',
     color: 'purple',
-    features: ['Unlimited Inventory Items', 'Everything in Growth', 'Unlimited Staff Accounts', 'Staff Activity Tracking', 'Roles & Permissions', 'Advanced Business Controls'],
+    features: ['Unlimited Inventory Items', 'Everything in Growth', 'KCB Buni Settlement', 'Unlimited Staff Accounts', 'Staff Activity Tracking', 'Roles & Permissions', 'Advanced Business Controls'],
     notIncluded: []
   },
 ]
@@ -43,7 +43,9 @@ const FEATURE_COMPARISON = [
   { name: 'Record & View Sales', lite: true, plus: true, max: true },
   { name: 'Track Daily Expenses', lite: true, plus: true, max: true },
   { name: 'Profit Analytics', lite: false, plus: true, max: true },
-  { name: 'M-Pesa Paybill Integration', lite: false, plus: true, max: true },
+  { name: 'M-Pesa Express Automation', lite: false, plus: true, max: true },
+  { name: 'KRA eTIMS Auto-Sync', lite: false, plus: true, max: true },
+  { name: 'KCB Buni Settlement', lite: false, plus: false, max: true },
   { name: '1 Staff Account', lite: false, plus: true, max: true },
   { name: 'Unlimited Staff Accounts', lite: false, plus: false, max: true },
   { name: 'Staff Activity Tracking', lite: false, plus: false, max: true },
@@ -204,6 +206,7 @@ export default function SubscriptionPage() {
   // Manual Payment Support
   const [subPaymentMethod, setSubPaymentMethod] = useState<'STK' | 'MANUAL'>('STK')
   const [mpesaCode, setMpesaCode] = useState('')
+  const [billingCycle, setBillingCycle] = useState<'1' | '6' | '12'>('1')
 
   // ── STAFF ACCESS LOCK ──
   if (user?.role === 'STAFF') {
@@ -338,7 +341,7 @@ export default function SubscriptionPage() {
 
 
   const renewMutation = useMutation({
-    mutationFn: (phone: string) => subscriptionsApi.renew(phone),
+    mutationFn: (phone: string) => subscriptionsApi.renew(phone, parseInt(billingCycle)),
     onSuccess: (data) => {
       setInitialPlan(subResponse?.data?.planName || null)
       toast.success(data.message || 'STK Push sent to your phone, Enter your pin to complete the transaction!')
@@ -358,7 +361,7 @@ export default function SubscriptionPage() {
   })
 
   const changePlanMutation = useMutation({
-    mutationFn: ({ plan, phone }: { plan: string, phone: string }) => subscriptionsApi.changePlan(plan, phone),
+    mutationFn: ({ plan, phone }: { plan: string, phone: string }) => subscriptionsApi.changePlan(plan, phone, parseInt(billingCycle)),
     onSuccess: (data) => {
       setInitialPlan(subResponse?.data?.planName || null)
       toast.success(data.message || 'Payment initiated for plan upgrade!')
@@ -517,19 +520,50 @@ export default function SubscriptionPage() {
             </div>
           )}
 
-          <div className="bg-emerald-50 border border-emerald-100 p-6 rounded-[.5em] flex flex-col md:flex-row justify-between items-center gap-6">
-            <div className="flex items-center gap-4">
-              <div className="h-12 w-12 bg-white rounded-[.5em] flex items-center justify-center text-[#0D4A3E] shadow-sm">
-                <Smartphone size={24} />
+          <div className="bg-emerald-50 border border-emerald-100 p-8 rounded-[.5em] space-y-8 animate-in slide-in-from-top-4 duration-500">
+            <div className="flex flex-col md:flex-row justify-between items-center gap-8">
+              <div className="flex items-center gap-4">
+                <div className="h-14 w-14 bg-white rounded-2xl flex items-center justify-center text-[#0D4A3E] shadow-sm border border-emerald-100">
+                  <Smartphone size={28} />
+                </div>
+                <div>
+                  <h3 className="text-sm font-black text-[#0D4A3E] uppercase tracking-widest leading-none mb-2">Billing Cycle</h3>
+                  <p className="text-xs font-medium text-emerald-800/60 leading-relaxed italic">Select your commitment period to unlock bulk savings.</p>
+                </div>
               </div>
-              <div>
-                <h3 className="text-sm font-black text-[#0D4A3E] uppercase tracking-widest">Flexible Payments</h3>
-                <p className="text-xs font-medium text-emerald-800/60">We support automatic M-Pesa STK push and manual Pochi la Biashara / Paybill deposits.</p>
+
+              <div className="flex bg-white/50 p-1 rounded-2xl border border-emerald-100 shadow-sm">
+                {[
+                  { id: '1', label: 'Monthly', days: 28 },
+                  { id: '6', label: 'Half Year', days: 180 },
+                  { id: '12', label: 'Full Year', days: 365, promo: 'Save 15%' }
+                ].map(cycle => (
+                  <button
+                    key={cycle.id}
+                    onClick={() => setBillingCycle(cycle.id as any)}
+                    className={`px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all relative ${billingCycle === cycle.id ? 'bg-[#0D4A3E] text-white shadow-lg' : 'text-[#0D4A3E]/40 hover:text-[#0D4A3E]'}`}
+                  >
+                    {cycle.label}
+                    {cycle.promo && (
+                      <span className="absolute -top-2 -right-2 bg-amber-400 text-amber-950 px-2 py-0.5 rounded-full text-[8px] font-black shadow-sm">
+                        {cycle.promo}
+                      </span>
+                    )}
+                  </button>
+                ))}
               </div>
             </div>
-            <div className="flex items-center gap-2 px-4 py-2 bg-white/50 rounded-[.5em] border border-emerald-100">
-              <Zap size={14} className="text-amber-500" />
-              <span className="text-[10px] font-black uppercase tracking-widest text-[#0D4A3E]">Instant Activation</span>
+
+            <div className="pt-8 border-t border-emerald-100 group">
+               <div className="flex items-center gap-2 mb-2">
+                 <Zap size={16} className={`${billingCycle !== '1' ? 'text-amber-500 animate-pulse' : 'text-slate-300'}`} />
+                 <span className="text-[10px] font-black uppercase tracking-widest text-[#0D4A3E]">Instant Activation Reward</span>
+               </div>
+               <p className="text-xs font-medium text-emerald-800/60">
+                 {billingCycle === '1' && "Pay per 28-day cycle."}
+                 {billingCycle === '6' && "Secure your business for 180 days today."}
+                 {billingCycle === '12' && "Full year coverage (365 days) with priority support included."}
+               </p>
             </div>
           </div>
 
@@ -562,10 +596,22 @@ export default function SubscriptionPage() {
                 </div>
                 <div className="space-y-1">
                   <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-2">
-                    <CreditCard size={14} className="text-emerald-500" /> Monthly Investment
+                    <CreditCard size={14} className="text-emerald-500" /> Investment Amount
                   </p>
                   <p className="text-xl font-black text-[#0D4A3E] hl-mono">
-                    {isTrial ? "Free (KES 0)" : `KES ${(PLANS.find(p => p.id === subscription?.planName)?.price.toLocaleString() || '0')}`}
+                    {isTrial ? "Free (KES 0)" : (
+                      (() => {
+                        const base = PLANS.find(p => p.id === subscription?.planName)?.price || 0
+                        const months = parseInt(billingCycle)
+                        let total = base * months
+                        if (months === 6) total = Math.round(total * 0.95)
+                        if (months === 12) total = Math.round(total * 0.85)
+                        return `KES ${total.toLocaleString()}`
+                      })()
+                    )}
+                    <span className="text-[10px] text-emerald-600/40 ml-2">
+                       / {billingCycle === '1' ? '28' : billingCycle === '6' ? '180' : '365'} Days
+                    </span>
                   </p>
                 </div>
               </div>
@@ -578,7 +624,7 @@ export default function SubscriptionPage() {
                   }}
                   className="px-12 py-5 rounded-[.5em] font-black text-xs uppercase tracking-widest transition-all shadow-xl active:scale-95 bg-[#0D4A3E] text-white hover:bg-[#0A3D33] shadow-emerald-900/20"
                 >
-                  Renew Subscription
+                  Renew For {billingCycle === '1' ? '1 Month' : billingCycle === '6' ? '6 Months' : '1 Year'}
                 </button>
                 <button
                   onClick={() => setShowChangeModal(true)}

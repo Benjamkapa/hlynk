@@ -33,10 +33,20 @@ const features = [
     desc: "Create sub-accounts for your staff with limited access. Keep your business secure while you delegate tasks."
   },
   {
-    icon: <img src="https://etims.kra.go.ke/assets/images/logo.jpg" alt="eTIMS" className="w-8 h-8 object-contain rounded-md" />,
+    icon: <img src="https://etims.kra.go.ke/assets/images/logo.jpg" alt="eTIMS" className="w-20 bg-white hover:bg-white" />,
     title: "KRA eTIMS Integrated",
     desc: "Stay fully compliant with KRA effortlessly. Optional direct system-to-system eTIMS integration pushes invoices automatically for your peace of mind."
   },
+  {
+    icon: <img src="https://monisnapcontent.kinsta.cloud/wp-content/uploads/2021/09/M-PESA_LOGO-640x467.png?v=1632335437" alt="M-Pesa" className="h-12 w-auto object-contain" />,
+    title: "M-Pesa Integration",
+    desc: "Accept payments via M-Pesa effortlessly. Get instant notifications and update your sales automatically."
+  },
+  {
+    icon: <img src="https://buni.kcbgroup.com/_nuxt/logo.71b8fc4b.svg" alt="KCB Buni" className="h-14 w-auto object-contain" />,
+    title: "KCB Buni Integration",
+    desc: "Get paid directly to your KCB account whenever a customer pays via KCB Buni. Instant notifications and seamless integration with your business operations."
+  }
 ]
 
 export default function Features() {
@@ -58,8 +68,8 @@ export default function Features() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {features.map((f, i) => (
             <FadeUp key={f.title} delay={i * 0.25}>
-              <div className="p-10 rounded-2xl bg-slate-50 border border-slate-100 hover:border-emerald-200 transition-all group hover:bg-white hover:shadow-2xl hover:shadow-emerald-900/5 h-full">
-                <div className="w-16 h-16 rounded-xl bg-white border border-slate-100 flex items-center justify-center text-emerald-600 mb-8 group-hover:scale-110 transition-transform shadow-sm group-hover:bg-emerald-600 group-hover:text-white group-hover:border-emerald-600">
+              <div className="p-10 rounded-2xl bg-slate-50 border border-slate-100 transition-all group h-full">
+                <div className="w-16 h-16 rounded-xl bg-white border border-slate-100 flex items-center justify-center text-emerald-600 mb-8 group-hover:scale-110 transition-transform shadow-sm">
                   {f.icon}
                 </div>
                 <h3 className="text-xl font-black text-emerald-900 mb-4 tracking-tight font-ubuntu italic font-thin">{f.title}</h3>

@@ -4,24 +4,44 @@ import { FadeUp } from './Animations'
 
 const faqs = [
   {
-    question: "Do I need a Paybill number to use hlynk?",
-    answer: "No, you don't necessarily need one immediately to start tracking your cash sales. However, on our Plus and Max plans, you can integrate your Paybill number with our M-Pesa STK push for automatic payment recording."
+    question: "Is hlynk officially compliant with KRA eTIMS?",
+    answer: "Yes! For our Growing and Business Pro users, hlynk offers a direct system-to-system integration with KRA. This means your invoices are automatically pushed to eTIMS in real-time without you having to log into a separate portal. We handle the technical heavy lifting so you stay tax compliant effortlessly."
   },
   {
-    question: "Can I use the system on my phone?",
-    answer: "Yes! hlynk is fully mobile-friendly. You can record sales, track inventory, and send digital receipts straight from your smartphone or tablet, whether you're at the shop or on the move."
+    question: "Do I need my own Paybill or Till Number?",
+    answer: "Not necessarily. If you're a small vendor, you can use hlynk's 'Shared Infrastructure' to accept payments, and we settle the funds to your M-Pesa or KCB account. However, if you already have your own Paybill/Till, you can link it directly to enable instant STK Push prompts for your customers."
   },
   {
-    question: "Is my data safe in case I lose my phone or computer?",
-    answer: "Absolutely. All your business data is securely stored in the cloud. If you lose your phone, simply log into your account on a new device, and all your records, sales, and inventory will be right there."
+    question: "What happens if my shop has no internet?",
+    answer: "We've got you covered. hlynk is built for Kenyan reality. Our 'Offline Mode' allows you to continue recording sales and printing receipts even when Safaricom or Airtel bundles run out. Once you're back online, the system automatically syncs everything to the cloud."
   },
-  // {
-  //   question: "How do the digital receipts work?",
-  //   answer: "Instead of printing paper receipts, hlynk generates a digital receipt link or a customized SMS that you can send directly to your customer's WhatsApp or standard SMS inbox after a sale."
-  // },
   {
-    question: "Can I track my daily expenses as well?",
-    answer: "Yes, our platform allows you to record daily expenses like rent, tokens, supplier payments, and transport. The system then calculates your actual net profit at the end of the day."
+    question: "I have 3 shops in different towns. Can I manage them all?",
+    answer: "Absolutely. You can track multiple branches (e.g., CBD, Westlands, and Kisumu) from a single dashboard. You'll see which shop is making the most profit, which one has low stock, and how your different managers are performing—all from your phone."
+  },
+  {
+    question: "How do I ensure my staff aren't stealing from me?",
+    answer: "This is a major pain for many owners. hlynk provides individual staff accounts with restricted permissions. You can see who recorded every sale, who deleted an item, and who opened the drawer. We also provide 'Abnormal Activity' alerts to flag suspicious stock movements."
+  },
+  {
+    question: "How does the KCB Buni integration work?",
+    answer: "Through our partnership with KCB, funds collected via our integrated payment gateway can be settled directly into your KCB Bank account. It's faster than waiting for manual withdrawals and provides a clear audit trail for your bank whenever you need to apply for a business loan."
+  },
+  {
+    question: "Can I use hlynk for a hardware shop or a pharmacy?",
+    answer: "Yes, we support over 20 industries. Whether you sell kilos of nails in a hardware, pieces of bread in a kiosk, or prescriptions in a chemist, our flexible inventory system handles units, batches, and even expiry date tracking for sensitive stock."
+  },
+  {
+    question: "What if I lose my phone? Will my records disappear?",
+    answer: "Never. Your data is backed up every second to our secure servers. If your phone is lost or broken, just buy a new one, log in, and you'll find every single KES and every item exactly where you left it. Your business history is safe with us."
+  },
+  {
+    question: "Do you offer training for my workers?",
+    answer: "We know that technology can be scary for some staff. That's why hlynk is designed to be as simple as 'WhatsApp'. We also provide video tutorials in both English and Swahili, and our local support team is available on call to walk your team through the first few sales."
+  },
+  {
+    question: "Is there a long-term contract or can I pay as I go?",
+    answer: "We believe in flexibility. You can pay for 28 days (one cycle) to test the waters, or commit to 6 or 12 months to unlock massive discounts (5% and 15% respectively). No hidden fees, no complicated cancellation process—you're in total control."
   }
 ]
 

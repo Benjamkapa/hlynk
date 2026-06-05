@@ -53,11 +53,21 @@ export default function AdminLayout() {
   const SidebarContent = ({ collapsed }: { collapsed: boolean }) => (
     <div className={`flex flex-col h-full bg-white transition-all duration-300 ${collapsed ? 'w-[90px]' : 'w-[280px]'}`}>
       <div className={`pt-10 pb-12 flex items-center transition-all duration-300 ${collapsed ? 'justify-center' : 'px-8'}`}>
-        <Link to="/" className="flex items-center gap-3">
+        <Link to="/" className="flex items-center gap-3 transition-all">
           {collapsed ? (
-            <img src="/fav.png" alt="hlynk" className="h-8 w-8" />
+            <img src="/fav.png" alt="hlynk" className="h-8 w-8 object-contain" />
           ) : (
-            <img src="/logo.png" alt="hlynk" className="h-10 w-auto" />
+            <div className="flex items-center gap-3 overflow-hidden">
+              <img src="/fav.png" alt="hlynk" className="h-9 w-9 object-contain shrink-0" />
+              <div className="flex flex-col min-w-0">
+                <span className="text-[13px] font-black text-gray-900 truncate uppercase tracking-tight leading-none">
+                  {user?.businessName}
+                </span>
+                <span className="text-[9px] font-bold text-emerald-600/60 leading-none mt-1 uppercase tracking-widest">
+                  Terminal
+                </span>
+              </div>
+            </div>
           )}
         </Link>
       </div>

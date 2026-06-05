@@ -48,8 +48,8 @@ export const salesApi = {
 export const subscriptionsApi = {
   getMe: () => api.get('/subscriptions/me').then(r => r.data),
   getBillingHistory: (params?: { page?: number; limit?: number; status?: string; plan?: string; sortBy?: string; sortOrder?: string }) => api.get('/subscriptions/history', { params }).then(r => r.data),
-  renew: (phone: string) => api.post('/subscriptions/renew', { phone }).then(r => r.data),
-  changePlan: (planName: string, phone: string) => api.post('/subscriptions/change-plan', { planName, phone }).then(r => r.data),
+  renew: (phone: string, months?: number) => api.post('/subscriptions/renew', { phone, months }).then(r => r.data),
+  changePlan: (plan: string, phone: string, months?: number) => api.post('/subscriptions/change-plan', { plan, phone, months }).then(r => r.data),
   verify: (paymentId: string) => api.get(`/subscriptions/verify/${paymentId}`).then(r => r.data),
   submitManualPayment: (data: { planName: string, mpesaCode: string, amount?: number, phone?: string }) => api.post('/subscriptions/manual', data).then(r => r.data),
   getPayouts: () => api.get('/subscriptions/payouts').then(r => r.data),

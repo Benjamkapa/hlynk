@@ -88,8 +88,14 @@ export default function TopNav({ isMobileOpen, onMobileMenuToggle, isCollapsed, 
       {/* LEFT: logo on mobile / toggles on desktop */}
       <div className="flex items-center gap-4">
         {/* Mobile: show favicon in original colors, no dark box */}
-        <div className="lg:hidden flex items-center">
-          <img src="/fav.png" alt="hlynk" className="h-7 w-7 object-contain" />
+        {/* Mobile: show favicon and business name */}
+        <div className="lg:hidden flex items-center gap-3">
+          <img src="/fav.png" alt="hlynk" className="h-8 w-8 object-contain" />
+          <div className="flex flex-col min-w-0">
+            <span className="text-normal font-black text-emerald-800 truncate max-w-[140px] leading-none tracking-tight">
+              {user?.businessName}
+            </span>
+          </div>
         </div>
 
         {onToggleCollapse && (

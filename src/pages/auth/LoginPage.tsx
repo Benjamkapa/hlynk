@@ -269,11 +269,13 @@ export default function LoginPage() {
   const urlParams = new URLSearchParams(window.location.search)
   const isTrialRequest = urlParams.get('trial') === 'true'
   const requestedPlan = (urlParams.get('plan') as 'LITE' | 'PLUS' | 'MAX') || 'LITE'
+  const requestedDays = urlParams.get('days') || (isTrialRequest ? '14' : '28')
 
-  const [formData, setFormData] = useState<RegisterFormState & { isTrial?: boolean }>({
+  const [formData, setFormData] = useState<RegisterFormState & { isTrial?: boolean; daysReward?: number }>({
     businessName: '', ownerName: '', phone: '', category: '', county: '',
     location: '', planName: requestedPlan, referredBy: '',
-    isTrial: isTrialRequest
+    isTrial: isTrialRequest,
+    daysReward: parseInt(requestedDays)
   })
 
   const handleGoogleAuth = async (credential: string) => {
@@ -530,10 +532,25 @@ export default function LoginPage() {
                     </a>
                   </nav>
 
-                  {/* Hero */}
-                  <div className="mob-hero hidden" style={{ display: 'block' }}>
-                    <h1 className="mob-hero-title">Welcome<br /><em>Back</em></h1>
-                    <p className="mob-hero-sub">Your business dashboard is one tap away.</p>
+                  {/* Hero - Simplified for Mobile but consistent with Desktop */}
+                  <div className="mob-hero" style={{ display: 'block' }}>
+                    <h1 className="mob-hero-title pb-1">The Smartest Way <br /> to Grow <br /> Your <em>Biashara</em></h1>
+                    <p className="mob-hero-sub mt-2 mb-6">Stop the guesswork. Use modern tracking to manage stock and double your business profits.</p>
+                    <div className="flex flex-col gap-2 opacity-80 scale-90 origin-left">
+                     {[
+                       'M-Pesa Friendly Sales Tracking',
+                       'Zero Manual Record Books Needed',
+                       'Automated Insights to Cut Costs',
+                       'Instant Setup, No Fees to Start',
+                     ].map((item) => (
+                       <div key={item} className="flex items-center gap-3 text-white">
+                         <div className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center">
+                           <Check size={10} strokeWidth={4} />
+                         </div>
+                         <span className="text-[12px] font-medium tracking-wide">{item}</span>
+                       </div>
+                     ))}
+                    </div>
                   </div>
 
                   <MobileReviewStrip />

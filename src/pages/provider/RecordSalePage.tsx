@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react'
 import { Search, Plus, Minus, Trash2, CreditCard, Wallet, Banknote, Zap, CheckCircle2, Package, Scan, ArrowRight, ShoppingCart, Loader2, LayoutGrid, List, ChevronLeft, ChevronRight, Lock, Smartphone, AlertTriangle, RefreshCcw, Wifi } from 'lucide-react'
 
-const KcbBankIcon = ({ className, size = 18 }: { className?: string, size?: number }) => (
+const KcbBankIcon = ({ className, size = 64 }: { className?: string, size?: number }) => (
   <img src="https://buni.kcbgroup.com/_nuxt/logo.71b8fc4b.svg" alt="KCB" style={{ width: size, height: size }} className={`${className || ''} object-contain shrink-0`} />
 );
 
-const MpesaBankIcon = ({ className, size = 18 }: { className?: string, size?: number }) => (
-  <img src="https://monisnapcontent.kinsta.cloud/wp-content/uploads/2021/09/M-PESA_LOGO-640x467.png?v=1632335437" alt="M-Pesa" style={{ width: size, height: size }} className={`${className || ''} object-contain shrink-0`} />
+const MpesaBankIcon = ({ className, size = 64 }: { className?: string, size?: number }) => (
+  <img src="https://monisnapcontent.kinsta.cloud/wp-content/uploads/2021/09/M-PESA_LOGO-640x467.png?v=1632335437" alt="M-Pesa" style={{ width: size, height: size }} className={`${className || ''} object-contain shrink-0 pt-2`} />
 );
 import FeatureGate, { FEATURE_PLANS } from '../../components/shared/FeatureGate'
 import { toast } from 'sonner'
@@ -715,13 +715,13 @@ export default function RecordSalePage() {
           </div>
 
           {/* Payment & Action */}
-          <div className="bg-white p-10 rounded-[.5rem] border border-slate-100 shadow-xl shadow-slate-900/5 space-y-8">
-            <div className="grid grid-cols-2 gap-4">
+          <div className="bg-white p-1 rounded-[.5rem] border border-slate-100 shadow-xl shadow-slate-900/5 space-y-5">
+            <div className="grid grid-cols-2 gap-1">
               {[
                 { id: 'CASH', label: 'Cash', icon: Banknote, feature: null },
-                { id: 'MPESA', label: 'M-Pesa Express', icon: MpesaBankIcon, feature: 'mpesa_stk' },
-                { id: 'KCB', label: 'KCB Mobile', icon: KcbBankIcon, feature: 'kcb_settlement' },
-                { id: 'MPESA_MANUAL', label: 'M-Pesa (Pochi/Till)', icon: Wallet, feature: null },
+                { id: 'MPESA', label: 'Express', icon: MpesaBankIcon, feature: 'mpesa_stk'  },
+                { id: 'KCB', label: 'Mobile', icon: KcbBankIcon, feature: 'kcb_settlement' },
+                { id: 'MPESA_MANUAL', label: 'M-Pesa [Pochi/Till]', icon: Wallet, feature: null },
               ].map(method => (
                 <FeatureGate
                   key={method.id}
@@ -733,7 +733,7 @@ export default function RecordSalePage() {
                         className="relative group flex flex-col items-center justify-center gap-2 py-5 rounded-[.5rem] border-2 border-slate-50 bg-slate-50/50 text-slate-300 cursor-not-allowed overflow-hidden"
                       >
                         <div className="flex items-center gap-3">
-                          <method.icon size={20} />
+                          <method.icon size={['MPESA', 'KCB'].includes(method.id) ? 64 : 20} />
                           <span className="text-[10px] font-black uppercase tracking-widest">{method.label}</span>
                         </div>
                         <span className="text-[8px] font-black bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full uppercase tracking-tighter">
@@ -748,12 +748,12 @@ export default function RecordSalePage() {
                 >
                   <button
                     onClick={() => setPaymentMethod(method.id)}
-                    className={`flex items-center justify-center gap-3 py-5 rounded-[.5rem] border-2 transition-all ${paymentMethod === method.id
+                    className={`flex items-center justify-center gap-3 py-1 rounded-[.5rem] border-2 transition-all ${paymentMethod === method.id
                       ? 'border-[#0D4A3E] bg-emerald-50/50 text-[#0D4A3E] shadow-lg shadow-emerald-900/5'
                       : 'border-slate-50 bg-white text-slate-400 hover:bg-slate-50 hover:text-slate-600'
                       }`}
                   >
-                    <method.icon size={20} />
+                    <method.icon size={['MPESA', 'KCB'].includes(method.id) ? 64 : 20} />
                     <span className="text-[10px] font-black uppercase tracking-widest">{method.label}</span>
                   </button>
                 </FeatureGate>
@@ -793,7 +793,7 @@ export default function RecordSalePage() {
               isOnline ? (
                 <div className="space-y-4 animate-in slide-in-from-top-2 duration-300">
                   <div className="bg-emerald-50 border border-emerald-100 rounded-[.5rem] p-4 flex items-center gap-4">
-                    <Smartphone size={20} className="text-[#0D4A3E]" />
+                    <MpesaBankIcon size={20} className="text-[#0D4A3E]" />
                     <p className="text-[10px] font-medium text-emerald-800 leading-tight">
                       STK Push will be sent to the customer's phone for instant verification.
                     </p>
