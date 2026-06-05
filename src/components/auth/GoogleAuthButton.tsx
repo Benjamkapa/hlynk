@@ -7,7 +7,7 @@ interface GoogleAuthButtonProps {
   disabled?: boolean
   className?: string
   text?: 'continue_with' | 'signin_with' | 'signup_with'
-  variant?: 'default' | 'pill-right-icon'
+  variant?: 'default' | 'pill-right-icon' | 'pill-centered'
   onCredential: (credential: string) => Promise<void> | void
 }
 
@@ -144,11 +144,11 @@ export default function GoogleAuthButton({
   const isButtonDisabled = disabled || isLoading || isOffline || !isReady
 
   return (
-    <div className={`relative w-full h-[48px] ${variant === 'pill-right-icon' ? 'rounded-full' : 'rounded-[12px]'} group select-none ${className}`}>
+    <div className={`relative w-full h-[48px] ${variant.startsWith('pill') ? 'rounded-full' : 'rounded-[12px]'} group select-none ${className}`}>
       {/* Custom styled UI matching the app's look and feel */}
       <div
         className={`absolute inset-0 flex items-center transition-all ${
-          variant === 'default' ? 'justify-center gap-3' : 'justify-between pl-6 pr-1'
+          variant === 'pill-right-icon' ? 'justify-between pl-6 pr-1' : 'justify-center gap-3'
         } ${
           isButtonDisabled 
             ? 'opacity-80 bg-slate-50 shadow-lg ' 
@@ -156,10 +156,10 @@ export default function GoogleAuthButton({
         }`}
         style={{ borderRadius: 'inherit' }}
       >
-        {variant === 'default' ? (
+        {variant !== 'pill-right-icon' ? (
           <>
             {iconMarkup}
-            <span className="text-[13px] font-medium tracking-[0.03em] text-[#1a1714]">
+            <span className={`text-[13px] font-medium tracking-[0.03em] ${variant === 'pill-centered' ? 'text-[#0D4A3E]' : 'text-[#1a1714]'}`}>
               {buttonText}
             </span>
           </>

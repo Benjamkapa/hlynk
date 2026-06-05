@@ -577,7 +577,7 @@ export default function LoginPage() {
                         <span className="text-[11px] px-1 pt-0.5 font-light text-white/90 leading-relaxed">
                           I agree to the{' '}
                           <a href="/terms-conditions" className="text-white hover:text-emerald-300 font-medium underline transition-colors">Terms of Service</a>
-                          ,{' '}
+                          ,{' and '}
                           <a href="/privacy-policy" className="text-white hover:text-emerald-300 font-medium underline transition-colors">Privacy Policy</a>
                           {/* , <a href="/google/terms" className="text-white hover:text-emerald-300 font-medium underline transition-colors">Google Terms</a>
                           {' '}and{' '}
@@ -587,7 +587,7 @@ export default function LoginPage() {
                     </div>
 
                     {/* Google button — blocker overlay when EULA unchecked */}
-                    <div className={`w-full transition-all duration-300 ${!acceptedEula ? 'opacity-40 grayscale' : 'opacity-100'}`}>
+                    <div className={`w-full transition-all text-center duration-300 ${!acceptedEula ? 'opacity-40 grayscale' : 'opacity-100'}`}>
                       <div className="google-btn-wrap">
                         {!acceptedEula && (
                           <div className="google-btn-blocker" onClick={eulaWarning} />
@@ -796,7 +796,7 @@ function MobileGoogleAuth({
   return (
     <GoogleAuthButton
       text="continue_with"
-      variant="pill-right-icon"
+      variant="pill-centered"
       onCredential={handleGoogleAuth}
       disabled={googleLoading || disabled}
       className=""
