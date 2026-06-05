@@ -16,7 +16,7 @@ export default function SystemPerformancePage() {
   const { data: rawHealth, isLoading, error } = useQuery<any>({
     queryKey: ['system-health'],
     queryFn: adminApi.getSystemHealth,
-    refetchInterval: 10000
+    refetchInterval: 60000
   })
 
   const restartMutation = useMutation({

@@ -29,7 +29,7 @@ export default function UserOperationsPage() {
   const { data: sessionsResponse } = useQuery<{ success: boolean; data: any[] }>({
     queryKey: ['admin-sessions'],
     queryFn: adminApi.getSessions,
-    refetchInterval: 10000
+    refetchInterval: 60000
   })
 
   const { data: userActivityResponse } = useQuery<{ success: boolean; data: any[] }>({
