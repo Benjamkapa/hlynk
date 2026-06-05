@@ -60,11 +60,8 @@ export default function AdminLayout() {
             <div className="flex items-center gap-3 overflow-hidden">
               <img src="/fav.png" alt="hlynk" className="h-9 w-9 object-contain shrink-0" />
               <div className="flex flex-col min-w-0">
-                <span className="text-[13px] font-black text-gray-900 truncate uppercase tracking-tight leading-none">
+                <span className="text-[13px] font-black text-gray-900 truncate tracking-tight leading-none">
                   {user?.businessName}
-                </span>
-                <span className="text-[9px] font-bold text-emerald-600/60 leading-none mt-1 uppercase tracking-widest">
-                  Terminal
                 </span>
               </div>
             </div>
