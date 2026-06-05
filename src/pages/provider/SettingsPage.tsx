@@ -220,7 +220,7 @@ export default function SettingsPage() {
                   <ModuleTile icon={CreditCard} label="Gateways" sub="Direct Payouts" link="/dashboard/developer" color="bg-emerald-50 text-emerald-600" />
                   <ModuleTile icon={Trash2} label="Expenses" sub="Cost Tracking" link="/dashboard/expenses" color="bg-purple-50 text-purple-600" />
                   <ModuleTile icon={Shield} label="Security" sub="Activity Logs" link="/dashboard/logs" color="bg-slate-100 text-slate-600" />
-                  <ModuleTile icon={Plus} label="New Sale" sub="Terminal" link="/dashboard/record-sale" color="bg-rose-50 text-rose-600" />
+                  <ModuleTile icon={Plus} label="New Sale" sub="Terminal" link="/dashboard/sales/new" color="bg-rose-50 text-rose-600" />
                   <ModuleTile icon={Users} label="Staff" sub="Team Control" link="/dashboard/staff" color="bg-indigo-50 text-indigo-600" />
                   <ModuleTile icon={Mail} label="Help Desk" sub="Support Center" link="/dashboard/help" color="bg-cyan-50 text-cyan-600" />
                 </div>
