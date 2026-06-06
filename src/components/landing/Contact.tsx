@@ -137,7 +137,7 @@ export default function Contact() {
                     <input
                       type="text"
                       required
-                      placeholder="Jane Wanjiku"
+                      placeholder="Okombe Mabenjo"
                       value={form.name}
                       onChange={e => setForm({ ...form, name: e.target.value })}
                       className="w-full bg-white/5 border border-white/10 focus:bg-white/10 focus:border-emerald-500/50 focus:ring-4 focus:ring-emerald-500/5 rounded-xl py-4 px-6 text-white text-sm outline-none transition-all font-bold placeholder:text-white/20"
