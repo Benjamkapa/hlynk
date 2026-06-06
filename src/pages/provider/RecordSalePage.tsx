@@ -393,7 +393,12 @@ export default function RecordSalePage() {
         reference: `KCB-${Date.now().toString().slice(-6)}`
       })
 
-      handleCompleteSale.mutate({ status: 2, mpesaRequestId: res?.data?.CheckoutRequestID || res?.CheckoutRequestID })
+      // KCB Buni UAT wraps ids in a "response" object
+      const checkoutId = res?.data?.response?.CheckoutRequestID 
+        || res?.data?.CheckoutRequestID 
+        || res?.CheckoutRequestID;
+
+      handleCompleteSale.mutate({ status: 2, mpesaRequestId: checkoutId })
     } catch (err: any) {
       toast.error(getErrorMessage(err))
       setIsProcessingMpesa(false)
