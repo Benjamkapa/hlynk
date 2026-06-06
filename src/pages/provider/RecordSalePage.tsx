@@ -35,9 +35,11 @@ export default function RecordSalePage() {
     return saved ? JSON.parse(saved) : []
   })
   const [paymentMethod, setPaymentMethod] = useState('CASH')
-  const [selectedCustomerId, setSelectedCustomerId] = useState<string | null>(null)
   const [customerSearch, setCustomerSearch] = useState('')
   const [customerSearchInput, setCustomerSearchInput] = useState('')
+  const [isSearchingCustomer, setIsSearchingCustomer] = useState(false)
+  const [selectedCustomerId, setSelectedCustomerId] = useState<string | null>(null)
+
   const [mpesaPhone, setMpesaPhone] = useState('')
   const [isProcessingMpesa, setIsProcessingMpesa] = useState(false)
   const [waitingMpesaSaleId, setWaitingMpesaSaleId] = useState<string | null>(null)
@@ -619,36 +621,64 @@ export default function RecordSalePage() {
             </div>
 
             {/* Customer Selection */}
-            <div className="mb-6 relative z-10">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1 block mb-2">Customer Association</label>
+            <div className={`mb-6 transition-all duration-500 relative z-30 ${isSearchingCustomer ? 'scale-[1.02]' : ''}`}>
               {!selectedCustomerId ? (
                 <div className="relative">
-                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
-                  <input
-                    type="text"
-                    placeholder="Search customers..."
-                    value={customerSearchInput}
-                    onChange={(e) => setCustomerSearchInput(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-100 rounded-[.5rem] py-3 pl-10 pr-4 text-xs font-bold outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
-                  />
-                  {customerSearchInput.length > 1 && customersData?.items && customersData.items.length > 0 && (
-                    <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-[.5rem] shadow-2xl border border-slate-100 z-50 overflow-hidden divide-y divide-slate-50">
-                      {customersData.items.map((c: any) => (
-                        <button
-                          key={c.id}
-                          onClick={() => {
-                            setSelectedCustomerId(c.id)
-                            setCustomerSearch('')
-                          }}
-                          className="w-full px-4 py-3 text-left hover:bg-emerald-50 transition-all flex items-center justify-between"
-                        >
-                          <div>
-                            <p className="text-xs font-black text-slate-900">{c.name}</p>
-                            <p className="text-[10px] text-slate-400 font-medium">{c.phone}</p>
-                          </div>
-                          <Plus size={14} className="text-emerald-500" />
-                        </button>
-                      ))}
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-[.2em] mb-3 block px-1">Customer Association</label>
+                  <div className="relative group">
+                    <input
+                      type="text"
+                      onFocus={() => setIsSearchingCustomer(true)}
+                      onBlur={() => {
+                        // Small delay to allow clicking a result
+                        setTimeout(() => setIsSearchingCustomer(false), 200);
+                      }}
+                      placeholder="Find or Create Customer..."
+                      value={customerSearchInput}
+                      onChange={(e) => setCustomerSearchInput(e.target.value)}
+                      className="w-full bg-slate-50 border border-slate-100 rounded-[.5rem] py-4 pl-12 pr-6 text-sm font-bold focus:ring-4 focus:ring-emerald-500/5 outline-none transition-all placeholder:text-slate-300"
+                    />
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-emerald-500 transition-colors" size={18} />
+                    
+                    {isSearchingCustomer && (
+                       <button 
+                        onClick={() => { setCustomerSearchInput(''); setIsSearchingCustomer(false); }}
+                        className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-1"
+                       >
+                         <X size={14} />
+                       </button>
+                    )}
+                  </div>
+
+                  {(customerSearch.length > 0 || isSearchingCustomer) && (
+                    <div className={`absolute top-full left-0 right-0 z-50 mt-2 bg-white rounded-[.5rem] border border-slate-100 shadow-2xl shadow-slate-900/10 overflow-hidden transition-all ${isSearchingCustomer ? 'max-h-[60vh] opacity-100' : 'max-h-0 opacity-0'}`}>
+                      <div className="max-h-64 overflow-y-auto divide-y divide-slate-50">
+                        {customersData?.items?.map((customer: any) => (
+                          <button
+                            key={customer.id}
+                            onClick={() => {
+                              setSelectedCustomerId(customer.id);
+                              setCustomerSearch('');
+                              setIsSearchingCustomer(false);
+                            }}
+                            className="w-full flex items-center gap-3 p-4 hover:bg-emerald-50 transition-colors text-left group"
+                          >
+                            <div className="h-8 w-8 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center text-xs font-black group-hover:bg-emerald-500 group-hover:text-white transition-all">
+                              {customer.name.charAt(0)}
+                            </div>
+                            <div>
+                              <p className="text-sm font-black text-slate-900">{customer.name}</p>
+                              <p className="text-[10px] text-slate-400 font-medium">{customer.phone || 'No Phone'}</p>
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                      
+                      <button 
+                        className="w-full py-4 bg-slate-50 hover:bg-emerald-500 hover:text-white text-[10px] font-black uppercase tracking-widest text-slate-400 border-t border-slate-100 transition-all flex items-center justify-center gap-2"
+                      >
+                        <Plus size={14} /> Create New Customer
+                      </button>
                     </div>
                   )}
                 </div>
@@ -673,7 +703,7 @@ export default function RecordSalePage() {
               )}
             </div>
 
-            <div className="flex-1 overflow-y-auto space-y-4 mb-8 pr-2 custom-scrollbar relative z-10">
+            <div className={`flex-1 transition-all duration-300 overflow-y-auto space-y-4 mb-8 pr-2 custom-scrollbar relative z-10 ${isSearchingCustomer ? 'opacity-5 bg-slate-50 scale-95 pointer-events-none' : 'opacity-100'}`}>
               {cart.length === 0 ? (
                 <div className="h-full flex flex-col items-center justify-center text-slate-200 py-20">
                   <div className="h-24 w-24 rounded-full bg-slate-20 flex items-center justify-center mb-6">
