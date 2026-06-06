@@ -37,7 +37,15 @@
         rel="stylesheet"
       />
     </noscript>
-    <title>hlynk — Track. Control. Grow.</title>
+    <script>
+      window.addEventListener('error', function(e) {
+        if (e.message && e.message.includes('Failed to fetch dynamically imported module')) {
+          console.warn('Chunk load error detected. Attempting fresh reload...');
+          window.location.reload();
+        }
+      }, true);
+    </script>
+    <title>Hlynk | Smartest Way to Grow Your Biashara</title>
   </head>
 
   <body>

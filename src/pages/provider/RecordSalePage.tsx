@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Search, Plus, Minus, Trash2, CreditCard, Wallet, Banknote, Zap, CheckCircle2, Package, Scan, ArrowRight, ShoppingCart, Loader2, LayoutGrid, List, ChevronLeft, ChevronRight, Lock, Smartphone, AlertTriangle, RefreshCcw, Wifi } from 'lucide-react'
+import { Search, Plus, Minus, Trash2, CreditCard, Wallet, Banknote, Zap, CheckCircle2, Package, Scan, ArrowRight, ShoppingCart, Loader2, LayoutGrid, List, ChevronLeft, ChevronRight, Lock, Smartphone, AlertTriangle, RefreshCcw, Wifi, X } from 'lucide-react'
 
 const KcbBankIcon = ({ className, size = 64 }: { className?: string, size?: number }) => (
   <img src="https://buni.kcbgroup.com/_nuxt/logo.71b8fc4b.svg" alt="KCB" style={{ width: size, height: size }} className={`${className || ''} object-contain shrink-0`} />
@@ -861,30 +861,50 @@ export default function RecordSalePage() {
               </div>
             )}
 
-            {/* {isProcessingMpesa && (
-            <div className="bg-slate-900 rounded-[.5rem] p-6 text-white space-y-4 animate-in zoom-in-95 duration-300">
-               <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                     <Loader2 className="animate-spin text-emerald-400" size={18} />
-                     <span className="text-[10px] font-black uppercase tracking-widest">Waiting for Payment</span>
+            {isProcessingMpesa && (
+              <div className="bg-slate-900 rounded-[.5rem] p-8 text-white space-y-6 animate-in zoom-in-95 duration-500 relative overflow-hidden">
+                <div className="flex items-center justify-between relative z-10">
+                  <div className="flex items-center gap-4">
+                    <Loader2 className="animate-spin text-emerald-400" size={24} />
+                    <div>
+                      <p className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-400">Waiting for PIN...</p>
+                      <p className="text-[8px] text-slate-500 uppercase font-bold tracking-widest mt-0.5">Reference: {waitingMpesaSaleId?.slice(-6).toUpperCase()}</p>
+                    </div>
                   </div>
-                  {waitingMpesaSaleId && (
+                  <button 
+                    onClick={() => {
+                      setWaitingMpesaSaleId(null);
+                      setIsProcessingMpesa(false);
+                      toast.info("Payment Aborted", { description: "The system stopped watching for the payment. You can check it later in Sales History." });
+                    }}
+                    className="p-2 hover:bg-white/10 rounded-full transition-colors"
+                    title="Stop Polling"
+                  >
+                    <X size={16} />
+                  </button>
+                </div>
+
+                <div className="space-y-4 relative z-10">
+                  <p className="text-xs text-slate-300 leading-relaxed">
+                    A prompt has been sent to <span className="text-white font-black">{mpesaPhone}</span>. 
+                    Please ensure the customer enters their PIN.
+                  </p>
+                  
+                  <div className="grid grid-cols-1 gap-2">
                     <button 
-                      onClick={() => queryClient.refetchQueries({ queryKey: ['sale-details', waitingMpesaSaleId] })}
-                      className="flex items-center gap-2 px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded-lg text-[8px] font-black uppercase tracking-tighter transition-all border border-white/5"
+                      onClick={() => queryClient.invalidateQueries({ queryKey: ['sale-details', waitingMpesaSaleId] })}
+                      className="w-full py-3 bg-white/10 hover:bg-white/20 border border-white/10 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2"
                     >
-                      <RefreshCcw size={10} /> Check Status
+                      <RefreshCcw size={12} /> Sync Status Manually
                     </button>
-                  )}
-               </div>
-               <div className="h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
-                  <div className="h-full bg-emerald-500 animate-progress origin-left" style={{ width: '100%' }} />
-               </div>
-               <p className="text-[10px] text-slate-400 font-medium">
-                  We've sent the prompt to <span className="text-white font-bold">{mpesaPhone}</span>. Please keep this screen open until the customer enters their PIN.
-               </p>
-            </div>
-          )} */}
+                  </div>
+                </div>
+
+                {/* Progress bar */}
+                <div className="absolute bottom-0 left-0 h-1 bg-emerald-500 animate-progress origin-left w-full" />
+                <div className="absolute top-0 right-0 h-32 w-32 bg-emerald-500/10 rounded-full blur-[50px] -mr-16 -mt-16" />
+              </div>
+            )}
 
             <button
               disabled={cart.length === 0 || handleCompleteSale.isPending || isProcessingMpesa}

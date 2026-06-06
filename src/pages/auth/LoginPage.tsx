@@ -712,9 +712,9 @@ export default function LoginPage() {
                           />
                           <span className="text-[11px] px-1 pt-0.5 leading-relaxed font-light text-slate-500">
                             I agree to the{' '}
-                            <a href="/terms-conditions" className="text-black hover:text-emerald-600 underline font-medium transition-colors">Terms of Service</a>
+                            <a href="/terms-conditions" className="hover:text-emerald-600 hover:underline font-medium transition-colors">Terms of Service</a>
                             {' & '}
-                            <a href="/privacy-policy" className="text-black hover:text-emerald-600 underline font-medium transition-colors">Privacy Policy</a>
+                            <a href="/privacy-policy" className="hover:text-emerald-600 hover:underline font-medium transition-colors">Privacy Policy</a>
                             {/* , <a href="/google/terms" className="text-black hover:text-emerald-600 underline font-medium transition-colors">Google Terms</a>
                             {' '}and{' '}
                             <a href="/google/privacy" className="text-black hover:text-emerald-600 underline font-medium transition-colors">Notice</a>. */}
