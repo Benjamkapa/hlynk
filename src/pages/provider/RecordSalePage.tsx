@@ -863,7 +863,7 @@ export default function RecordSalePage() {
 
             {isProcessingMpesa && (
               <div className="bg-slate-900 rounded-[.5rem] p-8 text-white space-y-6 animate-in zoom-in-95 duration-500 relative overflow-hidden">
-                <div className="flex items-center justify-between relative z-10">
+                {/* <div className="flex items-center justify-between relative z-10">
                   <div className="flex items-center gap-4">
                     <Loader2 className="animate-spin text-emerald-400" size={24} />
                     <div>
@@ -882,7 +882,7 @@ export default function RecordSalePage() {
                   >
                     <X size={16} />
                   </button>
-                </div>
+                </div> */}
 
                 {/* <div className="space-y-4 relative z-10">
                   <p className="text-xs text-slate-300 leading-relaxed">
