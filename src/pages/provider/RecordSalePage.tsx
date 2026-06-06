@@ -884,7 +884,7 @@ export default function RecordSalePage() {
                   </button>
                 </div>
 
-                <div className="space-y-4 relative z-10">
+                {/* <div className="space-y-4 relative z-10">
                   <p className="text-xs text-slate-300 leading-relaxed">
                     A prompt has been sent to <span className="text-white font-black">{mpesaPhone}</span>. 
                     Please ensure the customer enters their PIN.
@@ -898,7 +898,7 @@ export default function RecordSalePage() {
                       <RefreshCcw size={12} /> Sync Status Manually
                     </button>
                   </div>
-                </div>
+                </div> */}
 
                 {/* Progress bar */}
                 <div className="absolute bottom-0 left-0 h-1 bg-emerald-500 animate-progress origin-left w-full" />
