@@ -3,18 +3,18 @@ import { Link } from 'react-router-dom'
 import { AlignRight, X } from 'lucide-react'
 
 const navItems = [
-  { label: "Who Uses",   href: "#who"      },
-  { label: "About",      href: "#about"    },
-  { label: "Features",   href: "#features" },
-  { label: "How It Works", href: "#how"    },
-  { label: "Pricing",    href: "#pricing"  },
-  { label: "FAQ",        href: "#faq"      },
-  { label: "Contact",    href: "#contact"  },
+  { label: "Who Uses", href: "#who" },
+  { label: "About", href: "#about" },
+  { label: "Features", href: "#features" },
+  { label: "How It Works", href: "#how" },
+  { label: "Pricing", href: "#pricing" },
+  { label: "FAQ", href: "#faq" },
+  { label: "Contact", href: "#contact" },
 ]
 
 export default function Navbar() {
-  const [menuOpen,    setMenuOpen]   = useState(false)
-  const [scrolled,   setScrolled]   = useState(false)
+  const [menuOpen, setMenuOpen] = useState(false)
+  const [scrolled, setScrolled] = useState(false)
   const [navVisible, setNavVisible] = useState(true)
   const lastScroll = useRef(0)
 
@@ -50,7 +50,7 @@ export default function Navbar() {
         .hl-nav-link {
           font-size: 0.7rem;
           font-weight: 800;
-          text-transform: uppercase;
+          text-transform: capitalize;
           letter-spacing: 0.12em;
           text-decoration: none;
           color: rgba(255,255,255,0.8);
@@ -70,7 +70,7 @@ export default function Navbar() {
           border: 1px solid rgba(255,255,255,0.4);
           font-size: 0.7rem;
           font-weight: 800;
-          text-transform: uppercase;
+          text-transform: capitalize;
           letter-spacing: 0.1em;
           text-decoration: none;
           color: rgba(255,255,255,0.9);
@@ -102,7 +102,7 @@ export default function Navbar() {
           background: #0D4A3E;
           font-size: 0.7rem;
           font-weight: 800;
-          text-transform: uppercase;
+          text-transform: capitalize;
           letter-spacing: 0.1em;
           text-decoration: none;
           color: #fff;
@@ -161,28 +161,28 @@ export default function Navbar() {
 
       {/* ── Header ── */}
       <header style={{
-        position:   'fixed',
-        top:         0,
-        left:        0,
-        width:       '100%',
-        zIndex:      100,
-        transform:  `translateY(${navVisible ? '0' : '-100%'})`,
-        background:     scrolled ? 'rgba(255,255,255,0.85)' : 'transparent',
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        width: '100%',
+        zIndex: 100,
+        transform: `translateY(${navVisible ? '0' : '-100%'})`,
+        background: scrolled ? 'rgba(255,255,255,0.85)' : 'transparent',
         backdropFilter: scrolled ? 'blur(20px) saturate(180%)' : 'none',
         WebkitBackdropFilter: scrolled ? 'blur(20px) saturate(180%)' : 'none',
-        borderBottom:   scrolled ? '1px solid rgba(0,0,0,0.05)' : '1px solid transparent',
-        boxShadow:      scrolled ? '0 4px 20px rgba(0,0,0,0.03)' : 'none',
-        transition:     'background 0.3s ease, border-color 0.3s ease, transform 0.4s cubic-bezier(0.16,1,0.3,1), height 0.4s ease',
+        borderBottom: scrolled ? '1px solid rgba(0,0,0,0.05)' : '1px solid transparent',
+        boxShadow: scrolled ? '0 4px 20px rgba(0,0,0,0.03)' : 'none',
+        transition: 'background 0.3s ease, border-color 0.3s ease, transform 0.4s cubic-bezier(0.16,1,0.3,1), height 0.4s ease',
       }}>
         <div style={{
-          display:        'flex',
-          alignItems:     'center',
+          display: 'flex',
+          alignItems: 'center',
           justifyContent: 'space-between',
-          height:          '96px',
-          padding:         '0 clamp(20px, 5vw, 64px)',
-          maxWidth:        '1280px',
-          margin:          '0 auto',
-          transition:      'all 0.3s ease',
+          height: '96px',
+          padding: '0 clamp(20px, 5vw, 64px)',
+          maxWidth: '1280px',
+          margin: '0 auto',
+          transition: 'all 0.3s ease',
         }}>
 
           {/* Logo */}
@@ -191,10 +191,10 @@ export default function Navbar() {
               src="/logo.png"
               alt="hlynk"
               style={{
-                height:     '40px',
-                width:      'auto',
+                height: '40px',
+                width: 'auto',
                 transition: 'all 0.3s ease',
-                filter:     scrolled ? 'none' : 'brightness(0) invert(1)',
+                filter: scrolled ? 'none' : 'brightness(0) invert(1)',
               }}
             />
           </Link>
@@ -216,27 +216,6 @@ export default function Navbar() {
 
           {/* Desktop CTAs */}
           <div className="hl-desktop-ctas" style={{ alignItems: 'center', gap: 10 }}>
-            {/* <Link to="/login" className={`hl-btn-ghost${scrolled ? ' scrolled' : ''}`}>
-              <span style={{
-                width: 18,
-                height: 18,
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                borderRadius: '9999px',
-                background: scrolled ? '#ffffff' : 'rgba(255,255,255,0.95)',
-                boxShadow: '0 4px 10px rgba(15,23,42,0.08)',
-                flexShrink: 0,
-              }}>
-                <svg width="11" height="11" viewBox="0 0 18 18" fill="none" aria-hidden="true">
-                  <path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.92c1.71-1.58 2.68-3.9 2.68-6.62Z" />
-                  <path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.92-2.26c-.81.54-1.84.86-3.04.86-2.34 0-4.31-1.58-5.02-3.7H1.96v2.33A9 9 0 0 0 9 18Z" />
-                  <path fill="#FBBC05" d="M3.98 10.72A5.41 5.41 0 0 1 3.7 9c0-.6.1-1.18.28-1.72V4.95H1.96A9 9 0 0 0 1 9c0 1.45.35 2.82.96 4.05l2.02-2.33Z" />
-                  <path fill="#EA4335" d="M9 3.58c1.32 0 2.5.45 3.44 1.33l2.58-2.58C13.46.9 11.42 0 9 0A9 9 0 0 0 1.96 4.95l2.02 2.33c.71-2.12 2.68-3.7 5.02-3.7Z" />
-                </svg>
-              </span>
-              Google Sign-In
-            </Link> */}
             <Link to="/register" className="hl-btn-primary">
               Get Started
             </Link>
@@ -258,16 +237,16 @@ export default function Navbar() {
       <div
         aria-hidden={!menuOpen}
         style={{
-          position:      'fixed',
-          inset:          0,
-          zIndex:         200,
-          background:    '#fff',
-          display:       'flex',
+          position: 'fixed',
+          inset: 0,
+          zIndex: 200,
+          background: '#fff',
+          display: 'flex',
           flexDirection: 'column',
-          opacity:        menuOpen ? 1 : 0,
-          pointerEvents:  menuOpen ? 'auto' : 'none',
-          transform:      menuOpen ? 'translateX(0)' : 'translateX(100%)',
-          transition:    'opacity 0.3s ease, transform 0.35s cubic-bezier(0.16,1,0.3,1)',
+          opacity: menuOpen ? 1 : 0,
+          pointerEvents: menuOpen ? 'auto' : 'none',
+          transform: menuOpen ? 'translateX(0)' : 'translateX(100%)',
+          transition: 'opacity 0.3s ease, transform 0.35s cubic-bezier(0.16,1,0.3,1)',
         }}
       >
         {/* Mobile header row */}
@@ -311,26 +290,6 @@ export default function Navbar() {
 
         {/* Bottom CTAs */}
         <div style={{ padding: '0 28px 52px', display: 'flex', flexDirection: 'column', gap: 10 }}>
-          {/* <Link
-            to="/login"
-            onClick={() => setMenuOpen(false)}
-            style={{
-              padding: '15px', textAlign: 'center',
-              border: '1px solid #e2e8f0', borderRadius: 12,
-              fontSize: '0.78rem', fontWeight: 800,
-              color: '#475569', textDecoration: 'none',
-              textTransform: 'uppercase', letterSpacing: '0.1em',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-            }}
-          >
-            <svg width="14" height="14" viewBox="0 0 18 18" fill="none" aria-hidden="true">
-              <path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.92c1.71-1.58 2.68-3.9 2.68-6.62Z" />
-              <path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.92-2.26c-.81.54-1.84.86-3.04.86-2.34 0-4.31-1.58-5.02-3.7H1.96v2.33A9 9 0 0 0 9 18Z" />
-              <path fill="#FBBC05" d="M3.98 10.72A5.41 5.41 0 0 1 3.7 9c0-.6.1-1.18.28-1.72V4.95H1.96A9 9 0 0 0 1 9c0 1.45.35 2.82.96 4.05l2.02-2.33Z" />
-              <path fill="#EA4335" d="M9 3.58c1.32 0 2.5.45 3.44 1.33l2.58-2.58C13.46.9 11.42 0 9 0A9 9 0 0 0 1.96 4.95l2.02 2.33c.71-2.12 2.68-3.7 5.02-3.7Z" />
-            </svg>
-            Sign In With Google
-          </Link> */}
           <Link
             to="/register"
             onClick={() => setMenuOpen(false)}

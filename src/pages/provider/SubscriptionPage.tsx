@@ -978,7 +978,7 @@ export default function SubscriptionPage() {
               <div className="flex bg-white/50 p-1 rounded-2xl border border-emerald-100 shadow-sm">
                 {[
                   { id: '1', label: 'Monthly', days: 28 },
-                  { id: '6', label: 'Half Year', days: 180 },
+                  { id: '6', label: 'Half Year', days: 180, promo: 'Save 5%' },
                   { id: '12', label: 'Full Year', days: 365, promo: 'Save 15%' }
                 ].map(cycle => (
                   <button
@@ -1159,9 +1159,9 @@ export default function SubscriptionPage() {
               className="bg-slate-50 border-none rounded-[.5em] px-4 py-2 text-xs font-black text-slate-600 outline-none focus:ring-2 focus:ring-emerald-500/10 min-w-[140px]"
             >
               <option value="">All Plans</option>
-              <option value="LITE">Lite Plan</option>
-              <option value="PLUS">Plus Plan</option>
-              <option value="MAX">Max Plan</option>
+              <option value="LITE">Starter</option>
+              <option value="PLUS">Growth</option>
+              <option value="MAX">Business Pro</option>
             </select>
 
             <div className="ml-auto text-[10px] font-black text-slate-300 uppercase tracking-widest">
