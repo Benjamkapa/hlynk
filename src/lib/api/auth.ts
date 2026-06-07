@@ -23,6 +23,7 @@ export interface AuthUser {
   hasReviewed?: boolean
   permissions?: string[]
   isRented?: number
+  referralCode?: string
 }
 
 export interface RegisterPayload {

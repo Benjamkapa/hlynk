@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react'
-import { Calendar, CreditCard, CheckCircle2, Zap, AlertTriangle, ChevronRight, Loader2, Phone, Star, RefreshCcw, Shield, Smartphone, Eye, Download, Info } from 'lucide-react'
+import { 
+  Calendar, CreditCard, CheckCircle2, Zap, AlertTriangle, ChevronRight, Loader2, Phone, Star, RefreshCcw, Shield, Smartphone, Eye, Download, Info, Users, Check, TrendingUp, CheckCircle, Smartphone as PhoneIcon, CheckCircle2 as CheckIcon 
+} from 'lucide-react'
 import { subscriptionsApi } from '../../lib/api/providers'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
@@ -55,7 +57,437 @@ const FEATURE_COMPARISON = [
 
 import { SubscriptionExpiredBanner } from '../../components/shared/SubscriptionGuard'
 import { ConfirmModal } from '../../components/shared/ConfirmModal'
-import { TrendingUp, CheckCircle2 as CheckIcon, CheckCircle, Smartphone as PhoneIcon } from 'lucide-react'
+
+// Base reward per referral per plan (in KES) & commission rate labels
+const REFERRAL_REWARDS = { lite: 1200, plus: 2650, max: 4950 }
+const REFERRAL_RATES  = { lite: '27%', plus: '28%', max: '29%' }
+
+function ReferralsTab() {
+  const { user, refreshUser } = useAuth()
+  const referralCode = user?.referralCode
+  const referralLink = referralCode ? `${window.location.origin}/login?ref=${referralCode}` : 'Generating...'
+
+  // Slider state: number of providers onboarded (1–100)
+  const [providerCount, setProviderCount] = useState(1)
+
+  // Season progress: 180-day window anchored to platform epoch (arbitrary Jan 1 reference)
+  const SEASON_DAYS = 180
+  const seasonStart = new Date('2025-01-01')
+  const now = new Date()
+  const msSinceEpoch = now.getTime() - seasonStart.getTime()
+  const seasonIndex = Math.floor(msSinceEpoch / (SEASON_DAYS * 24 * 60 * 60 * 1000))
+  const seasonStartDate = new Date(seasonStart.getTime() + seasonIndex * SEASON_DAYS * 24 * 60 * 60 * 1000)
+  const seasonEndDate = new Date(seasonStartDate.getTime() + SEASON_DAYS * 24 * 60 * 60 * 1000)
+  const elapsedDays = Math.min(Math.floor((now.getTime() - seasonStartDate.getTime()) / (24 * 60 * 60 * 1000)), SEASON_DAYS)
+  const remainingDays = SEASON_DAYS - elapsedDays
+  const progressPct = Math.round((elapsedDays / SEASON_DAYS) * 100)
+
+  // Each plan shows earnings as if ALL providers join that plan
+  const planProjections = {
+    lite: providerCount * REFERRAL_REWARDS.lite,
+    plus: providerCount * REFERRAL_REWARDS.plus,
+    max:  providerCount * REFERRAL_REWARDS.max,
+  }
+  const maxProjected = planProjections.max  // highest plan is always the max
+
+  const plans = [
+    { plan: 'Starter',      desc: 'LITE Package',  base: REFERRAL_REWARDS.lite, rate: REFERRAL_RATES.lite, projected: planProjections.lite, color: 'indigo' },
+    { plan: 'Growth',       desc: 'PLUS Package',  base: REFERRAL_REWARDS.plus, rate: REFERRAL_RATES.plus, projected: planProjections.plus, color: 'blue'   },
+    { plan: 'Business Pro', desc: 'MAX Package',   base: REFERRAL_REWARDS.max,  rate: REFERRAL_RATES.max,  projected: planProjections.max,  color: 'violet' },
+  ]
+
+  const { data: referralsRes, isLoading: refsLoading } = useQuery({
+    queryKey: ['my-referrals'],
+    queryFn: subscriptionsApi.getReferrals
+  })
+  const referrals = referralsRes?.data || []
+
+  useEffect(() => {
+    if (!referralCode) refreshUser()
+  }, [referralCode, refreshUser])
+
+  const copyToClipboard = async () => {
+    if (!referralCode) {
+      toast.loading('Generating your referral code...', { id: 'ref-gen' })
+      const updatedUser = await refreshUser()
+      if (updatedUser?.referralCode) {
+        const newLink = `${window.location.origin}/login?ref=${updatedUser.referralCode}`
+        navigator.clipboard.writeText(newLink)
+        toast.success('Generated and copied to clipboard!', { id: 'ref-gen' })
+        return
+      }
+      toast.error('Unable to generate code. Please try reloading the page.', { id: 'ref-gen' })
+      return
+    }
+    navigator.clipboard.writeText(referralLink)
+    toast.success('Referral link copied to clipboard!')
+  }
+
+  const sliderGradient = `linear-gradient(to right, #4f46e5 0%, #4f46e5 ${((providerCount - 1) / 99) * 100}%, #e2e8f0 ${((providerCount - 1) / 99) * 100}%, #e2e8f0 100%)`
+
+  return (
+    <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
+
+      {/* ── Hero Banner ── */}
+      <div className="bg-gradient-to-br from-indigo-900 to-slate-900 p-12 rounded-[.5em] text-white shadow-2xl relative overflow-hidden">
+        <div className="relative z-10">
+          <div className="flex items-center gap-3 mb-6">
+            <span className="bg-white/10 text-indigo-200 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest">Growth Program</span>
+            <span className="bg-amber-400 text-amber-950 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest">Season Rules Active</span>
+          </div>
+          <h2 className="text-4xl font-black mb-4 tracking-tight">Invite Vendors to hlynk</h2>
+          <p className="text-indigo-200/60 text-sm font-medium leading-relaxed max-w-xl mb-10">
+            Help traditional businesses go digital and earn massive rewards. When a vendor joins via your link, you get a significant share of their first "Season" payment.
+          </p>
+          <div className="flex flex-col sm:flex-row items-center gap-4 bg-white/5 p-2 rounded-2xl border border-white/10 backdrop-blur-md max-w-2xl">
+            <div className="flex-1 px-6 py-3 font-bold text-indigo-100 hl-mono text-sm truncate uppercase tracking-widest">
+              {referralLink}
+            </div>
+            <button
+              onClick={copyToClipboard}
+              className="w-full sm:w-auto px-8 py-3 bg-white text-indigo-900 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-indigo-50 transition-all active:scale-95 shadow-xl"
+            >
+              Copy Link
+            </button>
+          </div>
+        </div>
+        <Star size={200} className="absolute -right-20 -top-20 text-white opacity-5" />
+      </div>
+
+      {/* ══════════════════════════════════════════════════════════════
+          SECTION 1 — Season Time Progress
+      ══════════════════════════════════════════════════════════════ */}
+      <div className="bg-white rounded-[.5em] border border-slate-100 shadow-sm overflow-hidden">
+        <div className="p-8 border-b border-slate-50 flex items-center gap-3">
+          <div className="h-8 w-8 rounded-xl bg-indigo-50 flex items-center justify-center">
+            <Calendar size={16} className="text-indigo-500" />
+          </div>
+          <div>
+            <h3 className="text-xs font-black uppercase tracking-widest text-slate-800">Season Progress</h3>
+            <p className="text-[11px] text-slate-400 font-medium mt-0.5">Your current 180-day referral season window</p>
+          </div>
+        </div>
+
+        <div className="p-8">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-6">
+            <div className="flex items-baseline gap-3">
+              <span className="text-5xl font-black text-slate-900 hl-mono">{elapsedDays}</span>
+              <span className="text-sm font-bold text-slate-400">/ {SEASON_DAYS} days elapsed</span>
+            </div>
+            <div className="flex items-center gap-8 text-right">
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Season Ends</p>
+                <p className="text-sm font-black text-slate-800 hl-mono">
+                  {seasonEndDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                </p>
+              </div>
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Days Remaining</p>
+                <p className="text-sm font-black text-indigo-600 hl-mono">{remainingDays} days</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Progress bar */}
+          <div className="h-4 bg-slate-100 rounded-full overflow-hidden relative">
+            <div
+              className="h-full rounded-full transition-all duration-700 ease-out relative overflow-hidden"
+              style={{ width: `${progressPct}%`, background: 'linear-gradient(90deg, #4f46e5, #818cf8)' }}
+            >
+              <div className="absolute inset-0 bg-white/20 animate-pulse" />
+            </div>
+          </div>
+
+          <div className="flex justify-between mt-3">
+            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+              {seasonStartDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+            </span>
+            <span
+              className="text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full"
+              style={{
+                background: progressPct >= 80 ? '#fef3c7' : progressPct >= 50 ? '#e0e7ff' : '#f0fdf4',
+                color:      progressPct >= 80 ? '#92400e'  : progressPct >= 50 ? '#3730a3'  : '#166534'
+              }}
+            >
+              {progressPct >= 80 ? '⚡ Season Ending Soon' : progressPct >= 50 ? '🔥 Season Active' : '✅ Early Season'}
+            </span>
+            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+              {seasonEndDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+            </span>
+          </div>
+
+          {/* Season milestones */}
+          <div className="grid grid-cols-3 gap-4 mt-8">
+            {[
+              { label: 'Qualify for Renewal Bonus', day: 1, met: elapsedDays >= 1 && providerCount >= 1 },
+              { label: 'Mid-Season Check',          day: 90, met: elapsedDays >= 90 },
+              { label: 'Season Completion',          day: 180, met: elapsedDays >= 180 },
+            ].map((m, i) => (
+              <div
+                key={i}
+                className={`p-4 rounded-2xl border text-center transition-all ${m.met ? 'bg-emerald-50 border-emerald-100' : 'bg-slate-50 border-slate-100'}`}
+              >
+                <div className={`text-xs font-black uppercase tracking-widest mb-1 ${m.met ? 'text-emerald-700' : 'text-slate-400'}`}>
+                  {m.met ? '✔ Achieved' : `Day ${m.day}`}
+                </div>
+                <p className="text-[11px] font-medium text-slate-600 leading-tight">{m.label}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* ══════════════════════════════════════════════════════════════
+          SECTION 2 — Providers Onboarded Simulator
+      ══════════════════════════════════════════════════════════════ */}
+      <div className="bg-white rounded-[.5em] border border-slate-100 shadow-sm overflow-hidden">
+        <div className="p-8 border-b border-slate-50 flex items-center gap-3">
+          <div className="h-8 w-8 rounded-xl bg-violet-50 flex items-center justify-center">
+            <TrendingUp size={16} className="text-violet-500" />
+          </div>
+          <div className="flex-1">
+            <h3 className="text-xs font-black uppercase tracking-widest text-slate-800">Earnings Simulator</h3>
+            <p className="text-[11px] text-slate-400 font-medium mt-0.5">Drag the slider to see how much you earn per plan — the higher the plan, the bigger your reward</p>
+          </div>
+          <div className="bg-indigo-50 px-5 py-2 rounded-xl border border-indigo-100 text-center">
+            <p className="text-[9px] font-black uppercase tracking-widest text-indigo-400 mb-0.5">Providers</p>
+            <p className="text-xl font-black text-indigo-700 hl-mono leading-none">{providerCount}</p>
+          </div>
+        </div>
+
+        <div className="p-8 space-y-8">
+          {/* Slider */}
+          <div className="space-y-4">
+            <div className="flex justify-between text-[10px] font-black text-slate-400 uppercase tracking-widest">
+              <span>1 Provider</span>
+              <span>100 Providers</span>
+            </div>
+            <input
+              type="range"
+              min={1}
+              max={100}
+              value={providerCount}
+              onChange={e => setProviderCount(Number(e.target.value))}
+              className="w-full h-2 rounded-full appearance-none cursor-pointer"
+              style={{
+                background: sliderGradient,
+                outline: 'none',
+                WebkitAppearance: 'none',
+              }}
+            />
+            <style>{`
+              input[type='range']::-webkit-slider-thumb {
+                -webkit-appearance: none;
+                width: 24px; height: 24px;
+                border-radius: 50%;
+                background: #4f46e5;
+                border: 3px solid white;
+                box-shadow: 0 4px 12px rgba(79,70,229,0.4);
+                cursor: pointer;
+                transition: transform 0.15s;
+              }
+              input[type='range']::-webkit-slider-thumb:hover { transform: scale(1.2); }
+              input[type='range']::-moz-range-thumb {
+                width: 24px; height: 24px;
+                border-radius: 50%;
+                background: #4f46e5;
+                border: 3px solid white;
+                box-shadow: 0 4px 12px rgba(79,70,229,0.4);
+                cursor: pointer;
+              }
+            `}</style>
+
+            {/* Tick marks */}
+            <div className="flex justify-between px-0.5">
+              {[1, 25, 50, 75, 100].map(n => (
+                <button
+                  key={n}
+                  onClick={() => setProviderCount(n)}
+                  className={`text-[9px] font-black uppercase tracking-widest transition-all ${providerCount === n ? 'text-indigo-600' : 'text-slate-300 hover:text-slate-500'}`}
+                >
+                  {n}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Grand Total Banner */}
+          <div className="bg-gradient-to-r from-indigo-900 to-slate-800 p-6 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <p className="text-[10px] font-black uppercase tracking-widest text-indigo-300/60 mb-1">Best-Case Earnings</p>
+              <p className="text-3xl font-black text-white hl-mono transition-all">
+                KES {maxProjected.toLocaleString()}
+              </p>
+              <p className="text-[10px] text-indigo-300/50 font-medium mt-1">
+                If all {providerCount} provider{providerCount !== 1 ? 's' : ''} subscribe to Business Pro
+              </p>
+            </div>
+            <div className="flex items-center gap-2 bg-white/10 px-5 py-3 rounded-xl border border-white/10">
+              <Star size={16} className="text-amber-400" fill="currentColor" />
+              <span className="text-xs font-black text-white uppercase tracking-widest">
+                {providerCount >= 50 ? 'Elite Referrer' : providerCount >= 20 ? 'Power Referrer' : providerCount >= 5 ? 'Active Referrer' : 'Getting Started'}
+              </span>
+            </div>
+          </div>
+
+          {/* Reward Cards (reactive) */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {plans.map((item, i) => {
+              const colorMap: Record<string, { bg: string, text: string, badge: string, bar: string }> = {
+                indigo: { bg: 'bg-indigo-50', text: 'text-indigo-600', badge: 'bg-indigo-100 text-indigo-700', bar: '#4f46e5' },
+                blue:   { bg: 'bg-blue-50',   text: 'text-blue-600',   badge: 'bg-blue-100 text-blue-700',     bar: '#2563eb' },
+                violet: { bg: 'bg-violet-50',  text: 'text-violet-600', badge: 'bg-violet-100 text-violet-700', bar: '#7c3aed' },
+              }
+              const c = colorMap[item.color]
+              const barWidth = Math.round((item.projected / maxProjected) * 100)
+              return (
+                <div key={i} className="bg-white p-8 rounded-[.5em] border border-slate-100 shadow-sm group hover:border-indigo-200 transition-all space-y-5">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">{item.desc}</p>
+                      <h4 className="text-lg font-black text-slate-900">{item.plan}</h4>
+                    </div>
+                    <span className={`${c.badge} px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest`}>
+                      {item.rate} Commission
+                    </span>
+                  </div>
+
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-xs font-bold text-slate-400">Per referral:</span>
+                    <span className={`text-sm font-black ${c.text} hl-mono`}>KES {item.base.toLocaleString()}</span>
+                  </div>
+
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-baseline">
+                      <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">If all {providerCount} join</span>
+                      <span className={`text-2xl font-black ${c.text} hl-mono transition-all`}>
+                        KES {item.projected.toLocaleString()}
+                      </span>
+                    </div>
+                    <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                      <div
+                        className="h-full rounded-full transition-all duration-500 ease-out"
+                        style={{ width: `${barWidth}%`, background: c.bar }}
+                      />
+                    </div>
+                    <p className="text-[10px] text-slate-400 font-medium">
+                      {barWidth}% of max potential
+                    </p>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      </div>
+
+      {/* ── Season Rule Info ── */}
+      <div className="bg-slate-50 p-10 rounded-[.5em] border border-slate-100">
+        <div className="flex items-center gap-2 mb-6">
+          <Info size={16} className="text-slate-400" />
+          <h4 className="text-xs font-black uppercase tracking-widest text-slate-600">The 180-Day Season Rule</h4>
+        </div>
+        <div className="space-y-4 text-sm text-slate-500 font-medium leading-relaxed">
+          <p>
+            To keep rewards sustainable, we use the <span className="text-slate-900 font-bold">180-Day Rule</span>:
+          </p>
+          <ul className="list-disc list-inside space-y-2">
+            <li>You receive rewards automatically for every NEW vendor you refer.</li>
+            <li>For RENEWALS, you only receive a bonus if you have referred <span className="text-indigo-600 font-bold">at least 1 new vendor</span> in the last 6 months (180 days).</li>
+            <li>This ensures active growth and community engagement.</li>
+          </ul>
+        </div>
+      </div>
+
+      {/* ── Referral Tracking Table ── */}
+      <div className="bg-white rounded-[.5em] border border-slate-100 shadow-sm overflow-hidden">
+        <div className="p-8 border-b border-slate-50 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+             <div className="h-8 w-8 rounded-xl bg-emerald-50 flex items-center justify-center">
+               <Users size={16} className="text-emerald-500" />
+             </div>
+             <div>
+               <h3 className="text-xs font-black uppercase tracking-widest text-slate-800">Your Referrals</h3>
+               <p className="text-[11px] text-slate-400 font-medium mt-0.5">Track businesses that joined via your link</p>
+             </div>
+          </div>
+          <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest hl-mono">
+            {referrals.length} Total Vendors
+          </span>
+        </div>
+
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse">
+            <thead>
+               <tr className="bg-slate-50/50 border-b border-slate-100">
+                 <th className="p-8 text-[10px] font-black text-slate-400 uppercase tracking-widest">Biashara</th>
+                 <th className="p-8 text-[10px] font-black text-slate-400 uppercase tracking-widest">Joined</th>
+                 <th className="p-8 text-[10px] font-black text-slate-400 uppercase tracking-widest">Status</th>
+                 <th className="p-8 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Potential Reward</th>
+               </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-50">
+              {refsLoading ? (
+                <tr><td colSpan={4} className="p-20 text-center animate-pulse text-slate-400 font-medium italic">Loading your referral list...</td></tr>
+              ) : referrals.length === 0 ? (
+                <tr><td colSpan={4} className="p-20 text-center text-slate-400 font-medium italic">You haven't referred any businesses yet. Share your link to start earning!</td></tr>
+              ) : (
+                referrals.map((ref: any, i: number) => {
+                  const isTrial = ref.subStatus === 2;
+                  const latestPayout = ref.payouts?.[0]; // Usually one primary bonus
+                  const planName = ref.planName === 'MAX' ? 'Business Pro' : ref.planName === 'PLUS' ? 'Growth' : 'Starter';
+                  
+                  return (
+                    <tr key={i} className="hover:bg-slate-50/50 transition-all group">
+                      <td className="p-8">
+                         <p className="font-bold text-slate-900 text-sm">{ref.businessName}</p>
+                         <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">{planName} Plan</p>
+                      </td>
+                      <td className="p-8 text-slate-500 text-sm font-medium">
+                        {new Date(ref.joinedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                      </td>
+                      <td className="p-8">
+                        {isTrial ? (
+                          <div className="flex flex-col gap-1">
+                            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest bg-amber-50 text-amber-700 w-fit">
+                              <Loader2 size={10} className="animate-spin" /> In Trial
+                            </span>
+                            <p className="text-[9px] text-slate-400 font-bold ml-1">Ends {new Date(ref.trialEndDate).toLocaleDateString()}</p>
+                          </div>
+                        ) : (
+                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest bg-emerald-50 text-emerald-700 w-fit">
+                            <Check size={10} /> Plan Paid
+                          </span>
+                        )}
+                      </td>
+                      <td className="p-8 text-right">
+                        {latestPayout ? (
+                          <div className="flex flex-col items-end gap-1">
+                            <p className="text-sm font-black text-slate-900 hl-mono">KES {Number(latestPayout.amount).toLocaleString()}</p>
+                            <span className={`text-[8px] font-black uppercase tracking-[0.15em] px-2 py-0.5 rounded ${latestPayout.status === 'PENDING' ? 'bg-indigo-100 text-indigo-700' : 'bg-emerald-100 text-emerald-700'}`}>
+                              {latestPayout.status === 'PENDING' ? 'Mature: Settlement Pending' : 'Paid Out'}
+                            </span>
+                          </div>
+                        ) : (
+                          <div className="flex flex-col items-end gap-1">
+                            <p className="text-sm font-black text-slate-300 hl-mono">---</p>
+                            <span className="text-[8px] font-black uppercase tracking-[0.15em] text-slate-400">
+                              {isTrial ? 'Awaiting Payment' : 'No payout logged'}
+                            </span>
+                          </div>
+                        )}
+                      </td>
+                    </tr>
+                  )
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  )
+}
 
 function PayoutsTab() {
   const { data: payoutsRes, isLoading } = useQuery({
@@ -163,12 +595,12 @@ function PayoutsTab() {
                
                <div className="space-y-6 pt-6 border-t border-slate-50">
                   <div className="flex justify-between items-center">
-                    <span className="text-xs font-bold text-slate-500">Platform Share (10%)</span>
-                    <span className="text-xs font-black text-red-500 hl-mono">- KES {Math.floor((Number(stats?.pendingGross || 0) + Number(stats?.settledGross || 0)) * 0.10).toLocaleString()}</span>
+                     <span className="text-xs font-bold text-slate-500">Platform Share (10%)</span>
+                     <span className="text-xs font-black text-red-500 hl-mono">- KES {Math.floor((Number(stats?.pendingGross || 0) + Number(stats?.settledGross || 0)) * 0.10).toLocaleString()}</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-xs font-bold text-slate-500">Already Settled</span>
-                    <span className="text-xs font-black text-blue-500 hl-mono">KES {Math.floor(stats?.settledNet || 0).toLocaleString()}</span>
+                     <span className="text-xs font-bold text-slate-500">Already Settled</span>
+                     <span className="text-xs font-black text-blue-500 hl-mono">KES {Math.floor(stats?.settledNet || 0).toLocaleString()}</span>
                   </div>
                </div>
 
@@ -198,7 +630,12 @@ export default function SubscriptionPage() {
   const [showConfirmRenew, setShowConfirmRenew] = useState(false)
   const [mpesaPhone, setMpesaPhone] = useState('')
   const [selectedPlan, setSelectedPlan] = useState<any>(null)
-  const [activeTab, setActiveTab] = useState<'current' | 'history'>('current')
+  const [activeTab, setActiveTab] = useState<'current' | 'history' | 'payouts' | 'referrals'>(() => {
+    const params = new URLSearchParams(window.location.search);
+    const tab = params.get('tab')?.toLowerCase();
+    if (['current', 'history', 'payouts', 'referrals'].includes(tab || '')) return tab as any;
+    return 'current';
+  })
   const [isWaitingForPayment, setIsWaitingForPayment] = useState(false)
   const [waitingPaymentId, setWaitingPaymentId] = useState<string | null>(null)
   const [selectedTransaction, setSelectedTransaction] = useState<any>(null)
@@ -492,10 +929,16 @@ export default function SubscriptionPage() {
           >
             Billing History
           </button>
+          <button
+            onClick={() => setActiveTab('referrals')}
+            className={`px-6 py-2 rounded-[.5em] text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'referrals' ? 'bg-white text-emerald-600 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
+          >
+            Refer & Earn
+          </button>
           {user?.isRented === 1 && (
             <button
-              onClick={() => setActiveTab('payouts' as any)}
-              className={`px-6 py-2 rounded-[.5em]lg text-xs font-black uppercase tracking-widest transition-all ${activeTab === ('payouts' as any) ? 'bg-white text-emerald-600 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
+              onClick={() => setActiveTab('payouts')}
+              className={`px-6 py-2 rounded-[.5em] text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'payouts' ? 'bg-white text-emerald-600 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
             >
               Payouts Hub
             </button>
@@ -811,8 +1254,10 @@ export default function SubscriptionPage() {
             )}
           </div>
         </div>
-      ) : (
+      ) : activeTab === 'payouts' ? (
         <PayoutsTab />
+      ) : (
+        <ReferralsTab />
       )}
 
       {/* Renew Modal */}

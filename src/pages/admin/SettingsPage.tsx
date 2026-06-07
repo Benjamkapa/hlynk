@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { Settings, Shield, Bell, Globe, Database, Cpu, Lock, Save, Key, UserCheck, ShieldAlert, ShieldCheck, User, Camera, Loader2 } from 'lucide-react'
+import { Settings, Shield, Bell, Globe, Database, Cpu, Lock, Save, Key, UserCheck, ShieldAlert, ShieldCheck, User, Camera, Loader2, Smartphone } from 'lucide-react'
 import { toast } from 'sonner'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { adminApi } from '../../lib/api/providers'
@@ -260,8 +260,78 @@ export default function SettingsPage() {
                       />
                     </div>
                   </section>
-
                 </>
+              )}
+
+              {activeTab === 'Infrastructure' && (
+                <div className="space-y-12">
+                   <section className="space-y-6">
+                    <div className="flex items-center gap-2 text-slate-400 mb-2">
+                      <Smartphone size={16} />
+                      <span className="text-xs font-black uppercase tracking-[0.2em]">M-Pesa B2C Diagnostic</span>
+                    </div>
+                    
+                    <div className="bg-slate-50 p-8 rounded-xl border border-slate-100 space-y-6">
+                       <p className="text-xs text-slate-500 font-medium leading-relaxed">
+                         Perform a live B2C disbursement test. This will attempt to send real or sandbox funds from your system paybill to the specified number. 
+                         <span className="block mt-2 text-amber-600 font-bold">Use with caution: This action is logged for forensic audit.</span>
+                       </p>
+                       
+                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          <div className="space-y-2">
+                             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Target Phone</label>
+                             <input 
+                               type="text" 
+                               id="test-b2c-phone"
+                               placeholder="2547XXXXXXXX" 
+                               className="hl-input w-full rounded-md"
+                             />
+                          </div>
+                          <div className="space-y-2">
+                             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Amount (KES)</label>
+                             <input 
+                               type="number" 
+                               id="test-b2c-amount"
+                               placeholder="10" 
+                               className="hl-input w-full rounded-md"
+                             />
+                          </div>
+                          <div className="md:col-span-2">
+                             <button 
+                               onClick={async () => {
+                                 const phone = (document.getElementById('test-b2c-phone') as HTMLInputElement).value;
+                                 const amount = (document.getElementById('test-b2c-amount') as HTMLInputElement).value;
+                                 if (!phone || !amount) return toast.error('Phone and amount required');
+                                 
+                                 const t = toast.loading('Initiating B2C Handshake...');
+                                 try {
+                                   const res = await adminApi.testB2C({ phone, amount: Number(amount) });
+                                   toast.success(res.message, { id: t });
+                                 } catch (err) {
+                                   toast.error(getErrorMessage(err), { id: t });
+                                 }
+                               }}
+                               className="w-full py-4 bg-slate-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-black transition-all active:scale-95 flex items-center justify-center gap-2"
+                             >
+                               <Smartphone size={14} /> Execute Disburse Handshake
+                             </button>
+                          </div>
+                       </div>
+                    </div>
+                   </section>
+
+                   <section className="space-y-6 opacity-50 pointer-events-none">
+                    <div className="flex items-center gap-2 text-slate-400 mb-2">
+                      <Cpu size={16} />
+                      <span className="text-xs font-black uppercase tracking-[0.2em]">Node Distribution</span>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                       <div className="h-20 bg-slate-50 border border-slate-100 rounded-lg animate-pulse" />
+                       <div className="h-20 bg-slate-50 border border-slate-100 rounded-lg animate-pulse" />
+                       <div className="h-20 bg-slate-50 border border-slate-100 rounded-lg animate-pulse" />
+                    </div>
+                   </section>
+                </div>
               )}
 
               {activeTab === 'Security' && (

@@ -19,6 +19,9 @@ import { PaginatedResponse } from '../../lib/types/api'
 import { useOfflineStatus } from '../../lib/offline/useOfflineStatus'
 import { enqueueSale, cacheInventory, getCachedInventory, cacheCustomers, getCachedCustomers } from '../../lib/offline/db'
 
+import { SlideOver } from '../../components/shared/SlideOver'
+import ThermalReceipt from '../../components/shared/ThermalReceipt'
+
 export default function RecordSalePage() {
   const { user } = useAuth()
 
@@ -43,6 +46,7 @@ export default function RecordSalePage() {
   const [mpesaPhone, setMpesaPhone] = useState('')
   const [isProcessingMpesa, setIsProcessingMpesa] = useState(false)
   const [waitingMpesaSaleId, setWaitingMpesaSaleId] = useState<string | null>(null)
+  const [completedSale, setCompletedSale] = useState<any>(null)
   const [activeTab, setActiveTab] = useState<'products' | 'cart'>('products')
   const { isOnline, pendingCount } = useOfflineStatus()
   const queryClient = useQueryClient()
@@ -215,6 +219,18 @@ export default function RecordSalePage() {
           description: `Receipt #${saleId?.slice(-6)?.toUpperCase() || 'issued'} successfully.`,
           icon: <CheckCircle2 className="text-emerald-500" />
         })
+
+        // Prepare completed sale for receipt view
+        setCompletedSale({
+          id: saleId,
+          createdAt: Date.now(),
+          items: cart,
+          totalAmount: total,
+          paymentMethod,
+          customerName: selectedCustomer?.name || 'Walk-in',
+          status: 0
+        });
+
         setCart([])
         localStorage.removeItem('hlynk_pos_cart')
         setMpesaPhone('')
@@ -328,6 +344,9 @@ export default function RecordSalePage() {
             description: `M-Pesa payment received. Receipt #${sale.id?.slice(-6).toUpperCase()} issued.`,
             icon: <CheckCircle2 className="text-emerald-500" />
           })
+          
+          setCompletedSale(sale);
+
           setCart([])
           localStorage.removeItem('hlynk_pos_cart')
           setMpesaPhone('')
@@ -891,50 +910,6 @@ export default function RecordSalePage() {
               </div>
             )}
 
-            {isProcessingMpesa && (
-              <div className="bg-slate-900 rounded-[.5rem] p-8 text-white space-y-6 animate-in zoom-in-95 duration-500 relative overflow-hidden">
-                {/* <div className="flex items-center justify-between relative z-10">
-                  <div className="flex items-center gap-4">
-                    <Loader2 className="animate-spin text-emerald-400" size={24} />
-                    <div>
-                      <p className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-400">Waiting for PIN...</p>
-                      <p className="text-[8px] text-slate-500 uppercase font-bold tracking-widest mt-0.5">Reference: {waitingMpesaSaleId?.slice(-6).toUpperCase()}</p>
-                    </div>
-                  </div>
-                  <button 
-                    onClick={() => {
-                      setWaitingMpesaSaleId(null);
-                      setIsProcessingMpesa(false);
-                      toast.info("Payment Aborted", { description: "The system stopped watching for the payment. You can check it later in Sales History." });
-                    }}
-                    className="p-2 hover:bg-white/10 rounded-full transition-colors"
-                    title="Stop Polling"
-                  >
-                    <X size={16} />
-                  </button>
-                </div> */}
-
-                {/* <div className="space-y-4 relative z-10">
-                  <p className="text-xs text-slate-300 leading-relaxed">
-                    A prompt has been sent to <span className="text-white font-black">{mpesaPhone}</span>. 
-                    Please ensure the customer enters their PIN.
-                  </p>
-                  
-                  <div className="grid grid-cols-1 gap-2">
-                    <button 
-                      onClick={() => queryClient.invalidateQueries({ queryKey: ['sale-details', waitingMpesaSaleId] })}
-                      className="w-full py-3 bg-white/10 hover:bg-white/20 border border-white/10 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2"
-                    >
-                      <RefreshCcw size={12} /> Sync Status Manually
-                    </button>
-                  </div>
-                </div> */}
-
-                {/* Progress bar */}
-                <div className="absolute bottom-0 left-0 h-1 bg-emerald-500 animate-progress origin-left w-full" />
-                <div className="absolute top-0 right-0 h-32 w-32 bg-emerald-500/10 rounded-full blur-[50px] -mr-16 -mt-16" />
-              </div>
-            )}
 
             <button
               disabled={cart.length === 0 || handleCompleteSale.isPending || isProcessingMpesa}
@@ -1002,6 +977,38 @@ export default function RecordSalePage() {
           </button>
         </div>
       )}
+
+      {/* ── Transaction Receipt Modal ── */}
+      <SlideOver 
+        isOpen={!!completedSale} 
+        onClose={() => setCompletedSale(null)} 
+        title="Transaction Finalized"
+      >
+        {completedSale && (
+          <div className="space-y-6">
+            <div className="bg-emerald-50 border border-emerald-100 p-4 rounded-[.5rem] flex items-center gap-3 animate-in zoom-in-95 duration-500">
+               <div className="h-10 w-10 rounded-full bg-emerald-500 text-white flex items-center justify-center">
+                 <CheckCircle2 size={24} />
+               </div>
+               <div>
+                  <p className="text-xs font-black text-emerald-900 uppercase tracking-tight">Success</p>
+                  <p className="text-[10px] text-emerald-700 font-medium">The sale has been recorded and tax calculated.</p>
+               </div>
+            </div>
+
+            <ThermalReceipt sale={completedSale} />
+
+            <div className="pt-4 grid grid-cols-1 gap-3 no-print">
+               <button 
+                 onClick={() => setCompletedSale(null)}
+                 className="w-full py-4 bg-slate-900 text-white rounded-[.5rem] font-black text-xs uppercase tracking-widest shadow-xl hover:shadow-2xl transition-all"
+               >
+                 Acknowledge & Continue
+               </button>
+            </div>
+          </div>
+        )}
+      </SlideOver>
     </div>
   )
 }

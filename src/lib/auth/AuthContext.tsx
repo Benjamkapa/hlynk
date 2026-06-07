@@ -12,7 +12,7 @@ interface AuthContextValue {
   logout: (opts?: { force?: boolean }) => Promise<void>
   lock: () => void
   unlock: (pin: string) => Promise<boolean>
-  refreshUser: () => Promise<void>
+  refreshUser: () => Promise<any>
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null)
@@ -150,9 +150,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(res.data)
         storage.setItem('user_profile', JSON.stringify(res.data))
         queryClient.invalidateQueries()
+        return res.data
       }
     } catch (err) {
       console.error('Failed to refresh user profile', err)
+      return null
     }
   }
 

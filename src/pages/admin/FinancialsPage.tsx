@@ -34,6 +34,13 @@ export default function FinancialsPage() {
     enabled: !!selectedTxId
   })
 
+  const { data: vaultData } = useQuery({
+    queryKey: ['admin-vault'],
+    queryFn: () => adminApi.getVaultStats()
+  })
+
+  const vault = vaultData?.data || {}
+
   const stats = rawStats?.data || rawStats;
 
   useEffect(() => {
@@ -78,10 +85,10 @@ export default function FinancialsPage() {
       ) : (
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            <FinancialStatCard title="Total Volume (YTD)" value={`KES ${(stats?.overview?.revenueThisMonth || 0).toLocaleString()}`} sub="This Month" icon={Landmark} color="emerald" />
-            <FinancialStatCard title="Platform Fees" value={`KES ${((stats?.overview?.revenueThisMonth || 0) * 0.05).toLocaleString()}`} sub="Gross Fees collected (Est 5%)" icon={DollarSign} color="blue" />
-            <FinancialStatCard title="Paying Providers" value={`${(stats?.overview?.payingProviders || 0).toLocaleString()}`} sub="Active Subscriptions" icon={CreditCard} color="purple" />
-            <FinancialStatCard title="New Providers" value={`${(stats?.overview?.activeToday || 0).toLocaleString()}`} sub="Current Day" icon={Wallet} color="amber" />
+            <FinancialStatCard title="Vault Balance" value={`KES ${(vault?.vaultBalance || 0).toLocaleString()}`} sub="Current available in Paybill" icon={Landmark} color="emerald" />
+            <FinancialStatCard title="Platform Fees" value={`KES ${(vault?.platformNetPotential || 0).toLocaleString()}`} sub="Net potential (15% share)" icon={DollarSign} color="blue" />
+            <FinancialStatCard title="Vendor Dues" value={`KES ${(vault?.pendingVendor || 0).toLocaleString()}`} sub="Unsettled rented volume" icon={CreditCard} color="purple" />
+            <FinancialStatCard title="Referral Dues" value={`KES ${(vault?.pendingReferral || 0).toLocaleString()}`} sub="Claimable commission" icon={PieChart} color="amber" />
           </div>
 
           <div className="grid grid-cols-1 xl:grid-cols-3 gap-10">
@@ -131,12 +138,16 @@ export default function FinancialsPage() {
                     </p>
                     <div className="space-y-4">
                         <div className="flex justify-between items-center text-xs font-bold border-b border-white/10 pb-4">
-                          <span className="text-emerald-400">Pending Settlement</span>
-                          <span className="hl-mono">KES {(stats?.overview?.totalPendingPayouts || 0).toLocaleString()}</span>
+                          <span className="text-emerald-400">Vendor Liability</span>
+                          <span className="hl-mono">KES {(vault?.pendingVendor || 0).toLocaleString()}</span>
                         </div>
-                        <div className="flex justify-between items-center text-xs font-bold pt-2">
-                          <span className="text-emerald-400">Total Gross Fees</span>
-                          <span className="hl-mono">KES {(stats?.overview?.totalGrossFees || 0).toLocaleString()}</span>
+                        <div className="flex justify-between items-center text-xs font-bold border-b border-white/10 pb-4 pt-4">
+                          <span className="text-emerald-400">Referral Liability</span>
+                          <span className="hl-mono">KES {(vault?.pendingReferral || 0).toLocaleString()}</span>
+                        </div>
+                        <div className="flex justify-between items-center text-xs font-bold pt-4">
+                          <span className="text-emerald-400">Net Retained Fees</span>
+                          <span className="hl-mono font-black text-xl">KES {(vault?.platformNetPotential || 0).toLocaleString()}</span>
                         </div>
                     </div>
                   </div>

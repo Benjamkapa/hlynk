@@ -48,7 +48,7 @@ const CATEGORIES = [
 type RegisterFormState = {
   businessName: string; ownerName: string; phone: string
   category: string; county: string; location: string; planName: 'LITE' | 'PLUS' | 'MAX'
-  referredBy?: string;
+  referralCode?: string;
 }
 
 function ReviewCard({ review }: { review: any }) {
@@ -270,11 +270,12 @@ export default function LoginPage() {
   const isTrialRequest = urlParams.get('trial') === 'true'
   const requestedPlan = (urlParams.get('plan') as 'LITE' | 'PLUS' | 'MAX') || 'LITE'
   const requestedDays = urlParams.get('days') || (isTrialRequest ? '14' : '28')
+  const urlReferralCode = urlParams.get('ref')?.trim().toUpperCase() || ''
 
   const [formData, setFormData] = useState<RegisterFormState & { isTrial?: boolean; daysReward?: number }>({
     businessName: '', ownerName: '', phone: '', category: '', county: '',
-    location: '', planName: requestedPlan, referredBy: '',
-    isTrial: isTrialRequest,
+    location: '', planName: requestedPlan, referralCode: urlReferralCode,
+    isTrial: isTrialRequest || !!urlReferralCode,
     daysReward: parseInt(requestedDays)
   })
 
@@ -284,7 +285,11 @@ export default function LoginPage() {
       const res = await authApi.googleAuth({ credential })
       if (res.data.action === 'REQUIRES_REGISTRATION') {
         setGoogleCredential(credential)
-        setFormData(f => ({ ...f, ownerName: res.data.googleDetails.name || '', isTrial: isTrialRequest }))
+        setFormData(f => ({ 
+          ...f, 
+          ownerName: res.data.googleDetails.name || '', 
+          isTrial: isTrialRequest || !!urlReferralCode 
+        }))
         setRequiresRegistration(true)
         toast.info('Google account verified. Setup your business profile.')
       } else {
@@ -303,7 +308,13 @@ export default function LoginPage() {
       const res = await authApi.googleAuth({ credential: googleCredential, registration: formData })
       login({ accessToken: res.data.accessToken, refreshToken: res.data.refreshToken }, res.data.user)
       navigate('/dashboard', { replace: true })
-      toast.success(res.data.user.subscription?.status === 2 ? 'Your 14-day free trial has started!' : 'Your shop is now live on hlynk!')
+      
+      const isTrial = res.data.user.subscription?.status === 2;
+      if (isTrial) {
+        toast.success('Your 14-day free trial has started!');
+      } else {
+        toast.success('Your shop is now live on hlynk!');
+      }
     } catch (err: any) { toast.error(getErrorMessage(err)) }
     finally { setFormLoading(false) }
   }
@@ -648,6 +659,8 @@ export default function LoginPage() {
                         <Field label="M-Pesa Number" icon={Phone}>
                           <input type="tel" value={formData.phone} onChange={e => setFormData({ ...formData, phone: e.target.value })} className={inputCls} placeholder="07xx xxx xxx" required />
                         </Field>
+
+
                       </div>
                       <button type="submit" disabled={formLoading} className="lp-btn-submit">
                         {formLoading ? <Loader2 size={18} className="animate-spin" /> : 'Launch My Biashara'}
@@ -764,6 +777,8 @@ export default function LoginPage() {
                         <Field label="M-Pesa Number" icon={Phone}>
                           <input type="tel" value={formData.phone} onChange={e => setFormData({ ...formData, phone: e.target.value })} className={inputCls} placeholder="07xx xxx xxx" required />
                         </Field>
+
+
                       </div>
                       <button type="submit" disabled={formLoading} className="lp-btn-submit">
                         {formLoading ? <Loader2 size={18} className="animate-spin" /> : 'Launch My biashara'}

@@ -53,6 +53,7 @@ export const subscriptionsApi = {
   verify: (paymentId: string) => api.get(`/subscriptions/verify/${paymentId}`).then(r => r.data),
   submitManualPayment: (data: { planName: string, mpesaCode: string, amount?: number, phone?: string }) => api.post('/subscriptions/manual', data).then(r => r.data),
   getPayouts: () => api.get('/subscriptions/payouts').then(r => r.data),
+  getReferrals: () => api.get('/subscriptions/referrals').then(r => r.data),
   applyPromoCode: (code: string) => api.post('/subscriptions/promo/apply', { code }).then(r => r.data),
 }
 
@@ -153,8 +154,10 @@ export const adminApi = {
   getReviews: (params?: { page?: number; limit?: number; status?: number }) => api.get('/admin/reviews', { params }).then(r => r.data),
   updateReviewStatus: (id: string, status: number) => api.patch(`/admin/reviews/${id}`, { status }).then(r => r.data),
   getPayouts: () => api.get('/admin/payouts').then(r => r.data),
-  markPayoutPaid: (tenantId: string) => api.post(`/admin/payouts/${tenantId}/mark-paid`).then(r => r.data),
+  markPayoutPaid: (tenantId: string, data: { payoutId?: string, disburse?: boolean } = {}) => api.post(`/admin/payouts/${tenantId}/mark-paid`, data).then(r => r.data),
+  getVaultStats: () => api.get('/admin/finance/vault').then(r => r.data),
   getMedia: () => api.get('/admin/media').then(r => r.data),
   deleteMedia: (path: string) => api.post('/admin/media/delete', { path }).then(r => r.data),
+  testB2C: (data: { phone: string, amount: number, remarks?: string }) => api.post('/admin/test-b2c', data).then(r => r.data),
 }
 

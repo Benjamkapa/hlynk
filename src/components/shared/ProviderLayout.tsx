@@ -127,6 +127,7 @@ export default function ProviderLayout() {
       items: [
         { to: '/dashboard/logs', label: 'Staff Activity', icon: ShieldCheck, permission: 'logs', plan: 'MAX' },
         { to: '/dashboard/subscription', label: 'My Plan', icon: Calendar, role: 'PROVIDER' },
+        // { to: '/dashboard/subscription?tab=Referrals',the  label: 'Refer & Earn', icon: Star, role: 'PROVIDER' },
         { to: '/dashboard/developer', label: 'Payment Gateway', icon: CreditCard, role: 'PROVIDER', plan: 'PLUS' },
         { to: '/dashboard/etims', label: 'KRA eTIMS', icon: Receipt, role: 'PROVIDER' },
       ],
