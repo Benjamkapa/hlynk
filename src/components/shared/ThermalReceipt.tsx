@@ -65,7 +65,7 @@ export default function ThermalReceipt({ sale }: ThermalReceiptProps) {
         {/* Store header */}
         <div style={{ textAlign: 'center', marginBottom: 14, borderBottom: '1px dashed #999', paddingBottom: 12 }}>
           {/* <img src="/logo.png" alt="Logo" style={{ height: 36, margin: '0 auto 6px', display: 'block', filter: 'grayscale(100%)' }} /> */}
-          <div style={{ fontWeight: 'black', fontSize: 18, letterSpacing: '-0.02em', marginBottom: 2 }}>hlynk</div>
+          <div style={{ fontWeight: 'black', fontSize: 18, letterSpacing: '-0.02em', marginBottom: 2 }}>{sale.businessName}</div>
           <div style={{ fontSize: 9, letterSpacing: '0.15em', color: '#555', marginTop: 4 }}>— OFFICIAL RECEIPT —</div>
         </div>
 
@@ -129,7 +129,7 @@ export default function ThermalReceipt({ sale }: ThermalReceiptProps) {
             <span>SUBTOTAL</span><span>KES {subtotal.toLocaleString()}</span>
           </div>
 
-          <div style={{ display: 'flex', justifyContent: 'space-between', color: '#666', marginBottom: 6, alignItems: 'center' }}>
+          {/* <div style={{ display: 'flex', justifyContent: 'space-between', color: '#666', marginBottom: 6, alignItems: 'center' }}>
             <span>STATUS</span>
             <span style={{ 
               fontSize: 8, 
@@ -143,7 +143,7 @@ export default function ThermalReceipt({ sale }: ThermalReceiptProps) {
             }}>
               {getStatusLabel(sale.status)}
             </span>
-          </div>
+          </div> */}
 
           <div style={{ display: 'flex', justifyContent: 'space-between', color: '#666', marginBottom: 6 }}>
             <span>METHOD</span>
