@@ -820,7 +820,12 @@ export default function SubscriptionPage() {
     mutationFn: (paymentId: string) => subscriptionsApi.verify(paymentId),
     onSuccess: (data) => {
       setIsWaitingForPayment(false) // Force stop spinner immediately
-      if (data.data.status === 'PAID') {
+      
+      const statusMap: Record<number, string> = { 0: 'PAID', 1: 'FAILED', 2: 'PENDING', 3: 'CANCELLED', 4: 'ERROR' };
+      const statusValue = data.data.status;
+      const statusStr = typeof statusValue === 'number' ? statusMap[statusValue] || 'UNKNOWN' : statusValue;
+
+      if (statusStr === 'PAID' || statusValue === 0) {
         toast.success("Payment verified successfully! Your plan is active.")
         queryClient.clear()
         refreshUser()
@@ -830,7 +835,7 @@ export default function SubscriptionPage() {
           window.location.href = '/dashboard'
         }, 2000)
       } else {
-        toast.info(`Transaction Status: ${data.data.status}`)
+        toast.info(`Transaction Status: ${statusStr}`)
         queryClient.invalidateQueries({ queryKey: ['billing-history'] })
       }
     },
