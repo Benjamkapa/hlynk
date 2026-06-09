@@ -215,11 +215,8 @@ export default function ProviderLayout() {
             >
               <img src="/fav.png" alt="hlynk" className="h-8 w-8 lg:h-9 lg:w-9 object-contain" />
               <div className="flex flex-col min-w-0">
-                <span className="text-sm font-black text-slate-900 truncate uppercase tracking-tight leading-none">
+                <span className="text-sm text-emerald-900 font-bold truncate tracking-tight leading-none">
                   {user?.businessName}
-                </span>
-                <span className="text-[10px] font-bold text-emerald-600/40 leading-none mt-1 uppercase tracking-[0.2em]">
-                  Management
                 </span>
               </div>
             </motion.div>

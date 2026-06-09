@@ -152,13 +152,13 @@ export default function ThermalReceipt({ sale }: ThermalReceiptProps) {
             </span>
           </div>
 
-          <div style={{ 
-            display: 'flex', 
-            justifyContent: 'space-between', 
-            fontWeight: 'bold', 
-            fontSize: 16, 
-            borderTop: '2px solid #000', 
-            paddingTop: 8, 
+          <div style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            fontWeight: 'bold',
+            fontSize: 16,
+            borderTop: '2px solid #000',
+            paddingTop: 8,
             marginTop: 4,
           }}>
             <span>TOTAL DUE</span><span>KES {Number(sale.totalAmount).toLocaleString()}</span>
@@ -170,7 +170,8 @@ export default function ThermalReceipt({ sale }: ThermalReceiptProps) {
           <div style={{ fontSize: 8, letterSpacing: '0.15em', marginBottom: 4 }}>* * * THANK YOU * * *</div>
           <div>Please keep this receipt for your records.</div>
           <div style={{ marginTop: 8, fontSize: 8, letterSpacing: '0.05em', color: '#bbb' }}>
-            {new Date(sale.createdAt || Date.now()).toISOString()}
+            {/* format date  in years months days hours minutes and seconds */}
+            {new Date(sale.createdAt || Date.now()).getFullYear()}-{new Date(sale.createdAt || Date.now()).getMonth() + 1}-{new Date(sale.createdAt || Date.now()).getDay()} {new Date(sale.createdAt || Date.now()).getHours()}:{new Date(sale.createdAt || Date.now()).getMinutes()}:{new Date(sale.createdAt || Date.now()).getSeconds()}
           </div>
         </div>
 
