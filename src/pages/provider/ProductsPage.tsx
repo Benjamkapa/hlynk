@@ -144,7 +144,7 @@ export default function ProductsPage() {
              <select 
                value={category}
                onChange={(e) => { setCategory(e.target.value); setPage(1); }}
-               className="hl-select !bg-transparent !border-none !py-0 !px-1 !pr-6 !h-auto !ring-0 text-[10px] font-black uppercase tracking-widest text-slate-600 cursor-pointer"
+               className="hl-select !bg-transparent !border-none !py-0 !px-1 !pr-6 !h-auto !ring-0 text-[10px] font-black tracking-widest text-slate-600 cursor-pointer"
              >
                <option value="">All Categories</option>
                {[
