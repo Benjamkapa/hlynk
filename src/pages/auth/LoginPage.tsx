@@ -67,7 +67,7 @@ function ReviewCard({ review }: { review: any }) {
         "{review.comment}"
       </p>
       {review.businessName && (
-        <div className="text-[10px] font-black text-white/50 tracking-[0.2em] capitalize">
+        <div className="text-[10px] font-black text-white/50 tracking-[0.2em]">
           {review.businessName}
         </div>
       )}
@@ -212,8 +212,7 @@ function MobileReviewStrip() {
             </p>
             {review.businessName && (
               <p style={{
-                fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.55)',
-                textTransform: 'uppercase', letterSpacing: '0.2em', marginBottom: 14,
+                fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.55)', letterSpacing: '0.2em', marginBottom: 14,
               }}>
                 — {review.businessName}
               </p>
