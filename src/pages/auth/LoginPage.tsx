@@ -26,23 +26,83 @@ const COUNTIES = [
 ]
 
 const CATEGORIES = [
-  'Retail Store', 'Wholesale Shop', 'Supermarket', 'Mini Mart', 'Pharmacy','Garage', 'Car Yard', 'Car Wash',
-  'Agrovet', 'Hardware Store', 'Electronics Shop', 'Mobile Phone Shop', 'Fashion & Boutique',
-  'Restaurant', 'Cafe', 'Bakery', 'Fast Food', 'Hotel', 'Guest House', 'Lounge & Bar', 'Catering Services',
-  'Barber Shop', 'Salon', 'Spa & Beauty', 'Cosmetics Shop',
-  'Consultancy', 'Accounting & Tax Services', 'Legal Services', 'Insurance Agency',
-  'Real Estate Agency', 'Marketing Agency', 'Cyber Cafe', 'Printing & Branding',
-  'Electrical Services', 'Plumbing Services', 'Mechanic Garage', 'Car Wash',
-  'Welding & Fabrication', 'Construction Services', 'Interior Design',
-  'Software Development', 'IT Services', 'Cyber Security', 'Internet Service Provider', 'Digital Agency',
-  'Daycare', 'School', 'College', 'University', 'Training Centre', 'Driving School',
-  'Hospital', 'Clinic', 'Dental Clinic', 'Optical Clinic', 'Veterinary Clinic',
-  'Manufacturing', 'Tailoring & Fashion Design', 'Furniture Workshop', 'Art & Craft Business',
-  'Farm', 'Dairy Business', 'Poultry Farm', 'Agricultural Cooperative',
-  'Transport Services', 'Courier Services', 'Travel Agency',
-  'SACCO', 'Microfinance', 'Financial Services',
-  'Church', 'Mosque', 'NGO', 'Community Organization',
-  'E-commerce Business', 'Online Business', 'Freelancer', 'Other',
+  'Accounting & Tax Services',
+  'Agrovet',
+  'Agricultural Cooperative',
+  'Art & Craft Business',
+  'Bakery',
+  'Barber Shop',
+  'Cafe',
+  'Car Wash',
+  'Car Yard',
+  'Catering Services',
+  'Church',
+  'Clinic',
+  'College',
+  'Community Organization',
+  'Construction Services',
+  'Consultancy',
+  'Cosmetics Shop',
+  'Courier Services',
+  'Cyber Cafe',
+  'Cyber Security',
+  'Dairy Business',
+  'Daycare',
+  'Dental Clinic',
+  'Digital Agency',
+  'Driving School',
+  'E-commerce Business',
+  'Electrical Services',
+  'Electronics Shop',
+  'Farm',
+  'Fashion & Boutique',
+  'Fast Food',
+  'Financial Services',
+  'Freelancer',
+  'Furniture Workshop',
+  'Garage',
+  'Guest House',
+  'Hardware Store',
+  'Hospital',
+  'Hotel',
+  'Insurance Agency',
+  'Interior Design',
+  'Internet Service Provider',
+  'IT Services',
+  'Legal Services',
+  'Lounge & Bar',
+  'Manufacturing',
+  'Marketing Agency',
+  'Mechanic Garage',
+  'Microfinance',
+  'Mini Mart',
+  'Mobile Phone Shop',
+  'Mosque',
+  'NGO',
+  'Online Business',
+  'Optical Clinic',
+  'Other',
+  'Pharmacy',
+  'Plumbing Services',
+  'Poultry Farm',
+  'Printing & Branding',
+  'Real Estate Agency',
+  'Restaurant',
+  'Retail Store',
+  'SACCO',
+  'Salon',
+  'School',
+  'Software Development',
+  'Spa & Beauty',
+  'Supermarket',
+  'Tailoring & Fashion Design',
+  'Training Centre',
+  'Transport Services',
+  'Travel Agency',
+  'University',
+  'Veterinary Clinic',
+  'Welding & Fabrication',
+  'Wholesale Shop'
 ]
 
 type RegisterFormState = {
@@ -56,10 +116,10 @@ function ReviewCard({ review }: { review: any }) {
     <div className="flex flex-col gap-3 p-1">
       <div className="flex gap-0.5 mb-1">
         {[1, 2, 3, 4, 5].map((s) => (
-          <Star 
-            key={s} 
-            size={12} 
-            className={review.rating >= s ? 'text-amber-400 fill-amber-400' : 'text-white/20'} 
+          <Star
+            key={s}
+            size={12}
+            className={review.rating >= s ? 'text-amber-400 fill-amber-400' : 'text-white/20'}
           />
         ))}
       </div>
@@ -195,10 +255,10 @@ function MobileReviewStrip() {
           >
             <div className="flex gap-0.5 mb-3">
               {[1, 2, 3, 4, 5].map((s) => (
-                <Star 
-                  key={s} 
-                  size={12} 
-                  className={review.rating >= s ? 'text-amber-400 fill-amber-400' : 'text-white/20'} 
+                <Star
+                  key={s}
+                  size={12}
+                  className={review.rating >= s ? 'text-amber-400 fill-amber-400' : 'text-white/20'}
                 />
               ))}
             </div>
@@ -284,10 +344,10 @@ export default function LoginPage() {
       const res = await authApi.googleAuth({ credential })
       if (res.data.action === 'REQUIRES_REGISTRATION') {
         setGoogleCredential(credential)
-        setFormData(f => ({ 
-          ...f, 
-          ownerName: res.data.googleDetails.name || '', 
-          isTrial: isTrialRequest || !!urlReferralCode 
+        setFormData(f => ({
+          ...f,
+          ownerName: res.data.googleDetails.name || '',
+          isTrial: isTrialRequest || !!urlReferralCode
         }))
         setRequiresRegistration(true)
         toast.info('Google account verified. Setup your business profile.')
@@ -307,7 +367,7 @@ export default function LoginPage() {
       const res = await authApi.googleAuth({ credential: googleCredential, registration: formData })
       login({ accessToken: res.data.accessToken, refreshToken: res.data.refreshToken }, res.data.user)
       navigate('/dashboard', { replace: true })
-      
+
       const isTrial = res.data.user.subscription?.status === 2;
       if (isTrial) {
         toast.success('Your 14-day free trial has started!');
@@ -547,19 +607,19 @@ export default function LoginPage() {
                     <h1 className="mob-hero-title pb-1">The Smartest Way <br /> to Grow <br /> Your <em>Biashara</em></h1>
                     <p className="mob-hero-sub mt-2 mb-6">Stop the guesswork. Use modern tracking to manage stock and double your business profits.</p>
                     <div className="flex flex-col gap-2 opacity-80 scale-90 origin-left">
-                     {[
-                       'M-Pesa Friendly Sales Tracking',
-                       'Zero Manual Record Books Needed',
-                       'Automated Insights to Cut Costs',
-                       'Instant Setup, No Fees to Start',
-                     ].map((item) => (
-                       <div key={item} className="flex items-center gap-3 text-white">
-                         <div className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center">
-                           <Check size={10} strokeWidth={4} />
-                         </div>
-                         <span className="text-[12px] font-medium tracking-wide">{item}</span>
-                       </div>
-                     ))}
+                      {[
+                        'M-Pesa Friendly Sales Tracking',
+                        'Zero Manual Record Books Needed',
+                        'Automated Insights to Cut Costs',
+                        'Instant Setup, No Fees to Start',
+                      ].map((item) => (
+                        <div key={item} className="flex items-center gap-3 text-white">
+                          <div className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center">
+                            <Check size={10} strokeWidth={4} />
+                          </div>
+                          <span className="text-[12px] font-medium tracking-wide">{item}</span>
+                        </div>
+                      ))}
                     </div>
                   </div>
 

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Plus, Search, Filter, Download, Edit,  Trash2, Package, TrendingDown, Activity, AlertTriangle, LayoutGrid, List } from 'lucide-react'
+import { Plus, Search, Filter, Download, Edit, Trash2, Package, TrendingDown, Activity, AlertTriangle, LayoutGrid, List } from 'lucide-react'
 import { ConfirmModal } from '../../components/shared/ConfirmModal'
 import { SlideOver } from '../../components/shared/SlideOver'
 import { toast } from 'sonner'
@@ -75,7 +75,7 @@ export default function ProductsPage() {
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500 pt-6">
-      
+
       {/* Header section */}
       <div className="flex justify-between items-end">
         <div>
@@ -83,15 +83,15 @@ export default function ProductsPage() {
           <p className="text-gray-500 font-medium">Track your inventory, stock levels, and profit margins</p>
         </div>
         <div className="flex gap-3">
-          <button 
+          <button
             onClick={handleExport}
             className="bg-white text-gray-600 h-12 px-6 rounded-[.5rem] border border-gray-100 font-bold text-sm hover:bg-gray-50 transition-all flex items-center gap-2"
           >
             <Download size={18} />
             Export
           </button>
-          <button 
-            onClick={() => setIsAddModalOpen(true)} 
+          <button
+            onClick={() => setIsAddModalOpen(true)}
             className="bg-[#0D4A3E] text-white h-12 px-6 rounded-[.5rem] font-bold text-sm hover:bg-[#0A3D33] transition-all flex items-center gap-2"
           >
             <Plus size={18} /> Add Product
@@ -111,18 +111,18 @@ export default function ProductsPage() {
 
       {/* Products Table */}
       <div className="bg-white rounded-[.5rem] border border-gray-100 shadow-sm overflow-hidden">
-      
-        <SlideOver 
-          isOpen={isAddModalOpen} 
-          onClose={() => setIsAddModalOpen(false)} 
+
+        <SlideOver
+          isOpen={isAddModalOpen}
+          onClose={() => setIsAddModalOpen(false)}
           title="Add New Product"
         >
           <ProductForm onClose={() => setIsAddModalOpen(false)} />
         </SlideOver>
 
-        <SlideOver 
-          isOpen={!!editingProduct} 
-          onClose={() => setEditingProduct(null)} 
+        <SlideOver
+          isOpen={!!editingProduct}
+          onClose={() => setEditingProduct(null)}
           title="Edit Product"
         >
           {editingProduct && <EditProductForm product={editingProduct} onClose={() => setEditingProduct(null)} />}
@@ -131,54 +131,114 @@ export default function ProductsPage() {
         <div className="p-6 border-b border-gray-50 flex gap-4">
           <div className="relative flex-1">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-            <input 
-              type="text" 
-              placeholder="Search products by name or category..." 
+            <input
+              type="text"
+              placeholder="Search products by name or category..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full bg-gray-50 border-none rounded-[.5rem] py-3.5 pl-12 pr-4 outline-none focus:ring-2 focus:ring-emerald-500/10 transition-all text-sm font-medium" 
+              className="w-full bg-gray-50 border-none rounded-[.5rem] py-3.5 pl-12 pr-4 outline-none focus:ring-2 focus:ring-emerald-500/10 transition-all text-sm font-medium"
             />
           </div>
           <div className="flex items-center gap-2 bg-gray-50 p-1.5 rounded-[.5rem] border border-gray-100 pr-2">
-             <Filter className="ml-2 text-slate-400" size={14} />
-             <select 
-               value={category}
-               onChange={(e) => { setCategory(e.target.value); setPage(1); }}
-               className="hl-select !bg-transparent !border-none !py-0 !px-1 !pr-6 !h-auto !ring-0 text-[10px] font-black tracking-widest text-slate-600 cursor-pointer"
-             >
-               <option value="">All Categories</option>
-               {[
-                'Retail Store', 'Wholesale Shop', 'Supermarket', 'Mini Mart', 'Pharmacy','Garage', 'Car Yard', 'Car Wash',
-                'Agrovet', 'Hardware Store', 'Electronics Shop', 'Mobile Phone Shop', 'Fashion & Boutique',
-                'Restaurant', 'Cafe', 'Bakery', 'Fast Food', 'Hotel', 'Guest House', 'Lounge & Bar', 'Catering Services',
-                'Barber Shop', 'Salon', 'Spa & Beauty', 'Cosmetics Shop',
-                'Consultancy', 'Accounting & Tax Services', 'Legal Services', 'Insurance Agency',
-                'Real Estate Agency', 'Marketing Agency', 'Cyber Cafe', 'Printing & Branding',
-                'Electrical Services', 'Plumbing Services', 'Mechanic Garage', 'Car Wash',
-                'Welding & Fabrication', 'Construction Services', 'Interior Design',
-                'Software Development', 'IT Services', 'Cyber Security', 'Internet Service Provider', 'Digital Agency',
-                'Daycare', 'School', 'College', 'University', 'Training Centre', 'Driving School',
-                'Hospital', 'Clinic', 'Dental Clinic', 'Optical Clinic', 'Veterinary Clinic',
-                'Manufacturing', 'Tailoring & Fashion Design', 'Furniture Workshop', 'Art & Craft Business',
-                'Farm', 'Dairy Business', 'Poultry Farm', 'Agricultural Cooperative',
-                'Transport Services', 'Courier Services', 'Travel Agency',
-                'SACCO', 'Microfinance', 'Financial Services',
-                'Church', 'Mosque', 'NGO', 'Community Organization',
-                'E-commerce Business', 'Online Business', 'Freelancer', 'Other',
-               ].map(c => (
-                 <option key={c} value={c}>{c}</option>
-               ))}
-             </select>
+            <Filter className="ml-2 text-slate-400" size={14} />
+            <select
+              value={category}
+              onChange={(e) => { setCategory(e.target.value); setPage(1); }}
+              className="hl-select !bg-transparent !border-none !py-0 !px-1 !pr-6 !h-auto !ring-0 text-[10px] font-black tracking-widest text-slate-600 cursor-pointer"
+            >
+              <option value="">All Categories</option>
+              {[
+                'Accounting & Tax Services',
+                'Agrovet',
+                'Agricultural Cooperative',
+                'Art & Craft Business',
+                'Bakery',
+                'Barber Shop',
+                'Cafe',
+                'Car Wash',
+                'Car Yard',
+                'Catering Services',
+                'Church',
+                'Clinic',
+                'College',
+                'Community Organization',
+                'Construction Services',
+                'Consultancy',
+                'Cosmetics Shop',
+                'Courier Services',
+                'Cyber Cafe',
+                'Cyber Security',
+                'Dairy Business',
+                'Daycare',
+                'Dental Clinic',
+                'Digital Agency',
+                'Driving School',
+                'E-commerce Business',
+                'Electrical Services',
+                'Electronics Shop',
+                'Farm',
+                'Fashion & Boutique',
+                'Fast Food',
+                'Financial Services',
+                'Freelancer',
+                'Furniture Workshop',
+                'Garage',
+                'Guest House',
+                'Hardware Store',
+                'Hospital',
+                'Hotel',
+                'Insurance Agency',
+                'Interior Design',
+                'Internet Service Provider',
+                'IT Services',
+                'Legal Services',
+                'Lounge & Bar',
+                'Manufacturing',
+                'Marketing Agency',
+                'Mechanic Garage',
+                'Microfinance',
+                'Mini Mart',
+                'Mobile Phone Shop',
+                'Mosque',
+                'NGO',
+                'Online Business',
+                'Optical Clinic',
+                'Other',
+                'Pharmacy',
+                'Plumbing Services',
+                'Poultry Farm',
+                'Printing & Branding',
+                'Real Estate Agency',
+                'Restaurant',
+                'Retail Store',
+                'SACCO',
+                'Salon',
+                'School',
+                'Software Development',
+                'Spa & Beauty',
+                'Supermarket',
+                'Tailoring & Fashion Design',
+                'Training Centre',
+                'Transport Services',
+                'Travel Agency',
+                'University',
+                'Veterinary Clinic',
+                'Welding & Fabrication',
+                'Wholesale Shop'
+              ].map(c => (
+                <option key={c} value={c}>{c}</option>
+              ))}
+            </select>
           </div>
-          
+
           <div className="flex bg-gray-50 p-1 rounded-[.5rem] border border-gray-100">
-            <button 
+            <button
               onClick={() => setViewMode('list')}
               className={`p-2 rounded-[.4rem] transition-all ${viewMode === 'list' ? 'bg-white shadow-sm text-emerald-600' : 'text-gray-400 hover:text-gray-600'}`}
             >
               <List size={18} />
             </button>
-            <button 
+            <button
               onClick={() => setViewMode('grid')}
               className={`p-2 rounded-[.4rem] transition-all ${viewMode === 'grid' ? 'bg-white shadow-sm text-emerald-600' : 'text-gray-400 hover:text-gray-600'}`}
             >
@@ -204,7 +264,7 @@ export default function ProductsPage() {
                 {isLoading ? (
                   <tr>
                     <td colSpan={6} className="py-20 text-center">
-                       <div className="h-8 w-8 animate-spin rounded-full border-4 border-emerald-500 border-t-transparent mx-auto" />
+                      <div className="h-8 w-8 animate-spin rounded-full border-4 border-emerald-500 border-t-transparent mx-auto" />
                     </td>
                   </tr>
                 ) : products.length > 0 ? products.map((p: any, i: number) => (
@@ -241,13 +301,13 @@ export default function ProductsPage() {
                     <td className="px-8 py-5 text-right font-black text-[#0D4A3E] text-sm hl-mono">KES {Number(p.price).toLocaleString()}</td>
                     <td className="px-8 py-5 text-right">
                       <div className="flex justify-end gap-2">
-                        <button 
+                        <button
                           onClick={(e) => { e.stopPropagation(); setEditingProduct(p) }}
                           className="p-2 hover:bg-white hover:shadow-lg rounded-[.5rem] transition-all text-slate-300 hover:text-emerald-600"
                         >
                           <Edit size={16} />
                         </button>
-                        <button 
+                        <button
                           onClick={(e) => { e.stopPropagation(); setConfirmDeleteId(p.id) }}
                           disabled={deleteMutation.isPending}
                           className="p-2 hover:bg-white hover:shadow-lg rounded-[.5rem] transition-all text-slate-300 hover:text-red-600 disabled:opacity-50"
@@ -269,13 +329,13 @@ export default function ProductsPage() {
           <div className="p-8">
             {isLoading ? (
               <div className="py-20 text-center">
-                 <div className="h-12 w-12 animate-spin rounded-full border-4 border-emerald-500 border-t-transparent mx-auto" />
+                <div className="h-12 w-12 animate-spin rounded-full border-4 border-emerald-500 border-t-transparent mx-auto" />
               </div>
             ) : products.length > 0 ? (
               <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-4">
                 {products.map((p: any) => (
-                  <div 
-                    key={p.id} 
+                  <div
+                    key={p.id}
                     className="group bg-white border border-gray-100 rounded-[.5rem] overflow-hidden hover:shadow-2xl hover:shadow-emerald-900/10 transition-all cursor-pointer relative"
                     onClick={() => setEditingProduct(p)}
                   >
@@ -288,37 +348,37 @@ export default function ProductsPage() {
                         </div>
                       )}
                       <div className="absolute top-2 right-2 flex flex-col gap-1.5 opacity-0 group-hover:opacity-100 transition-all">
-                        <button 
+                        <button
                           onClick={(e) => { e.stopPropagation(); setEditingProduct(p) }}
                           className="h-8 w-8 bg-white rounded-full shadow-lg flex items-center justify-center text-slate-400 hover:text-emerald-600 transition-all"
                         >
                           <Edit size={14} />
                         </button>
-                        <button 
+                        <button
                           onClick={(e) => { e.stopPropagation(); setConfirmDeleteId(p.id) }}
                           className="h-8 w-8 bg-white rounded-full shadow-lg flex items-center justify-center text-slate-400 hover:text-red-600 transition-all"
                         >
                           <Trash2 size={14} />
                         </button>
                       </div>
-                      
+
                       <div className="absolute bottom-2 left-2 right-2 translate-y-12 group-hover:translate-y-0 transition-all duration-300">
-                         <div className="bg-white/90 backdrop-blur-md p-2 rounded-[.4rem] border border-white/20 shadow-xl">
-                            <p className="text-[8px] font-black text-[#0D4A3E] hl-mono text-center">STOCK: {p.stockLevel}</p>
-                         </div>
+                        <div className="bg-white/90 backdrop-blur-md p-2 rounded-[.4rem] border border-white/20 shadow-xl">
+                          <p className="text-[8px] font-black text-[#0D4A3E] hl-mono text-center">STOCK: {p.stockLevel}</p>
+                        </div>
                       </div>
                     </div>
-                    
+
                     <div className="p-3">
                       <div className="mb-2">
                         <p className="text-[7px] font-black text-slate-400 uppercase tracking-widest mb-0.5">{p.category}</p>
                         <h4 className="text-[11px] font-black text-slate-900 leading-tight group-hover:text-[#0D4A3E] transition-colors truncate">{p.name}</h4>
                       </div>
                       <div className="flex items-end justify-between">
-                         <div>
-                            <p className="text-[12px] font-black text-[#0D4A3E] hl-mono -mb-1">KES {Number(p.price).toLocaleString()}</p>
-                         </div>
-                         <div className={`h-1.5 w-1.5 rounded-full ${p.stockLevel < threshold ? 'bg-red-500 animate-pulse' : 'bg-emerald-500'}`} />
+                        <div>
+                          <p className="text-[12px] font-black text-[#0D4A3E] hl-mono -mb-1">KES {Number(p.price).toLocaleString()}</p>
+                        </div>
+                        <div className={`h-1.5 w-1.5 rounded-full ${p.stockLevel < threshold ? 'bg-red-500 animate-pulse' : 'bg-emerald-500'}`} />
                       </div>
                     </div>
                   </div>
@@ -337,7 +397,7 @@ export default function ProductsPage() {
                 Showing {products.length} of {productsData.total} items
               </p>
               <div className="flex gap-2">
-                <button 
+                <button
                   onClick={() => setPage(p => Math.max(1, p - 1))}
                   disabled={page === 1}
                   className="h-10 px-4 bg-white border border-slate-200 rounded-[.5rem] text-[10px] font-black uppercase tracking-widest hover:bg-slate-50 disabled:opacity-40 transition-all"
@@ -347,7 +407,7 @@ export default function ProductsPage() {
                 <div className="h-10 px-4 flex items-center justify-center font-black text-xs hl-mono text-emerald-600 bg-emerald-50 rounded-[.5rem]">
                   {page} / {productsData.pages}
                 </div>
-                <button 
+                <button
                   onClick={() => setPage(p => Math.min(productsData.pages, p + 1))}
                   disabled={page === productsData.pages}
                   className="h-10 px-4 bg-white border border-slate-200 rounded-[.5rem] text-[10px] font-black uppercase tracking-widest hover:bg-slate-50 disabled:opacity-40 transition-all"
@@ -375,7 +435,7 @@ export default function ProductsPage() {
 
 function ProductForm({ onClose }: { onClose: () => void }) {
   const queryClient = useQueryClient()
-  const [form, setForm] = useState({ 
+  const [form, setForm] = useState({
     name: '', category: 'Groceries', buyingPrice: '', price: '', stock: '',
     imageUrl: '', file: null as File | null, isPerishable: false, expiryDate: '', type: 'GOOD'
   })
@@ -386,7 +446,7 @@ function ProductForm({ onClose }: { onClose: () => void }) {
       const payload = { ...data };
       delete payload.file;
       if (data.file) delete payload.imageUrl;
-      
+
       const res = await inventoryApi.create(payload);
       if (data.file && res.data?.id) {
         await inventoryApi.uploadImage(res.data.id, data.file);
@@ -405,7 +465,7 @@ function ProductForm({ onClose }: { onClose: () => void }) {
   return (
     <div className="space-y-6 pb-20">
       <div className="flex flex-col items-center gap-4">
-        <div 
+        <div
           onClick={() => document.getElementById('image-upload')?.click()}
           className="h-32 w-32 rounded-[.5rem] bg-slate-50 border-4 border-dashed border-slate-200 flex items-center justify-center overflow-hidden cursor-pointer hover:border-emerald-500 hover:bg-emerald-50 transition-all group relative"
         >
@@ -422,11 +482,11 @@ function ProductForm({ onClose }: { onClose: () => void }) {
               <span className="text-[10px] font-black uppercase tracking-widest">Upload Image</span>
             </div>
           )}
-          <input 
-            id="image-upload" 
-            type="file" 
-            accept="image/*" 
-            className="hidden" 
+          <input
+            id="image-upload"
+            type="file"
+            accept="image/*"
+            className="hidden"
             onChange={(e) => {
               const file = e.target.files?.[0]
               if (file) {
@@ -438,7 +498,7 @@ function ProductForm({ onClose }: { onClose: () => void }) {
           />
         </div>
         {form.imageUrl && (
-          <button 
+          <button
             type="button"
             onClick={() => setForm({ ...form, imageUrl: '', file: null })}
             className="text-[9px] font-black text-red-500 uppercase tracking-widest hover:underline"
@@ -452,32 +512,93 @@ function ProductForm({ onClose }: { onClose: () => void }) {
 
       <div className="space-y-2">
         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Category</label>
-        <select 
+        <select
           value={form.category}
           onChange={(e) => setForm({ ...form, category: e.target.value })}
           className="hl-select"
         >
-           {[
-                'Retail Store', 'Wholesale Shop', 'Supermarket', 'Mini Mart', 'Pharmacy','Garage', 'Car Yard', 'Car Wash',
-                'Agrovet', 'Hardware Store', 'Electronics Shop', 'Mobile Phone Shop', 'Fashion & Boutique',
-                'Restaurant', 'Cafe', 'Bakery', 'Fast Food', 'Hotel', 'Guest House', 'Lounge & Bar', 'Catering Services',
-                'Barber Shop', 'Salon', 'Spa & Beauty', 'Cosmetics Shop',
-                'Consultancy', 'Accounting & Tax Services', 'Legal Services', 'Insurance Agency',
-                'Real Estate Agency', 'Marketing Agency', 'Cyber Cafe', 'Printing & Branding',
-                'Electrical Services', 'Plumbing Services', 'Mechanic Garage', 'Car Wash',
-                'Welding & Fabrication', 'Construction Services', 'Interior Design',
-                'Software Development', 'IT Services', 'Cyber Security', 'Internet Service Provider', 'Digital Agency',
-                'Daycare', 'School', 'College', 'University', 'Training Centre', 'Driving School',
-                'Hospital', 'Clinic', 'Dental Clinic', 'Optical Clinic', 'Veterinary Clinic',
-                'Manufacturing', 'Tailoring & Fashion Design', 'Furniture Workshop', 'Art & Craft Business',
-                'Farm', 'Dairy Business', 'Poultry Farm', 'Agricultural Cooperative',
-                'Transport Services', 'Courier Services', 'Travel Agency',
-                'SACCO', 'Microfinance', 'Financial Services',
-                'Church', 'Mosque', 'NGO', 'Community Organization',
-                'E-commerce Business', 'Online Business', 'Freelancer', 'Other',
-               ].map(c => (
-             <option key={c}>{c}</option>
-           ))}
+          {[
+            'Accounting & Tax Services',
+            'Agrovet',
+            'Agricultural Cooperative',
+            'Art & Craft Business',
+            'Bakery',
+            'Barber Shop',
+            'Cafe',
+            'Car Wash',
+            'Car Yard',
+            'Catering Services',
+            'Church',
+            'Clinic',
+            'College',
+            'Community Organization',
+            'Construction Services',
+            'Consultancy',
+            'Cosmetics Shop',
+            'Courier Services',
+            'Cyber Cafe',
+            'Cyber Security',
+            'Dairy Business',
+            'Daycare',
+            'Dental Clinic',
+            'Digital Agency',
+            'Driving School',
+            'E-commerce Business',
+            'Electrical Services',
+            'Electronics Shop',
+            'Farm',
+            'Fashion & Boutique',
+            'Fast Food',
+            'Financial Services',
+            'Freelancer',
+            'Furniture Workshop',
+            'Garage',
+            'Guest House',
+            'Hardware Store',
+            'Hospital',
+            'Hotel',
+            'Insurance Agency',
+            'Interior Design',
+            'Internet Service Provider',
+            'IT Services',
+            'Legal Services',
+            'Lounge & Bar',
+            'Manufacturing',
+            'Marketing Agency',
+            'Mechanic Garage',
+            'Microfinance',
+            'Mini Mart',
+            'Mobile Phone Shop',
+            'Mosque',
+            'NGO',
+            'Online Business',
+            'Optical Clinic',
+            'Other',
+            'Pharmacy',
+            'Plumbing Services',
+            'Poultry Farm',
+            'Printing & Branding',
+            'Real Estate Agency',
+            'Restaurant',
+            'Retail Store',
+            'SACCO',
+            'Salon',
+            'School',
+            'Software Development',
+            'Spa & Beauty',
+            'Supermarket',
+            'Tailoring & Fashion Design',
+            'Training Centre',
+            'Transport Services',
+            'Travel Agency',
+            'University',
+            'Veterinary Clinic',
+            'Welding & Fabrication',
+            'Wholesale Shop'
+          ]
+            .map(c => (
+              <option key={c}>{c}</option>
+            ))}
         </select>
       </div>
       <div className="grid grid-cols-2 gap-4">
@@ -487,26 +608,26 @@ function ProductForm({ onClose }: { onClose: () => void }) {
 
       <div className="space-y-2">
         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Product Type</label>
-        <select 
+        <select
           value={form.type}
           onChange={(e) => setForm({ ...form, type: e.target.value })}
           className="w-full bg-slate-50 border-none rounded-[.5rem] py-4 px-4 outline-none focus:ring-4 focus:ring-emerald-500/5 transition-all font-bold appearance-none text-sm"
         >
-           <option value="GOOD">Physical Good (Track Stock)</option>
-           <option value="SERVICE">Service (Barber, Consult, etc)</option>
+          <option value="GOOD">Physical Good (Track Stock)</option>
+          <option value="SERVICE">Service (Barber, Consult, etc)</option>
         </select>
       </div>
 
       {form.type === 'GOOD' && (
         <InputGroup label="Initial Stock" placeholder="0" mono value={form.stock} onChange={(v: string) => setForm({ ...form, stock: v })} />
       )}
-      
+
       {form.type === 'GOOD' && (
         <div className="flex items-center gap-3 bg-slate-50 p-4 rounded-[.5rem] border border-slate-100 mt-4">
-          <input 
-            type="checkbox" 
-            id="isPerishableAdd" 
-            checked={form.isPerishable} 
+          <input
+            type="checkbox"
+            id="isPerishableAdd"
+            checked={form.isPerishable}
             onChange={(e) => setForm({ ...form, isPerishable: e.target.checked })}
             className="h-4 w-4 accent-emerald-600 rounded border-slate-300"
           />
@@ -517,29 +638,29 @@ function ProductForm({ onClose }: { onClose: () => void }) {
       {form.type === 'GOOD' && form.isPerishable && (
         <div className="space-y-2 animate-in fade-in slide-in-from-top-2">
           <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Expiry Date</label>
-          <input 
-            type="date" 
+          <input
+            type="date"
             value={form.expiryDate}
             onChange={(e) => setForm({ ...form, expiryDate: e.target.value })}
             className="w-full bg-slate-50 border-none rounded-[.5rem] py-4 px-4 outline-none focus:ring-4 focus:ring-emerald-500/5 transition-all font-bold text-sm hl-mono"
           />
         </div>
       )}
-      
-      <button 
-       onClick={() => {
-         if (!form.name || !form.price) return toast.error('Name and Price are required')
-         mutation.mutate({
-           ...form,
-           price: parseFloat(form.price) || 0,
-           buyingPrice: parseFloat(form.buyingPrice) || 0,
-           stock: parseInt(form.stock) || 0,
-           isPerishable: form.isPerishable,
-           expiryDate: form.expiryDate || undefined
-         })
-       }}
-       disabled={mutation.isPending}
-       className="w-full py-5 mt-6 bg-[#0D4A3E] text-white rounded-[.5rem] font-black text-xs uppercase tracking-widest hover:bg-[#0A3D33] transition-all shadow-2xl shadow-emerald-900/20 flex items-center justify-center"
+
+      <button
+        onClick={() => {
+          if (!form.name || !form.price) return toast.error('Name and Price are required')
+          mutation.mutate({
+            ...form,
+            price: parseFloat(form.price) || 0,
+            buyingPrice: parseFloat(form.buyingPrice) || 0,
+            stock: parseInt(form.stock) || 0,
+            isPerishable: form.isPerishable,
+            expiryDate: form.expiryDate || undefined
+          })
+        }}
+        disabled={mutation.isPending}
+        className="w-full py-5 mt-6 bg-[#0D4A3E] text-white rounded-[.5rem] font-black text-xs uppercase tracking-widest hover:bg-[#0A3D33] transition-all shadow-2xl shadow-emerald-900/20 flex items-center justify-center"
       >
         {mutation.isPending ? 'Saving...' : 'Save Inventory Item'}
       </button>
@@ -550,12 +671,12 @@ function ProductForm({ onClose }: { onClose: () => void }) {
 
 function EditProductForm({ product, onClose }: { product: any; onClose: () => void }) {
   const queryClient = useQueryClient()
-  const [form, setForm] = useState({ 
-    name: product.name, 
-    category: product.category, 
+  const [form, setForm] = useState({
+    name: product.name,
+    category: product.category,
     type: product.type || 'GOOD',
-    buyingPrice: product.buyingPrice?.toString() || '', 
-    price: product.price?.toString() || '', 
+    buyingPrice: product.buyingPrice?.toString() || '',
+    price: product.price?.toString() || '',
     stock: product.stockLevel?.toString() || '',
     imageUrl: product.imageUrl || '',
     file: null as File | null,
@@ -568,7 +689,7 @@ function EditProductForm({ product, onClose }: { product: any; onClose: () => vo
       const payload = { ...data };
       delete payload.file;
       if (data.file) delete payload.imageUrl;
-      
+
       const res = await inventoryApi.update(product.id, payload);
       if (data.file) {
         await inventoryApi.uploadImage(product.id, data.file);
@@ -587,7 +708,7 @@ function EditProductForm({ product, onClose }: { product: any; onClose: () => vo
   return (
     <div className="space-y-6 pb-20">
       <div className="flex flex-col items-center gap-4">
-        <div 
+        <div
           onClick={() => document.getElementById('image-edit-upload')?.click()}
           className="h-32 w-32 rounded-[.5rem] bg-slate-50 border-4 border-dashed border-slate-200 flex items-center justify-center overflow-hidden cursor-pointer hover:border-emerald-500 hover:bg-emerald-50 transition-all group relative"
         >
@@ -604,11 +725,11 @@ function EditProductForm({ product, onClose }: { product: any; onClose: () => vo
               <span className="text-[10px] font-black uppercase tracking-widest">Upload Image</span>
             </div>
           )}
-          <input 
-            id="image-edit-upload" 
-            type="file" 
-            accept="image/*" 
-            className="hidden" 
+          <input
+            id="image-edit-upload"
+            type="file"
+            accept="image/*"
+            className="hidden"
             onChange={(e) => {
               const file = e.target.files?.[0]
               if (file) {
@@ -620,7 +741,7 @@ function EditProductForm({ product, onClose }: { product: any; onClose: () => vo
           />
         </div>
         {form.imageUrl && (
-          <button 
+          <button
             type="button"
             onClick={() => setForm({ ...form, imageUrl: '', file: null })}
             className="text-[9px] font-black text-red-500 uppercase tracking-widest hover:underline"
@@ -634,61 +755,121 @@ function EditProductForm({ product, onClose }: { product: any; onClose: () => vo
 
       <div className="space-y-2">
         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Category</label>
-        <select 
+        <select
           value={form.category}
           onChange={(e) => setForm({ ...form, category: e.target.value })}
           className="hl-select"
         >
-           {[
-                'Retail Store', 'Wholesale Shop', 'Supermarket', 'Mini Mart', 'Pharmacy','Garage', 'Car Yard', 'Car Wash',
-                'Agrovet', 'Hardware Store', 'Electronics Shop', 'Mobile Phone Shop', 'Fashion & Boutique',
-                'Restaurant', 'Cafe', 'Bakery', 'Fast Food', 'Hotel', 'Guest House', 'Lounge & Bar', 'Catering Services',
-                'Barber Shop', 'Salon', 'Spa & Beauty', 'Cosmetics Shop',
-                'Consultancy', 'Accounting & Tax Services', 'Legal Services', 'Insurance Agency',
-                'Real Estate Agency', 'Marketing Agency', 'Cyber Cafe', 'Printing & Branding',
-                'Electrical Services', 'Plumbing Services', 'Mechanic Garage', 'Car Wash',
-                'Welding & Fabrication', 'Construction Services', 'Interior Design',
-                'Software Development', 'IT Services', 'Cyber Security', 'Internet Service Provider', 'Digital Agency',
-                'Daycare', 'School', 'College', 'University', 'Training Centre', 'Driving School',
-                'Hospital', 'Clinic', 'Dental Clinic', 'Optical Clinic', 'Veterinary Clinic',
-                'Manufacturing', 'Tailoring & Fashion Design', 'Furniture Workshop', 'Art & Craft Business',
-                'Farm', 'Dairy Business', 'Poultry Farm', 'Agricultural Cooperative',
-                'Transport Services', 'Courier Services', 'Travel Agency',
-                'SACCO', 'Microfinance', 'Financial Services',
-                'Church', 'Mosque', 'NGO', 'Community Organization',
-                'E-commerce Business', 'Online Business', 'Freelancer', 'Other',
-               ].map(c => (
-             <option key={c}>{c}</option>
-           ))}
+          {[[
+            'Accounting & Tax Services',
+            'Agrovet',
+            'Agricultural Cooperative',
+            'Art & Craft Business',
+            'Bakery',
+            'Barber Shop',
+            'Cafe',
+            'Car Wash',
+            'Car Yard',
+            'Catering Services',
+            'Church',
+            'Clinic',
+            'College',
+            'Community Organization',
+            'Construction Services',
+            'Consultancy',
+            'Cosmetics Shop',
+            'Courier Services',
+            'Cyber Cafe',
+            'Cyber Security',
+            'Dairy Business',
+            'Daycare',
+            'Dental Clinic',
+            'Digital Agency',
+            'Driving School',
+            'E-commerce Business',
+            'Electrical Services',
+            'Electronics Shop',
+            'Farm',
+            'Fashion & Boutique',
+            'Fast Food',
+            'Financial Services',
+            'Freelancer',
+            'Furniture Workshop',
+            'Garage',
+            'Guest House',
+            'Hardware Store',
+            'Hospital',
+            'Hotel',
+            'Insurance Agency',
+            'Interior Design',
+            'Internet Service Provider',
+            'IT Services',
+            'Legal Services',
+            'Lounge & Bar',
+            'Manufacturing',
+            'Marketing Agency',
+            'Mechanic Garage',
+            'Microfinance',
+            'Mini Mart',
+            'Mobile Phone Shop',
+            'Mosque',
+            'NGO',
+            'Online Business',
+            'Optical Clinic',
+            'Other',
+            'Pharmacy',
+            'Plumbing Services',
+            'Poultry Farm',
+            'Printing & Branding',
+            'Real Estate Agency',
+            'Restaurant',
+            'Retail Store',
+            'SACCO',
+            'Salon',
+            'School',
+            'Software Development',
+            'Spa & Beauty',
+            'Supermarket',
+            'Tailoring & Fashion Design',
+            'Training Centre',
+            'Transport Services',
+            'Travel Agency',
+            'University',
+            'Veterinary Clinic',
+            'Welding & Fabrication',
+            'Wholesale Shop'
+          ].map(c => (
+            <option key={c}>{c}</option>
+          ))}
         </select>
       </div>
       <div className="grid grid-cols-2 gap-4">
         <InputGroup label="Buying Price" placeholder="0.00" mono value={form.buyingPrice} onChange={(v: string) => setForm({ ...form, buyingPrice: v })} />
         <InputGroup label="Selling Price" placeholder="0.00" mono value={form.price} onChange={(v: string) => setForm({ ...form, price: v })} />
       </div>
-      
+
       <div className="space-y-2">
         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Product Type</label>
-        <select 
+        <select
           value={form.type}
           onChange={(e) => setForm({ ...form, type: e.target.value })}
           className="w-full bg-slate-50 border-none rounded-[.5rem] py-4 px-4 outline-none focus:ring-4 focus:ring-emerald-500/5 transition-all font-bold appearance-none text-sm"
         >
-           <option value="GOOD">Physical Good (Track Stock)</option>
-           <option value="SERVICE">Service (Barber, Consult, etc)</option>
+          <option value="GOOD">Physical Good (Track Stock)</option>
+          <option value="SERVICE">Service (Barber, Consult, etc)</option>
         </select>
       </div>
 
       {form.type === 'GOOD' && (
         <InputGroup label="Current Stock" placeholder="0" mono value={form.stock} onChange={(v: string) => setForm({ ...form, stock: v })} />
       )}
-      
+
       {form.type === 'GOOD' && (
         <div className="flex items-center gap-3 bg-slate-50 p-4 rounded-[.5rem] border border-slate-100 mt-4">
-          <input 
-            type="checkbox" 
-            id="isPerishableEdit" 
-            checked={form.isPerishable} 
+          <input
+            type="checkbox"
+            id="isPerishableEdit"
+            checked={form.isPerishable}
             onChange={(e) => setForm({ ...form, isPerishable: e.target.checked })}
             className="h-4 w-4 accent-emerald-600 rounded border-slate-300"
           />
@@ -699,28 +880,28 @@ function EditProductForm({ product, onClose }: { product: any; onClose: () => vo
       {form.type === 'GOOD' && form.isPerishable && (
         <div className="space-y-2 animate-in fade-in slide-in-from-top-2">
           <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Expiry Date</label>
-          <input 
-            type="date" 
+          <input
+            type="date"
             value={form.expiryDate}
             onChange={(e) => setForm({ ...form, expiryDate: e.target.value })}
             className="w-full bg-slate-50 border-none rounded-[.5rem] py-4 px-4 outline-none focus:ring-4 focus:ring-emerald-500/5 transition-all font-bold text-sm hl-mono"
           />
         </div>
       )}
-      
-      <button 
-       onClick={() => {
-         mutation.mutate({
-           ...form,
-           price: parseFloat(form.price) || 0,
-           buyingPrice: parseFloat(form.buyingPrice) || 0,
-           stock: parseInt(form.stock) || 0,
-           isPerishable: form.isPerishable,
-           expiryDate: form.expiryDate || undefined
-         })
-       }}
-       disabled={mutation.isPending}
-       className="w-full py-5 mt-6 bg-[#0D4A3E] text-white rounded-[.5rem] font-black text-xs uppercase tracking-widest hover:bg-[#0A3D33] transition-all shadow-2xl shadow-emerald-900/20 flex items-center justify-center"
+
+      <button
+        onClick={() => {
+          mutation.mutate({
+            ...form,
+            price: parseFloat(form.price) || 0,
+            buyingPrice: parseFloat(form.buyingPrice) || 0,
+            stock: parseInt(form.stock) || 0,
+            isPerishable: form.isPerishable,
+            expiryDate: form.expiryDate || undefined
+          })
+        }}
+        disabled={mutation.isPending}
+        className="w-full py-5 mt-6 bg-[#0D4A3E] text-white rounded-[.5rem] font-black text-xs uppercase tracking-widest hover:bg-[#0A3D33] transition-all shadow-2xl shadow-emerald-900/20 flex items-center justify-center"
       >
         {mutation.isPending ? 'Updating...' : 'Update Product Details'}
       </button>
@@ -755,12 +936,12 @@ function InputGroup({ label, placeholder, mono = false, value, onChange }: any) 
   return (
     <div className="space-y-2">
       <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{label}</label>
-      <input 
-        type="text" 
+      <input
+        type="text"
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className={`w-full bg-gray-50 border-none rounded-[.5rem] py-4 px-4 outline-none focus:ring-2 focus:ring-emerald-500/10 transition-all text-sm font-bold ${mono ? 'hl-mono text-[#0D4A3E]' : ''}`} 
+        className={`w-full bg-gray-50 border-none rounded-[.5rem] py-4 px-4 outline-none focus:ring-2 focus:ring-emerald-500/10 transition-all text-sm font-bold ${mono ? 'hl-mono text-[#0D4A3E]' : ''}`}
       />
     </div>
   )
