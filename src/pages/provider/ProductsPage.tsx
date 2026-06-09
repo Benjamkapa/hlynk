@@ -457,7 +457,25 @@ function ProductForm({ onClose }: { onClose: () => void }) {
           onChange={(e) => setForm({ ...form, category: e.target.value })}
           className="hl-select"
         >
-           {['Groceries', 'Bakery', 'Dairy', 'Hardware', 'Electronics', 'Clothing', 'Services', 'Other'].map(c => (
+           {[
+                'Retail Store', 'Wholesale Shop', 'Supermarket', 'Mini Mart', 'Pharmacy',
+                'Agrovet', 'Hardware Store', 'Electronics Shop', 'Mobile Phone Shop', 'Fashion & Boutique',
+                'Restaurant', 'Cafe', 'Bakery', 'Fast Food', 'Hotel', 'Guest House', 'Lounge & Bar', 'Catering Services',
+                'Barber Shop', 'Salon', 'Spa & Beauty', 'Cosmetics Shop',
+                'Consultancy', 'Accounting & Tax Services', 'Legal Services', 'Insurance Agency',
+                'Real Estate Agency', 'Marketing Agency', 'Cyber Cafe', 'Printing & Branding',
+                'Electrical Services', 'Plumbing Services', 'Mechanic Garage', 'Car Wash',
+                'Welding & Fabrication', 'Construction Services', 'Interior Design',
+                'Software Development', 'IT Services', 'Cyber Security', 'Internet Service Provider', 'Digital Agency',
+                'Daycare', 'School', 'College', 'University', 'Training Centre', 'Driving School',
+                'Hospital', 'Clinic', 'Dental Clinic', 'Optical Clinic', 'Veterinary Clinic',
+                'Manufacturing', 'Tailoring & Fashion Design', 'Furniture Workshop', 'Art & Craft Business',
+                'Farm', 'Dairy Business', 'Poultry Farm', 'Agricultural Cooperative',
+                'Transport Services', 'Courier Services', 'Travel Agency',
+                'SACCO', 'Microfinance', 'Financial Services',
+                'Church', 'Mosque', 'NGO', 'Community Organization',
+                'E-commerce Business', 'Online Business', 'Freelancer', 'Other',
+               ].map(c => (
              <option key={c}>{c}</option>
            ))}
         </select>
