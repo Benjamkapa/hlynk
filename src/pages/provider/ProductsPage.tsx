@@ -148,7 +148,7 @@ export default function ProductsPage() {
              >
                <option value="">All Categories</option>
                {[
-                'Retail Store', 'Wholesale Shop', 'Supermarket', 'Mini Mart', 'Pharmacy',
+                'Retail Store', 'Wholesale Shop', 'Supermarket', 'Mini Mart', 'Pharmacy','Garage', 'Car Yard', 'Car Wash',
                 'Agrovet', 'Hardware Store', 'Electronics Shop', 'Mobile Phone Shop', 'Fashion & Boutique',
                 'Restaurant', 'Cafe', 'Bakery', 'Fast Food', 'Hotel', 'Guest House', 'Lounge & Bar', 'Catering Services',
                 'Barber Shop', 'Salon', 'Spa & Beauty', 'Cosmetics Shop',
@@ -458,7 +458,7 @@ function ProductForm({ onClose }: { onClose: () => void }) {
           className="hl-select"
         >
            {[
-                'Retail Store', 'Wholesale Shop', 'Supermarket', 'Mini Mart', 'Pharmacy',
+                'Retail Store', 'Wholesale Shop', 'Supermarket', 'Mini Mart', 'Pharmacy','Garage', 'Car Yard', 'Car Wash',
                 'Agrovet', 'Hardware Store', 'Electronics Shop', 'Mobile Phone Shop', 'Fashion & Boutique',
                 'Restaurant', 'Cafe', 'Bakery', 'Fast Food', 'Hotel', 'Guest House', 'Lounge & Bar', 'Catering Services',
                 'Barber Shop', 'Salon', 'Spa & Beauty', 'Cosmetics Shop',
@@ -640,7 +640,7 @@ function EditProductForm({ product, onClose }: { product: any; onClose: () => vo
           className="hl-select"
         >
            {[
-                'Retail Store', 'Wholesale Shop', 'Supermarket', 'Mini Mart', 'Pharmacy',
+                'Retail Store', 'Wholesale Shop', 'Supermarket', 'Mini Mart', 'Pharmacy','Garage', 'Car Yard', 'Car Wash',
                 'Agrovet', 'Hardware Store', 'Electronics Shop', 'Mobile Phone Shop', 'Fashion & Boutique',
                 'Restaurant', 'Cafe', 'Bakery', 'Fast Food', 'Hotel', 'Guest House', 'Lounge & Bar', 'Catering Services',
                 'Barber Shop', 'Salon', 'Spa & Beauty', 'Cosmetics Shop',

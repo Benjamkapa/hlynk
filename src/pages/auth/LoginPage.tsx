@@ -26,7 +26,7 @@ const COUNTIES = [
 ]
 
 const CATEGORIES = [
-  'Retail Store', 'Wholesale Shop', 'Supermarket', 'Mini Mart', 'Pharmacy',
+  'Retail Store', 'Wholesale Shop', 'Supermarket', 'Mini Mart', 'Pharmacy','Garage', 'Car Yard', 'Car Wash',
   'Agrovet', 'Hardware Store', 'Electronics Shop', 'Mobile Phone Shop', 'Fashion & Boutique',
   'Restaurant', 'Cafe', 'Bakery', 'Fast Food', 'Hotel', 'Guest House', 'Lounge & Bar', 'Catering Services',
   'Barber Shop', 'Salon', 'Spa & Beauty', 'Cosmetics Shop',
