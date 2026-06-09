@@ -67,7 +67,7 @@ function ReviewCard({ review }: { review: any }) {
         "{review.comment}"
       </p>
       {review.businessName && (
-        <div className="text-[10px] font-black text-white/50 tracking-[0.2em] uppercase">
+        <div className="text-[10px] font-black text-white/50 tracking-[0.2em] capitalize">
           {review.businessName}
         </div>
       )}
@@ -637,7 +637,7 @@ export default function LoginPage() {
                     <form onSubmit={handleRegistrationSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 0 }} className="innerSection">
                       <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginBottom: 28 }}>
                         <Field label="Biashara Name" icon={Building2}>
-                          <input type="text" value={formData.businessName} onChange={e => setFormData({ ...formData, businessName: e.target.value })} className={inputCls} placeholder="e.g. Mama Mboga Pro" required />
+                          <input type="text" value={formData.businessName} onChange={e => setFormData({ ...formData, businessName: e.target.value })} className={inputCls} placeholder="e.g. John's Shop" required />
                         </Field>
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                           <Field label="County" icon={MapPin}>
@@ -654,7 +654,7 @@ export default function LoginPage() {
                           </Field>
                         </div>
                         <Field label="Town / Area" icon={MapPin}>
-                          <input type="text" value={formData.location} onChange={e => setFormData({ ...formData, location: e.target.value })} className={inputCls} placeholder="e.g. Westlands, Nairobi" required />
+                          <input type="text" value={formData.location} onChange={e => setFormData({ ...formData, location: e.target.value })} className={inputCls} placeholder="e.g. Utoma, Beirut" required />
                         </Field>
                         <Field label="M-Pesa Number" icon={Phone}>
                           <input type="tel" value={formData.phone} onChange={e => setFormData({ ...formData, phone: e.target.value })} className={inputCls} placeholder="07xx xxx xxx" required />
