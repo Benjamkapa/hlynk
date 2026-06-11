@@ -40,103 +40,103 @@ export default function ProvidersPage() {
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500 pt-6">
-      
+
       <div className="flex justify-between items-end">
         <div>
           <h1 className="text-3xl font-black text-gray-900 tracking-tight">Business Oversight</h1>
           <p className="text-gray-500 font-medium">Platform growth trajectory and vendor account management</p>
         </div>
         <div className="flex gap-4">
-           <div className="hidden lg:flex items-center gap-2 bg-emerald-50 text-emerald-700 px-4 py-2 rounded-lg border border-emerald-100 animate-pulse">
-              <Bell size={14} />
-              <span className="text-[10px] font-black uppercase tracking-widest">Live Registration Stream</span>
-           </div>
-           <button 
-             onClick={() => setIsAddModalOpen(true)} 
-             className="bg-[#0D4A3E] text-white h-12 px-6 rounded-md font-bold text-sm hover:bg-[#0A3D33] transition-all flex items-center gap-2 shadow-xl shadow-emerald-950/20"
-           >
-             <Plus size={18} /> Add Business
-           </button>
+          <div className="hidden lg:flex items-center gap-2 bg-emerald-50 text-emerald-700 px-4 py-2 rounded-lg border border-emerald-100 animate-pulse">
+            <Bell size={14} />
+            <span className="text-[10px] font-black uppercase tracking-widest">Live Registration Stream</span>
+          </div>
+          <button
+            onClick={() => setIsAddModalOpen(true)}
+            className="bg-[#0D4A3E] text-white h-12 px-6 rounded-md font-bold text-sm hover:bg-[#0A3D33] transition-all flex items-center gap-2 shadow-xl shadow-emerald-950/20"
+          >
+            <Plus size={18} /> Add Business
+          </button>
         </div>
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-4 gap-8">
-         <div className="xl:col-span-3 bg-white p-8 rounded-2xl border border-gray-100 shadow-sm">
-            <div className="flex justify-between items-center mb-8">
-               <div>
-                  <h3 className="text-xl font-black text-gray-900">New Users Trajectory</h3>
-                  <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">Global platform registration flow (8 Weeks)</p>
-               </div>
-               <div className="h-10 w-10 rounded-xl bg-slate-50 flex items-center justify-center text-emerald-600">
-                  <TrendingUp size={20} />
-               </div>
+        <div className="xl:col-span-3 bg-white p-8 rounded-2xl border border-gray-100 shadow-sm">
+          <div className="flex justify-between items-center mb-8">
+            <div>
+              <h3 className="text-xl font-black text-gray-900">New Users Trajectory</h3>
+              <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">Global platform registration flow (8 Weeks)</p>
             </div>
-            <div className="h-[250px] w-full">
-               <ResponsiveContainer width="100%" height="100%" minWidth={0}>
-                  <LineChart data={weeklyGrowth} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-                     <CartesianGrid strokeDasharray="0" vertical={false} stroke="#F8FAFC" />
-                     <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fontSize: 9, fill: '#CBD5E1', fontWeight: 700, fontFamily: 'JetBrains Mono'}} dy={15} />
-                     <YAxis axisLine={false} tickLine={false} tick={{fontSize: 9, fill: '#CBD5E1', fontWeight: 700, fontFamily: 'JetBrains Mono'}} dx={-10} />
-                     <Tooltip 
-                       cursor={{ stroke: '#F1F5F9', strokeWidth: 1 }}
-                       contentStyle={{ borderRadius: '12px', border: '1px solid #f1f5f9', boxShadow: '0 20px 40px -12px rgba(0,0,0,0.05)', padding: '12px 16px' }}
-                       itemStyle={{ fontWeight: 800, color: '#0D4A3E', fontFamily: 'JetBrains Mono', fontSize: 11 }}
-                     />
-                     <Line 
-                       type="monotone" 
-                       dataKey="value" 
-                       stroke="#0D4A3E" 
-                       strokeWidth={1} 
-                       dot={false}
-                       activeDot={{ r: 4, fill: '#0D4A3E', strokeWidth: 2, stroke: '#fff' }}
-                     />
-                  </LineChart>
-               </ResponsiveContainer>
+            <div className="h-10 w-10 rounded-xl bg-slate-50 flex items-center justify-center text-emerald-600">
+              <TrendingUp size={20} />
             </div>
-         </div>
-         
-         <div className="space-y-6">
-            <StatsCard title="Total Businesses" value={stats?.overview?.totalProviders || 0} sub="Platform Tenants" icon={Landmark} color="emerald" />
-            <StatsCard title="Active Today" value={stats?.overview?.activeToday || 0} sub="On-Cloud Now" icon={Users} color="blue" />
-            <div className="bg-[#0D4A3E] p-6 rounded-2xl text-white relative overflow-hidden">
-               <div className="relative z-10">
-                  <p className="text-[9px] font-black text-emerald-400 uppercase tracking-widest mb-1">New Registration</p>
-                  <h4 className="text-sm font-black mb-4">Awaiting Verification</h4>
-                  <div className="p-3 bg-white/10 rounded-xl border border-white/10 mb-4 backdrop-blur-md">
-                     <p className="text-xs font-black">{stats?.recentRegistrations?.[0]?.name || 'No new entries'}</p>
-                     <p className="text-[9px] text-emerald-300 font-bold uppercase mt-1 hl-mono">{stats?.recentRegistrations?.[0]?.plan || 'LITE'} Plan</p>
-                  </div>
-                  <button className="w-full py-3 bg-emerald-500 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-emerald-400 transition-all">Review Application</button>
-               </div>
-               <Zap size={100} className="absolute -right-8 -bottom-8 opacity-5 -rotate-12" />
+          </div>
+          <div className="h-[250px] w-full">
+            <ResponsiveContainer width="100%" height="100%" minWidth={0}>
+              <LineChart data={weeklyGrowth} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="0" vertical={false} stroke="#F8FAFC" />
+                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 9, fill: '#CBD5E1', fontWeight: 700, fontFamily: 'JetBrains Mono' }} dy={15} />
+                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 9, fill: '#CBD5E1', fontWeight: 700, fontFamily: 'JetBrains Mono' }} dx={-10} />
+                <Tooltip
+                  cursor={{ stroke: '#F1F5F9', strokeWidth: 1 }}
+                  contentStyle={{ borderRadius: '12px', border: '1px solid #f1f5f9', boxShadow: '0 20px 40px -12px rgba(0,0,0,0.05)', padding: '12px 16px' }}
+                  itemStyle={{ fontWeight: 800, color: '#0D4A3E', fontFamily: 'JetBrains Mono', fontSize: 11 }}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="value"
+                  stroke="#0D4A3E"
+                  strokeWidth={1}
+                  dot={false}
+                  activeDot={{ r: 4, fill: '#0D4A3E', strokeWidth: 2, stroke: '#fff' }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        <div className="space-y-6">
+          <StatsCard title="Total Businesses" value={stats?.overview?.totalProviders || 0} sub="Platform Tenants" icon={Landmark} color="emerald" />
+          <StatsCard title="Active Today" value={stats?.overview?.activeToday || 0} sub="On-Cloud Now" icon={Users} color="blue" />
+          <div className="bg-[#0D4A3E] p-6 rounded-2xl text-white relative overflow-hidden">
+            <div className="relative z-10">
+              <p className="text-[9px] font-black text-emerald-400 uppercase tracking-widest mb-1">New Registration</p>
+              <h4 className="text-sm font-black mb-4">Awaiting Verification</h4>
+              <div className="p-3 bg-white/10 rounded-xl border border-white/10 mb-4 backdrop-blur-md">
+                <p className="text-xs font-black">{stats?.recentRegistrations?.[0]?.name || 'No new entries'}</p>
+                <p className="text-[9px] text-emerald-300 font-bold uppercase mt-1 hl-mono">{stats?.recentRegistrations?.[0]?.plan || 'LITE'} Plan</p>
+              </div>
+              <button className="w-full py-3 bg-emerald-500 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-emerald-400 transition-all">Review Application</button>
             </div>
-         </div>
+            <Zap size={100} className="absolute -right-8 -bottom-8 opacity-5 -rotate-12" />
+          </div>
+        </div>
       </div>
 
       <div className="bg-white rounded-lg border border-gray-100 shadow-sm overflow-hidden">
         <div className="p-8 border-b border-gray-50 flex flex-wrap items-center justify-between gap-6 bg-white">
           <div className="flex items-center gap-3">
-             <div className="h-10 w-10 rounded-xl bg-[#0D4A3E] text-white flex items-center justify-center shadow-lg">
-                <LayoutGrid size={20} />
-             </div>
-             <div>
-                <h3 className="text-lg font-black text-slate-900">Provider Registry</h3>
-                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Manage Tenant Lifecycle</p>
-             </div>
+            <div className="h-10 w-10 rounded-xl bg-[#0D4A3E] text-white flex items-center justify-center shadow-lg">
+              <LayoutGrid size={20} />
+            </div>
+            <div>
+              <h3 className="text-lg font-black text-slate-900">Provider Registry</h3>
+              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Manage Tenant Lifecycle</p>
+            </div>
           </div>
           <div className="flex flex-wrap gap-4 flex-1 justify-end">
             <div className="relative w-full md:w-80">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-              <input 
-                type="text" 
-                placeholder="Search by name, slug or phone..." 
+              <input
+                type="text"
+                placeholder="Search by name, slug or phone..."
                 value={search}
                 onChange={(e) => handleFilterChange(setSearch, e.target.value)}
-                className="w-full bg-slate-50 border-none rounded-xl py-3.5 pl-12 pr-4 outline-none focus:ring-2 focus:ring-emerald-500/10 transition-all text-sm font-bold" 
+                className="w-full bg-slate-50 border-none rounded-xl py-3.5 pl-12 pr-4 outline-none focus:ring-2 focus:ring-emerald-500/10 transition-all text-sm font-bold"
               />
             </div>
-            <select 
-              value={status} 
+            <select
+              value={status}
               onChange={(e) => handleFilterChange(setStatus, e.target.value)}
               className="bg-slate-50 border-none rounded-xl px-4 py-3.5 text-sm font-bold outline-none focus:ring-2 focus:ring-emerald-500/10 min-w-[140px] transition-all"
             >
@@ -144,8 +144,8 @@ export default function ProvidersPage() {
               <option value="ACTIVE">Active</option>
               <option value="INACTIVE">Suspended</option>
             </select>
-            <select 
-              value={planName} 
+            <select
+              value={planName}
               onChange={(e) => handleFilterChange(setPlanName, e.target.value)}
               className="bg-slate-50 border-none rounded-xl px-4 py-3.5 text-sm font-bold outline-none focus:ring-2 focus:ring-emerald-500/10 min-w-[140px] transition-all"
             >
@@ -199,9 +199,8 @@ export default function ProvidersPage() {
                   </td>
                   <td className="px-8 py-5 text-right font-black text-gray-900 text-sm hl-mono">{p.usersCount || 0}</td>
                   <td className="px-8 py-5 text-center">
-                    <span className={`px-2 py-1 rounded-md text-[10px] font-black uppercase tracking-wider ${
-                      p.isActive ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'
-                    }`}>
+                    <span className={`px-2 py-1 rounded-md text-[10px] font-black uppercase tracking-wider ${p.isActive ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'
+                      }`}>
                       {p.isActive === 1 ? 'Active' : 'Suspended'}
                     </span>
                   </td>
@@ -220,23 +219,23 @@ export default function ProvidersPage() {
           </table>
         </div>
 
-        <Pagination 
-          page={page} 
-          pages={pagination.pages} 
-          total={pagination.total} 
+        <Pagination
+          page={page}
+          pages={pagination.pages}
+          total={pagination.total}
           onPageChange={setPage}
           label="Provider"
         />
       </div>
 
       <SlideOver isOpen={!!selectedProvider} onClose={() => setSelectedProvider(null)} title="Business Details">
-         {selectedProvider && (
-           <ProviderDetailsPanel provider={selectedProvider} onClose={() => setSelectedProvider(null)} />
-         )}
+        {selectedProvider && (
+          <ProviderDetailsPanel provider={selectedProvider} onClose={() => setSelectedProvider(null)} />
+        )}
       </SlideOver>
 
       <SlideOver isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} title="Onboard New Business">
-         <AddBusinessForm onClose={() => setIsAddModalOpen(false)} />
+        <AddBusinessForm onClose={() => setIsAddModalOpen(false)} />
       </SlideOver>
     </div>
   )
@@ -339,8 +338,8 @@ function ProviderDetailsPanel({ provider, onClose }: { provider: any, onClose: (
           </button>
         </div>
         {provider.primaryUserId && (
-          <button 
-            onClick={() => impersonateMutation.mutate()} 
+          <button
+            onClick={() => impersonateMutation.mutate()}
             disabled={impersonateMutation.isPending}
             className="w-full mt-2 py-4 bg-emerald-600 text-white rounded-xl font-black text-xs uppercase tracking-widest hover:bg-emerald-700 transition-all shadow-xl flex items-center justify-center gap-2"
           >
@@ -368,11 +367,11 @@ function ProviderDetailsPanel({ provider, onClose }: { provider: any, onClose: (
 
 function AddBusinessForm({ onClose }: { onClose: () => void }) {
   const queryClient = useQueryClient()
-  const [form, setForm] = useState({ 
-    businessName: '', 
-    ownerName: '', 
-    phone: '', 
-    email: '', 
+  const [form, setForm] = useState({
+    businessName: '',
+    ownerName: '',
+    phone: '',
+    email: '',
     category: 'Other',
     planName: 'LITE'
   })
@@ -393,7 +392,7 @@ function AddBusinessForm({ onClose }: { onClose: () => void }) {
         <InputGroup label="Business Name" placeholder="e.g. Quick Mart" value={form.businessName} onChange={(v: string) => setForm({ ...form, businessName: v })} />
         <InputGroup label="Owner Full Name" placeholder="e.g. John Doe" value={form.ownerName} onChange={(v: string) => setForm({ ...form, ownerName: v })} />
       </div>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <InputGroup label="Phone Number" placeholder="07... " mono value={form.phone} onChange={(v: string) => setForm({ ...form, phone: v })} />
         <InputGroup label="Email Address" placeholder="owner@business.com" value={form.email} onChange={(v: string) => setForm({ ...form, email: v })} />
@@ -402,23 +401,85 @@ function AddBusinessForm({ onClose }: { onClose: () => void }) {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="space-y-2">
           <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Business Category</label>
-          <select 
-            value={form.category} 
+          <select
+            value={form.category}
             onChange={(e) => setForm({ ...form, category: e.target.value })}
             className="w-full bg-gray-50 border-none rounded-md py-4 px-4 outline-none focus:ring-2 focus:ring-emerald-500/10 transition-all text-sm font-bold"
           >
+            <option value="Accounting & Tax Services">Accounting & Tax Services</option>
+            <option value="Agrovet">Agrovet</option>
+            <option value="Agricultural Cooperative">Agricultural Cooperative</option>
+            <option value="Art & Craft Business">Art & Craft Business</option>
+            <option value="Bakery">Bakery</option>
+            <option value="Barber Shop">Barber Shop</option>
+            <option value="Cafe">Cafe</option>
+            <option value="Car Wash">Car Wash</option>
+            <option value="Car Yard">Car Yard</option>
+            <option value="Catering Services">Catering Services</option>
+            <option value="Church">Church</option>
+            <option value="Clinic">Clinic</option>
+            <option value="College">College</option>
+            <option value="Community Organization">Community Organization</option>
+            <option value="Construction Services">Construction Services</option>
+            <option value="Consultancy">Consultancy</option>
+            <option value="Cosmetics Shop">Cosmetics Shop</option>
+            <option value="Courier Services">Courier Services</option>
+            <option value="Cyber Cafe">Cyber Cafe</option>
+            <option value="Cyber Security">Cyber Security</option>
+            <option value="Dairy Business">Dairy Business</option>
+            <option value="Daycare">Daycare</option>
+            <option value="Dental Clinic">Dental Clinic</option>
+            <option value="Digital Agency">Digital Agency</option>
+            <option value="Driving School">Driving School</option>
+            <option value="E-commerce Business">E-commerce Business</option>
+            <option value="Electrical Services">Electrical Services</option>
+            <option value="Electronics Shop">Electronics Shop</option>
+            <option value="Farm">Farm</option>
+            <option value="Fashion & Boutique">Fashion & Boutique</option>
+            <option value="Fast Food">Fast Food</option>
+            <option value="Financial Services">Financial Services</option>
+            <option value="Freelancer">Freelancer</option>
+            <option value="Furniture Workshop">Furniture Workshop</option>
+            <option value="Garage">Garage</option>
+            <option value="Guest House">Guest House</option>
+            <option value="Hardware Store">Hardware Store</option>
+            <option value="Hospital">Hospital</option>
+            <option value="Hotel">Hotel</option>
+            <option value="Insurance Agency">Insurance Agency</option>
+            <option value="Interior Design">Interior Design</option>
+            <option value="Internet Service Provider">Internet Service Provider</option>
+            <option value="IT Services">IT Services</option>
+            <option value="Legal Services">Legal Services</option>
+            <option value="Lounge & Bar">Lounge & Bar</option>
+            <option value="Manufacturing">Manufacturing</option>
+            <option value="Marketing Agency">Marketing Agency</option>
+            <option value="Mechanic Garage">Mechanic Garage</option>
+            <option value="Microfinance">Microfinance</option>
+            <option value="Mini Mart">Mini Mart</option>
+            <option value="Mobile Phone Shop">Mobile Phone Shop</option>
+            <option value="Mosque">Mosque</option>
+            <option value="NGO">NGO</option>
+            <option value="Online Business">Online Business</option>
+            <option value="Optical Clinic">Optical Clinic</option>
             <option value="Other">Other / General</option>
-            <option value="Salon">Salon & Barber</option>
-            <option value="Restaurant">Restaurant & Cafe</option>
-            <option value="Retail">Retail Shop</option>
-            <option value="Healthcare">Healthcare</option>
-            <option value="Professional">Professional Services</option>
+            <option value="Pharmacy">Pharmacy</option>
+            <option value="Plumbing Services">Plumbing Services</option>
+            <option value="Poultry Farm">Poultry Farm</option>
+            <option value="Printing & Branding">Printing & Branding</option>
+            <option value="Real Estate Agency">Real Estate Agency</option>
+            <option value="Restaurant">Restaurant</option>
+            <option value="Retail Store">Retail Store</option>
+            <option value="SACCO">SACCO</option>
+            <option value="Salon">Salon</option>
+            <option value="School">School</option>
+            <option value="Software Development">Software Development</option>
+            <option value="Spa & Beauty">Spa & Beauty</option>
           </select>
         </div>
         <div className="space-y-2">
           <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Onboarding Plan</label>
-          <select 
-            value={form.planName} 
+          <select
+            value={form.planName}
             onChange={(e) => setForm({ ...form, planName: e.target.value })}
             className="w-full bg-gray-50 border-none rounded-md py-4 px-4 outline-none focus:ring-2 focus:ring-emerald-500/10 transition-all text-sm font-bold"
           >
@@ -428,8 +489,8 @@ function AddBusinessForm({ onClose }: { onClose: () => void }) {
           </select>
         </div>
       </div>
-      
-      <button 
+
+      <button
         onClick={() => mutation.mutate(form)}
         disabled={mutation.isPending}
         className="w-full py-5 mt-6 bg-[#0D4A3E] text-white rounded-md font-black text-xs uppercase tracking-widest hover:bg-[#0A3D33] transition-all shadow-xl flex items-center justify-center"
@@ -445,12 +506,12 @@ function InputGroup({ label, placeholder, mono = false, value, onChange }: any) 
   return (
     <div className="space-y-2">
       <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{label}</label>
-      <input 
-        type="text" 
+      <input
+        type="text"
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className={`w-full bg-gray-50 border-none rounded-md py-4 px-4 outline-none focus:ring-2 focus:ring-emerald-500/10 transition-all text-sm font-bold ${mono ? 'hl-mono' : ''}`} 
+        className={`w-full bg-gray-50 border-none rounded-md py-4 px-4 outline-none focus:ring-2 focus:ring-emerald-500/10 transition-all text-sm font-bold ${mono ? 'hl-mono' : ''}`}
       />
     </div>
   )

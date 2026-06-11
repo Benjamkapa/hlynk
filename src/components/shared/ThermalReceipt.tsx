@@ -1,7 +1,9 @@
 import { Printer } from 'lucide-react'
+import { useEffect } from 'react'
 
 export interface ThermalReceiptProps {
   sale: any;
+  autoPrint?: boolean;
 }
 
 export const thermalReceiptStyles = `
@@ -36,8 +38,17 @@ const getStatusLabel = (status: any) => {
   return 'Success';
 };
 
-export default function ThermalReceipt({ sale }: ThermalReceiptProps) {
+export default function ThermalReceipt({ sale, autoPrint = false }: ThermalReceiptProps) {
   const subtotal = sale.items?.reduce((acc: number, item: any) => acc + Number(item.price) * item.quantity, 0) ?? Number(sale.totalAmount)
+
+  useEffect(() => {
+    if (autoPrint) {
+      const timer = setTimeout(() => {
+        window.print();
+      }, 1000); // Small delay to ensure styles are applied
+      return () => clearTimeout(timer);
+    }
+  }, [autoPrint]);
 
   const handlePrint = () => window.print()
 

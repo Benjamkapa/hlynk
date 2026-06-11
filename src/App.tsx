@@ -3,7 +3,7 @@ import { Routes, Route, Navigate } from 'react-router-dom'
 import { AnimatePresence } from 'framer-motion'
 import { useAuth } from './lib/auth/AuthContext'
 import { Loader2 } from 'lucide-react'
-import { hasOfflinePin, hasPinBeenPrompted } from './lib/offline/offlinePin'
+import { hasOfflinePin, hasPinBeenPrompted, markPinPrompted } from './lib/offline/offlinePin'
 import OfflineLockScreen from './components/auth/OfflineLockScreen'
 import PinSetupModal from './components/auth/PinSetupModal'
 
@@ -12,6 +12,7 @@ import ProviderLayout from './components/shared/ProviderLayout'
 import AdminLayout from './components/shared/AdminLayout'
 import SubscriptionGuard from './components/shared/SubscriptionGuard'
 import OfflineBanner from './components/shared/OfflineBanner'
+import ReloadPrompt from './components/shared/ReloadPrompt'
 
 // Public
 const LandingPage = lazy(() => import('./pages/LandingPage'))
@@ -89,13 +90,17 @@ export default function App() {
   useEffect(() => {
     if (user && !isLoading && !hasOfflinePin() && !hasPinBeenPrompted()) {
       // Small delay so the dashboard loads first
-      const t = setTimeout(() => setShowPinSetup(true), 2000)
+      const t = setTimeout(() => {
+        setShowPinSetup(true)
+        markPinPrompted() // Mark as prompted immediately so it won't pop up again on next login
+      }, 2000)
       return () => clearTimeout(t)
     }
   }, [user, isLoading])
 
   return (
     <Suspense fallback={<LoadingScreen />}>
+      <ReloadPrompt />
       <OfflineBanner />
 
       {/* Offline lock screen — shown when user logs out while offline */}

@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { Plus, Search, Filter, Download, Edit, Trash2, Package, TrendingDown, Activity, AlertTriangle, LayoutGrid, List } from 'lucide-react'
+import { Plus, Search, Filter, Download, Edit, Trash2, Package, TrendingDown, Activity, AlertTriangle, LayoutGrid, List, Camera } from 'lucide-react'
+import { CameraCapture } from '../../components/shared/CameraCapture'
 import { ConfirmModal } from '../../components/shared/ConfirmModal'
 import { SlideOver } from '../../components/shared/SlideOver'
 import { toast } from 'sonner'
@@ -439,6 +440,7 @@ function ProductForm({ onClose }: { onClose: () => void }) {
     name: '', category: 'Groceries', buyingPrice: '', price: '', stock: '',
     imageUrl: '', file: null as File | null, isPerishable: false, expiryDate: '', type: 'GOOD'
   })
+  const [isCameraOpen, setIsCameraOpen] = useState(false)
 
   const mutation = useMutation({
     mutationFn: async (data: any) => {
@@ -466,7 +468,6 @@ function ProductForm({ onClose }: { onClose: () => void }) {
     <div className="space-y-6 pb-20">
       <div className="flex flex-col items-center gap-4">
         <div
-          onClick={() => document.getElementById('image-upload')?.click()}
           className="h-32 w-32 rounded-[.5rem] bg-slate-50 border-4 border-dashed border-slate-200 flex items-center justify-center overflow-hidden cursor-pointer hover:border-emerald-500 hover:bg-emerald-50 transition-all group relative"
         >
           {form.imageUrl ? (
@@ -486,6 +487,7 @@ function ProductForm({ onClose }: { onClose: () => void }) {
             id="image-upload"
             type="file"
             accept="image/*"
+            capture="environment"
             className="hidden"
             onChange={(e) => {
               const file = e.target.files?.[0]
@@ -497,14 +499,43 @@ function ProductForm({ onClose }: { onClose: () => void }) {
             }}
           />
         </div>
-        {form.imageUrl && (
+
+        <div className="flex gap-2">
           <button
             type="button"
-            onClick={() => setForm({ ...form, imageUrl: '', file: null })}
-            className="text-[9px] font-black text-red-500 uppercase tracking-widest hover:underline"
+            onClick={() => document.getElementById('image-upload')?.click()}
+            className="px-4 py-2 bg-slate-100 text-slate-600 rounded-[.5rem] text-[10px] font-black uppercase tracking-widest hover:bg-slate-200 transition-all flex items-center gap-2"
           >
-            Remove Image
+            Upload
           </button>
+          <button
+            type="button"
+            onClick={() => setIsCameraOpen(true)}
+            className="px-4 py-2 bg-emerald-50 text-emerald-600 rounded-[.5rem] text-[10px] font-black uppercase tracking-widest hover:bg-emerald-100 transition-all flex items-center gap-2"
+          >
+            <Camera size={14} />
+            Camera
+          </button>
+          {form.imageUrl && (
+            <button
+              type="button"
+              onClick={() => setForm({ ...form, imageUrl: '', file: null })}
+              className="px-4 py-2 bg-red-50 text-red-600 rounded-[.5rem] text-[10px] font-black uppercase tracking-widest hover:bg-red-100 transition-all"
+            >
+              Remove
+            </button>
+          )}
+        </div>
+
+        {isCameraOpen && (
+          <CameraCapture
+            onCapture={(file) => {
+              const reader = new FileReader()
+              reader.onloadend = () => setForm({ ...form, imageUrl: reader.result as string, file: file })
+              reader.readAsDataURL(file)
+            }}
+            onClose={() => setIsCameraOpen(false)}
+          />
         )}
       </div>
 
@@ -683,6 +714,7 @@ function EditProductForm({ product, onClose }: { product: any; onClose: () => vo
     isPerishable: !!product.isPerishable,
     expiryDate: product.expiryDate ? new Date(product.expiryDate).toISOString().split('T')[0] : ''
   })
+  const [isCameraOpen, setIsCameraOpen] = useState(false)
 
   const mutation = useMutation({
     mutationFn: async (data: any) => {
@@ -709,7 +741,6 @@ function EditProductForm({ product, onClose }: { product: any; onClose: () => vo
     <div className="space-y-6 pb-20">
       <div className="flex flex-col items-center gap-4">
         <div
-          onClick={() => document.getElementById('image-edit-upload')?.click()}
           className="h-32 w-32 rounded-[.5rem] bg-slate-50 border-4 border-dashed border-slate-200 flex items-center justify-center overflow-hidden cursor-pointer hover:border-emerald-500 hover:bg-emerald-50 transition-all group relative"
         >
           {form.imageUrl ? (
@@ -729,6 +760,7 @@ function EditProductForm({ product, onClose }: { product: any; onClose: () => vo
             id="image-edit-upload"
             type="file"
             accept="image/*"
+            capture="environment"
             className="hidden"
             onChange={(e) => {
               const file = e.target.files?.[0]
@@ -740,14 +772,43 @@ function EditProductForm({ product, onClose }: { product: any; onClose: () => vo
             }}
           />
         </div>
-        {form.imageUrl && (
+
+        <div className="flex gap-2">
           <button
             type="button"
-            onClick={() => setForm({ ...form, imageUrl: '', file: null })}
-            className="text-[9px] font-black text-red-500 uppercase tracking-widest hover:underline"
+            onClick={() => document.getElementById('image-edit-upload')?.click()}
+            className="px-4 py-2 bg-slate-100 text-slate-600 rounded-[.5rem] text-[10px] font-black uppercase tracking-widest hover:bg-slate-200 transition-all flex items-center gap-2"
           >
-            Remove Image
+            Upload
           </button>
+          <button
+            type="button"
+            onClick={() => setIsCameraOpen(true)}
+            className="px-4 py-2 bg-emerald-50 text-emerald-600 rounded-[.5rem] text-[10px] font-black uppercase tracking-widest hover:bg-emerald-100 transition-all flex items-center gap-2"
+          >
+            <Camera size={14} />
+            Camera
+          </button>
+          {form.imageUrl && (
+            <button
+              type="button"
+              onClick={() => setForm({ ...form, imageUrl: '', file: null })}
+              className="px-4 py-2 bg-red-50 text-red-600 rounded-[.5rem] text-[10px] font-black uppercase tracking-widest hover:bg-red-100 transition-all"
+            >
+              Remove
+            </button>
+          )}
+        </div>
+
+        {isCameraOpen && (
+          <CameraCapture
+            onCapture={(file) => {
+              const reader = new FileReader()
+              reader.onloadend = () => setForm({ ...form, imageUrl: reader.result as string, file: file })
+              reader.readAsDataURL(file)
+            }}
+            onClose={() => setIsCameraOpen(false)}
+          />
         )}
       </div>
 

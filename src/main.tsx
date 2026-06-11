@@ -14,43 +14,21 @@ import './index.css'
 // Start the offline sync engine
 syncEngine.start()
 
-async function clearDevServiceWorkers() {
-  if (!import.meta.env.DEV || typeof window === 'undefined' || !('serviceWorker' in navigator)) return
-
+async function clearDevCaches() {
+  if (!import.meta.env.DEV || typeof window === 'undefined' || !('caches' in window)) return
   try {
-    const registrations = await navigator.serviceWorker.getRegistrations()
-    const controllerActive = Boolean(navigator.serviceWorker.controller)
-
-    await Promise.all(registrations.map((registration) => registration.unregister()))
-
-    if ('caches' in window) {
-      const cacheKeys = await caches.keys()
-      await Promise.all(
-        cacheKeys
-          .filter((key) => key.includes('workbox') || key.includes('api-cache'))
-          .map((key) => caches.delete(key)),
-      )
-    }
-
-    const url = new URL(window.location.href)
-    const resetParam = 'hl_dev_sw_reset'
-
-    if (controllerActive && !url.searchParams.has(resetParam)) {
-      url.searchParams.set(resetParam, '1')
-      window.location.replace(url.toString())
-      return
-    }
-
-    if (!controllerActive && url.searchParams.has(resetParam)) {
-      url.searchParams.delete(resetParam)
-      window.history.replaceState({}, document.title, `${url.pathname}${url.search}${url.hash}`)
-    }
+    const cacheKeys = await caches.keys()
+    await Promise.all(
+      cacheKeys
+        .filter((key) => key.includes('workbox') || key.includes('api-cache'))
+        .map((key) => caches.delete(key)),
+    )
   } catch {
-    // Dev-only cleanup should never block the app from rendering.
+    // Never block the app from rendering
   }
 }
 
-void clearDevServiceWorkers()
+void clearDevCaches()
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>

@@ -996,7 +996,10 @@ export default function RecordSalePage() {
                </div>
             </div>
 
-            <ThermalReceipt sale={completedSale} />
+            <ThermalReceipt 
+              sale={completedSale} 
+              autoPrint={profile?.data?.operationalSettings?.autoPrint} 
+            />
 
             <div className="pt-4 grid grid-cols-1 gap-3 no-print">
                <button 

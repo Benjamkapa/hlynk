@@ -55,27 +55,12 @@ export default function ProviderLayout() {
   const location = useLocation();
   const isDesktop = useIsDesktop();
 
-  /**
-   * Sidebar state — unified, two-axis model:
-   *
-   *  Desktop:
-   *    isCollapsed = true  → icon rail (68px)
-   *    isCollapsed = false → full panel (280px)
-   *    isHovered = true while isCollapsed → expand temporarily (no click needed)
-   *
-   *  Mobile:
-   *    mobileOpen = false  → icon rail slides in from left (60px)
-   *    mobileOpen = true   → full drawer (280px) + backdrop
-   *    click-away / nav → mobileOpen = false
-   */
   const [isCollapsed, setIsCollapsed] = useState(true);
   const [isHovered, setIsHovered] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  // Close mobile drawer on route change
   useEffect(() => { setMobileOpen(false); }, [location.pathname]);
 
-  // Inactivity auto-collapse on mobile (5 min)
   useEffect(() => {
     if (isDesktop || !mobileOpen) return;
     let t: ReturnType<typeof setTimeout>;
@@ -87,7 +72,6 @@ export default function ProviderLayout() {
     return () => { clearTimeout(t); window.removeEventListener("mousemove", reset); window.removeEventListener("keydown", reset); window.removeEventListener("click", reset); };
   }, [mobileOpen, isDesktop]);
 
-  // Review modal state
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [reviewRating, setReviewRating] = useState(0);
   const [reviewText, setReviewText] = useState("");
@@ -127,7 +111,6 @@ export default function ProviderLayout() {
       items: [
         { to: '/dashboard/logs', label: 'Staff Activity', icon: ShieldCheck, permission: 'logs', plan: 'MAX' },
         { to: '/dashboard/subscription', label: 'My Plan', icon: Calendar, role: 'PROVIDER' },
-        // { to: '/dashboard/subscription?tab=Referrals',the  label: 'Refer & Earn', icon: Star, role: 'PROVIDER' },
         { to: '/dashboard/developer', label: 'Payment Gateway', icon: CreditCard, role: 'PROVIDER', plan: 'PLUS' },
         { to: '/dashboard/etims', label: 'KRA eTIMS', icon: Receipt, role: 'PROVIDER' },
       ],
@@ -140,7 +123,6 @@ export default function ProviderLayout() {
     ...group,
     items: group.items.map(item => {
       if (user?.role === 'SUPER_ADMIN') return { ...item, isLocked: false };
-
       if (user?.role === 'STAFF') {
         if (item.permission && !user.permissions?.includes(item.permission)) return null;
         if (item.to.includes('subscription') || item.to.includes('developer') || (item as any).role === 'PROVIDER') return null;
@@ -157,7 +139,6 @@ export default function ProviderLayout() {
     }).filter((item): item is any => item !== null)
   })).filter(group => group.items.length > 0);
 
-  // Subscription helpers
   const isTrial = Number(user?.subscription?.status) === 2 || user?.subscription?.status === 'TRIAL';
   const targetEndDate = isTrial ? user?.subscription?.trialEndDate : user?.subscription?.endDate;
   const timeRemainingMs = targetEndDate ? new Date(targetEndDate).getTime() - Date.now() : 0;
@@ -189,19 +170,12 @@ export default function ProviderLayout() {
     }
   };
 
-  // The real "is expanded" state for rendering sidebar content
-  const sidebarExpanded = isDesktop
-    ? (!isCollapsed || isHovered)   // desktop: manual toggle OR hover
-    : mobileOpen;                   // mobile: tap toggle only
-
-  // Sidebar width values
+  const sidebarExpanded = isDesktop ? (!isCollapsed || isHovered) : mobileOpen;
   const RAIL_W = isDesktop ? 68 : 60;
   const FULL_W = 280;
 
-  // ── Sidebar inner content ────────────────────────────────────────────────────
   const SidebarContent = () => (
     <div className="flex flex-col h-full">
-      {/* Logo */}
       <div className={`h-16 lg:h-20 flex items-center flex-shrink-0 ${sidebarExpanded ? 'px-5' : 'justify-center'}`}>
         <AnimatePresence mode="wait" initial={false}>
           {sidebarExpanded ? (
@@ -235,7 +209,6 @@ export default function ProviderLayout() {
         </AnimatePresence>
       </div>
 
-      {/* Nav */}
       <nav className="flex-1 px-3 space-y-4 overflow-y-auto overflow-x-hidden pt-2 custom-scrollbar">
         {filteredGroups.map((group) => (
           <div key={group.label}>
@@ -281,7 +254,6 @@ export default function ProviderLayout() {
                   </motion.div>
                 );
 
-                // Tooltip shown only on collapsed desktop rail
                 const tooltip = !sidebarExpanded && isDesktop && (
                   <div className="absolute left-[calc(100%+10px)] bg-slate-900 text-white px-3 py-1.5 rounded-[.4rem] text-[10px] font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 invisible group-hover:visible translate-x-2 group-hover:translate-x-0 transition-all pointer-events-none whitespace-nowrap z-[200] shadow-2xl">
                     {item.label}
@@ -319,7 +291,6 @@ export default function ProviderLayout() {
         ))}
       </nav>
 
-      {/* Footer */}
       <div className={`flex-shrink-0 p-3 mt-auto border-t border-slate-100 ${sidebarExpanded ? '' : 'flex justify-center'}`}>
         <AnimatePresence>
           {sidebarExpanded && (
@@ -333,7 +304,7 @@ export default function ProviderLayout() {
                 <div className="absolute inset-0 bg-white/0 group-hover:bg-white/5 transition-colors rounded-[.5rem]" />
                 <div className="flex justify-between items-center mb-2">
                   <p className="text-[8px] text-emerald-400 font-black uppercase tracking-widest">
-                    {user?.subscription?.planName === 'MAX' ? 'Business Pro' : user?.subscription?.planName === 'PLUS' ? 'Growth' : 'Starter'} Tier
+                    {isTrial ? 'Trial Mode' : (user?.subscription?.planName === 'MAX' ? 'Business Pro' : user?.subscription?.planName === 'PLUS' ? 'Growth' : 'Starter')} Tier
                   </p>
                   {isCritical && <AlertTriangle size={10} className="text-amber-400 animate-pulse" />}
                 </div>
@@ -355,8 +326,6 @@ export default function ProviderLayout() {
 
   return (
     <div className="flex h-screen overflow-hidden bg-slate-50/50">
-
-      {/* ── REVIEW MODAL ────────────────────────────────────────────────────── */}
       <AnimatePresence>
         {showReviewModal && (
           <motion.div
@@ -423,7 +392,6 @@ export default function ProviderLayout() {
         )}
       </AnimatePresence>
 
-      {/* ── MOBILE BACKDROP ─────────────────────────────────────────────────── */}
       <AnimatePresence>
         {!isDesktop && mobileOpen && (
           <motion.div
@@ -439,9 +407,7 @@ export default function ProviderLayout() {
         )}
       </AnimatePresence>
 
-      {/* ── SIDEBAR ─────────────────────────────────────────────────────────── */}
       {isDesktop ? (
-        /* ── DESKTOP: sticky rail that expands on hover or toggle ── */
         <motion.aside
           animate={{ width: sidebarExpanded ? FULL_W : RAIL_W }}
           transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
@@ -450,7 +416,6 @@ export default function ProviderLayout() {
           className="relative flex-shrink-0 h-screen border-r border-slate-100 bg-white overflow-visible z-[70]"
           style={{ minWidth: RAIL_W }}
         >
-          {/* Expand beyond allocated width when hovered-while-collapsed */}
           <motion.div
             animate={{ width: sidebarExpanded ? FULL_W : RAIL_W }}
             transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
@@ -459,9 +424,8 @@ export default function ProviderLayout() {
             <SidebarContent />
           </motion.div>
         </motion.aside>
-      ) : null /* Mobile: No sidebar — we use bottom nav instead */}
+      ) : null}
 
-      {/* ── MAIN CONTENT ────────────────────────────────────────────────────── */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {isCritical && user?.role === 'PROVIDER' && (
           <div className="bg-red-600 text-white px-6 py-3 flex items-center justify-between z-[60] shadow-2xl flex-shrink-0">
@@ -507,7 +471,6 @@ export default function ProviderLayout() {
         </main>
       </div>
 
-      {/* ── MOBILE BOTTOM NAV ───────────────────────────────────────────────── */}
       {!isDesktop && (
         <MobileBottomNav
           user={user}
@@ -518,13 +481,13 @@ export default function ProviderLayout() {
   );
 }
 
-// ─── Mobile Bottom Navigation ────────────────────────────────────────────────
 function MobileBottomNav({ user, targetEndDate }: {
   user: any;
   targetEndDate: string | undefined;
 }) {
   const location = useLocation();
   const [showBanner, setShowBanner] = useState(false);
+  const isTrial = Number(user?.subscription?.status) === 2 || user?.subscription?.status === 'TRIAL';
 
   useEffect(() => {
     if (!showBanner) return;
@@ -563,8 +526,6 @@ function MobileBottomNav({ user, targetEndDate }: {
 
   return (
     <div className="fixed inset-x-0 bottom-6 z-[95] lg:hidden flex flex-col items-center pointer-events-none">
-
-      {/* Banner */}
       <AnimatePresence>
         {targetEndDate && showBanner && (
           <motion.div
@@ -576,7 +537,9 @@ function MobileBottomNav({ user, targetEndDate }: {
             <Link to="/dashboard/subscription" className="bg-[#0D4A3E] backdrop-blur-3xl border border-white/10 p-3 rounded-[1.5rem] flex items-center justify-between shadow-[0_20px_50px_rgba(13,74,61,0.4)]">
               <div className="pl-2">
                 <p className="text-[7px] font-black text-emerald-400 uppercase tracking-widest leading-none">Subscription Status</p>
-                <p className="text-[9px] font-black text-white mt-1 uppercase tracking-tight">Active Plan</p>
+                <p className="text-[9px] font-black text-white mt-1 uppercase tracking-tight">
+                   {isTrial ? 'Free Trial' : 'Active Plan'}
+                </p>
               </div>
               <div className="bg-white/5 px-4 py-2 rounded-xl">
                 <MiniCountdown expiryDate={targetEndDate} />
@@ -588,7 +551,6 @@ function MobileBottomNav({ user, targetEndDate }: {
 
       <div className="w-full px-[1rem] pointer-events-auto">
         <div className="relative h-20 bg-white/95 backdrop-blur-2xl border border-white/60 rounded-full shadow-[0_20px_50px_rgba(0,0,0,0.1)] flex items-center justify-around px-2">
-
           {navItems.map((item) => {
             const active = isActive(item);
             const isLocked = item.plan && userWeight < getPlanWeight(item.plan);
@@ -600,8 +562,7 @@ function MobileBottomNav({ user, targetEndDate }: {
                   to={item.to}
                   className="flex-1 flex flex-col items-center justify-center gap-1 no-tap-highlight"
                 >
-                  <div className={`w-11 h-11 rounded-full flex items-center justify-center transition-all duration-300 active:scale-95 ${active ? 'bg-emerald-500 shadow-lg shadow-emerald-500/20' : 'bg-emerald-200'
-                    }`}>
+                  <div className={`w-11 h-11 rounded-full flex items-center justify-center transition-all duration-300 active:scale-95 ${active ? 'bg-emerald-500 shadow-lg shadow-emerald-500/20' : 'bg-emerald-200'}`}>
                     <item.icon className={`w-5 h-5 ${active ? 'text-white' : 'text-[#0D4A3E]'}`} strokeWidth={2.5} />
                   </div>
                   <span className={`text-[11px] font-bold ${active ? 'text-emerald-700' : 'text-[#0D4A3E] opacity-60'}`}>
@@ -636,29 +597,24 @@ function MobileBottomNav({ user, targetEndDate }: {
                 className="flex-1 flex flex-col items-center justify-center gap-1 no-tap-highlight"
                 onTouchStart={() => setShowBanner(true)}
               >
-                <div className={`w-11 h-11 rounded-[14px] flex items-center justify-center transition-all duration-300 ${active ? 'bg-emerald-500 shadow-lg shadow-emerald-500/10' : 'bg-emerald-50'
-                  }`}>
+                <div className={`w-11 h-11 rounded-[14px] flex items-center justify-center transition-all duration-300 ${active ? 'bg-emerald-500 shadow-lg shadow-emerald-500/10' : 'bg-emerald-50'}`}>
                   <item.icon
                     className={`w-5 h-5 transition-colors ${active ? 'text-white' : 'text-[#0D4A3E]'}`}
                     strokeWidth={active ? 2.5 : 2}
                   />
                 </div>
-                <span className={`text-[11px] font-bold transition-all ${active ? 'text-emerald-700 opacity-100' : 'text-[#0D4A3E] opacity-40'
-                  }`}>
+                <span className={`text-[11px] font-bold transition-all ${active ? 'text-emerald-700 opacity-100' : 'text-[#0D4A3E] opacity-40'}`}>
                   {item.label}
                 </span>
               </NavLink>
             );
           })}
-
         </div>
       </div>
-
     </div>
   );
 }
 
-// ─── Mini Countdown (4 segments: d, h, m, s) ────────────────────────────────────
 function MiniCountdown({ expiryDate }: { expiryDate: string }) {
   const calc = (d: string) => {
     const dist = new Date(d).getTime() - Date.now();
@@ -695,7 +651,6 @@ function MiniCountdown({ expiryDate }: { expiryDate: string }) {
   );
 }
 
-// ─── Countdown Timer ─────────────────────────────────────────────────────────
 function CountdownTimer({ expiryDate }: { expiryDate: string | undefined }) {
   const calc = (d: string) => {
     const dist = new Date(d).getTime() - Date.now();

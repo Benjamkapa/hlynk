@@ -3,6 +3,7 @@ import { User, Store, Bell, Lock, Save, Camera, Loader2, LogOut, Trash2, Users, 
 import { ConfirmModal } from '../../components/shared/ConfirmModal'
 import { toast } from 'sonner'
 import { useAuth } from '../../lib/auth/AuthContext'
+import { api } from '../../lib/api/client'
 import { providersApi } from '../../lib/api/providers'
 import { getErrorMessage } from '../../lib/utils/error'
 import { useLocation, NavLink, Link } from 'react-router-dom'
@@ -11,6 +12,7 @@ import FeatureGate from '../../components/shared/FeatureGate'
 import { hasOfflinePin, clearOfflinePin } from '../../lib/offline/offlinePin'
 import PinSetupModal from '../../components/auth/PinSetupModal'
 import { AnimatePresence } from 'framer-motion'
+import { subscribeToPushNotifications, unsubscribeFromPush, getPushSubscriptionState } from '../../lib/notifications/pushService'
 
 const EtimsIcon = ({ className, size = 18 }: { className?: string, size?: number }) => (
   <img src="https://etims.kra.go.ke/assets/images/logo.jpg" alt="eTIMS" style={{ width: size, height: size }} className={`${className || ''} object-contain mix-blend-darken shrink-0`} />
@@ -129,8 +131,8 @@ export default function SettingsPage() {
     { name: 'Platform Hub', icon: Sparkles, mobileOnly: true }, // NEW: Mini Bar for all hidden features
     { name: 'Profile', icon: User },
     { name: 'Business', icon: Store, role: ['PROVIDER', 'SUPER_ADMIN'] },
-    { name: 'Staff Management', icon: Users, role: ['PROVIDER', 'SUPER_ADMIN'], plan: 'PLUS' },
     { name: 'Customers', icon: Users, role: ['PROVIDER'], mobileOnly: true },
+    { name: 'Notifications', icon: Bell },
     { name: 'Payment Gateway', icon: CreditCard, role: ['PROVIDER'], plan: 'PLUS', mobileOnly: true },
     { name: 'KRA eTIMS', icon: EtimsIcon, role: ['PROVIDER'], mobileOnly: true },
     { name: 'My Plan', icon: Sparkles, role: ['PROVIDER', 'SUPER_ADMIN'], mobileOnly: true },
@@ -188,8 +190,8 @@ export default function SettingsPage() {
               key={tab.name}
               onClick={() => setActiveTab(tab.name)}
               className={`w-full flex items-center gap-3 px-6 py-4 rounded-[.5rem] font-bold text-sm hover:shadow hover:bg-emerald-100/40 transition-all ${tab.mobileOnly ? 'lg:hidden ' : ''}${activeTab === tab.name
-                  ? 'bg-white text-emerald-600 shadow-sm'
-                  : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'
+                ? 'bg-white text-emerald-600 shadow-sm'
+                : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'
                 }`}
             >
               <tab.icon size={18} />
@@ -204,12 +206,12 @@ export default function SettingsPage() {
 
             {activeTab === 'Platform Hub' && (
               <div className="space-y-8 animate-in fade-in slide-in-from-top-4 duration-500">
-                <div className="bg-emerald-900 text-white p-8 rounded-[.5rem] relative overflow-hidden">
-                   <div className="relative z-10">
-                      <h4 className="text-2xl font-black mb-2">Platform Modules Hub</h4>
-                      <p className="text-emerald-200 text-sm font-medium">Quick access to all system features and hidden configurations</p>
-                   </div>
-                   <Sparkles className="absolute -right-4 -bottom-4 text-white/10" size={120} />
+                <div className="bg-emerald-900 text-white p-6 md:p-8 rounded-[.5rem] relative overflow-hidden">
+                  <div className="relative z-10">
+                    <h4 className="text-xl md:text-2xl font-black mb-1 md:mb-2">Platform Modules</h4>
+                    <p className="text-emerald-200 text-[10px] md:text-sm font-medium">Quick access to all system features</p>
+                  </div>
+                  <Sparkles className="absolute -right-4 -bottom-4 text-white/10" size={100} />
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
@@ -232,10 +234,10 @@ export default function SettingsPage() {
                 <div className="flex items-center gap-6">
                   <div className="relative group">
                     <div className="h-24 w-24 rounded-[.5rem] bg-gray-100 flex items-center justify-center overflow-hidden border-2 border-slate-200 shadow-inner">
-                      <img 
-                        src={user?.photoUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(formData?.name || user?.name || '')}&background=0D4A3E&color=fff`} 
-                        className="h-full w-full object-cover" 
-                        alt="" 
+                      <img
+                        src={user?.photoUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(formData?.name || user?.name || '')}&background=0D4A3E&color=fff`}
+                        className="h-full w-full object-cover"
+                        alt=""
                         referrerPolicy="no-referrer"
                       />
                       {uploading && (
@@ -296,23 +298,101 @@ export default function SettingsPage() {
                   />
                   <div className="space-y-2">
                     <label className="text-xs font-black text-gray-400 uppercase tracking-widest">Business Category</label>
-                    <select 
+                    <select
                       value={formData.category}
                       onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                       className="hl-select"
                     >
                       <option value="">Select Category</option>
-                      {['Retail', 'Groceries', 'Pharmacy', 'Hardware', 'Clothing', 'Electronics', 'Restaurant', 'Other'].map(c => (
+                      {[
+                        'Accounting & Tax Services',
+                        'Agrovet',
+                        'Agricultural Cooperative',
+                        'Art & Craft Business',
+                        'Bakery',
+                        'Barber Shop',
+                        'Cafe',
+                        'Car Wash',
+                        'Car Yard',
+                        'Catering Services',
+                        'Church',
+                        'Clinic',
+                        'College',
+                        'Community Organization',
+                        'Construction Services',
+                        'Consultancy',
+                        'Cosmetics Shop',
+                        'Courier Services',
+                        'Cyber Cafe',
+                        'Cyber Security',
+                        'Dairy Business',
+                        'Daycare',
+                        'Dental Clinic',
+                        'Digital Agency',
+                        'Driving School',
+                        'E-commerce Business',
+                        'Electrical Services',
+                        'Electronics Shop',
+                        'Farm',
+                        'Fashion & Boutique',
+                        'Fast Food',
+                        'Financial Services',
+                        'Freelancer',
+                        'Furniture Workshop',
+                        'Garage',
+                        'Guest House',
+                        'Hardware Store',
+                        'Hospital',
+                        'Hotel',
+                        'Insurance Agency',
+                        'Interior Design',
+                        'Internet Service Provider',
+                        'IT Services',
+                        'Legal Services',
+                        'Lounge & Bar',
+                        'Manufacturing',
+                        'Marketing Agency',
+                        'Mechanic Garage',
+                        'Microfinance',
+                        'Mini Mart',
+                        'Mobile Phone Shop',
+                        'Mosque',
+                        'NGO',
+                        'Online Business',
+                        'Optical Clinic',
+                        'Other',
+                        'Pharmacy',
+                        'Plumbing Services',
+                        'Poultry Farm',
+                        'Printing & Branding',
+                        'Real Estate Agency',
+                        'Restaurant',
+                        'Retail Store',
+                        'SACCO',
+                        'Salon',
+                        'School',
+                        'Software Development',
+                        'Spa & Beauty',
+                        'Supermarket',
+                        'Tailoring & Fashion Design',
+                        'Training Centre',
+                        'Transport Services',
+                        'Travel Agency',
+                        'University',
+                        'Veterinary Clinic',
+                        'Welding & Fabrication',
+                        'Wholesale Shop'
+                      ].map(c => (
                         <option key={c} value={c}>{c}</option>
                       ))}
                     </select>
                   </div>
                 </div>
-                  <InputGroup
-                    label="Where are you located?"
-                    value={formData.location}
-                    onChange={(v: string) => setFormData({ ...formData, location: v })}
-                  />
+                <InputGroup
+                  label="Where are you located?"
+                  value={formData.location}
+                  onChange={(v: string) => setFormData({ ...formData, location: v })}
+                />
 
                 <div className="pt-6 border-t border-gray-50">
                   <h4 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-6">Operational Settings</h4>
@@ -335,109 +415,31 @@ export default function SettingsPage() {
                         operationalSettings: { ...formData.operationalSettings, autoPrint: v }
                       })}
                     />
-                        <InputGroup
-                          label="Low Stock Threshold"
-                          placeholder="e.g. 5"
-                          type="number"
-                          value={formData.operationalSettings?.lowStockThreshold || ''}
-                          onChange={(v: string) => setFormData({
-                            ...formData,
-                            operationalSettings: { ...formData.operationalSettings, lowStockThreshold: parseInt(v) || 0 }
-                          })}
-                        />
-                        <div className="mt-4 p-4 bg-emerald-50 rounded-[.5rem] border border-emerald-100">
-                          <p className="text-[10px] text-emerald-800 font-bold uppercase tracking-widest leading-relaxed">
-                            <Sparkles size={12} className="inline mr-1" />
-                            Smart Tuning: Setting this to <span className="text-emerald-900 font-black">{formData.operationalSettings?.lowStockThreshold || 0}</span> means we will flag items in your inventory as "Low Stock" when their quantity drops below this number.
-                          </p>
-                        </div>
-                     </div>
+                    <InputGroup
+                      label="Low Stock Threshold"
+                      placeholder="e.g. 5"
+                      type="number"
+                      value={formData.operationalSettings?.lowStockThreshold || ''}
+                      onChange={(v: string) => setFormData({
+                        ...formData,
+                        operationalSettings: { ...formData.operationalSettings, lowStockThreshold: parseInt(v) || 0 }
+                      })}
+                    />
+                    <div className="mt-4 p-4 bg-emerald-50 rounded-[.5rem] border border-emerald-100">
+                      <p className="text-[10px] text-emerald-800 font-bold uppercase tracking-widest leading-relaxed">
+                        <Sparkles size={12} className="inline mr-1" />
+                        Smart Tuning: Setting this to <span className="text-emerald-900 font-black">{formData.operationalSettings?.lowStockThreshold || 0}</span> means we will flag items in your inventory as "Low Stock" when their quantity drops below this number.
+                      </p>
+                    </div>
                   </div>
-                </div>
-            )}
-
-            {activeTab === 'Staff Management' && (
-              <div className="space-y-6">
-                <div className="flex justify-between items-center mb-4">
-                  <div>
-                    <h4 className="text-lg font-black text-gray-900">Your Team</h4>
-                    <p className="text-xs text-gray-500">Configure who has access to your workshop</p>
-                  </div>
-                  <Link to="/dashboard/staff" className="text-[10px] font-black text-emerald-600 uppercase tracking-widest hover:underline flex items-center gap-1">
-                    Manage in full screen <ArrowRight size={12} />
-                  </Link>
-                </div>
-                <div className="h-[500px] overflow-hidden rounded-[.5rem] border border-gray-100 bg-gray-50">
-                   <iframe src="/dashboard/staff" className="w-full h-full border-none pointer-events-auto" />
                 </div>
               </div>
             )}
 
-            {activeTab === 'Customers' && (
-              <div className="space-y-6 lg:hidden">
-                <div className="flex justify-between items-center mb-4">
-                  <div>
-                    <h4 className="text-lg font-black text-gray-900">Customers</h4>
-                    <p className="text-xs text-gray-500">Manage your customer database</p>
-                  </div>
-                  <Link to="/dashboard/customers" className="text-[10px] font-black text-emerald-600 uppercase tracking-widest hover:underline flex items-center gap-1">
-                    Manage in full screen <ArrowRight size={12} />
-                  </Link>
-                </div>
-                <div className="h-[600px] overflow-hidden rounded-[.5rem] border border-gray-100 bg-gray-50">
-                   <iframe src="/dashboard/customers" className="w-full h-full border-none pointer-events-auto" />
-                </div>
-              </div>
-            )}
 
-            {activeTab === 'Payment Gateway' && (
-              <div className="space-y-6 lg:hidden">
-                <div className="flex justify-between items-center mb-4">
-                  <div>
-                    <h4 className="text-lg font-black text-gray-900">Payment Gateway</h4>
-                    <p className="text-xs text-gray-500">Configure M-Pesa & KCB Buni integrations</p>
-                  </div>
-                  <Link to="/dashboard/developer" className="text-[10px] font-black text-emerald-600 uppercase tracking-widest hover:underline flex items-center gap-1">
-                    Manage in full screen <ArrowRight size={12} />
-                  </Link>
-                </div>
-                <div className="h-[800px] overflow-hidden rounded-[.5rem] border border-gray-100 bg-gray-50">
-                   <iframe src="/dashboard/developer" className="w-full h-full border-none pointer-events-auto" />
-                </div>
-              </div>
-            )}
 
-            {activeTab === 'KRA eTIMS' && (
-              <div className="space-y-6 lg:hidden">
-                <div className="flex justify-between items-center mb-4">
-                  <div>
-                    <h4 className="text-lg font-black text-gray-900">KRA eTIMS</h4>
-                  </div>
-                  <Link to="/dashboard/etims" className="text-[10px] font-black text-emerald-600 uppercase tracking-widest hover:underline flex items-center gap-1">
-                    Manage in full screen <ArrowRight size={12} />
-                  </Link>
-                </div>
-                <div className="h-[800px] overflow-hidden rounded-[.5rem] border border-gray-100 bg-gray-50">
-                   <iframe src="/dashboard/etims" className="w-full h-full border-none pointer-events-auto" />
-                </div>
-              </div>
-            )}
 
-            {activeTab === 'My Plan' && (
-              <div className="space-y-6 lg:hidden">
-                <div className="flex justify-between items-center mb-4">
-                  <div>
-                    <h4 className="text-lg font-black text-gray-900">Subscription & Billing</h4>
-                  </div>
-                  <Link to="/dashboard/subscription" className="text-[10px] font-black text-emerald-600 uppercase tracking-widest hover:underline flex items-center gap-1">
-                    Open in full screen <ArrowRight size={12} />
-                  </Link>
-                </div>
-                <div className="h-[800px] overflow-hidden rounded-[.5rem] border border-gray-100 bg-gray-50">
-                   <iframe src="/dashboard/subscription" className="w-full h-full border-none pointer-events-auto" />
-                </div>
-              </div>
-            )}
+
 
 
 
@@ -464,18 +466,25 @@ export default function SettingsPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 opacity-60 pointer-events-none">
                   <div className="p-6 bg-slate-50 rounded-[.5rem] border border-slate-100">
                     <h5 className="font-black text-slate-900 mb-2 flex items-center gap-2">
-                       <FileText size={16} /> Auto-Backup
+                      <FileText size={16} /> Auto-Backup
                     </h5>
                     <p className="text-[10px] text-slate-500 font-medium">Export your data to CSV automatically every week.</p>
                   </div>
                   <div className="p-6 bg-slate-50 rounded-[.5rem] border border-slate-100">
                     <h5 className="font-black text-slate-900 mb-2 flex items-center gap-2">
-                       <RefreshCcw size={16} /> Data Portability
+                      <RefreshCcw size={16} /> Data Portability
                     </h5>
                     <p className="text-[10px] text-slate-500 font-medium">Import your products from Excel or CSV files.</p>
                   </div>
                 </div>
               </div>
+            )}
+
+            {activeTab === 'Notifications' && (
+              <NotificationsPanel
+                settings={formData.notificationSettings}
+                onUpdate={(s: any) => setFormData({ ...formData, notificationSettings: s })}
+              />
             )}
 
             {activeTab === 'Security' && (
@@ -488,20 +497,17 @@ export default function SettingsPage() {
                     <ShieldCheck size={18} className="text-emerald-600" />
                     <h4 className="text-xs font-black text-slate-700 uppercase tracking-widest">Offline PIN</h4>
                   </div>
-                  <div className={`p-6 rounded-[.5rem] border flex items-center justify-between gap-4 ${
-                    pinHasPin
+                  <div className={`p-6 rounded-[.5rem] border flex items-center justify-between gap-4 ${pinHasPin
                       ? 'bg-emerald-50 border-emerald-100'
                       : 'bg-amber-50 border-amber-100'
-                  }`}>
+                    }`}>
                     <div>
-                      <p className={`text-sm font-black mb-1 ${
-                        pinHasPin ? 'text-emerald-900' : 'text-amber-900'
-                      }`}>
+                      <p className={`text-sm font-black mb-1 ${pinHasPin ? 'text-emerald-900' : 'text-amber-900'
+                        }`}>
                         {pinHasPin ? '✓ Offline PIN is active' : 'No offline PIN set'}
                       </p>
-                      <p className={`text-[10px] font-medium leading-relaxed max-w-md ${
-                        pinHasPin ? 'text-emerald-700' : 'text-amber-700'
-                      }`}>
+                      <p className={`text-[10px] font-medium leading-relaxed max-w-md ${pinHasPin ? 'text-emerald-700' : 'text-amber-700'
+                        }`}>
                         {pinHasPin
                           ? 'Your session will lock (not log out) when you go offline. Enter your PIN to resume without internet.'
                           : 'Without a PIN, you cannot log back in if you lose internet. Set one to protect your offline access.'}
@@ -537,7 +543,7 @@ export default function SettingsPage() {
                       <p className="text-sm font-black text-red-900">Deactivate Account</p>
                       <p className="text-[10px] text-red-600 font-bold mt-1">This will immediately revoke access for all your staff.</p>
                     </div>
-                    <button 
+                    <button
                       onClick={() => setConfirmDeleteId('deactivate')}
                       className="px-6 py-3 bg-red-600 text-white rounded-[.5rem] text-[10px] font-black uppercase tracking-widest hover:bg-red-700 transition-all shadow-lg shadow-red-900/10"
                     >
@@ -590,13 +596,118 @@ export default function SettingsPage() {
   )
 }
 
+function NotificationsPanel({ settings, onUpdate }: any) {
+  const [pushState, setPushState] = useState<'subscribed' | 'denied' | 'prompt' | 'unsupported'>('prompt');
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    getPushSubscriptionState().then(setPushState);
+  }, []);
+
+  const handlePushToggle = async (active: boolean) => {
+    setLoading(true);
+    try {
+      if (active) {
+        await subscribeToPushNotifications();
+        toast.success('Native notifications enabled!');
+      } else {
+        await unsubscribeFromPush();
+        toast.success('Native notifications disabled.');
+      }
+      const newState = await getPushSubscriptionState();
+      setPushState(newState as any);
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to update push settings');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="space-y-8 animate-in fade-in slide-in-from-top-4 duration-500">
+      <div className="bg-emerald-50 p-6 rounded-[.5rem] border border-emerald-100 flex items-start gap-4">
+        <Bell className="text-emerald-600 mt-1" size={24} />
+        <div>
+          <h4 className="text-sm font-black text-emerald-900 uppercase tracking-widest mb-1">Native Alerts</h4>
+          <p className="text-xs text-emerald-700 leading-relaxed max-w-lg">
+            Enable native push notifications to receive real-time alerts for M-Pesa payments, low stock levels, and critical security events even when the app is closed.
+          </p>
+        </div>
+      </div>
+
+      <div className="space-y-4">
+        <div className="flex items-center justify-between p-6 bg-gray-50 rounded-[.5rem] border border-gray-100">
+          <div>
+            <p className="font-black text-gray-900 text-sm">Web Push Notifications</p>
+            <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-1">
+              {pushState === 'subscribed' ? '✓ Currently Active' : pushState === 'denied' ? '⚠ Blocked in Browser' : 'Inactive'}
+            </p>
+          </div>
+          {loading ? (
+            <Loader2 className="animate-spin text-emerald-600" size={20} />
+          ) : pushState === 'unsupported' ? (
+            <span className="text-[10px] font-black text-red-400 uppercase tracking-widest">Unsupported</span>
+          ) : pushState === 'denied' ? (
+            <button
+              onClick={() => toast.info('Please reset notification permissions in your browser address bar.')}
+              className="px-4 py-2 bg-amber-100 text-amber-700 rounded-[.5rem] text-[10px] font-black uppercase tracking-widest"
+            >
+              How to fix?
+            </button>
+          ) : (
+            <div className="flex items-center gap-3">
+              {pushState === 'subscribed' && (
+                <button
+                  onClick={async () => {
+                    try {
+                      await api.post('/notifications/test');
+                      toast.success('Test notification sent!');
+                    } catch (err) {
+                      toast.error('Failed to send test');
+                    }
+                  }}
+                  className="px-3 py-1.5 border border-emerald-100 text-emerald-600 rounded-[.4rem] text-[9px] font-black uppercase tracking-widest hover:bg-emerald-50 transition-all"
+                >
+                  Send Test
+                </button>
+              )}
+              <Toggle active={pushState === 'subscribed'} onToggle={handlePushToggle} />
+            </div>
+          )}
+        </div>
+
+        <div className="pt-6 border-t border-gray-50 grid grid-cols-1 md:grid-cols-2 gap-6">
+          <ToggleItem
+            title="Email Alerts"
+            desc="Receive transaction summaries via email"
+            active={settings.emailAlerts || false}
+            onToggle={(v: boolean) => onUpdate({ ...settings, emailAlerts: v })}
+          />
+          <ToggleItem
+            title="SMS Notifications"
+            desc="Get critical alerts via SMS (charges apply)"
+            active={settings.smsNotifications || false}
+            onToggle={(v: boolean) => onUpdate({ ...settings, smsNotifications: v })}
+          />
+          <ToggleItem
+            title="Marketing updates"
+            desc="New features and business tips"
+            active={settings.marketing || false}
+            onToggle={(v: boolean) => onUpdate({ ...settings, marketing: v })}
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function InputGroup({ label, value, onChange, placeholder, type = "text", mono = false, disabled = false }: any) {
   return (
     <div className={`space-y-2 ${disabled ? 'opacity-60' : ''}`}>
       <label className="text-xs font-black text-gray-400 uppercase tracking-widest">{label}</label>
       <input
         type={type}
-        value={value}
+        value={value ?? ''}
         onChange={(e) => onChange?.(e.target.value)}
         placeholder={placeholder}
         disabled={disabled}
