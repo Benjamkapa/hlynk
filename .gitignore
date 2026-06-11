@@ -3,3 +3,11 @@ dist/
 .env
 *.log
 .DS_Store
+
+# Large media files - keep locally, never commit to git
+*.mp3
+*.mp4
+*.wav
+*.mov
+*.avi
+public/img.png
