@@ -8,6 +8,9 @@ import {
 import { useState, useEffect } from 'react'
 import TopNav from './TopNav'
 import { motion, AnimatePresence } from 'framer-motion'
+import { getPushSubscriptionState, subscribeToPushNotifications } from '../../lib/notifications/pushService'
+import { Bell, Loader2, X } from 'lucide-react'
+import { toast } from 'sonner'
 
 export default function AdminLayout() {
   const { user } = useAuth()
@@ -15,10 +18,32 @@ export default function AdminLayout() {
   const [isCollapsed, setIsCollapsed] = useState(false)
   const [isHovered, setIsHovered] = useState(false)
   const [isMobileOpen, setIsMobileOpen] = useState(false)
+  const [pushStatus, setPushStatus] = useState<'subscribed' | 'denied' | 'prompt' | 'unsupported'>('subscribed')
+  const [isPushLoading, setIsPushLoading] = useState(false)
 
   useEffect(() => {
     setIsMobileOpen(false)
   }, [location.pathname])
+
+  useEffect(() => {
+    // Check push status on mount
+    getPushSubscriptionState().then(setPushStatus)
+  }, [])
+
+  const handleEnablePush = async () => {
+    setIsPushLoading(true)
+    try {
+      await subscribeToPushNotifications()
+      setPushStatus('subscribed')
+      toast.success('System notifications enabled!')
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to enable notifications')
+      const status = await getPushSubscriptionState()
+      setPushStatus(status as any)
+    } finally {
+      setIsPushLoading(false)
+    }
+  }
 
   const navGroups = [
     {
@@ -189,6 +214,37 @@ export default function AdminLayout() {
 
       {/* ── MAIN CONTENT ── */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
+        <AnimatePresence>
+          {pushStatus !== 'subscribed' && pushStatus !== 'unsupported' && (
+            <motion.div 
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              className="bg-emerald-900 text-white z-[100] border-b border-white/10"
+            >
+              <div className="max-w-screen-2xl mx-auto px-8 py-3 flex items-center justify-between gap-4">
+                <div className="flex items-center gap-3 overflow-hidden">
+                  <div className="bg-emerald-800 p-2 rounded-lg flex-shrink-0 animate-pulse">
+                    <Bell size={16} className="text-emerald-300" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-[11px] font-black uppercase tracking-widest text-emerald-300 leading-none mb-1">Mandatory Security Requirement</p>
+                    <p className="text-sm font-bold truncate">Enable system push alerts to monitor platform activity even when offline.</p>
+                  </div>
+                </div>
+                <button
+                  onClick={handleEnablePush}
+                  disabled={isPushLoading}
+                  className="bg-emerald-500 hover:bg-emerald-400 text-white px-6 py-2 rounded-full text-xs font-black uppercase tracking-widest shadow-xl shadow-emerald-900/40 transition-all flex items-center gap-2 flex-shrink-0 disabled:opacity-50"
+                >
+                  {isPushLoading ? <Loader2 size={14} className="animate-spin" /> : <ShieldCheck size={14} />}
+                  Activate Alerts
+                </button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         <TopNav
           onMobileMenuToggle={() => setIsMobileOpen(true)}
           isCollapsed={isCollapsed}

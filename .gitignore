@@ -11,4 +11,3 @@ dist/
 *.mov
 *.avi
 public/img.png
-git gc --prune=now --aggressive
