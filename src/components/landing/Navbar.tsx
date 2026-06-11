@@ -49,7 +49,7 @@ export default function Navbar() {
       <style>{`
         .hl-nav-link {
           font-size: 0.7rem;
-          font-weight: 800;
+          font-weight: 500;
           text-transform: capitalize;
           letter-spacing: 0.12em;
           text-decoration: none;
