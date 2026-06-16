@@ -76,7 +76,7 @@ export default function PaymentsPage() {
     })
   }, [stats, sortField, sortDirection])
 
-  const payouts = useMemo(() => payoutsRes?.data?.items || [], [payoutsRes])
+  const payouts = useMemo(() => payoutsRes?.data?.accrued || [], [payoutsRes])
 
   // Pagination Logic
   const paginatedTransactions = useMemo(() => {

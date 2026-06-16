@@ -68,7 +68,7 @@ export default function TopNav({ isMobileOpen, onMobileMenuToggle, isCollapsed, 
     await logout()
     if (!isOffline) {
       // Full logout — navigate to login page
-      toast.success('Session terminated successfully')
+      // toast.success('Session terminated successfully')
       navigate('/login')
     } else {
       // Offline — session is locked, not destroyed

@@ -56,7 +56,7 @@ export default function UserOperationsPage() {
     mutationFn: adminApi.terminateSession,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-sessions'] })
-      toast.success('Session terminated')
+      // toast.success('Session terminated')
       setConfirmTerminateId(null)
     }
   })
