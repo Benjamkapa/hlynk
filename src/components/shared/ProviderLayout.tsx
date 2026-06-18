@@ -466,7 +466,7 @@ export default function ProviderLayout() {
           }
         />
 
-        <main className="flex-1 overflow-y-auto px-4 lg:px-10 py-4 lg:py-8 bg-slate-50/30 pb-24 lg:pb-8">
+        <main className="flex-1 overflow-y-auto px-4 lg:px-10 py-4 lg:py-8 bg-slate-50/30 pb-32 lg:pb-8">
           <Outlet />
         </main>
       </div>
@@ -481,11 +481,11 @@ export default function ProviderLayout() {
   );
 }
 
+// ─── Mobile Bottom Nav (floating, cage-free) ──────────────────────────────────
 function MobileBottomNav({ user, targetEndDate }: {
   user: any;
   targetEndDate: string | undefined;
 }) {
-  const location = useLocation();
   const [showBanner, setShowBanner] = useState(false);
   const isTrial = Number(user?.subscription?.status) === 2 || user?.subscription?.status === 'TRIAL';
 
@@ -496,23 +496,18 @@ function MobileBottomNav({ user, targetEndDate }: {
   }, [showBanner]);
 
   const navItems = [
-    { to: '/dashboard', label: 'Home', icon: LayoutDashboard, end: true },
-    { to: '/dashboard/products', label: 'Items', icon: Package, end: false },
-    { to: '/dashboard/expenses', label: 'Spends', icon: ShoppingCart, end: false },
-    { to: '/dashboard/sales/new', label: 'Sell', icon: Zap, isCenter: true },
-    { to: '/dashboard/sales', label: 'History', icon: Clock, end: true },
-    { to: '/dashboard/reports', label: 'Growth', icon: BarChart2, end: false, plan: 'PLUS' },
-    { to: '/dashboard/settings', label: 'Tools', icon: Settings, end: false },
+    { to: '/dashboard',           label: 'Home',    icon: LayoutDashboard, end: true,  isCenter: false },
+    { to: '/dashboard/products',  label: 'Items',   icon: Package,         end: false, isCenter: false },
+    { to: '/dashboard/expenses',  label: 'Spends',  icon: ShoppingCart,    end: false, isCenter: false },
+    { to: '/dashboard/sales/new', label: 'Sell',    icon: Zap,             end: false, isCenter: true  },
+    { to: '/dashboard/sales',     label: 'History', icon: Clock,           end: true,  isCenter: false },
+    { to: '/dashboard/reports',   label: 'Growth',  icon: BarChart2,       end: false, isCenter: false, plan: 'PLUS' as const },
+    { to: '/dashboard/settings',  label: 'Tools',   icon: Settings,        end: false, isCenter: false },
   ];
 
   const getPlanWeight = (p: string) => p.includes('MAX') ? 3 : p.includes('PLUS') ? 2 : 1;
   const currentPlan = (user?.subscription?.planName || 'LITE').toUpperCase();
   const userWeight = getPlanWeight(currentPlan);
-
-  const isActive = (item: any) => {
-    if (item.end) return location.pathname === item.to;
-    return location.pathname.startsWith(item.to);
-  };
 
   const handleLockedClick = (plan: string) => {
     toast.error(`Upgrade to ${plan} to access this feature`, {
@@ -526,19 +521,27 @@ function MobileBottomNav({ user, targetEndDate }: {
 
   return (
     <div className="fixed inset-x-0 bottom-6 z-[95] lg:hidden flex flex-col items-center pointer-events-none">
+
+      {/* Subscription status banner */}
       <AnimatePresence>
         {targetEndDate && showBanner && (
           <motion.div
-            initial={{ opacity: 0, y: 20, scale: 0.9 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 20, scale: 0.9 }}
+            initial={{ opacity: 0, y: 16, scale: 0.94 }}
+            animate={{ opacity: 1, y: 0,  scale: 1     }}
+            exit={{    opacity: 0, y: 16, scale: 0.94  }}
+            transition={{ duration: 0.2 }}
             className="w-full max-w-[340px] pointer-events-auto mb-4 px-4"
           >
-            <Link to="/dashboard/subscription" className="bg-[#0D4A3E] backdrop-blur-3xl border border-white/10 p-3 rounded-[1.5rem] flex items-center justify-between shadow-[0_20px_50px_rgba(13,74,61,0.4)]">
+            <Link
+              to="/dashboard/subscription"
+              className="bg-[#0D4A3E] border border-white/10 p-3 rounded-[1.5rem] flex items-center justify-between shadow-[0_20px_50px_rgba(13,74,61,0.4)]"
+            >
               <div className="pl-2">
-                <p className="text-[7px] font-black text-emerald-400 uppercase tracking-widest leading-none">Subscription Status</p>
+                <p className="text-[7px] font-black text-emerald-400 uppercase tracking-widest leading-none">
+                  Subscription Status
+                </p>
                 <p className="text-[9px] font-black text-white mt-1 uppercase tracking-tight">
-                   {isTrial ? 'Free Trial' : 'Active Plan'}
+                  {isTrial ? 'Free Trial' : 'Active Plan'}
                 </p>
               </div>
               <div className="bg-white/5 px-4 py-2 rounded-xl">
@@ -549,65 +552,84 @@ function MobileBottomNav({ user, targetEndDate }: {
         )}
       </AnimatePresence>
 
-      <div className="w-full px-[1rem] pointer-events-auto">
-        <div className="relative h-20 bg-white/95 backdrop-blur-2xl border border-white/60 rounded-full shadow-[0_20px_50px_rgba(0,0,0,0.1)] flex items-center justify-around px-2">
+      {/* Floating nav with background container to prevent content clash */}
+      <div className="w-full px-3 pointer-events-auto">
+        <div className="relative py-2 bg-white/95 backdrop-blur-xl rounded-[2rem] shadow-[0_8px_30px_rgba(0,0,0,0.08)] flex items-end justify-around px-1">
           {navItems.map((item) => {
-            const active = isActive(item);
-            const isLocked = item.plan && userWeight < getPlanWeight(item.plan);
+          const isLocked = item.plan && userWeight < getPlanWeight(item.plan);
 
-            if (item.isCenter) {
-              return (
-                <NavLink
-                  key={item.label}
-                  to={item.to}
-                  className="flex-1 flex flex-col items-center justify-center gap-1 no-tap-highlight"
-                >
-                  <div className={`w-11 h-11 rounded-full flex items-center justify-center transition-all duration-300 active:scale-95 ${active ? 'bg-emerald-500 shadow-lg shadow-emerald-500/20' : 'bg-emerald-200'}`}>
-                    <item.icon className={`w-5 h-5 ${active ? 'text-white' : 'text-[#0D4A3E]'}`} strokeWidth={2.5} />
-                  </div>
-                  <span className={`text-[11px] font-bold ${active ? 'text-emerald-700' : 'text-[#0D4A3E] opacity-60'}`}>
-                    {item.label}
-                  </span>
-                </NavLink>
-              );
-            }
+          /* ── Locked item ── */
+          if (isLocked) {
+            return (
+              <button
+                key={item.label}
+                onClick={() => handleLockedClick(item.plan!)}
+                className="flex flex-col items-center gap-1 px-2.5 py-1 opacity-30 grayscale no-tap-highlight"
+              >
+                <div className="w-11 h-11 rounded-full flex items-center justify-center">
+                  <item.icon className="w-5 h-5 text-[#0D4A3E]" strokeWidth={2} />
+                </div>
+                <span className="text-[10px] font-medium text-[#0D4A3E]">{item.label}</span>
+              </button>
+            );
+          }
 
-            if (isLocked) {
-              return (
-                <button
-                  key={item.label}
-                  onClick={() => handleLockedClick(item.plan!)}
-                  className="flex-1 flex flex-col items-center justify-center gap-1 no-tap-highlight opacity-40 grayscale"
-                >
-                  <div className="w-11 h-11 rounded-[14px] bg-slate-100 flex items-center justify-center transition-all duration-300">
-                    <item.icon className="w-5 h-5 text-slate-400" strokeWidth={2} />
-                  </div>
-                  <span className="text-[11px] font-bold text-slate-400">
-                    {item.label}
-                  </span>
-                </button>
-              );
-            }
-
+          /* ── Center CTA (Sell) ── */
+          if (item.isCenter) {
             return (
               <NavLink
                 key={item.label}
                 to={item.to}
-                end={item.end}
-                className="flex-1 flex flex-col items-center justify-center gap-1 no-tap-highlight"
+                className="flex flex-col items-center gap-1 px-2.5 py-1 no-tap-highlight"
                 onTouchStart={() => setShowBanner(true)}
               >
-                <div className={`w-11 h-11 rounded-[14px] flex items-center justify-center transition-all duration-300 ${active ? 'bg-emerald-500 shadow-lg shadow-emerald-500/10' : 'bg-emerald-50'}`}>
-                  <item.icon
-                    className={`w-5 h-5 transition-colors ${active ? 'text-white' : 'text-[#0D4A3E]'}`}
-                    strokeWidth={active ? 2.5 : 2}
-                  />
-                </div>
-                <span className={`text-[11px] font-bold transition-all ${active ? 'text-emerald-700 opacity-100' : 'text-[#0D4A3E] opacity-40'}`}>
-                  {item.label}
-                </span>
+                {({ isActive }) => (
+                  <>
+                    <div
+                      className={`w-14 h-14 rounded-full flex items-center justify-center transition-all duration-300 active:scale-95
+                        ${isActive
+                          ? 'bg-emerald-500 shadow-lg shadow-emerald-500/30'
+                          : 'bg-[#0D4A3E] shadow-lg shadow-[#0D4A3E]/25'
+                        }`}
+                    >
+                      <item.icon className="w-6 h-6 text-white" strokeWidth={2.5} />
+                    </div>
+                    <span className={`text-[10px] font-medium transition-all ${isActive ? 'text-emerald-600' : 'text-[#0D4A3E] opacity-50'}`}>
+                      {item.label}
+                    </span>
+                  </>
+                )}
               </NavLink>
             );
+          }
+
+          /* ── Regular item ── */
+          return (
+            <NavLink
+              key={item.label}
+              to={item.to}
+              end={item.end}
+              className="flex flex-col items-center gap-1 px-2.5 py-1 no-tap-highlight"
+              onTouchStart={() => setShowBanner(true)}
+            >
+              {({ isActive }) => (
+                <>
+                  <div
+                    className={`w-11 h-11 rounded-full flex items-center justify-center transition-all duration-200
+                      ${isActive ? 'bg-white shadow-md shadow-black/10' : 'bg-transparent'}`}
+                  >
+                    <item.icon
+                      className={`w-5 h-5 transition-colors ${isActive ? 'text-[#0D4A3E]' : 'text-[#0D4A3E] opacity-35'}`}
+                      strokeWidth={isActive ? 2.5 : 2}
+                    />
+                  </div>
+                  <span className={`text-[10px] font-medium transition-all ${isActive ? 'text-[#0D4A3E]' : 'text-[#0D4A3E] opacity-35'}`}>
+                    {item.label}
+                  </span>
+                </>
+              )}
+            </NavLink>
+          );
           })}
         </div>
       </div>
@@ -615,6 +637,7 @@ function MobileBottomNav({ user, targetEndDate }: {
   );
 }
 
+// ─── Mini countdown (banner) ──────────────────────────────────────────────────
 function MiniCountdown({ expiryDate }: { expiryDate: string }) {
   const calc = (d: string) => {
     const dist = new Date(d).getTime() - Date.now();
@@ -651,6 +674,7 @@ function MiniCountdown({ expiryDate }: { expiryDate: string }) {
   );
 }
 
+// ─── Countdown timer (desktop sidebar) ───────────────────────────────────────
 function CountdownTimer({ expiryDate }: { expiryDate: string | undefined }) {
   const calc = (d: string) => {
     const dist = new Date(d).getTime() - Date.now();
@@ -688,7 +712,7 @@ function CountdownTimer({ expiryDate }: { expiryDate: string | undefined }) {
     <div className="flex justify-between gap-1">
       {[{ v: t.d, l: 'd' }, { v: t.h, l: 'h' }, { v: t.m, l: 'm' }, { v: t.s, l: 's' }].map((seg, i) => (
         <div key={i} className="flex-1 flex flex-col items-center bg-white/5 rounded-[.4rem] py-1 border border-white/5">
-          <span className="text-[11px] font-black text-white leading-none">{seg.v.toString().padStart(2, '0')}</span>
+          <span className="text-[11px] font-black text-white leading-none">{seg.v.toString().padStart(2, '00')}</span>
           <span className="text-[6px] font-black text-emerald-400 uppercase opacity-50">{seg.l}</span>
         </div>
       ))}
