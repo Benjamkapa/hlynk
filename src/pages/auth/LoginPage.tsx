@@ -645,7 +645,7 @@ export default function LoginPage() {
                             else localStorage.removeItem('hlynk_eula_accepted')
                           }}
                         />
-                        <span className="text-[11px] px-1 pt-0.5 font-light text-white/90 leading-relaxed">
+                        <span className="text-[11px] px-1 py-1.5 font-light text-white/90 leading-relaxed">
                           I agree to the{' '}
                           <a href="/terms-conditions" className="text-white hover:text-emerald-300 font-medium underline transition-colors">Terms of Service</a>
                           ,{' and '}
@@ -784,7 +784,7 @@ export default function LoginPage() {
                               else localStorage.removeItem('hlynk_eula_accepted')
                             }}
                           />
-                          <span className="text-[11px] px-1 pt-0.5 leading-relaxed font-light text-slate-500">
+                          <span className="text-[11px] px-1 py-1.5 leading-relaxed font-light text-slate-500">
                             I agree to the{' '}
                             <a href="/terms-conditions" className="hover:text-emerald-600 hover:underline font-medium transition-colors">Terms of Service</a>
                             {' & '}
