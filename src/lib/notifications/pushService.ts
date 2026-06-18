@@ -69,8 +69,8 @@ export async function subscribeToPushNotifications() {
       subscription: {
         endpoint: subscription.endpoint,
         keys: {
-          p256dh: btoa(String.fromCharCode.apply(null, new Uint8Array(subscription.getKey('p256dh')!) as unknown as number[])),
-          auth: btoa(String.fromCharCode.apply(null, new Uint8Array(subscription.getKey('auth')!) as unknown as number[])),
+          p256dh: btoa(String.fromCharCode.apply(null, Array.from(new Uint8Array(subscription.getKey('p256dh')!)))),
+          auth: btoa(String.fromCharCode.apply(null, Array.from(new Uint8Array(subscription.getKey('auth')!)))),
         },
       },
     });

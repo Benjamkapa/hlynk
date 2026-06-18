@@ -26,7 +26,7 @@ const PLANS = [
     price: 9450,
     desc: 'For growing businesses that need deeper reports and better business tracking.',
     color: 'blue',
-    features: ['Manage up to 100 items', 'Everything in Starter', 'Profit Analytics', 'Sales Reports & Graphs', 'M-Pesa Express Automation', 'eTIMS Compliance Hub', '1 Staff Account', 'Priority Support'],
+    features: ['Everything in Starter','Manage up to 100 items', 'Profit Analytics', 'Sales Reports & Graphs', 'M-Pesa Express Automation', 'eTIMS Compliance Hub', '1 Staff Account', 'Priority Support'],
     notIncluded: ['KCB Buni Settlement', 'Unlimited Staff Accounts']
   },
   {
@@ -35,7 +35,7 @@ const PLANS = [
     price: 16999,
     desc: 'For businesses that need complete operational and staff management.',
     color: 'purple',
-    features: ['Unlimited Inventory Items', 'Everything in Growth', 'KCB Buni Settlement', 'Unlimited Staff Accounts', 'Staff Activity Tracking', 'Roles & Permissions', 'Advanced Business Controls'],
+    features: ['Everything in Growth','Unlimited Inventory Items', 'KCB Buni Settlement', 'Unlimited Staff Accounts', 'Staff Activity Tracking', 'Roles & Permissions', 'Advanced Business Controls'],
     notIncluded: []
   },
 ]
@@ -44,15 +44,15 @@ const FEATURE_COMPARISON = [
   { name: 'Inventory Management (Items)', lite: 'Up to 15', plus: 'Up to 100', max: 'Unlimited' },
   { name: 'Record & View Sales', lite: true, plus: true, max: true },
   { name: 'Track Daily Expenses', lite: true, plus: true, max: true },
-  { name: 'Profit Analytics', lite: false, plus: true, max: true },
+  { name: 'Profit Analytics', lite: true, plus: true, max: true },
+  { name: 'Priority Support', lite: true , plus: true, max: true },
   { name: 'M-Pesa Express Automation', lite: false, plus: true, max: true },
   { name: 'KRA eTIMS Auto-Sync', lite: false, plus: true, max: true },
-  { name: 'KCB Buni Settlement', lite: false, plus: false, max: true },
   { name: '1 Staff Account', lite: false, plus: true, max: true },
+  { name: 'KCB Buni Settlement', lite: false, plus: false, max: true },
   { name: 'Unlimited Staff Accounts', lite: false, plus: false, max: true },
   { name: 'Staff Activity Tracking', lite: false, plus: false, max: true },
   { name: 'Roles & Permissions', lite: false, plus: false, max: true },
-  { name: 'Priority Support', lite: false, plus: true, max: true },
 ]
 
 import { SubscriptionExpiredBanner } from '../../components/shared/SubscriptionGuard'

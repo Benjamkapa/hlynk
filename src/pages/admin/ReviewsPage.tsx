@@ -5,6 +5,7 @@ import { toast } from 'sonner'
 import { Star, CheckCircle2, XCircle, Clock, ShieldCheck, Search, Filter } from 'lucide-react'
 import Pagination from '../../components/shared/Pagination'
 import { motion, AnimatePresence } from 'framer-motion'
+import InlineLoader from '../../components/shared/InlineLoader'
 
 export default function ReviewsPage() {
   const [status, setStatus] = useState<string>('')
@@ -80,7 +81,7 @@ export default function ReviewsPage() {
               {isLoading ? (
                 <tr>
                   <td colSpan={6} className="py-20 text-center">
-                    <div className="h-8 w-8 animate-spin rounded-full border-4 border-emerald-500 border-t-transparent mx-auto" />
+                    <InlineLoader message="Loading reviews table content..." />
                   </td>
                 </tr>
               ) : reviews.length > 0 ? reviews.map((r: any) => (

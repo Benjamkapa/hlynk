@@ -48,16 +48,29 @@ export default function Navbar() {
     <>
       <style>{`
         .hl-nav-link {
-          font-size: 0.7rem;
-          font-weight: 500;
+          font-size: 1rem;
+          font-weight: 400;
           text-transform: capitalize;
           letter-spacing: 0.12em;
           text-decoration: none;
           color: rgba(255,255,255,0.8);
           transition: color 0.2s;
           white-space: nowrap;
+          position: relative;
         }
-        .hl-nav-link:hover { color: #fff; }
+        .hl-nav-link::after {
+          content: '';
+          position: absolute;
+          width: 0;
+          height: 1px;
+          bottom: -4px;
+          left: 0;
+          background-color: #059669;
+          transition: width 0.3s ease-in-out;
+        }
+        .hl-nav-link:hover::after {
+          width: 100%;
+        }
         .hl-nav-link.scrolled { color: #475569; }
         .hl-nav-link.scrolled:hover { color: #059669; }
 
@@ -188,7 +201,7 @@ export default function Navbar() {
           {/* Logo */}
           <Link to="/" style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
             <img
-              src="/logo.png"
+              src="/hlynk.png"
               alt="hlynk"
               style={{
                 height: '40px',
@@ -197,6 +210,7 @@ export default function Navbar() {
                 filter: scrolled ? 'none' : 'brightness(0) invert(1)',
               }}
             />
+            <span style={{ color: scrolled ? '#00694B' : '#fff', fontSize: '2rem', fontWeight: 'bold', margin: '4px' }}>lynk</span>
           </Link>
 
           {/* Desktop nav links */}

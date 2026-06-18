@@ -30,8 +30,8 @@ const pricingPlans = [
     desc: "For growing businesses that need deeper reports and better business tracking.",
     color: "bg-[#2DD4BF]", // Teal/Emerald
     features: [
-      "Manage Up to 100 Items",
       "Everything in Starter",
+      "Manage Up to 100 Items",
       "Sales Reports & Graphs",
       "M-Pesa Express Automation",
       "eTIMS Compliance Hub",
@@ -47,8 +47,8 @@ const pricingPlans = [
     desc: "For businesses that need complete operational and staff management.",
     color: "bg-[#818CF8]", // Indigo/Purple
     features: [
-      "Unlimited Items",
       "Everything in Growth",
+      "Unlimited Items",
       "KCB Buni Settlement",
       "Unlimited Staff Accounts",
       "Staff Activity Tracking",

@@ -378,4 +378,25 @@
     opacity: 0.5;
     user-select: none;
   }
+
+  .hl-ios-spinner {
+    position: relative;
+    width: 24px;
+    height: 24px;
+  }
+  .hl-ios-spinner-bar {
+    position: absolute;
+    left: 46%;
+    top: 46%;
+    width: 8%;
+    height: 24%;
+    background-color: currentColor;
+    border-radius: 10px;
+    animation: hl-ios-fade 1.2s linear infinite;
+  }
+  @keyframes hl-ios-fade {
+    0% { opacity: 1; }
+    100% { opacity: 0.15; }
+  }
 }
+

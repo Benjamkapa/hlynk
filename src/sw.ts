@@ -5,7 +5,14 @@ import { precacheAndRoute } from 'workbox-precaching';
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 precacheAndRoute((self as any).__WB_MANIFEST || []);
 
-const _self = (self as unknown) as ServiceWorkerGlobalScope;
+const _self = (self as unknown) as ServiceWorkerGlobalScope & { clients: Clients };
+
+// Require skipWaiting to prevent the SW from hanging in the wait state
+_self.skipWaiting();
+
+_self.addEventListener('activate', (event) => {
+  event.waitUntil(_self.clients.claim());
+});
 
 _self.addEventListener('push', (event: PushEvent) => {
   if (event.data) {
