@@ -43,7 +43,6 @@ export default function GoogleAuthButton({
 
   useEffect(() => {
     let cancelled = false
-    let resizeObserver: ResizeObserver | null = null
 
     if (!clientId || !containerRef.current || isOffline) return
 
@@ -94,7 +93,6 @@ export default function GoogleAuthButton({
 
     return () => {
       cancelled = true
-      resizeObserver?.disconnect()
       if (containerRef.current) {
         containerRef.current.innerHTML = ''
       }
