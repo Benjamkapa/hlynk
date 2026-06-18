@@ -735,7 +735,7 @@ export default function LoginPage() {
             <div className="hidden lg:flex w-full max-w-[380px] mx-auto flex-col h-full">
               <div className="lp-right-logo flex justify-center mb-12">
                 <img src={hlynk} alt="hlynk" className="h-12 object-contain" />
-                <span style={{ color: '#00694B', fontWeight: 'bold', fontSize: '1.5rem', fontFamily: "'Nunito', sans-serif", fontWeight: 'bold', margin: '5px' }}>lynk</span>
+                <span style={{ color: '#00694B', fontWeight: 'bold', fontSize: '1.5rem', fontFamily: "'Nunito', sans-serif", margin: '5px' }}>lynk</span>
               </div>
 
               <AnimatePresence mode="wait">
