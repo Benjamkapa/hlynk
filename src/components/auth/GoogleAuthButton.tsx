@@ -82,10 +82,8 @@ export default function GoogleAuthButton({
         renderGoogleButton()
         setIsReady(true)
 
-        if (typeof ResizeObserver !== 'undefined' && containerRef.current) {
-          resizeObserver = new ResizeObserver(() => renderGoogleButton())
-          resizeObserver.observe(containerRef.current)
-        }
+        // ResizeObserver removed to prevent infinite layout-shift re-render loops.
+        // The 150% scaling of the iframe guarantees it covers the button hit area anyway.
       })
       .catch(() => {
         if (!cancelled) {

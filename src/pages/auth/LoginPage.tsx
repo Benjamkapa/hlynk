@@ -13,6 +13,7 @@ import { platformApi, type PlatformReview } from '../../lib/api/platform'
 import { motion, AnimatePresence } from 'framer-motion'
 
 const logo = '/logo.png'
+const hlynk = '/hlynk.png'
 const authBg = '/img.png'
 
 const COUNTIES = [
@@ -595,7 +596,7 @@ export default function LoginPage() {
                   {/* Nav */}
                   <nav className="mob-nav hidden" style={{ display: 'flex' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <img src={logo} alt="hlynk" style={{ height: 32, objectFit: 'contain' }} />
+                      <img src={hlynk} alt="hlynk" style={{ height: 32, objectFit: 'contain' }} />
                     </div>
                     <a href="/" style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, fontWeight: 700, color: '#0c3d2eff', textDecoration: 'none', letterSpacing: '0.14em' }}>
                       <ArrowLeft size={10} /> Website
@@ -676,7 +677,7 @@ export default function LoginPage() {
                   transition={{ duration: 0.35 }}
                 >
                   <nav className="mob-nav hidden" style={{ display: 'flex' }}>
-                    <img src={logo} alt="hlynk" style={{ height: 32, objectFit: 'contain' }} />
+                    <img src={hlynk} alt="hlynk" style={{ height: 32, objectFit: 'contain' }} />
                     <button
                       onClick={() => { setRequiresRegistration(false); setGoogleCredential('') }}
                       style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, fontWeight: 700, background: 'none', border: 'none', textTransform: 'capitalize', letterSpacing: '0.14em', cursor: 'pointer' }}
@@ -733,7 +734,8 @@ export default function LoginPage() {
             {/* ═══════════════ DESKTOP (hidden on mobile) ════════════════════ */}
             <div className="hidden lg:flex w-full max-w-[380px] mx-auto flex-col h-full">
               <div className="lp-right-logo flex justify-center mb-12">
-                <img src={logo} alt="hlynk" className="h-12 object-contain" />
+                <img src={hlynk} alt="hlynk" className="h-12 object-contain" />
+                <span style={{ color: '#00694B', fontWeight: 'bold', fontSize: '1.5rem', fontFamily: "'Nunito', sans-serif", fontWeight: 'bold', margin: '5px' }}>lynk</span>
               </div>
 
               <AnimatePresence mode="wait">
