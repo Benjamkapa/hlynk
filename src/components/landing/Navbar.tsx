@@ -266,7 +266,8 @@ export default function Navbar() {
         {/* Mobile header row */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '24px 28px', borderBottom: '1px solid #f1f5f9' }}>
           <Link to="/" onClick={() => setMenuOpen(false)}>
-            <img src="/logo.png" alt="hlynk" style={{ height: 30, width: 'auto' }} />
+            <img src="/hlynk.png" alt="hlynk" style={{ height: 30, width: 'auto' }} />
+            <span style={{ color: '#00694B', fontSize: '1.5rem', fontWeight: 'bold', margin: '4px' }}>lynk</span>
           </Link>
           <button
             onClick={() => setMenuOpen(false)}
