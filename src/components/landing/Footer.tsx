@@ -7,7 +7,7 @@ export default function Footer() {
         <div className="flex flex-col md:flex-row items-center justify-between gap-12">
           <Link to="/" className="flex items-center gap-3 group">
             <img src="/hlynk.png" alt="hlynk" className="h-10 w-auto brightness-0 invert" />
-            <span style={{ color: '#fff', fontSize: '1.5rem', fontWeight: '400', margin: '4px' }}>lynk</span>
+            <span style={{ color: '#fff', fontSize: '1.5rem', fontWeight: '400', marginBlock: '4px', marginRight: '4px' }}>lynk</span>
           </Link>
 
           <nav className="flex flex-wrap justify-center gap-8 md:gap-12">

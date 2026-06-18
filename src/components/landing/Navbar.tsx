@@ -210,7 +210,7 @@ export default function Navbar() {
                 filter: scrolled ? 'none' : 'brightness(0) invert(1)',
               }}
             />
-            <span style={{ color: scrolled ? '#00694B' : '#fff', fontSize: '2rem', fontWeight: 'bold', margin: '4px' }}>lynk</span>
+            <span style={{ color: scrolled ? '#00694B' : '#fff', fontSize: '1.5rem', fontWeight: 'bold', margin: '4px' }}>lynk</span>
           </Link>
 
           {/* Desktop nav links */}
