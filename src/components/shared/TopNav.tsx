@@ -32,8 +32,68 @@ export default function TopNav({ isMobileOpen, onMobileMenuToggle, isCollapsed, 
     queryKey: ['notifications'],
     queryFn: () => platformApi.getNotifications(),
     enabled: !!user,
-    refetchInterval: 30000 
+    refetchInterval: 15000 // Polling every 15s for better responsiveness
   })
+
+  // Track which notifications we've already shown as toasts to avoid duplicates
+  const [toastedIds, setToastedIds] = useState<Set<string>>(new Set())
+
+  // Listen for real-time messages from Service Worker (Push Notifications)
+  useEffect(() => {
+    if (!('serviceWorker' in navigator)) return
+
+    const handleMessage = (event: MessageEvent) => {
+      if (event.data?.type === 'PUSH_NOTIFICATION') {
+        const { title, body, type } = event.data.payload
+        
+        // Show the toast immediately
+        if (type === 'success') toast.success(title, { description: body })
+        else if (type === 'warning' || type === 'error') toast.error(title, { description: body })
+        else toast(title, { description: body })
+
+        // Refresh the notification list so the bell icon updates
+        queryClient.invalidateQueries({ queryKey: ['notifications'] })
+      }
+    }
+
+    navigator.serviceWorker.addEventListener('message', handleMessage)
+    return () => navigator.serviceWorker.removeEventListener('message', handleMessage)
+  }, [queryClient])
+
+  // Monitor polled notifications and toast any UNREAD ones we haven't seen yet
+  useEffect(() => {
+    if (!notifyRes?.data) return
+
+    const unread = notifyRes.data.filter((n: any) => !n.isRead)
+    let hasNew = false
+
+    const newIds = new Set(toastedIds)
+    let hasChanges = false
+
+    unread.forEach((n: any) => {
+      if (!toastedIds.has(n.id)) {
+        // If this is not the very first load (to avoid toast bomb on refresh)
+        if (toastedIds.size > 0) {
+          if (n.type === 'success') toast.success(n.title, { description: n.message })
+          else if (n.type === 'warning' || n.type === 'error') toast.error(n.title, { description: n.message })
+          else toast(n.title, { description: n.message })
+        }
+        
+        newIds.add(n.id)
+        hasChanges = true
+      }
+    })
+
+    if (hasChanges) {
+      setToastedIds(newIds)
+    }
+
+    // If it's the first load, just populate the set without toasting
+    if (toastedIds.size === 0 && unread.length > 0) {
+      const initialIds = new Set(unread.map((n: any) => n.id))
+      setToastedIds(initialIds)
+    }
+  }, [notifyRes, toastedIds])
 
   const markReadMutation = useMutation({
     mutationFn: (id: string) => platformApi.markAsRead(id),

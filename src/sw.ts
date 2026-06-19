@@ -24,9 +24,25 @@ _self.addEventListener('push', (event: PushEvent) => {
       data: data.data || {},
     };
 
+    // 1. Show the system notification
     event.waitUntil(
       _self.registration.showNotification(data.title, options)
     );
+
+    // 2. Broadcast to all open tabs for in-app toasts
+    _self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clients) => {
+      clients.forEach((client) => {
+        client.postMessage({
+          type: 'PUSH_NOTIFICATION',
+          payload: { 
+            title: data.title, 
+            body: data.body, 
+            data: data.data,
+            type: data.type || 'info'
+          }
+        });
+      });
+    });
   }
 });
 

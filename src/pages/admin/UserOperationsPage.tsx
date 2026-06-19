@@ -7,6 +7,7 @@ import { useAuth } from '../../lib/auth/AuthContext'
 import { useNavigate } from 'react-router-dom'
 import Pagination from '../../components/shared/Pagination'
 import { ConfirmModal } from '../../components/shared/ConfirmModal'
+import BroadcastTool from '../../components/admin/BroadcastTool'
 
 export default function UserOperationsPage() {
   const [search, setSearch] = useState('')
@@ -92,6 +93,8 @@ export default function UserOperationsPage() {
           <p className="text-gray-500 font-medium">Manage platform users, security sessions, and deep activity audits</p>
         </div>
       </div>
+
+      <BroadcastTool />
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
         <div className="lg:col-span-3 space-y-6">

@@ -289,26 +289,33 @@ function MobileBottomAdminNav() {
 
   return (
     <div className="fixed inset-x-0 bottom-6 z-[95] lg:hidden flex flex-col items-center pointer-events-none">
-      <div className="w-full px-[1px] pointer-events-auto">
-        <div className="relative h-20 bg-white/95 backdrop-blur-2xl border border-white/60 rounded-full shadow-[0_20px_50px_rgba(0,0,0,0.1)] flex items-center justify-around px-2">
+      <div className="w-full px-3 pointer-events-auto">
+        <div className="relative py-2 bg-white/95 backdrop-blur-xl rounded-[2rem] shadow-[0_8px_30px_rgba(0,0,0,0.08)] flex items-center justify-around px-1">
 
           {navItems.map((item) => {
-            const active = isActive(item);
-
             if (item.isCenter) {
               return (
                 <NavLink
                   key={item.label}
                   to={item.to}
-                  className="flex-1 flex flex-col items-center justify-center gap-1 no-tap-highlight"
+                  className="flex flex-col items-center gap-1 px-2.5 py-1 no-tap-highlight"
                 >
-                  <div className={`w-11 h-11 rounded-full flex items-center justify-center transition-all duration-300 active:scale-95 ${active ? 'bg-emerald-500 shadow-lg shadow-emerald-500/20' : 'bg-emerald-200'
-                    }`}>
-                    <item.icon className={`w-5 h-5 ${active ? 'text-white' : 'text-[#0D4A3E]'}`} strokeWidth={2.5} />
-                  </div>
-                  <span className={`text-[11px] font-bold ${active ? 'text-emerald-700' : 'text-[#0D4A3E] opacity-60'}`}>
-                    {item.label}
-                  </span>
+                  {({ isActive }) => (
+                    <>
+                      <div
+                        className={`w-14 h-14 rounded-full flex items-center justify-center transition-all duration-300 active:scale-95
+                          ${isActive
+                            ? 'bg-emerald-500 shadow-lg shadow-emerald-500/30'
+                            : 'bg-[#0D4A3E] shadow-lg shadow-[#0D4A3E]/25'
+                          }`}
+                      >
+                        <item.icon className="w-6 h-6 text-white" strokeWidth={2.5} />
+                      </div>
+                      <span className={`text-[10px] font-medium transition-all ${isActive ? 'text-emerald-600' : 'text-[#0D4A3E] opacity-50'}`}>
+                        {item.label}
+                      </span>
+                    </>
+                  )}
                 </NavLink>
               );
             }
@@ -318,23 +325,27 @@ function MobileBottomAdminNav() {
                 key={item.label}
                 to={item.to}
                 end={item.end}
-                className="flex-1 flex flex-col items-center justify-center gap-1 no-tap-highlight"
+                className="flex flex-col items-center gap-1 px-2.5 py-1 no-tap-highlight"
               >
-                <div className={`w-11 h-11 rounded-[14px] flex items-center justify-center transition-all duration-300 ${active ? 'bg-emerald-500 shadow-lg shadow-emerald-500/10' : 'bg-emerald-50'
-                  }`}>
-                  <item.icon
-                    className={`w-5 h-5 transition-colors ${active ? 'text-white' : 'text-[#0D4A3E]'}`}
-                    strokeWidth={active ? 2.5 : 2}
-                  />
-                </div>
-                <span className={`text-[11px] font-bold transition-all ${active ? 'text-emerald-700 opacity-100' : 'text-[#0D4A3E] opacity-40'
-                  }`}>
-                  {item.label}
-                </span>
+                {({ isActive }) => (
+                  <>
+                    <div
+                      className={`w-11 h-11 rounded-full flex items-center justify-center transition-all duration-200
+                        ${isActive ? 'bg-white shadow-md shadow-black/10' : 'bg-transparent'}`}
+                    >
+                      <item.icon
+                        className={`w-5 h-5 transition-colors ${isActive ? 'text-[#0D4A3E]' : 'text-[#0D4A3E] opacity-35'}`}
+                        strokeWidth={isActive ? 2.5 : 2}
+                      />
+                    </div>
+                    <span className={`text-[10px] font-medium transition-all ${isActive ? 'text-[#0D4A3E]' : 'text-[#0D4A3E] opacity-35'}`}>
+                      {item.label}
+                    </span>
+                  </>
+                )}
               </NavLink>
             );
           })}
-
         </div>
       </div>
     </div>
