@@ -228,7 +228,7 @@ export default function AdminLayout() {
                     <Bell size={16} className="text-emerald-300" />
                   </div>
                   <div className="min-w-0">
-                    <p className="text-[11px] font-black uppercase tracking-widest text-emerald-300 leading-none mb-1">Mandatory Security Requirement</p>
+                    <p className="text-[11px] font-black tracking-widest text-emerald-300 leading-none mb-1">Mandatory Security Requirement</p>
                     <p className="text-sm font-bold truncate">Enable system push alerts to monitor platform activity even when offline.</p>
                   </div>
                 </div>
