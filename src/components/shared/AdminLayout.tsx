@@ -18,7 +18,7 @@ export default function AdminLayout() {
   const [isCollapsed, setIsCollapsed] = useState(false)
   const [isHovered, setIsHovered] = useState(false)
   const [isMobileOpen, setIsMobileOpen] = useState(false)
-  const [pushStatus, setPushStatus] = useState<'subscribed' | 'denied' | 'prompt' | 'unsupported'>('subscribed')
+  const [pushStatus, setPushStatus] = useState<'subscribed' | 'denied' | 'prompt' | 'unsupported' | 'ios_browser'>('subscribed')
   const [isPushLoading, setIsPushLoading] = useState(false)
 
   useEffect(() => {
@@ -39,7 +39,7 @@ export default function AdminLayout() {
     } catch (err: any) {
       toast.error(err.message || 'Failed to enable notifications')
       const status = await getPushSubscriptionState()
-      setPushStatus(status as any)
+      setPushStatus(status)
     } finally {
       setIsPushLoading(false)
     }
@@ -228,18 +228,26 @@ export default function AdminLayout() {
                     <Bell size={16} className="text-emerald-300" />
                   </div>
                   <div className="min-w-0">
-                    <p className="text-[11px] font-black tracking-widest text-emerald-300 leading-none mb-1">Mandatory Security Requirement</p>
-                    <p className="text-sm font-bold truncate">Enable system push alerts to monitor platform activity even when offline.</p>
+                    <p className="text-[11px] font-black tracking-widest text-emerald-300 leading-none mb-1">
+                      {pushStatus === 'ios_browser' ? 'Action Required' : 'Mandatory Security Requirement'}
+                    </p>
+                    <p className="text-sm font-bold truncate">
+                      {pushStatus === 'ios_browser' 
+                        ? "To enable alerts on iOS, tap 'Share' then 'Add to Home Screen'." 
+                        : "Enable system push alerts to monitor platform activity even when offline."}
+                    </p>
                   </div>
                 </div>
-                <button
-                  onClick={handleEnablePush}
-                  disabled={isPushLoading}
-                  className="bg-emerald-500 hover:bg-emerald-400 text-white px-6 py-2 rounded-full text-xs font-black uppercase tracking-widest shadow-xl shadow-emerald-900/40 transition-all flex items-center gap-2 flex-shrink-0 disabled:opacity-50"
-                >
-                  {isPushLoading ? <Loader2 size={14} className="animate-spin" /> : <ShieldCheck size={14} />}
-                  Activate Alerts
-                </button>
+                {pushStatus !== 'ios_browser' && (
+                  <button
+                    onClick={handleEnablePush}
+                    disabled={isPushLoading}
+                    className="bg-emerald-500 hover:bg-emerald-400 text-white px-6 py-2 rounded-full text-xs font-black uppercase tracking-widest shadow-xl shadow-emerald-900/40 transition-all flex items-center gap-2 flex-shrink-0 disabled:opacity-50"
+                  >
+                    {isPushLoading ? <Loader2 size={14} className="animate-spin" /> : <ShieldCheck size={14} />}
+                    Activate Alerts
+                  </button>
+                )}
               </div>
             </motion.div>
           )}
