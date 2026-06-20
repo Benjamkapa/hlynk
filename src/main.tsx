@@ -40,11 +40,15 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
           </MobileViewportProvider>
           <Toaster
             position="top-center"
+            closeButton
+            richColors
+            expand={false}
             toastOptions={{
               style: { fontFamily: 'Inter, sans-serif' },
               classNames: {
-                success: 'border-green-200 bg-green-50',
-                error: 'border-red-200 bg-red-50',
+                toast: 'bg-white/95 backdrop-blur-md border-gray-100 shadow-2xl rounded-2xl',
+                success: 'border-green-200 bg-green-50 text-green-900',
+                error: 'border-red-200 bg-red-50 text-red-900',
               },
             }}
           />

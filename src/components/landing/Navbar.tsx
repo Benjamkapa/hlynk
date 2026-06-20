@@ -113,8 +113,8 @@ export default function Navbar() {
           padding: 9px 20px;
           border-radius: .5rem;
           background: #0D4A3E;
-          font-size: 0.7rem;
-          font-weight: 800;
+          font-size: 0.9rem;
+          font-weight: 500;
           text-transform: capitalize;
           letter-spacing: 0.1em;
           text-decoration: none;

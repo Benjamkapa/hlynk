@@ -14,8 +14,9 @@ function urlBase64ToUint8Array(base64String: string) {
 }
 
 /** Wraps navigator.serviceWorker.ready with a timeout so it never hangs forever */
-function swReady(timeoutMs = 20_000): Promise<ServiceWorkerRegistration> {
+function swReady(timeoutMs = 60_000): Promise<ServiceWorkerRegistration> {
   console.log('[PushService] Waiting for service worker to be ready...');
+  
   return Promise.race([
     navigator.serviceWorker.ready.then(reg => {
       console.log('[PushService] Service worker is ready:', reg.active?.state);
@@ -25,7 +26,7 @@ function swReady(timeoutMs = 20_000): Promise<ServiceWorkerRegistration> {
       setTimeout(
         () => {
           console.error('[PushService] Service worker ready timeout exceeded');
-          reject(new Error('Service worker took too long to activate. Try refreshing the page.'));
+          reject(new Error('Service worker took too long to activate. Please ensure you are online and refresh.'));
         },
         timeoutMs,
       )
