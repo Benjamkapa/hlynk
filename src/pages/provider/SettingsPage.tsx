@@ -463,6 +463,40 @@ export default function SettingsPage() {
                   </div>
                 </div>
 
+                <div className="p-8 bg-blue-50 border border-blue-100 rounded-[.5rem] flex items-start gap-5">
+                  <RefreshCcw className="text-blue-600 shrink-0 mt-1" size={24} />
+                  <div>
+                    <h4 className="text-lg font-black text-blue-900 mb-2">Wipe Application Cache</h4>
+                    <p className="text-sm text-blue-800 leading-relaxed max-w-xl">
+                      If you see errors like <strong>"Service worker took too long to activate"</strong> or "Old version detected", use this to force the app to refresh. This will log you out but fix most mobile update issues.
+                    </p>
+                    <div className="mt-8">
+                      <button
+                        onClick={async () => {
+                          if (confirm('This will wipe local caches and log you out to fix update issues. Proceed?')) {
+                            const registrations = await navigator.serviceWorker.getRegistrations();
+                            for (let registration of registrations) {
+                              await registration.unregister();
+                            }
+                            if ('caches' in window) {
+                              const keys = await caches.keys();
+                              for (let key of keys) {
+                                await caches.delete(key);
+                              }
+                            }
+                            localStorage.clear();
+                            sessionStorage.clear();
+                            window.location.href = '/login?reset=true';
+                          }
+                        }}
+                        className="px-8 py-4 bg-blue-600 text-white rounded-[.5rem] font-black text-xs uppercase tracking-widest hover:bg-blue-700 transition-all shadow-xl shadow-blue-900/10 active:scale-95"
+                      >
+                        Force Hard Reset
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 opacity-60 pointer-events-none">
                   <div className="p-6 bg-slate-50 rounded-[.5rem] border border-slate-100">
                     <h5 className="font-black text-slate-900 mb-2 flex items-center gap-2">
@@ -491,7 +525,6 @@ export default function SettingsPage() {
               <div className="space-y-10">
                 <ActivityLogViewer />
 
-                {/* ── Offline PIN Management ─────────────────────────────────── */}
                 <div className="pt-10 border-t border-gray-100">
                   <div className="flex items-center gap-3 mb-6">
                     <ShieldCheck size={18} className="text-emerald-600" />
@@ -559,7 +592,6 @@ export default function SettingsPage() {
         </div>
       </div>
 
-      {/* Parent ConfirmModal: only handles account deactivation */}
       <ConfirmModal
         isOpen={!!confirmDeleteId}
         title="Delete Account"
@@ -581,7 +613,6 @@ export default function SettingsPage() {
         onCancel={() => setConfirmDeleteId(null)}
       />
 
-      {/* PIN Setup Modal */}
       <AnimatePresence>
         {showPinSetup && (
           <PinSetupModal
@@ -597,11 +628,11 @@ export default function SettingsPage() {
 }
 
 function NotificationsPanel({ settings, onUpdate }: any) {
-  const [pushState, setPushState] = useState<'subscribed' | 'denied' | 'prompt' | 'unsupported'>('prompt');
+  const [pushState, setPushState] = useState<'subscribed' | 'denied' | 'prompt' | 'unsupported' | 'ios_browser'>('prompt');
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    getPushSubscriptionState().then(setPushState);
+    getPushSubscriptionState().then(setPushState as any);
   }, []);
 
   const handlePushToggle = async (active: boolean) => {
@@ -647,6 +678,16 @@ function NotificationsPanel({ settings, onUpdate }: any) {
             <Loader2 className="animate-spin text-emerald-600" size={20} />
           ) : pushState === 'unsupported' ? (
             <span className="text-[10px] font-black text-red-400 uppercase tracking-widest">Unsupported</span>
+          ) : pushState === 'ios_browser' ? (
+            <div className="flex flex-col items-end gap-2">
+              <span className="text-[10px] font-black text-amber-600 uppercase tracking-widest">Action Required</span>
+              <button
+                onClick={() => toast.info('To enable notifications on iPhone: Tap "Share" and select "Add to Home Screen". Push only works in standalone mode!')}
+                className="px-4 py-2 bg-amber-100 text-amber-700 rounded-[.5rem] text-[10px] font-black uppercase tracking-widest whitespace-nowrap"
+              >
+                Setup on iPhone
+              </button>
+            </div>
           ) : pushState === 'denied' ? (
             <button
               onClick={() => toast.info('Please reset notification permissions in your browser address bar.')}

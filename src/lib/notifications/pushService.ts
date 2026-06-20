@@ -26,7 +26,7 @@ function swReady(timeoutMs = 60_000): Promise<ServiceWorkerRegistration> {
       setTimeout(
         () => {
           console.error('[PushService] Service worker ready timeout exceeded');
-          reject(new Error('Service worker took too long to activate. Please ensure you are online and refresh.'));
+          reject(new Error('Service worker took too long to activate. If this persists, please clear your browser cache or re-install the PWA.'));
         },
         timeoutMs,
       )
@@ -95,8 +95,23 @@ export async function unsubscribeFromPush() {
   }
 }
 
+function isIOS() {
+  const userAgent = window.navigator.userAgent.toLowerCase();
+  return /iphone|ipad|ipod/.test(userAgent);
+}
+
+function isStandalone() {
+  return (window.matchMedia('(display-mode: standalone)').matches) || (window.navigator as any).standalone;
+}
+
 export async function getPushSubscriptionState() {
   if (!('serviceWorker' in navigator) || !('PushManager' in window)) return 'unsupported';
+  
+  // Special handling for iOS
+  if (isIOS() && !isStandalone()) {
+    return 'ios_browser'; // Custom state for iOS Safari mode
+  }
+
   if (Notification.permission === 'denied') return 'denied';
 
   try {
