@@ -142,7 +142,7 @@ export default function PaymentsPage() {
             </button>
           </div>
           <button className="bg-white border border-gray-100 text-gray-600 h-12 px-6 rounded-xl font-bold text-sm hover:bg-gray-50 transition-all flex items-center gap-2 shadow-sm">
-            <Download size={18} /> Export CSV
+            <Download size={18} /> CSV
           </button>
         </div>
       </div>

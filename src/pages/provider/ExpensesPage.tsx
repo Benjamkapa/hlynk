@@ -141,7 +141,7 @@ export default function ExpensesPage() {
             onClick={handleExport}
             className="bg-gray-100 text-gray-600 h-12 px-6 rounded-[.5rem] font-bold text-sm hover:bg-gray-200 transition-all flex items-center gap-2"
           >
-            <Download size={18} /> Export CSV
+            <Download size={18} /> CSV
           </button>
           <button
             onClick={() => setIsAddModalOpen(true)}

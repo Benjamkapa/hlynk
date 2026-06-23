@@ -81,7 +81,7 @@ export default function AuditSecurityPage() {
                 <RefreshCcw size={14} /> Refresh
              </button>
              <button onClick={handleLogExport} className="h-10 px-4 bg-gray-50 text-gray-600 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 hover:bg-gray-100 transition-all border border-gray-100">
-                <FileText size={14} /> Export CSV
+                <FileText size={14} /> CSV
              </button>
           </div>
         </div>

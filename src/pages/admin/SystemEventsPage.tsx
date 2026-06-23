@@ -46,7 +46,7 @@ export default function SystemEventsPage() {
             onClick={() => exportToCSV(events, `system_events_page_${page}`)}
             className="bg-white text-gray-600 h-11 px-4 rounded-md border border-gray-100 font-bold text-xs hover:bg-gray-50 transition-all flex items-center gap-2"
           >
-            <Download size={16} /> Export CSV
+            <Download size={16} /> CSV
           </button>
           <button
             onClick={() => pruneMutation.mutate()}

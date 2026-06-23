@@ -35,11 +35,11 @@ export default function SalesHistoryPage() {
   const [status, setStatus] = useState('')
   const [activeSource, setActiveSource] = useState<string>('__all__')
 
-  // First fetch: always all sources, to build channel tabs with counts
+  // First fetch: NO date filter — so channel tabs show ALL channels ever, not just today's
   const { data: allData } = useQuery<PaginatedResponse<any> & { stats: any }>({
-    queryKey: ['sales-history-all-sources', selectedDate],
-    queryFn: () => salesApi.list({ date: selectedDate, limit: 1, includeStats: true }),
-    staleTime: 30_000,
+    queryKey: ['sales-history-all-sources'],
+    queryFn: () => salesApi.list({ limit: 1, includeStats: true }),
+    staleTime: 60_000,
   })
 
   // Main fetch: filtered by selected source
@@ -127,7 +127,7 @@ export default function SalesHistoryPage() {
           onClick={exportToCSV}
           className="bg-gray-100 text-gray-600 h-12 px-6 rounded-[.5rem] font-bold text-sm hover:bg-gray-200 transition-all flex items-center gap-2"
         >
-          <Download size={18} /> Export CSV
+          <Download size={18} /> CSV
         </button>
       </div>
 
