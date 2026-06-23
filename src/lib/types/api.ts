@@ -51,8 +51,10 @@ export interface ProviderStats {
   newCustomers: number;
   outOfStockCount: number;
   profit: number;
+  cumulativeProfit: number;
   rating: number;
   reviewCount: number;
   salesChart: { name: string; sales: number; profit: number }[];
   recentSales: any[];
+  profitBySource?: { name: string; sales: number; profit: number }[];
 }
