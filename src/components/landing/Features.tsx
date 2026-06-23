@@ -38,7 +38,7 @@ const features = [
     desc: "Stay fully compliant with KRA effortlessly. Optional direct system-to-system eTIMS integration pushes invoices automatically for your peace of mind."
   },
   {
-    icon: <img src="https://monisnapcontent.kinsta.cloud/wp-content/uploads/2021/09/M-PESA_LOGO-640x467.png?v=1632335437" alt="M-Pesa" className="h-12 w-auto object-contain" />,
+    icon: <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/15/M-PESA_LOGO-01.svg/960px-M-PESA_LOGO-01.svg.png?_=20251215193002" alt="M-Pesa" className="h-12 w-auto object-contain" />,
     title: "M-Pesa Integration",
     desc: "Accept payments via M-Pesa effortlessly. Get instant notifications and update your sales automatically."
   },

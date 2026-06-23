@@ -65,14 +65,16 @@ export default function GoogleAuthButton({
 
         window.google.accounts.id.initialize({
           client_id: clientId,
-          callback: async (response) => {
+          callback: (response) => {
             if (!response.credential) return
             setIsLoading(true)
-            try {
-              await callbackRef.current(response.credential)
-            } finally {
-              setIsLoading(false)
-            }
+            setTimeout(async () => {
+              try {
+                await callbackRef.current(response.credential!)
+              } finally {
+                setIsLoading(false)
+              }
+            }, 100)
           },
           auto_select: false,
           ux_mode: 'popup'

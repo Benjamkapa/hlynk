@@ -162,7 +162,7 @@ export default function SettingsPage() {
                 <div className="space-y-8">
                   <div className="flex items-center gap-6">
                     <div className="relative group">
-                      <div className="h-24 w-24 rounded-2xl bg-slate-100 flex items-center justify-center overflow-hidden border border-slate-200">
+                      <div className="h-24 w-24 rounded-full bg-slate-100 flex items-center justify-center overflow-hidden shadow-lg">
                         {user?.photoUrl || user?.avatar ? (
                           <img src={user.photoUrl || user.avatar} className="h-full w-full object-cover" alt="" />
                         ) : (

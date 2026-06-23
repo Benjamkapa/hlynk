@@ -543,11 +543,14 @@ function ProductForm({ onClose }: { onClose: () => void }) {
 
       <div className="space-y-2">
         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Category</label>
-        <select
+        <input
+          list="product-categories"
           value={form.category}
           onChange={(e) => setForm({ ...form, category: e.target.value })}
+          placeholder="e.g. Groceries"
           className="hl-select"
-        >
+        />
+        <datalist id="product-categories">
           {[
             'Accounting & Tax Services',
             'Agrovet',
@@ -628,15 +631,10 @@ function ProductForm({ onClose }: { onClose: () => void }) {
             'Wholesale Shop'
           ]
             .map(c => (
-              <option key={c}>{c}</option>
+              <option key={c} value={c} />
             ))}
-        </select>
+        </datalist>
       </div>
-      <div className="grid grid-cols-2 gap-4">
-        <InputGroup label="Buying Price" placeholder="0.00" mono value={form.buyingPrice} onChange={(v: string) => setForm({ ...form, buyingPrice: v })} />
-        <InputGroup label="Selling Price" placeholder="0.00" mono value={form.price} onChange={(v: string) => setForm({ ...form, price: v })} />
-      </div>
-
       <div className="space-y-2">
         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Product Type</label>
         <select
@@ -647,6 +645,13 @@ function ProductForm({ onClose }: { onClose: () => void }) {
           <option value="GOOD">Physical Good (Track Stock)</option>
           <option value="SERVICE">Service (Barber, Consult, etc)</option>
         </select>
+      </div>
+
+      <div className={`grid ${form.type === 'GOOD' ? 'grid-cols-2' : 'grid-cols-1'} gap-4`}>
+        {form.type === 'GOOD' && (
+          <InputGroup label="Buying Price" placeholder="0.00" mono value={form.buyingPrice} onChange={(v: string) => setForm({ ...form, buyingPrice: v })} />
+        )}
+        <InputGroup label="Selling Price" placeholder="0.00" mono value={form.price} onChange={(v: string) => setForm({ ...form, price: v })} />
       </div>
 
       {form.type === 'GOOD' && (
@@ -816,21 +821,19 @@ function EditProductForm({ product, onClose }: { product: any; onClose: () => vo
 
       <div className="space-y-2">
         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Category</label>
-        <select
+        <input
+          list="product-categories-edit"
           value={form.category}
           onChange={(e) => setForm({ ...form, category: e.target.value })}
+          placeholder="e.g. Groceries"
           className="hl-select"
-        >
+        />
+        <datalist id="product-categories-edit">
           {['Accounting & Tax Services', 'Agrovet', 'Agricultural Cooperative', 'Art & Craft Business', 'Bakery', 'Barber Shop', 'Cafe', 'Car Wash', 'Car Yard', 'Catering Services', 'Church', 'Clinic', 'College', 'Community Organization', 'Construction Services', 'Consultancy', 'Cosmetics Shop', 'Courier Services', 'Cyber Cafe', 'Cyber Security', 'Dairy Business', 'Daycare', 'Dental Clinic', 'Digital Agency', 'Driving School', 'E-commerce Business', 'Electrical Services', 'Electronics Shop', 'Farm', 'Fashion & Boutique', 'Fast Food', 'Financial Services', 'Freelancer', 'Furniture Workshop', 'Garage', 'Guest House', 'Hardware Store', 'Hospital', 'Hotel', 'Insurance Agency', 'Interior Design', 'Internet Service Provider', 'IT Services', 'Legal Services', 'Lounge & Bar', 'Manufacturing', 'Marketing Agency', 'Mechanic Garage', 'Microfinance', 'Mini Mart', 'Mobile Phone Shop', 'Mosque', 'NGO', 'Online Business', 'Optical Clinic', 'Other', 'Pharmacy', 'Plumbing Services', 'Poultry Farm', 'Printing & Branding', 'Real Estate Agency', 'Restaurant', 'Retail Store', 'SACCO', 'Salon', 'School', 'Software Development', 'Spa & Beauty', 'Supermarket', 'Tailoring & Fashion Design', 'Training Centre', 'Transport Services', 'Travel Agency', 'University', 'Veterinary Clinic', 'Welding & Fabrication', 'Wholesale Shop'].map(c => (
-            <option key={c}>{c}</option>
+            <option key={c} value={c} />
           ))}
-        </select>
+        </datalist>
       </div>
-      <div className="grid grid-cols-2 gap-4">
-        <InputGroup label="Buying Price" placeholder="0.00" mono value={form.buyingPrice} onChange={(v: string) => setForm({ ...form, buyingPrice: v })} />
-        <InputGroup label="Selling Price" placeholder="0.00" mono value={form.price} onChange={(v: string) => setForm({ ...form, price: v })} />
-      </div>
-
       <div className="space-y-2">
         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Product Type</label>
         <select
@@ -841,6 +844,13 @@ function EditProductForm({ product, onClose }: { product: any; onClose: () => vo
           <option value="GOOD">Physical Good (Track Stock)</option>
           <option value="SERVICE">Service (Barber, Consult, etc)</option>
         </select>
+      </div>
+
+      <div className={`grid ${form.type === 'GOOD' ? 'grid-cols-2' : 'grid-cols-1'} gap-4`}>
+        {form.type === 'GOOD' && (
+          <InputGroup label="Buying Price" placeholder="0.00" mono value={form.buyingPrice} onChange={(v: string) => setForm({ ...form, buyingPrice: v })} />
+        )}
+        <InputGroup label="Selling Price" placeholder="0.00" mono value={form.price} onChange={(v: string) => setForm({ ...form, price: v })} />
       </div>
 
       {form.type === 'GOOD' && (

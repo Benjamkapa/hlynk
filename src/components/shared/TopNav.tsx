@@ -222,7 +222,10 @@ export default function TopNav({ isMobileOpen, onMobileMenuToggle, isCollapsed, 
                             <img src="/fav.png" alt="hlynk" className="w-full h-full object-contain" />
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className={`text-xs font-black tracking-tight ${n.isRead ? 'text-slate-400' : 'text-slate-900'}`}>{n.title}</p>
+                            <div className="flex justify-between items-start">
+                              <p className={`text-xs font-black tracking-tight ${n.isRead ? 'text-slate-400' : 'text-slate-900'}`}>{n.title}</p>
+                              <span className="text-[9px] text-slate-400 ml-2">{new Date(n.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                            </div>
                             <p className="text-[10px] text-slate-500 leading-tight mt-0.5 line-clamp-2">{n.message}</p>
                           </div>
                         </div>

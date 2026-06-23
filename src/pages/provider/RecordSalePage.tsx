@@ -6,7 +6,7 @@ const KcbBankIcon = ({ className, size = 64 }: { className?: string, size?: numb
 );
 
 const MpesaBankIcon = ({ className, size = 64 }: { className?: string, size?: number }) => (
-  <img src="https://monisnapcontent.kinsta.cloud/wp-content/uploads/2021/09/M-PESA_LOGO-640x467.png?v=1632335437" alt="M-Pesa" style={{ width: size, height: size }} className={`${className || ''} object-contain shrink-0 pt-2`} />
+  <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/15/M-PESA_LOGO-01.svg/960px-M-PESA_LOGO-01.svg.png?_=20251215193002" alt="M-Pesa" style={{ width: size, height: size }} className={`${className || ''} object-contain shrink-0 pt-2`} />
 );
 import FeatureGate, { FEATURE_PLANS } from '../../components/shared/FeatureGate'
 import { toast } from 'sonner'
@@ -50,6 +50,15 @@ export default function RecordSalePage() {
   const [activeTab, setActiveTab] = useState<'products' | 'cart'>('products')
   const { isOnline, pendingCount } = useOfflineStatus()
   const queryClient = useQueryClient()
+
+  const configuredSources = profile?.data?.operationalSettings?.saleSources || ['In-Store', 'Walk-in']
+  const [saleSource, setSaleSource] = useState(configuredSources[0] || 'In-Store')
+
+  useEffect(() => {
+    if (configuredSources.length > 0 && !configuredSources.includes(saleSource)) {
+        setSaleSource(configuredSources[0])
+    }
+  }, [profile])
 
   // Debounce searches
   useEffect(() => {
@@ -172,6 +181,15 @@ export default function RecordSalePage() {
     setCart(cart.filter(item => item.id !== id))
   }
 
+  const updatePrice = (id: string, newPrice: number | string) => {
+    setCart(cart.map(item => {
+      if (item.id === id) {
+        return { ...item, price: newPrice }
+      }
+      return item
+    }))
+  }
+
   const subtotal = cart.reduce((sum, item) => sum + (Number(item.price) * item.quantity), 0)
   const discount = 0
   const total = subtotal - discount
@@ -182,7 +200,8 @@ export default function RecordSalePage() {
         productId: i.id,
         name: i.name,
         quantity: i.quantity,
-        price: i.price
+        price: i.price,
+        buyingPrice: i.buyingPrice
       })),
       paymentMethod,
       totalAmount: total,
@@ -190,7 +209,8 @@ export default function RecordSalePage() {
       customerName: selectedCustomer?.name || null,
       customerPhone: mpesaPhone || undefined,
       status: args?.status !== undefined ? args.status : 0,
-      mpesaRequestId: args?.mpesaRequestId
+      mpesaRequestId: args?.mpesaRequestId,
+      source: saleSource
     }),
     onSuccess: (data: any, variables: any) => {
       const saleId = data.data?.saleId || data.data?.sale?.id || data.data?.id || data.id;
@@ -265,7 +285,8 @@ export default function RecordSalePage() {
         productId: i.id,
         name: i.name,
         quantity: i.quantity,
-        price: i.price
+        price: i.price,
+        buyingPrice: i.buyingPrice
       })),
       paymentMethod,
       totalAmount: total,
@@ -273,6 +294,7 @@ export default function RecordSalePage() {
       customerName: selectedCustomer?.name || null,
       customerPhone: mpesaPhone || undefined,
       status: 0, // Recorded as cash/completed offline
+      source: saleSource
     }
 
     const offlineId = crypto.randomUUID()
@@ -722,6 +744,19 @@ export default function RecordSalePage() {
               )}
             </div>
 
+            <div className="mb-6 relative z-20">
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-[.2em] mb-3 block px-1">Sales Channel / Source</label>
+              <select
+                value={saleSource}
+                onChange={(e) => setSaleSource(e.target.value)}
+                className="w-full bg-slate-50 border border-slate-100 rounded-[.5rem] py-3 pl-4 pr-6 text-sm font-bold focus:ring-4 focus:ring-emerald-500/5 outline-none transition-all cursor-pointer"
+              >
+                {configuredSources.map((s: string) => (
+                  <option key={s} value={s}>{s}</option>
+                ))}
+              </select>
+            </div>
+
             <div className={`flex-1 transition-all duration-300 overflow-y-auto space-y-4 mb-8 pr-2 custom-scrollbar relative z-10 ${isSearchingCustomer ? 'opacity-5 bg-slate-50 scale-95 pointer-events-none' : 'opacity-100'}`}>
               {cart.length === 0 ? (
                 <div className="h-full flex flex-col items-center justify-center text-slate-200 py-20">
@@ -735,7 +770,31 @@ export default function RecordSalePage() {
                   <div key={item.id} className="flex items-center gap-4 p-4 rounded-[.5rem] bg-slate-50/50 border border-slate-100 hover:bg-white hover:shadow-xl hover:shadow-slate-900/5 transition-all group">
                     <div className="flex-1 min-w-0">
                       <h5 className="text-sm font-black text-slate-900 truncate">{item.name}</h5>
-                      <p className="text-[10px] text-slate-400 font-bold hl-mono uppercase tracking-widest mt-0.5">KES {Number(item.price).toLocaleString()}</p>
+                      <div className="flex flex-col gap-1 mt-1">
+                        <div className="flex items-center gap-1">
+                          <span className="text-[10px] text-slate-400 font-bold hl-mono uppercase tracking-widest w-12">Sell:</span>
+                          <input
+                            type="number"
+                            value={item.price}
+                            onChange={(e) => updatePrice(item.id, e.target.value === '' ? '' : parseFloat(e.target.value))}
+                            onBlur={(e) => { if (e.target.value === '') updatePrice(item.id, 0); }}
+                            className="bg-transparent border-b border-dashed border-slate-300 w-20 text-xs text-[#0D4A3E] font-black hl-mono focus:outline-none focus:border-emerald-500 transition-colors"
+                          />
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <span className="text-[10px] text-slate-400 font-bold hl-mono uppercase tracking-widest w-12">Cost:</span>
+                          <input
+                            type="number"
+                            value={item.buyingPrice !== undefined ? item.buyingPrice : (item.type === 'SERVICE' ? 0 : '')}
+                            placeholder="Auto"
+                            onChange={(e) => {
+                               setCart(cart.map(i => i.id === item.id ? { ...i, buyingPrice: e.target.value === '' ? undefined : parseFloat(e.target.value) } : i))
+                            }}
+                            className="bg-transparent border-b border-dashed border-slate-300 w-20 text-xs text-amber-700 font-black hl-mono focus:outline-none focus:border-amber-500 transition-colors"
+                            title="Associated expense/cost for this sale (Leave auto if normal)"
+                          />
+                        </div>
+                      </div>
                     </div>
                     <div className="flex items-center gap-3">
                       <button onClick={(e) => { e.stopPropagation(); updateQuantity(item.id, -1); }} className="h-8 w-8 rounded-[.5rem] bg-white border border-slate-200 flex items-center justify-center text-slate-400 hover:text-emerald-600 transition-all shadow-sm">

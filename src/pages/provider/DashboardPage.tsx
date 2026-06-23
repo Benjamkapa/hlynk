@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { 
   Zap, ShoppingCart, Users, Package, 
   TrendingUp, ArrowUpRight, ArrowDownRight, 
-  Clock, DollarSign, Star
+  Clock, DollarSign, Star, PieChart
 } from 'lucide-react'
 import StarRating from '../../components/shared/StarRating'
 import {
@@ -75,14 +75,15 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* KPI Grid — 2 cols on mobile, 4 cols on desktop */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-8">
+      {/* KPI Grid — 2 cols on mobile, 5 cols on desktop */}
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 lg:gap-8">
         <StoreKpi title="Daily Sales" value={`KES ${stats?.dailySales?.toLocaleString() || '0'}`} sub={`${stats?.dailyTransactions || 0} transactions`} icon={Zap} color="dark" trend="" />
         <StoreKpi title="New Customers" value={stats?.newCustomers || '0'} sub="Total registered" icon={Users} color="blue" trend="" />
         <FeatureGate feature="low_stock_alerts" variant="tease">
           <StoreKpi title="Out of Stock" value={stats?.outOfStockCount || '0'} sub={`Items below ${threshold} qty`} icon={Package} color="red" trend="" />
         </FeatureGate>
-        <StoreKpi title="Daily Profit" value={`KES ${stats?.profit?.toLocaleString() || '0'}`} sub="Sales minus expenses" icon={TrendingUp} color="purple" trend="" />
+        <StoreKpi title="Daily Profit" value={`KES ${stats?.profit?.toLocaleString() || '0'}`} sub="Today's net" icon={TrendingUp} color="purple" trend="" />
+        <StoreKpi title="Total Profit" value={`KES ${stats?.cumulativeProfit?.toLocaleString() || '0'}`} sub="All-time cumulative" icon={Star} color="emerald" trend="" />
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-5 lg:gap-10">
@@ -186,6 +187,28 @@ export default function DashboardPage() {
           </Link>
         </div>
       </div>
+
+      {/* Profit By Channel */}
+      {stats?.profitBySource && stats.profitBySource.length > 0 && (
+        <div className="bg-white p-5 lg:p-8 rounded-[.5rem] border border-slate-100 shadow-xl shadow-slate-900/5 mt-5 lg:mt-10">
+          <h3 className="text-base lg:text-xl font-black text-slate-900 mb-6 flex items-center gap-3">
+            <div className="h-10 w-10 bg-emerald-100 text-emerald-600 rounded-[.5rem] flex items-center justify-center">
+              <PieChart size={20} />
+            </div>
+            Cumulative Profit by Sales Channel
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {stats.profitBySource.map((source: any, i: number) => (
+              <div key={i} className="p-5 rounded-[.5rem] bg-slate-50 border border-slate-100/50 hover:bg-emerald-50 hover:border-emerald-100 hover:shadow-lg transition-all group">
+                <p className="text-[10px] font-black text-slate-400 group-hover:text-emerald-600 uppercase tracking-widest">{source.name}</p>
+                <h4 className="text-2xl font-black text-slate-900 mt-2 hl-mono group-hover:text-emerald-900">KES {source.profit.toLocaleString()}</h4>
+                <p className="text-[10px] font-bold text-slate-400 mt-1 hl-mono group-hover:text-emerald-700">from KES {source.sales.toLocaleString()} revenue</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
     </div>
   )
 }

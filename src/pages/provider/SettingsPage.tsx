@@ -233,7 +233,7 @@ export default function SettingsPage() {
               <div className="space-y-8">
                 <div className="flex items-center gap-6">
                   <div className="relative group">
-                    <div className="h-24 w-24 rounded-[.5rem] bg-gray-100 flex items-center justify-center overflow-hidden border-2 border-slate-200 shadow-inner">
+                    <div className="h-24 w-24 rounded-full bg-gray-100 flex items-center justify-center overflow-hidden shadow-lg">
                       <img
                         src={user?.photoUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(formData?.name || user?.name || '')}&background=0D4A3E&color=fff`}
                         className="h-full w-full object-cover"
@@ -393,8 +393,25 @@ export default function SettingsPage() {
                   value={formData.location}
                   onChange={(v: string) => setFormData({ ...formData, location: v })}
                 />
+                
+                <div className="space-y-2 mt-6">
+                   <label className="text-xs font-black text-gray-400 uppercase tracking-widest">Sales Channels / Sources</label>
+                   <input
+                      type="text"
+                      placeholder="e.g. Walk-in, Uber Eats, Glovo (comma separated)"
+                      value={(formData.operationalSettings?.saleSources || ['In-Store', 'Walk-in']).join(', ')}
+                      onChange={(e) => {
+                         const raw = e.target.value.split(',').map(s => s.trimStart()).filter(Boolean);
+                         setFormData({
+                            ...formData,
+                            operationalSettings: { ...formData.operationalSettings, saleSources: raw }
+                         })
+                      }}
+                      className="w-full bg-gray-50 border-none rounded-[.5rem] py-3.5 px-4 outline-none focus:ring-2 focus:ring-emerald-500/10 transition-all text-sm font-bold"
+                   />
+                </div>
 
-                <div className="pt-6 border-t border-gray-50">
+                <div className="pt-6 border-t border-gray-50 mt-6">
                   <h4 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-6">Operational Settings</h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <ToggleItem
@@ -627,7 +644,7 @@ export default function SettingsPage() {
   )
 }
 
-function NotificationsPanel({ settings, onUpdate }: any) {
+function NotificationsPanel({ settings = {}, onUpdate }: any) {
   const [pushState, setPushState] = useState<'subscribed' | 'denied' | 'prompt' | 'unsupported' | 'ios_browser'>('prompt');
   const [loading, setLoading] = useState(false);
 
@@ -721,19 +738,19 @@ function NotificationsPanel({ settings, onUpdate }: any) {
           <ToggleItem
             title="Email Alerts"
             desc="Receive transaction summaries via email"
-            active={settings.emailAlerts || false}
+            active={settings?.emailAlerts || false}
             onToggle={(v: boolean) => onUpdate({ ...settings, emailAlerts: v })}
           />
           <ToggleItem
             title="SMS Notifications"
             desc="Get critical alerts via SMS (charges apply)"
-            active={settings.smsNotifications || false}
+            active={settings?.smsNotifications || false}
             onToggle={(v: boolean) => onUpdate({ ...settings, smsNotifications: v })}
           />
           <ToggleItem
             title="Marketing updates"
             desc="New features and business tips"
-            active={settings.marketing || false}
+            active={settings?.marketing || false}
             onToggle={(v: boolean) => onUpdate({ ...settings, marketing: v })}
           />
         </div>
