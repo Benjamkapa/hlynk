@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Plus, Search, Filter, Download, Edit, Trash2, Package, TrendingDown, Activity, AlertTriangle, LayoutGrid, List, Camera } from 'lucide-react'
+import { Plus, Search, Filter, Download, Edit, Trash2, Package, TrendingDown, Activity, AlertTriangle, LayoutGrid, List, Camera, FileText } from 'lucide-react'
 import { CameraCapture } from '../../components/shared/CameraCapture'
 import { ConfirmModal } from '../../components/shared/ConfirmModal'
 import { SlideOver } from '../../components/shared/SlideOver'
@@ -30,7 +30,8 @@ export default function ProductsPage() {
   const { data: productsData, isLoading, error } = useQuery<PaginatedResponse<any> & { stats: any }>({
     queryKey: ['inventory', search, page, sortBy, sortOrder, category],
     queryFn: () => inventoryApi.list({ search, page, limit: 10, sortBy, sortOrder, category: category || undefined, includeStats: true }),
-    placeholderData: keepPreviousData
+    placeholderData: keepPreviousData,
+    refetchInterval: 15_000
   })
 
   const { data: profile } = useQuery({
@@ -88,14 +89,14 @@ export default function ProductsPage() {
             onClick={handleExport}
             className="bg-white text-gray-600 h-12 px-6 rounded-[.5rem] border border-gray-100 font-bold text-sm hover:bg-gray-50 transition-all flex items-center gap-2"
           >
-            <Download size={18} />
-            Export
+            <FileText size={18} />
+            CSV
           </button>
           <button
             onClick={() => setIsAddModalOpen(true)}
             className="bg-[#0D4A3E] text-white h-12 px-6 rounded-[.5rem] font-bold text-sm hover:bg-[#0A3D33] transition-all flex items-center gap-2"
           >
-            <Plus size={18} /> Add Product
+            <Plus size={18} /> Product
           </button>
         </div>
       </div>
@@ -288,7 +289,7 @@ export default function ProductsPage() {
                     <td className="px-8 py-5">
                       <div className="flex flex-wrap gap-2">
                         <span className="text-[10px] font-black text-slate-500 bg-slate-100 px-2.5 py-1 rounded-[.5rem] uppercase tracking-widest">{p.category}</span>
-                        {p.isPerishable && (
+                        {p.isPerishable && p.type !== 'SERVICE' && (
                           <span className={`text-[10px] font-black px-2.5 py-1 rounded-[.5rem] uppercase tracking-widest ${new Date(p.expiryDate) < new Date() ? 'bg-red-50 text-red-600' : 'bg-amber-50 text-amber-600'}`}>
                             {new Date(p.expiryDate) < new Date() ? 'Expired' : `Exp: ${new Date(p.expiryDate).toLocaleDateString()}`}
                           </span>

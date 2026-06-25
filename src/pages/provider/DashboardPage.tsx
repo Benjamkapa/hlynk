@@ -23,19 +23,22 @@ import { ProviderStats, PaginatedResponse } from '../../lib/types/api'
 export default function DashboardPage() {
   const { data: stats, isLoading: statsLoading, error: statsError } = useQuery<ProviderStats>({
     queryKey: ['provider-stats'],
-    queryFn: providersApi.getStats
+    queryFn: providersApi.getStats,
+    refetchInterval: 15_000
   })
 
   const { data: profile } = useQuery({
     queryKey: ['my-profile'],
-    queryFn: providersApi.getMyProfile
+    queryFn: providersApi.getMyProfile,
+    staleTime: Infinity
   })
 
   const threshold = profile?.data?.operationalSettings?.lowStockThreshold || 5;
 
   const { data: salesResponse, isLoading: salesLoading, error: salesError } = useQuery<PaginatedResponse<any>>({
     queryKey: ['recent-sales'],
-    queryFn: () => salesApi.list({ limit: 5 })
+    queryFn: () => salesApi.list({ limit: 5 }),
+    refetchInterval: 15_000
   })
 
   const recentSales = salesResponse?.items || []
@@ -77,7 +80,14 @@ export default function DashboardPage() {
 
       {/* KPI Grid — 2 cols on mobile, 5 cols on desktop */}
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 lg:gap-8">
-        <StoreKpi title="Daily Sales" value={`KES ${stats?.dailySales?.toLocaleString() || '0'}`} sub={`${stats?.dailyTransactions || 0} transactions`} icon={Zap} color="dark" trend="" />
+        <StoreKpi 
+          title="Daily Sales" 
+          value={`KES ${stats?.dailySales?.toLocaleString() || '0'}`} 
+          sub={`Profit: KES ${stats?.profit?.toLocaleString() || '0'}`} 
+          icon={Zap} 
+          color="dark" 
+          trend="" 
+        />
         <StoreKpi title="New Customers" value={stats?.newCustomers || '0'} sub="Total registered" icon={Users} color="blue" trend="" />
         <FeatureGate feature="low_stock_alerts" variant="tease">
           <StoreKpi title="Out of Stock" value={stats?.outOfStockCount || '0'} sub={`Items below ${threshold} qty`} icon={Package} color="red" trend="" />
@@ -188,23 +198,65 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Profit By Channel */}
+      {/* Sales Channels Analysis */}
       {stats?.profitBySource && stats.profitBySource.length > 0 && (
         <div className="bg-white p-5 lg:p-8 rounded-[.5rem] border border-slate-100 shadow-xl shadow-slate-900/5 mt-5 lg:mt-10">
-          <h3 className="text-base lg:text-xl font-black text-slate-900 mb-6 flex items-center gap-3">
-            <div className="h-10 w-10 bg-emerald-100 text-emerald-600 rounded-[.5rem] flex items-center justify-center">
-              <PieChart size={20} />
+          <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
+            <div>
+              <h3 className="text-base lg:text-2xl font-black text-slate-900 flex items-center gap-3">
+                <div className="h-10 w-10 bg-[#0D4A3E] text-white rounded-[.5rem] flex items-center justify-center shadow-lg shadow-emerald-900/10">
+                  <PieChart size={20} />
+                </div>
+                Sales Channels
+              </h3>
+              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-2">Filter by channel · click to drill in</p>
             </div>
-            Cumulative Profit by Sales Channel
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {stats.profitBySource.map((source: any, i: number) => (
-              <div key={i} className="p-5 rounded-[.5rem] bg-slate-50 border border-slate-100/50 hover:bg-emerald-50 hover:border-emerald-100 hover:shadow-lg transition-all group">
-                <p className="text-[10px] font-black text-slate-400 group-hover:text-emerald-600 uppercase tracking-widest">{source.name}</p>
-                <h4 className="text-2xl font-black text-slate-900 mt-2 hl-mono group-hover:text-emerald-900">KES {source.profit.toLocaleString()}</h4>
-                <p className="text-[10px] font-bold text-slate-400 mt-1 hl-mono group-hover:text-emerald-700">from KES {source.sales.toLocaleString()} revenue</p>
-              </div>
-            ))}
+            <div className="flex items-center gap-2 px-4 py-2 bg-slate-50 rounded-full border border-slate-100">
+              <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Real-time Attribution</span>
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 lg:gap-6">
+            {stats.profitBySource.map((source: any, i: number) => {
+              const margin = source.sales > 0 ? Math.round((source.profit / source.sales) * 100) : 0;
+              return (
+                <Link 
+                  to={`/dashboard/sales?source=${encodeURIComponent(source.name)}`}
+                  key={i} 
+                  className="p-6 rounded-[.5rem] bg-white border border-slate-100 hover:border-emerald-200 hover:shadow-2xl hover:shadow-emerald-900/5 transition-all group relative overflow-hidden"
+                >
+                  <div className="relative z-10">
+                    <div className="flex items-center justify-between mb-4">
+                      <p className="text-[10px] font-black text-slate-400 group-hover:text-emerald-600 uppercase tracking-[0.2em] transition-colors">{source.name}</p>
+                      <div className="flex items-center gap-2">
+                        <span className={`text-[10px] font-black px-1.5 py-0.5 rounded-full ${margin > 20 ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600'}`}>
+                          {margin}%
+                        </span>
+                        <ArrowUpRight size={14} className="text-slate-300 group-hover:text-emerald-500 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-1">
+                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Gross Revenue</p>
+                      <h4 className="text-2xl font-black text-slate-900 hl-mono tracking-tighter">KES {Number(source.sales || 0).toLocaleString()}</h4>
+                    </div>
+
+                    <div className="mt-6 pt-4 border-t border-slate-50 flex items-center justify-between">
+                      <div>
+                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Associated Profit</p>
+                        <p className="text-sm font-black text-emerald-600 hl-mono">KES {Number(source.profit || 0).toLocaleString()}</p>
+                      </div>
+                      <div className="h-8 w-8 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-600 opacity-0 group-hover:opacity-100 transition-all">
+                        <TrendingUp size={14} />
+                      </div>
+                    </div>
+                  </div>
+                  {/* Decorative background element */}
+                  <div className="absolute top-0 right-0 h-24 w-24 bg-emerald-50 rounded-full blur-[40px] -mr-12 -mt-12 opacity-0 group-hover:opacity-100 transition-all" />
+                </Link>
+              );
+            })}
           </div>
         </div>
       )}

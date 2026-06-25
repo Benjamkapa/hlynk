@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Search, Download, Calendar, Receipt, CreditCard, ChevronLeft, ChevronRight, Eye, Layers } from 'lucide-react'
+import { Search, Save, Calendar, Receipt, CreditCard, ChevronLeft, ChevronRight, Eye, Layers } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
 import { salesApi } from '../../lib/api/providers'
 import { toast } from 'sonner'
@@ -127,7 +127,7 @@ export default function SalesHistoryPage() {
           onClick={exportToCSV}
           className="bg-gray-100 text-gray-600 h-12 px-6 rounded-[.5rem] font-bold text-sm hover:bg-gray-200 transition-all flex items-center gap-2"
         >
-          <Download size={18} /> CSV
+          <Save size={18} /> CSV
         </button>
       </div>
 

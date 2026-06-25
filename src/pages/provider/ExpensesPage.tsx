@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Download, Plus, Search, Trash2, Eye, TrendingUp, Wallet, Loader2 } from 'lucide-react'
+import { Save, Plus, Search, Trash2, Eye, TrendingUp, Wallet, Loader2 } from 'lucide-react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { keepPreviousData } from '@tanstack/react-query'
 
@@ -36,6 +36,7 @@ export default function ExpensesPage() {
         sortOrder,
       }),
     placeholderData: keepPreviousData,
+    refetchInterval: 15_000
   })
 
   useEffect(() => {
@@ -141,7 +142,7 @@ export default function ExpensesPage() {
             onClick={handleExport}
             className="bg-gray-100 text-gray-600 h-12 px-6 rounded-[.5rem] font-bold text-sm hover:bg-gray-200 transition-all flex items-center gap-2"
           >
-            <Download size={18} /> CSV
+            <Save size={18} /> CSV
           </button>
           <button
             onClick={() => setIsAddModalOpen(true)}

@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { adminApi } from '../../lib/api/providers'
 import { toast } from 'sonner'
-import { Clock, XCircle, Download, CreditCard, ArrowUpRight, Search, Filter, Landmark, CheckCircle2, ChevronLeft, ChevronRight, ArrowUpDown } from 'lucide-react'
+import { Clock, XCircle, Save, CreditCard, ArrowUpRight, Search, Filter, Landmark, CheckCircle2, ChevronLeft, ChevronRight, ArrowUpDown } from 'lucide-react'
 import { AdminStats } from '../../lib/types/api'
 
 type SortField = 'id' | 'createdAt' | 'businessName' | 'amount' | 'type' | 'status'
@@ -142,7 +142,7 @@ export default function PaymentsPage() {
             </button>
           </div>
           <button className="bg-white border border-gray-100 text-gray-600 h-12 px-6 rounded-xl font-bold text-sm hover:bg-gray-50 transition-all flex items-center gap-2 shadow-sm">
-            <Download size={18} /> CSV
+            <Save size={18} /> CSV
           </button>
         </div>
       </div>

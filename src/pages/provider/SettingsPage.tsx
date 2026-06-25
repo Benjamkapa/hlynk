@@ -179,7 +179,7 @@ export default function SettingsPage() {
           ) : (
             <Save size={18} />
           )}
-          Save Settings
+          Settings
         </button>
       </div>
 

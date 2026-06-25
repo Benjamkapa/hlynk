@@ -112,15 +112,21 @@ export default function TopNav({ isMobileOpen, onMobileMenuToggle, isCollapsed, 
   const unreadCount = notifications.filter((n: any) => !n.isRead).length
 
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node))
+    const handleClickOutside = (event: MouseEvent | TouchEvent) => {
+      const target = event.target as Node
+      if (userMenuRef.current && !userMenuRef.current.contains(target))
         setShowUserMenu(false)
-      if (notificationRef.current && !notificationRef.current.contains(event.target as Node))
+      if (notificationRef.current && !notificationRef.current.contains(target))
         setShowNotifications(false)
     }
     document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
+    document.addEventListener('touchend', handleClickOutside as EventListener)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+      document.removeEventListener('touchend', handleClickOutside as EventListener)
+    }
   }, [])
+
 
   const handleLogout = async () => {
     const isOffline = !navigator.onLine

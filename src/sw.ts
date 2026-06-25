@@ -17,10 +17,16 @@ _self.addEventListener('activate', (event) => {
 _self.addEventListener('push', (event: PushEvent) => {
   if (event.data) {
     const data = event.data.json();
+    // Use absolute URL for icon — iOS PWA silently rejects relative paths
+    const origin = _self.location.origin;
+    const iconPath = data.icon || '/logo.png';
+    const iconUrl = iconPath.startsWith('http') ? iconPath : `${origin}${iconPath}`;
+
     const options: NotificationOptions = {
       body: data.body,
-      icon: data.icon || '/logo.png',
-      badge: '/favicon-32x32.png',
+      icon: iconUrl,
+      // NOTE: 'badge' is intentionally omitted — iOS ignores it and
+      // older iOS versions silently drop the notification when it's present
       data: data.data || {},
     };
 
