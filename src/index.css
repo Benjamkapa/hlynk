@@ -107,10 +107,10 @@
   }
   
   /* Bold classes default to Ubuntu unless they are small */
-  .font-bold:not(.text-xs):not(.text-\[10px\]):not(.text-\[11px\]):not(.text-\[9px\]):not(.text-sm),
-  .font-semibold:not(.text-xs):not(.text-\[10px\]):not(.text-\[11px\]):not(.text-\[9px\]):not(.text-sm),
-  .font-extrabold:not(.text-xs):not(.text-\[10px\]):not(.text-\[11px\]):not(.text-\[9px\]):not(.text-sm),
-  .font-black:not(.text-xs):not(.text-\[10px\]):not(.text-\[11px\]):not(.text-\[9px\]):not(.text-sm) {
+  .font-bold,
+  .font-semibold,
+  .font-extrabold,
+  .font-black {
     font-family: 'Ubuntu', sans-serif;
   }
   
