@@ -7,6 +7,7 @@ import HowItWorks from '../components/landing/HowItWorks'
 import Pricing from '../components/landing/Pricing'
 import FAQ from '../components/landing/FAQ'
 import Contact from '../components/landing/Contact'
+import GetTheApp from '../components/landing/GetTheApp'
 import Footer from '../components/landing/Footer'
 import IndustryDetailsModal from '../components/landing/IndustryDetailsModal'
 import { FadeUp, ScaleIn, SlideIn } from '../components/landing/Animations'
@@ -54,6 +55,10 @@ export default function LandingPage() {
 
         <FadeUp>
           <Contact />
+        </FadeUp>
+
+        <FadeUp>
+          <GetTheApp />
         </FadeUp>
       </main>
 
