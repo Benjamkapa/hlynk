@@ -159,6 +159,6 @@ export const adminApi = {
   getMedia: () => api.get('/admin/media').then(r => r.data),
   deleteMedia: (path: string) => api.post('/admin/media/delete', { path }).then(r => r.data),
   testB2C: (data: { phone: string, amount: number, remarks?: string }) => api.post('/admin/test-b2c', data).then(r => r.data),
-  downloadDatabaseBackup: () => api.get('/admin/backup/db', { responseType: 'blob' }).then(r => r.data),
+  downloadDatabaseBackup: (onDownloadProgress?: (progressEvent: any) => void) => api.get('/admin/backup/db', { responseType: 'blob', onDownloadProgress }).then(r => r.data),
 }
 

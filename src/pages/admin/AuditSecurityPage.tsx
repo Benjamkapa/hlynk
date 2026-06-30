@@ -12,12 +12,20 @@ export default function AuditSecurityPage() {
   const [search, setSearch] = useState('')
   const [category, setCategory] = useState('')
   const [isBackingUp, setIsBackingUp] = useState(false)
+  const [backupProgress, setBackupProgress] = useState(0)
 
   const handleBackupDownload = async () => {
     setIsBackingUp(true)
-    const toastId = toast.loading('Generating live database backup (non-blocking)...')
+    setBackupProgress(0)
     try {
-      const blob = await adminApi.downloadDatabaseBackup()
+      const blob = await adminApi.downloadDatabaseBackup((progressEvent) => {
+        if (progressEvent.total) {
+          setBackupProgress(Math.round((progressEvent.loaded * 100) / progressEvent.total))
+        } else {
+          // Fallback if content-length is missing
+          setBackupProgress(prev => (prev < 90 ? prev + 10 : prev))
+        }
+      })
       const url = window.URL.createObjectURL(new Blob([blob]))
       const link = document.createElement('a')
       link.href = url
@@ -33,11 +41,12 @@ export default function AuditSecurityPage() {
       link.click()
       link.parentNode?.removeChild(link)
       window.URL.revokeObjectURL(url)
-      toast.success('Database backup downloaded successfully!', { id: toastId })
+      toast.success('Database backup downloaded successfully!')
     } catch (e: any) {
-      toast.error('Failed to download database backup: ' + (e.message || 'Unknown error'), { id: toastId })
+      toast.error('Failed to download database backup: ' + (e.message || 'Unknown error'))
     } finally {
       setIsBackingUp(false)
+      setTimeout(() => setBackupProgress(0), 1000)
     }
   }
 
@@ -87,14 +96,27 @@ export default function AuditSecurityPage() {
           <button 
             onClick={handleBackupDownload}
             disabled={isBackingUp}
-            className="bg-emerald-600 text-white h-12 px-6 rounded-xl font-bold text-sm hover:bg-emerald-700 transition-all flex items-center gap-2 shadow-lg shadow-emerald-900/15 disabled:opacity-50"
+            className="relative overflow-hidden bg-emerald-600 text-white h-12 px-6 rounded-xl font-bold text-sm hover:bg-emerald-700 transition-all flex items-center gap-2 shadow-lg shadow-emerald-900/15 disabled:opacity-90"
           >
-            {isBackingUp ? (
-              <Loader2 size={18} className="animate-spin" />
-            ) : (
-              <Download size={18} />
+            {isBackingUp && (
+              <div 
+                className="absolute left-0 top-0 bottom-0 bg-emerald-500 transition-all duration-300 ease-out z-0"
+                style={{ width: `${backupProgress}%` }}
+              />
             )}
-            {isBackingUp ? 'Preparing...' : 'DB Backup'}
+            <div className="relative z-10 flex items-center gap-2">
+              {isBackingUp ? (
+                <>
+                  <Loader2 size={18} className="animate-spin" />
+                  <span>{backupProgress > 0 ? `Downloading ${backupProgress}%` : 'Preparing DB...'}</span>
+                </>
+              ) : (
+                <>
+                  <Download size={18} />
+                  <span>DB Backup</span>
+                </>
+              )}
+            </div>
           </button>
           <button 
             onClick={handleIncidentReport}
