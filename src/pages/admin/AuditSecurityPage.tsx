@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { adminApi } from '../../lib/api/providers'
 import { toast } from 'sonner'
-import { ShieldCheck, UserX, Key, Search, ShieldAlert, ChevronLeft, ChevronRight, RefreshCcw, FileText, Loader2 } from 'lucide-react'
+import { ShieldCheck, UserX, Key, Search, ShieldAlert, ChevronLeft, ChevronRight, RefreshCcw, FileText, Loader2, Download } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { AdminStats } from '../../lib/types/api'
 import { exportToCSV } from '../../lib/utils/export'
@@ -11,6 +11,29 @@ export default function AuditSecurityPage() {
   const [logPage, setLogPage] = useState(1)
   const [search, setSearch] = useState('')
   const [category, setCategory] = useState('')
+  const [isBackingUp, setIsBackingUp] = useState(false)
+
+  const handleBackupDownload = async () => {
+    setIsBackingUp(true)
+    const toastId = toast.loading('Generating live database backup (non-blocking)...')
+    try {
+      const blob = await adminApi.downloadDatabaseBackup()
+      const url = window.URL.createObjectURL(new Blob([blob]))
+      const link = document.createElement('a')
+      link.href = url
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+      link.setAttribute('download', `hlynk_live_backup_${timestamp}.sql`)
+      document.body.appendChild(link)
+      link.click()
+      link.parentNode?.removeChild(link)
+      window.URL.revokeObjectURL(url)
+      toast.success('Database backup downloaded successfully!', { id: toastId })
+    } catch (e: any) {
+      toast.error('Failed to download database backup: ' + (e.message || 'Unknown error'), { id: toastId })
+    } finally {
+      setIsBackingUp(false)
+    }
+  }
 
   const { data: rawStats, isLoading: statsLoading, error: statsError } = useQuery<any>({
     queryKey: ['admin-stats'],
@@ -55,6 +78,18 @@ export default function AuditSecurityPage() {
           <p className="text-gray-500 font-medium">Global security monitoring, compliance tracking and threat mitigation</p>
         </div>
         <div className="flex gap-3">
+          <button 
+            onClick={handleBackupDownload}
+            disabled={isBackingUp}
+            className="bg-emerald-600 text-white h-12 px-6 rounded-xl font-bold text-sm hover:bg-emerald-700 transition-all flex items-center gap-2 shadow-lg shadow-emerald-900/15 disabled:opacity-50"
+          >
+            {isBackingUp ? (
+              <Loader2 size={18} className="animate-spin" />
+            ) : (
+              <Download size={18} />
+            )}
+            {isBackingUp ? 'Preparing...' : 'DB Backup'}
+          </button>
           <button 
             onClick={handleIncidentReport}
             className="bg-red-600 text-white h-12 px-6 rounded-xl font-bold text-sm hover:bg-red-700 transition-all flex items-center gap-2 shadow-lg shadow-red-900/20"
