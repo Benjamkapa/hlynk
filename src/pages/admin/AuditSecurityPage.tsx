@@ -13,6 +13,8 @@ export default function AuditSecurityPage() {
   const [category, setCategory] = useState('')
   const [isBackingUp, setIsBackingUp] = useState(false)
   const [backupProgress, setBackupProgress] = useState(0)
+  const [isRestoring, setIsRestoring] = useState(false)
+  const [restoreFile, setRestoreFile] = useState<File | null>(null)
 
   const handleBackupDownload = async () => {
     setIsBackingUp(true)
@@ -47,6 +49,27 @@ export default function AuditSecurityPage() {
     } finally {
       setIsBackingUp(false)
       setTimeout(() => setBackupProgress(0), 1000)
+    }
+  }
+
+  const handleRestoreStage = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) setRestoreFile(file)
+    e.target.value = ''
+  }
+
+  const handleRestoreConfirm = async () => {
+    if (!restoreFile) return
+    setIsRestoring(true)
+    const toastId = toast.loading('Restoring database globally...')
+    try {
+      await adminApi.restoreDatabaseBackup(restoreFile)
+      toast.success('System database restored successfully! Please refresh.', { id: toastId })
+    } catch (err: any) {
+      toast.error('Failed to restore database: ' + (err.message || 'Unknown error'), { id: toastId })
+    } finally {
+      setIsRestoring(false)
+      setRestoreFile(null)
     }
   }
 
@@ -118,6 +141,24 @@ export default function AuditSecurityPage() {
               )}
             </div>
           </button>
+          
+          <div className="relative">
+            <input 
+              type="file" 
+              accept=".sql" 
+              onChange={handleRestoreStage} 
+              disabled={isRestoring}
+              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed" 
+            />
+            <button 
+              disabled={isRestoring}
+              className="bg-slate-800 text-white h-12 px-6 rounded-xl font-bold text-sm hover:bg-slate-900 transition-all flex items-center gap-2 shadow-lg disabled:opacity-50"
+            >
+              {isRestoring ? <Loader2 size={18} className="animate-spin" /> : <RefreshCcw size={18} />}
+              Restore DB (.sql)
+            </button>
+          </div>
+
           <button 
             onClick={handleIncidentReport}
             className="bg-red-600 text-white h-12 px-6 rounded-xl font-bold text-sm hover:bg-red-700 transition-all flex items-center gap-2 shadow-lg shadow-red-900/20"
@@ -257,6 +298,37 @@ export default function AuditSecurityPage() {
            </div>
         </div>
       </div>
+
+      {/* Custom Restore Confirmation Modal */}
+      {restoreFile && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl animate-in zoom-in-95 duration-200">
+            <div className="h-16 w-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mb-6 mx-auto">
+              <ShieldAlert size={32} />
+            </div>
+            <h3 className="text-2xl font-black text-center text-gray-900 mb-2">Are you absolutely sure?</h3>
+            <p className="text-sm text-gray-500 text-center font-medium mb-8">
+              Restoring from <strong className="text-gray-900">{restoreFile.name}</strong> will completely overwrite the <strong>entire global database</strong>. This action cannot be undone.
+            </p>
+            <div className="flex gap-3">
+              <button 
+                onClick={() => setRestoreFile(null)}
+                disabled={isRestoring}
+                className="flex-1 h-12 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200 transition-all disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={handleRestoreConfirm}
+                disabled={isRestoring}
+                className="flex-1 h-12 bg-red-600 text-white font-bold rounded-xl shadow-lg shadow-red-900/20 hover:bg-red-700 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+              >
+                {isRestoring ? <Loader2 size={18} className="animate-spin" /> : 'Yes, Overwrite DB'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

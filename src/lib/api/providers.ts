@@ -160,5 +160,13 @@ export const adminApi = {
   deleteMedia: (path: string) => api.post('/admin/media/delete', { path }).then(r => r.data),
   testB2C: (data: { phone: string, amount: number, remarks?: string }) => api.post('/admin/test-b2c', data).then(r => r.data),
   downloadDatabaseBackup: (onDownloadProgress?: (progressEvent: any) => void) => api.get('/admin/backup/db', { responseType: 'blob', onDownloadProgress }).then(r => r.data),
+  restoreDatabaseBackup: (file: File, onUploadProgress?: (progressEvent: any) => void) => {
+    const formData = new FormData()
+    formData.append('sqlFile', file)
+    return api.post('/admin/backup/restore', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+      onUploadProgress
+    }).then(r => r.data)
+  }
 }
 
