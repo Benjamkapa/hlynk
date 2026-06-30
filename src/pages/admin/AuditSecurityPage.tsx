@@ -21,7 +21,13 @@ export default function AuditSecurityPage() {
       const url = window.URL.createObjectURL(new Blob([blob]))
       const link = document.createElement('a')
       link.href = url
-      const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+      const d = new Date();
+      const pad = (n: number) => String(n).padStart(2, '0');
+      let hours = d.getHours();
+      const ampm = hours >= 12 ? 'PM' : 'AM';
+      hours = hours % 12;
+      hours = hours ? hours : 12;
+      const timestamp = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}_${pad(hours)}-${pad(d.getMinutes())}-${pad(d.getSeconds())}-${ampm}`;
       link.setAttribute('download', `hlynk_live_backup_${timestamp}.sql`)
       document.body.appendChild(link)
       link.click()
