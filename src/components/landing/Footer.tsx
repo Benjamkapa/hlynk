@@ -27,6 +27,7 @@ export default function Footer() {
               © {new Date().getFullYear()} hlynk Portal
             </div>
             <div className="flex gap-4 text-[9px] font-bold uppercase tracking-widest text-slate-400">
+              <Link to="/partners" className="hover:text-emerald-500 transition-colors">Partners</Link>
               <Link to="/privacy-policy" className="hover:text-emerald-500 transition-colors">Privacy Policy</Link>
               <Link to="/google/privacy" className="hover:text-emerald-500 transition-colors">Google Privacy</Link>
               <Link to="/terms-conditions" className="hover:text-emerald-500 transition-colors">Terms</Link>

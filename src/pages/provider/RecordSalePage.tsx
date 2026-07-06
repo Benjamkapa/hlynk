@@ -1013,7 +1013,7 @@ export default function RecordSalePage() {
 
       {/* ── Mobile Cart Floating Bar ── */}
       {cart.length > 0 && activeTab === 'products' && (
-        <div className="fixed bottom-6 left-6 right-6 z-[100] xl:hidden animate-in slide-in-from-bottom-8 duration-500">
+        <div className="fixed bottom-28 left-6 right-6 z-[100] xl:hidden animate-in slide-in-from-bottom-8 duration-500">
           <button
             onClick={() => setActiveTab('cart')}
             className="w-full bg-[#0D4A3E] text-white p-5 rounded-[.5rem] shadow-2xl shadow-emerald-900/40 flex items-center justify-between border-4 border-white/10 backdrop-blur-md"

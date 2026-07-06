@@ -16,8 +16,8 @@ import ReloadPrompt from './components/shared/ReloadPrompt'
 
 // Public
 const LandingPage = lazy(() => import('./pages/LandingPage'))
-const LoginPage = lazy(() => import('./pages/auth/LoginPage'))
-const VerifyOtpPage = lazy(() => import('./pages/auth/VerifyOtpPage'))
+import LoginPage from './pages/auth/LoginPage'
+import VerifyOtpPage from './pages/auth/VerifyOtpPage'
 const ForgotPasswordPage = lazy(() => import('./pages/auth/ForgotPasswordPage'))
 const ResetPasswordPage = lazy(() => import('./pages/auth/ResetPasswordPage'))
 
@@ -25,9 +25,10 @@ const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'))
 const TermsConditions = lazy(() => import('./pages/TermsConditions'))
 const GooglePrivacyPolicy = lazy(() => import('./pages/GooglePrivacyPolicy'))
 const GoogleTermsConditions = lazy(() => import('./pages/GoogleTermsConditions'))
+const Partners = lazy(() => import('./pages/Partners'))
 
 // Dashboards
-const DashboardPage = lazy(() => import('./pages/provider/DashboardPage'))
+import DashboardPage from './pages/provider/DashboardPage'
 const AdminDashboardPage = lazy(() => import('./pages/admin/AdminDashboardPage'))
 
 // Admin Pages
@@ -45,16 +46,16 @@ const ReviewsPageAdmin = lazy(() => import('./pages/admin/ReviewsPage'))
 const CloudStoragePage = lazy(() => import('./pages/admin/CloudStoragePage'))
 
 // Provider Pages
-const RecordSalePage = lazy(() => import('./pages/provider/RecordSalePage'))
-const CustomersPage = lazy(() => import('./pages/provider/CustomersPage'))
-const ReportsPageProvider = lazy(() => import('./pages/provider/ReportsPage'))
+import RecordSalePage from './pages/provider/RecordSalePage'
+import CustomersPage from './pages/provider/CustomersPage'
+import ReportsPageProvider from './pages/provider/ReportsPage'
+import ProductsPage from './pages/provider/ProductsPage'
+import ExpensesPage from './pages/provider/ExpensesPage'
+import SalesHistoryPage from './pages/provider/SalesHistoryPage'
+import SettingsPageProvider from './pages/provider/SettingsPage'
 const SubscriptionPage = lazy(() => import('./pages/provider/SubscriptionPage'))
 const StaffManagementPage = lazy(() => import('./pages/provider/StaffManagementPage'))
-const ProductsPage = lazy(() => import('./pages/provider/ProductsPage'))
-const ExpensesPage = lazy(() => import('./pages/provider/ExpensesPage'))
-const SalesHistoryPage = lazy(() => import('./pages/provider/SalesHistoryPage'))
 const SupportPageProvider = lazy(() => import('./pages/provider/SupportPage'))
-const SettingsPageProvider = lazy(() => import('./pages/provider/SettingsPage'))
 const HelpPageProvider = lazy(() => import('./pages/provider/HelpPage'))
 const DeveloperPage = lazy(() => import('./pages/provider/DeveloperPage'))
 const LogsPage = lazy(() => import('./pages/provider/MpesaLogsPage'))
@@ -128,6 +129,7 @@ export default function App() {
         <Route path="/terms-conditions" element={<TermsConditions />} />
         <Route path="/google/privacy" element={<GooglePrivacyPolicy />} />
         <Route path="/google/terms" element={<GoogleTermsConditions />} />
+        <Route path="/partners" element={<Partners />} />
 
         {/* Provider Portal */}
         <Route path="/dashboard" element={<ProtectedRoute><SubscriptionGuard><ProviderLayout /></SubscriptionGuard></ProtectedRoute>}>
