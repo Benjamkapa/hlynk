@@ -50,8 +50,11 @@ export interface ProviderStats {
   dailyTransactions: number;
   newCustomers: number;
   outOfStockCount: number;
-  profit: number;
-  cumulativeProfit: number;
+  profit: number;            // today's gross margin
+  cumulativeProfit: number;  // all-time gross margin
+  mtdProfit: number;         // month-to-date gross margin
+  mtdExpenses: number;       // month-to-date expenses
+  mtdNetProfit: number;      // mtdProfit - mtdExpenses (convenience field)
   rating: number;
   reviewCount: number;
   salesChart: { name: string; sales: number; profit: number }[];

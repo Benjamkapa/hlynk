@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { 
   Zap, ShoppingCart, Users, Package, 
   TrendingUp, ArrowUpRight, ArrowDownRight, 
-  Clock, DollarSign, Star, PieChart
+  Clock, DollarSign, Star, PieChart, Wallet
 } from 'lucide-react'
 import StarRating from '../../components/shared/StarRating'
 import {
@@ -92,8 +92,21 @@ export default function DashboardPage() {
         <FeatureGate feature="low_stock_alerts" variant="tease">
           <StoreKpi title="Out of Stock" value={stats?.outOfStockCount || '0'} sub={`Items below ${threshold} qty`} icon={Package} color="red" trend="" />
         </FeatureGate>
-        <StoreKpi title="Daily Profit" value={`KES ${stats?.profit?.toLocaleString() || '0'}`} sub="Today's net" icon={TrendingUp} color="purple" trend="" />
-        <StoreKpi title="Total Profit" value={`KES ${stats?.cumulativeProfit?.toLocaleString() || '0'}`} sub="All-time cumulative" icon={Star} color="emerald" trend="" />
+        <StoreKpi title="MTD Gross Profit" value={`KES ${stats?.mtdProfit?.toLocaleString() || '0'}`} sub="This month (cost margin)" icon={TrendingUp} color="purple" trend="" />
+        {(() => {
+          const net = stats?.mtdNetProfit ?? 0;
+          const isPositive = net >= 0;
+          return (
+            <StoreKpi
+              title="Net Profit (MTD)"
+              value={`${isPositive ? '' : '−'}KES ${Math.abs(net).toLocaleString()}`}
+              sub={`After KES ${(stats?.mtdExpenses || 0).toLocaleString()} expenses`}
+              icon={Wallet}
+              color={isPositive ? 'emerald' : 'red'}
+              trend=""
+            />
+          );
+        })()}
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-5 lg:gap-10">

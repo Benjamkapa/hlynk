@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query'
 import { salesApi } from '../../lib/api/providers'
 import { toast } from 'sonner'
 import { getErrorMessage } from '../../lib/utils/error'
+import { getLocalDateString } from '../../lib/utils/date'
 import { SlideOver } from '../../components/shared/SlideOver'
 import { PaginatedResponse } from '../../lib/types/api'
 import TablePagination from '../../components/shared/TablePagination'
@@ -30,7 +31,7 @@ export default function SalesHistoryPage() {
   const [page, setPage] = useState(1)
   const [sortBy] = useState('createdAt')
   const [sortOrder] = useState<'asc' | 'desc'>('desc')
-  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0])
+  const [selectedDate, setSelectedDate] = useState(getLocalDateString())
   const [selectedSale, setSelectedSale] = useState<any>(null)
   const [status, setStatus] = useState('')
   const [activeSource, setActiveSource] = useState<string>('__all__')
@@ -108,9 +109,9 @@ export default function SalesHistoryPage() {
   }
 
   const shiftDate = (days: number) => {
-    const d = new Date(selectedDate)
+    const d = new Date(selectedDate + 'T00:00:00')
     d.setDate(d.getDate() + days)
-    setSelectedDate(d.toISOString().split('T')[0])
+    setSelectedDate(getLocalDateString(d))
     setPage(1)
   }
 
@@ -142,7 +143,7 @@ export default function SalesHistoryPage() {
       {/* Top KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <StatCard
-          title={selectedDate === new Date().toISOString().split('T')[0] ? "Total Today" : `Total (${selectedDate})`}
+          title={selectedDate === getLocalDateString() ? "Total Today" : `Total (${selectedDate})`}
           value={`KES ${(stats.totalToday || 0).toLocaleString()}`}
           sub={activeSource === '__all__' ? 'All channels' : activeSource}
           icon={Receipt}

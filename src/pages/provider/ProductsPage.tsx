@@ -7,6 +7,7 @@ import { toast } from 'sonner'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { inventoryApi, providersApi } from '../../lib/api/providers'
 import { getErrorMessage } from '../../lib/utils/error'
+import { getLocalDateString, formatLocalDate } from '../../lib/utils/date'
 import { exportToCSV } from '../../lib/utils/export'
 import FeatureGate from '../../components/shared/FeatureGate'
 
@@ -290,8 +291,8 @@ export default function ProductsPage() {
                       <div className="flex flex-wrap gap-2">
                         <span className="text-[10px] font-black text-slate-500 bg-slate-100 px-2.5 py-1 rounded-[.5rem] uppercase tracking-widest">{p.category}</span>
                         {p.isPerishable && p.type !== 'SERVICE' && (
-                          <span className={`text-[10px] font-black px-2.5 py-1 rounded-[.5rem] uppercase tracking-widest ${new Date(p.expiryDate) < new Date() ? 'bg-red-50 text-red-600' : 'bg-amber-50 text-amber-600'}`}>
-                            {new Date(p.expiryDate) < new Date() ? 'Expired' : `Exp: ${new Date(p.expiryDate).toLocaleDateString()}`}
+                          <span className={`text-[10px] font-black px-2.5 py-1 rounded-[.5rem] uppercase tracking-widest ${p.expiryDate.split('T')[0] < getLocalDateString() ? 'bg-red-50 text-red-600' : 'bg-amber-50 text-amber-600'}`}>
+                            {p.expiryDate.split('T')[0] < getLocalDateString() ? 'Expired' : `Exp: ${formatLocalDate(p.expiryDate)}`}
                           </span>
                         )}
                       </div>
@@ -718,7 +719,7 @@ function EditProductForm({ product, onClose }: { product: any; onClose: () => vo
     imageUrl: product.imageUrl || '',
     file: null as File | null,
     isPerishable: !!product.isPerishable,
-    expiryDate: product.expiryDate ? new Date(product.expiryDate).toISOString().split('T')[0] : ''
+    expiryDate: product.expiryDate ? product.expiryDate.split('T')[0] : ''
   })
   const [isCameraOpen, setIsCameraOpen] = useState(false)
 

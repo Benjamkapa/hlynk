@@ -12,6 +12,7 @@ import { expensesApi } from '../../lib/api/providers'
 import { exportToCSV } from '../../lib/utils/export'
 import { getErrorMessage } from '../../lib/utils/error'
 import { PaginatedResponse } from '../../lib/types/api'
+import { getLocalDateString, formatLocalDate } from '../../lib/utils/date'
 
 export default function ExpensesPage() {
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
@@ -108,7 +109,7 @@ export default function ExpensesPage() {
                </div>
                <div className="p-6 bg-white rounded-[.5rem] border border-slate-100 shadow-sm">
                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Date</p>
-                  <p className="text-sm font-black text-slate-900 hl-mono">{new Date(selectedExpense.date).toLocaleDateString()}</p>
+                  <p className="text-sm font-black text-slate-900 hl-mono">{formatLocalDate(selectedExpense.date)}</p>
                </div>
             </div>
 
@@ -425,7 +426,7 @@ function AddExpenseForm({ onClose }: { onClose: () => void }) {
     description: '',
     category: 'Utilities',
     amount: '',
-    date: new Date().toISOString().split('T')[0],
+    date: getLocalDateString(),
   })
 
   const mutation = useMutation({

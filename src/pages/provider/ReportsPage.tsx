@@ -1,4 +1,4 @@
-import { TrendingUp, TrendingDown, Download, BarChart3, PieChart, Loader2, RefreshCcw, Filter, ChevronLeft, ChevronRight, FileText, Sparkles, Copy, BrainCircuit } from 'lucide-react'
+import { TrendingUp, TrendingDown, Download, BarChart3, PieChart, Loader2, RefreshCcw, Filter, ChevronLeft, ChevronRight, FileText, Sparkles, Copy, BrainCircuit, Receipt } from 'lucide-react'
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts'
 import { useQuery } from '@tanstack/react-query'
 import { providersApi } from '../../lib/api/providers'
@@ -128,18 +128,58 @@ export default function ReportsPage() {
             </div>
           </div>
 
-          <div className="space-y-6">
-            <div className="bg-[#0D4A3E] p-8 rounded-[.5rem] text-white shadow-xl shadow-emerald-900/20 relative overflow-hidden">
+          <div className="space-y-4">
+            {/* Gross Margin Card */}
+            <div className="bg-[#0D4A3E] p-6 rounded-[.5rem] text-white shadow-xl shadow-emerald-900/20 relative overflow-hidden">
               <div className="relative z-10">
-                <p className="text-[10px] font-black opacity-60 uppercase tracking-widest mb-2">Estimated Profit (MTD)</p>
-                <h2 className="text-3xl font-black mb-6 hl-mono">KES {Number(stats?.profit || 0).toLocaleString()}</h2>
+                <p className="text-[10px] font-black opacity-60 uppercase tracking-widest mb-1">Gross Margin (MTD)</p>
+                <p className="text-[9px] font-bold opacity-40 uppercase tracking-widest mb-3">Revenue − Cost of Goods</p>
+                <h2 className="text-2xl font-black mb-4 hl-mono">KES {Number(stats?.cumulativeProfit || 0).toLocaleString()}</h2>
                 <div className="flex items-center gap-2 text-xs font-black bg-white/10 w-fit px-4 py-2 rounded-[.5em] uppercase tracking-widest hl-mono">
-                  <TrendingUp size={16} />
-                  +15.4%
+                  <TrendingUp size={14} />
+                  All Time
                 </div>
               </div>
-              <BarChart3 size={120} className="absolute -right-6 -bottom-6 text-white opacity-5 rotate-12" />
+              <BarChart3 size={100} className="absolute -right-4 -bottom-4 text-white opacity-5 rotate-12" />
             </div>
+
+            {/* True Net Profit Card */}
+            {(() => {
+              const mtdExpenses = stats?.mtdExpenses || 0;
+              const mtdGross = stats?.mtdProfit || 0;
+              const netProfit = stats?.mtdNetProfit ?? (mtdGross - mtdExpenses);
+              const isPositive = netProfit >= 0;
+              return (
+                <div className={`p-6 rounded-[.5rem] text-white shadow-xl relative overflow-hidden ${
+                  isPositive ? 'bg-blue-700 shadow-blue-900/20' : 'bg-rose-700 shadow-rose-900/20'
+                }`}>
+                  <div className="relative z-10">
+                    <p className="text-[10px] font-black opacity-60 uppercase tracking-widest mb-1">True Net Profit (MTD)</p>
+                    <p className="text-[9px] font-bold opacity-40 uppercase tracking-widest mb-3">Gross Margin − Monthly Expenses</p>
+                    <h2 className="text-2xl font-black mb-3 hl-mono">
+                      {isPositive ? '' : '−'}KES {Math.abs(netProfit).toLocaleString()}
+                    </h2>
+                    <div className="flex flex-col gap-1 mb-3">
+                      <div className="flex justify-between text-[9px] font-black opacity-60 uppercase tracking-widest">
+                        <span>MTD Gross Margin</span>
+                        <span className="hl-mono">KES {mtdGross.toLocaleString()}</span>
+                      </div>
+                      <div className="flex justify-between text-[9px] font-black opacity-60 uppercase tracking-widest">
+                        <span>MTD Expenses</span>
+                        <span className="hl-mono text-rose-300">− KES {mtdExpenses.toLocaleString()}</span>
+                      </div>
+                    </div>
+                    <div className={`flex items-center gap-2 text-xs font-black w-fit px-4 py-2 rounded-[.5em] uppercase tracking-widest hl-mono ${
+                      isPositive ? 'bg-white/10' : 'bg-rose-900/40'
+                    }`}>
+                      {isPositive ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
+                      {isPositive ? 'Profitable' : 'Loss'}
+                    </div>
+                  </div>
+                  <Receipt size={100} className="absolute -right-4 -bottom-4 text-white opacity-5 rotate-12" />
+                </div>
+              );
+            })()}
 
             <div className="bg-white p-8 rounded-[.5rem] border border-gray-100 shadow-sm relative overflow-hidden">
               <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Out of Stock Alerts</p>
