@@ -20,7 +20,8 @@ export default function ReportsPage() {
 
   const { data: stats, isLoading: statsLoading, error: statsError } = useQuery<ProviderStats & { aiReportData?: any }>({
     queryKey: ['provider-reports'],
-    queryFn: providersApi.getStats
+    queryFn: providersApi.getStats,
+    refetchInterval: 15_000
   })
 
   const { data: logsData, isLoading: logsLoading, refetch: refetchLogs } = useQuery({

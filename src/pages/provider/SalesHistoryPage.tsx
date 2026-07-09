@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
-import { Search, Save, Calendar, Receipt, CreditCard, ChevronLeft, ChevronRight, Eye, Layers } from 'lucide-react'
-import { useQuery } from '@tanstack/react-query'
+import { Search, Save, Calendar, Receipt, CreditCard, ChevronLeft, ChevronRight, Eye, Layers, Ban, AlertTriangle } from 'lucide-react'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { salesApi } from '../../lib/api/providers'
 import { toast } from 'sonner'
 import { getErrorMessage } from '../../lib/utils/error'
@@ -35,6 +35,9 @@ export default function SalesHistoryPage() {
   const [selectedSale, setSelectedSale] = useState<any>(null)
   const [status, setStatus] = useState('')
   const [activeSource, setActiveSource] = useState<string>('__all__')
+  const [voidConfirm, setVoidConfirm] = useState(false)
+  const [voidReason, setVoidReason] = useState('')
+  const queryClient = useQueryClient()
 
   // First fetch: NO date filter — so channel tabs show ALL channels ever, not just today's
   const { data: allData } = useQuery<PaginatedResponse<any> & { stats: any }>({
@@ -59,6 +62,24 @@ export default function SalesHistoryPage() {
     }),
     refetchInterval: 15_000,
     staleTime: 10_000,
+  })
+
+  const voidMutation = useMutation({
+    mutationFn: ({ id, reason }: { id: string; reason?: string }) => salesApi.void(id, reason),
+    onSuccess: () => {
+      toast.success('Sale voided. Stock has been restored.')
+      setVoidConfirm(false)
+      setVoidReason('')
+      setSelectedSale(null)
+      queryClient.invalidateQueries({ queryKey: ['sales-history'] })
+      queryClient.invalidateQueries({ queryKey: ['sales-history-all-sources'] })
+      queryClient.invalidateQueries({ queryKey: ['provider-stats'] })
+      queryClient.invalidateQueries({ queryKey: ['provider-reports'] })
+      queryClient.invalidateQueries({ queryKey: ['recent-sales'] })
+    },
+    onError: (err: any) => {
+      toast.error(err?.response?.data?.message || 'Failed to void sale')
+    }
   })
 
   useEffect(() => {
@@ -132,13 +153,86 @@ export default function SalesHistoryPage() {
         </button>
       </div>
 
-      <SlideOver isOpen={!!selectedSale} onClose={() => setSelectedSale(null)} title="Receipt View">
+      <SlideOver isOpen={!!selectedSale} onClose={() => { setSelectedSale(null); setVoidConfirm(false); setVoidReason('') }} title="Receipt View">
         {selectedSale && (
-          <div className="space-y-8 pb-10">
+          <div className="space-y-6 pb-10">
+            {/* Voided banner */}
+            {Number(selectedSale.status) === 3 && (
+              <div className="flex items-center gap-3 bg-red-50 border border-red-100 rounded-[.5rem] px-5 py-4">
+                <div className="h-9 w-9 bg-red-100 text-red-600 rounded-[.5rem] flex items-center justify-center flex-shrink-0">
+                  <Ban size={18} />
+                </div>
+                <div>
+                  <p className="text-sm font-black text-red-700 uppercase tracking-widest">This Sale Is Voided</p>
+                  <p className="text-[11px] text-red-400 font-bold mt-0.5">Stock has been restored. This sale is excluded from all revenue calculations.</p>
+                </div>
+              </div>
+            )}
+
             <ThermalReceipt sale={selectedSale} />
+
+            {/* Void action — only for non-voided sales */}
+            {Number(selectedSale.status) !== 3 && (
+              <div className="border-t border-gray-100 pt-6">
+                {!voidConfirm ? (
+                  <button
+                    onClick={() => setVoidConfirm(true)}
+                    className="w-full flex items-center justify-center gap-2 h-12 rounded-[.5rem] border-2 border-red-100 bg-red-50 text-red-600 font-black text-xs uppercase tracking-widest hover:bg-red-100 hover:border-red-200 transition-all"
+                  >
+                    <Ban size={15} />
+                    Void This Sale
+                  </button>
+                ) : (
+                  <div className="bg-red-50 border border-red-100 rounded-[.5rem] p-5 space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-200">
+                    <div className="flex items-start gap-3">
+                      <div className="h-8 w-8 bg-red-100 text-red-600 rounded-[.5rem] flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <AlertTriangle size={15} />
+                      </div>
+                      <div>
+                        <p className="text-sm font-black text-red-800">Confirm Void</p>
+                        <p className="text-[11px] text-red-500 font-bold mt-0.5 leading-relaxed">
+                          This will cancel sale <span className="font-black">#{selectedSale.id.slice(-8).toUpperCase()}</span> and restore all stock quantities. This cannot be undone.
+                        </p>
+                      </div>
+                    </div>
+
+                    <textarea
+                      value={voidReason}
+                      onChange={e => setVoidReason(e.target.value)}
+                      placeholder="Reason for voiding (optional)..."
+                      rows={2}
+                      className="w-full bg-white border border-red-100 rounded-[.5rem] px-4 py-3 text-sm font-bold text-gray-700 placeholder-gray-300 outline-none focus:ring-2 focus:ring-red-200 resize-none transition-all"
+                    />
+
+                    <div className="flex gap-3">
+                      <button
+                        onClick={() => { setVoidConfirm(false); setVoidReason('') }}
+                        disabled={voidMutation.isPending}
+                        className="flex-1 h-10 rounded-[.5rem] border border-gray-200 bg-white text-gray-500 font-black text-xs uppercase tracking-widest hover:bg-gray-50 transition-all disabled:opacity-50"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        onClick={() => voidMutation.mutate({ id: selectedSale.id, reason: voidReason || undefined })}
+                        disabled={voidMutation.isPending}
+                        className="flex-1 h-10 rounded-[.5rem] bg-red-600 text-white font-black text-xs uppercase tracking-widest hover:bg-red-700 transition-all disabled:opacity-60 flex items-center justify-center gap-2"
+                      >
+                        {voidMutation.isPending ? (
+                          <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        ) : (
+                          <Ban size={13} />
+                        )}
+                        {voidMutation.isPending ? 'Voiding...' : 'Yes, Void It'}
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         )}
       </SlideOver>
+
 
       {/* Top KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

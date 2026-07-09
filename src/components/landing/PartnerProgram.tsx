@@ -46,10 +46,10 @@ export default function PartnerProgram() {
         <div className="text-center mb-16">
           <FadeUp delay={0.1}>
             <h2 className="text-5xl md:text-6xl font-black text-slate-900 tracking-tighter mb-6 font-ubuntu">
-              Earn Lifetime Commissions.
+              Earn Recurring Commissions.
             </h2>
             <p className="text-slate-500 font-medium text-lg max-w-2xl mx-auto">
-              Onboard businesses into Hlynk, earn industry-leading commissions, and secure a recurring monthly income as their business scales.
+              Bring businesses to Hlynk and earn money every month for 1 year. After that, add 5 new shops to keep earning.
             </p>
           </FadeUp>
         </div>
@@ -72,18 +72,18 @@ export default function PartnerProgram() {
               {[
                 {
                   icon: <Wallet className="text-emerald-600" size={24} />,
-                  title: "Lifetime Recurring Revenue",
-                  desc: "Earn commission not just on the first month, but on every renewal payment they make for their plan lifetime."
+                  title: "12 Months of Earnings",
+                  desc: "Every shop you bring in pays you commission every month for a full year. Not once — every single month."
                 },
                 {
                   icon: <Percent className="text-purple-600" size={24} />,
                   title: "Up to 29% Commission Payout",
-                  desc: "We split roughly 30% of our plan subscription price back to our ambassadors who support shop owners."
+                  desc: "We give back about 30% of each plan price to our partners who help shop owners start using Hlynk."
                 },
                 {
                   icon: <Users className="text-blue-600" size={24} />,
-                  title: "Active Referrer Safety Map",
-                  desc: "As long as you onboard at least one new shop every 180 days, you keep collecting commissions on all historical signups."
+                  title: "Keep Earning After Year 1",
+                  desc: "After your first year, just add 5 new shops and your commissions on all your shops continue. Simple."
                 },
                 {
                   icon: <Award className="text-amber-500" size={24} />,

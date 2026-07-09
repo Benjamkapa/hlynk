@@ -104,7 +104,7 @@ export default function AdminLayout() {
                   initial={{ opacity: 0, x: -10 }}
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -10 }}
-                  className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 px-4 mb-4 whitespace-nowrap"
+                  className="text-[15px] font-black uppercase tracking-[0.2em] text-gray-400 px-4 mb-4 whitespace-nowrap"
                 >
                   {group.label}
                 </motion.p>
