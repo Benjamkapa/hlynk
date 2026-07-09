@@ -18,6 +18,8 @@ interface FeatureGateProps {
   children: React.ReactNode
   fallback?: React.ReactNode
   variant?: 'inline' | 'card' | 'overlay' | 'tease'
+  badge?: string
+  badgeColor?: string
 }
 
 export const FEATURE_PLANS: Record<Feature, string[]> = {
@@ -31,7 +33,7 @@ export const FEATURE_PLANS: Record<Feature, string[]> = {
   kcb_settlement: ['MAX'],
 }
 
-export default function FeatureGate({ feature, children, fallback, variant = 'card' }: FeatureGateProps) {
+export default function FeatureGate({ feature, children, fallback, variant = 'card', badge, badgeColor }: FeatureGateProps) {
   const { user, isLoading } = useAuth()
   
   // Wait for auth to resolve before showing any gates
@@ -76,7 +78,7 @@ export default function FeatureGate({ feature, children, fallback, variant = 'ca
       >
         <Zap size={12} className="text-amber-600 fill-amber-600 animate-pulse" />
         <span className="text-[10px] font-black uppercase tracking-widest text-amber-700">
-          {getPlanName(FEATURE_PLANS[feature][0])} PREVIEW
+          {badge || `${getPlanName(FEATURE_PLANS[feature][0])} PREVIEW`}
         </span>
         <ArrowRight size={10} className="text-amber-400 group-hover:translate-x-1 transition-transform" />
       </Link>

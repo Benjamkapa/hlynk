@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
-import { Bell, User, LogOut, ChevronDown, Maximize2, Minimize2, Lock as LockIcon } from 'lucide-react'
+import { Bell, User, LogOut, ChevronDown, RefreshCw, Lock as LockIcon } from 'lucide-react'
 import { useAuth } from '../../lib/auth/AuthContext'
-import { useMobileViewport } from '../../lib/MobileViewportContext'
+
 import { Link, useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
@@ -19,8 +19,8 @@ interface TopNavProps {
 }
 
 export default function TopNav({ isMobileOpen, onMobileMenuToggle, isCollapsed, onToggleCollapse, extraActions }: TopNavProps) {
-  const { user, logout, lock } = useAuth()
-  const { isZoomedOut, toggleZoom } = useMobileViewport()
+  const { user, logout, lock, refreshUser } = useAuth()
+  const [isRefreshing, setIsRefreshing] = useState(false)
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const [showUserMenu, setShowUserMenu] = useState(false)
@@ -183,13 +183,20 @@ export default function TopNav({ isMobileOpen, onMobileMenuToggle, isCollapsed, 
       {/* RIGHT: ACTIONS & IDENTITY */}
       <div className="flex items-center gap-2 sm:gap-4">
         
-        {/* Mobile Zoom Toggle */}
+        {/* Refresh Data */}
         <button
-          onClick={toggleZoom}
-          className={`lg:hidden w-11 h-11 flex items-center justify-center transition-all text-slate-600 ${isZoomedOut ? 'hover:scale-110 duration-500 hover:text-emerald-600 active:scale-95' : 'hover:scale-90 duration-500 hover:text-emerald-600 active:scale-90'}`}
-          title={isZoomedOut ? "Expand View" : "Compact View"}
+          onClick={async () => {
+            setIsRefreshing(true)
+            try {
+              await queryClient.refetchQueries()
+              if (refreshUser) await refreshUser()
+            } catch (_) { /* swallow — individual queries handle their own errors */ }
+            setIsRefreshing(false)
+          }}
+          className="w-11 h-11 sm:w-12 sm:h-12 rounded-[.5rem] border flex items-center justify-center transition-all border-slate-200 text-slate-600 bg-emerald-50 hover:bg-slate-50 hover:border-slate-100 hover:text-emerald-600"
+          title="Refresh Data"
         >
-          {isZoomedOut ? <Maximize2 size={18} /> : <Minimize2 size={18} />}
+          <RefreshCw size={18} className={`transition-transform duration-700 ${isRefreshing ? 'animate-spin' : ''}`} />
         </button>
 
         {/* NOTIFICATIONS */}

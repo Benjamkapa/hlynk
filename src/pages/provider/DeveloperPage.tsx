@@ -65,7 +65,8 @@ export default function DeveloperPage() {
             <div className="flex items-center gap-6 mb-3">
                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/15/M-PESA_LOGO-01.svg/960px-M-PESA_LOGO-01.svg.png?_=20251215193002" alt="M-Pesa" className={`w-14 h-14 object-contain transition-all duration-500 ${activeTab === 'mpesa' ? 'opacity-100 scale-110' : 'opacity-30'}`} />
                <div className="h-8 w-px bg-slate-200" />
-               <FeatureGate feature="kcb_settlement" variant="inline">
+               {/* coming soon badge added on this option */}
+               <FeatureGate feature="kcb_settlement" variant="inline" badge="Coming Soon" badgeColor="bg-yellow-100 text-yellow-600" >
                  <img src="https://buni.kcbgroup.com/_nuxt/logo.71b8fc4b.svg" alt="KCB" className={`w-14 h-14 object-contain transition-all duration-500 ${activeTab === 'kcb' ? 'opacity-100 scale-110' : 'opacity-30'}`} />
                </FeatureGate>
             </div>
