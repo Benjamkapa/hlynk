@@ -496,13 +496,13 @@ function MobileBottomNav({ user, targetEndDate }: {
   }, [showBanner]);
 
   const navItems = [
-    { to: '/dashboard',           label: 'Home',    icon: LayoutDashboard, end: true,  isCenter: false },
-    { to: '/dashboard/products',  label: 'Items',   icon: Package,         end: false, isCenter: false },
-    { to: '/dashboard/expenses',  label: 'Spends',  icon: ShoppingCart,    end: false, isCenter: false },
-    { to: '/dashboard/sales/new', label: 'Sell',    icon: Zap,             end: false, isCenter: true  },
-    { to: '/dashboard/sales',     label: 'History', icon: Clock,           end: true,  isCenter: false },
-    { to: '/dashboard/reports',   label: 'Growth',  icon: BarChart2,       end: false, isCenter: false, plan: 'PLUS' as const },
-    { to: '/dashboard/settings',  label: 'Tools',   icon: Settings,        end: false, isCenter: false },
+    { to: '/dashboard', label: 'Home', icon: LayoutDashboard, end: true, isCenter: false },
+    { to: '/dashboard/products', label: 'Items', icon: Package, end: false, isCenter: false },
+    { to: '/dashboard/expenses', label: 'Spends', icon: ShoppingCart, end: false, isCenter: false },
+    { to: '/dashboard/sales/new', label: 'Sell', icon: Zap, end: false, isCenter: true },
+    { to: '/dashboard/sales', label: 'History', icon: Clock, end: true, isCenter: false },
+    { to: '/dashboard/reports', label: 'Growth', icon: BarChart2, end: false, isCenter: false, plan: 'PLUS' as const },
+    { to: '/dashboard/settings', label: 'Tools', icon: Settings, end: false, isCenter: false },
   ];
 
   const getPlanWeight = (p: string) => p.includes('MAX') ? 3 : p.includes('PLUS') ? 2 : 1;
@@ -527,8 +527,8 @@ function MobileBottomNav({ user, targetEndDate }: {
         {targetEndDate && showBanner && (
           <motion.div
             initial={{ opacity: 0, y: 16, scale: 0.94 }}
-            animate={{ opacity: 1, y: 0,  scale: 1     }}
-            exit={{    opacity: 0, y: 16, scale: 0.94  }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 16, scale: 0.94 }}
             transition={{ duration: 0.2 }}
             className="w-full max-w-[340px] pointer-events-auto mb-4 px-4"
           >
@@ -554,82 +554,82 @@ function MobileBottomNav({ user, targetEndDate }: {
 
       {/* Floating nav with background container to prevent content clash */}
       <div className="w-full px-3 pointer-events-auto">
-        <div className="relative py-2 bg-white/95 backdrop-blur-xl rounded-[2rem] shadow-[0_8px_30px_rgba(0,0,0,0.08)] flex items-end justify-around px-1">
+        <div className="relative py-2 bg-white/95 backdrop-blur-xl rounded-[2rem] shadow-[0_8px_30px_rgba(0,0,0,0.08)] flex items-end justify-between px-2">
           {navItems.map((item) => {
-          const isLocked = item.plan && userWeight < getPlanWeight(item.plan);
+            const isLocked = item.plan && userWeight < getPlanWeight(item.plan);
 
-          /* ── Locked item ── */
-          if (isLocked) {
-            return (
-              <button
-                key={item.label}
-                onClick={() => handleLockedClick(item.plan!)}
-                className="flex flex-col items-center gap-1 px-2.5 py-1 opacity-30 grayscale no-tap-highlight"
-              >
-                <div className="w-11 h-11 rounded-full flex items-center justify-center">
-                  <item.icon className="w-5 h-5 text-[#0D4A3E]" strokeWidth={2} />
-                </div>
-                <span className="text-[10px] font-medium text-[#0D4A3E]">{item.label}</span>
-              </button>
-            );
-          }
+            /* ── Locked item ── */
+            if (isLocked) {
+              return (
+                <button
+                  key={item.label}
+                  onClick={() => handleLockedClick(item.plan!)}
+                  className="flex-1 min-w-0 flex flex-col items-center gap-0.5 py-1 opacity-30 grayscale no-tap-highlight"
+                >
+                  <div className="w-9 h-9 rounded-full flex items-center justify-center">
+                    <item.icon className="w-[18px] h-[18px] text-[#0D4A3E]" strokeWidth={2} />
+                  </div>
+                  <span className="text-[9px] font-medium text-[#0D4A3E] truncate w-full text-center">{item.label}</span>
+                </button>
+              );
+            }
 
-          /* ── Center CTA (Sell) ── */
-          if (item.isCenter) {
+            /* ── Center CTA (Sell) ── */
+            if (item.isCenter) {
+              return (
+                <NavLink
+                  key={item.label}
+                  to={item.to}
+                  className="flex-1 min-w-0 flex flex-col items-center gap-0.5 py-1 no-tap-highlight"
+                  onTouchStart={() => setShowBanner(true)}
+                >
+                  {({ isActive }) => (
+                    <>
+                      <div
+                        className={`w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 active:scale-95
+                        ${isActive
+                            ? 'bg-emerald-500 shadow-lg shadow-emerald-500/30'
+                            : 'bg-[#0D4A3E] shadow-lg shadow-[#0D4A3E]/25'
+                          }`}
+                      >
+                        <item.icon className="w-5 h-5 text-white" strokeWidth={2.5} />
+                      </div>
+                      <span className={`text-[9px] font-medium transition-all truncate w-full text-center ${isActive ? 'text-emerald-600' : 'text-[#0D4A3E] opacity-50'}`}>
+                        {item.label}
+                      </span>
+                    </>
+                  )}
+                </NavLink>
+              );
+            }
+
+            /* ── Regular item ── */
             return (
               <NavLink
                 key={item.label}
                 to={item.to}
-                className="flex flex-col items-center gap-1 px-2.5 py-1 no-tap-highlight"
+                end={item.end}
+                className="flex-1 min-w-0 flex flex-col items-center gap-0.5 py-1 no-tap-highlight"
                 onTouchStart={() => setShowBanner(true)}
               >
                 {({ isActive }) => (
                   <>
                     <div
-                      className={`w-14 h-14 rounded-full flex items-center justify-center transition-all duration-300 active:scale-95
-                        ${isActive
-                          ? 'bg-emerald-500 shadow-lg shadow-emerald-500/30'
-                          : 'bg-[#0D4A3E] shadow-lg shadow-[#0D4A3E]/25'
-                        }`}
+                      className={`w-9 h-9 rounded-full flex items-center justify-center transition-all duration-200
+                      ${isActive ? 'bg-emerald-50 shadow-sm' : 'bg-transparent'}`}
                     >
-                      <item.icon className="w-6 h-6 text-white" strokeWidth={2.5} />
+                      <item.icon
+                        className={`w-[18px] h-[18px] transition-colors ${isActive ? 'text-[#0D4A3E]' : 'text-[#0D4A3E] opacity-35'}`}
+                        strokeWidth={isActive ? 2.5 : 2}
+                      />
                     </div>
-                    <span className={`text-[10px] font-medium transition-all ${isActive ? 'text-emerald-600' : 'text-[#0D4A3E] opacity-50'}`}>
+                    <span className={`text-[9px] font-medium transition-all truncate w-full text-center ${isActive ? 'text-[#0D4A3E]' : 'text-[#0D4A3E] opacity-35'}`}>
                       {item.label}
                     </span>
                   </>
                 )}
               </NavLink>
             );
-          }
-
-          /* ── Regular item ── */
-          return (
-            <NavLink
-              key={item.label}
-              to={item.to}
-              end={item.end}
-              className="flex flex-col items-center gap-1 px-2.5 py-1 no-tap-highlight"
-              onTouchStart={() => setShowBanner(true)}
-            >
-              {({ isActive }) => (
-                <>
-                  <div
-                    className={`w-11 h-11 rounded-full flex items-center justify-center transition-all duration-200
-                      ${isActive ? 'bg-white shadow-md shadow-black/10' : 'bg-transparent'}`}
-                  >
-                    <item.icon
-                      className={`w-5 h-5 transition-colors ${isActive ? 'text-[#0D4A3E]' : 'text-[#0D4A3E] opacity-35'}`}
-                      strokeWidth={isActive ? 2.5 : 2}
-                    />
-                  </div>
-                  <span className={`text-[10px] font-medium transition-all ${isActive ? 'text-[#0D4A3E]' : 'text-[#0D4A3E] opacity-35'}`}>
-                    {item.label}
-                  </span>
-                </>
-              )}
-            </NavLink>
-          );
           })}
         </div>
       </div>

@@ -298,7 +298,7 @@ function MobileBottomAdminNav() {
   return (
     <div className="fixed inset-x-0 bottom-6 z-[95] lg:hidden flex flex-col items-center pointer-events-none">
       <div className="w-full px-3 pointer-events-auto">
-        <div className="relative py-2 bg-white/95 backdrop-blur-xl rounded-[2rem] shadow-[0_8px_30px_rgba(0,0,0,0.08)] flex items-center justify-around px-1">
+        <div className="relative py-2 bg-white/95 backdrop-blur-xl rounded-[2rem] shadow-[0_8px_30px_rgba(0,0,0,0.08)] flex items-end justify-between px-2">
 
           {navItems.map((item) => {
             if (item.isCenter) {
@@ -333,20 +333,20 @@ function MobileBottomAdminNav() {
                 key={item.label}
                 to={item.to}
                 end={item.end}
-                className="flex flex-col items-center gap-1 px-2.5 py-1 no-tap-highlight"
+                className="flex-1 min-w-0 flex flex-col items-center gap-0.5 py-1 no-tap-highlight"
               >
                 {({ isActive }) => (
                   <>
                     <div
-                      className={`w-11 h-11 rounded-full flex items-center justify-center transition-all duration-200
-                        ${isActive ? 'bg-white shadow-md shadow-black/10' : 'bg-transparent'}`}
+                      className={`w-9 h-9 rounded-full flex items-center justify-center transition-all duration-200
+                        ${isActive ? 'bg-emerald-50 shadow-sm' : 'bg-transparent'}`}
                     >
                       <item.icon
-                        className={`w-5 h-5 transition-colors ${isActive ? 'text-[#0D4A3E]' : 'text-[#0D4A3E] opacity-35'}`}
+                        className={`w-[18px] h-[18px] transition-colors ${isActive ? 'text-[#0D4A3E]' : 'text-[#0D4A3E] opacity-35'}`}
                         strokeWidth={isActive ? 2.5 : 2}
                       />
                     </div>
-                    <span className={`text-[10px] font-medium transition-all ${isActive ? 'text-[#0D4A3E]' : 'text-[#0D4A3E] opacity-35'}`}>
+                    <span className={`text-[9px] font-medium transition-all truncate w-full text-center ${isActive ? 'text-[#0D4A3E]' : 'text-[#0D4A3E] opacity-35'}`}>
                       {item.label}
                     </span>
                   </>
