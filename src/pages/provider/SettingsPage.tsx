@@ -63,12 +63,13 @@ export default function SettingsPage() {
     mutationFn: providersApi.updateProfile,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['my-profile'] })
-      // Instantly update the sidebar business name without waiting for /auth/me round-trip
+      // Instantly update the name in the sidebar/topnav without a network round-trip.
+      // We do NOT call refreshUser() here because /auth/me may still return the OLD
+      // value (race condition) and would overwrite this optimistic update.
       patchUser({
         businessName: formData.businessName,
         name: formData.name,
       })
-      refreshUser()
       toast.success('Settings saved successfully')
     },
     onError: (err) => toast.error(getErrorMessage(err))
