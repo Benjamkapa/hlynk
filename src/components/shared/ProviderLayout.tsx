@@ -149,11 +149,14 @@ export default function ProviderLayout() {
   const isTrialExpired = isTrial && isExpired;
 
   useEffect(() => {
-    const reviewKey = `hlynk_reviewed_${user?.tenantId}_${targetEndDate}`;
+    // One-time review prompt: keyed to tenant only (not date) so it never repeats after renewal
+    const reviewKey = `hlynk_reviewed_${user?.tenantId}`;
     if (localStorage.getItem(reviewKey)) return;
-    if (user?.role === 'PROVIDER' && (isExpired || isTrialExpired)) { setShowReviewModal(true); return; }
-    if (isExpiringSoon) { const t = setTimeout(() => setShowReviewModal(true), 5000); return () => clearTimeout(t); }
-  }, [user, isExpiringSoon, isExpired, isTrialExpired, targetEndDate]);
+    // Only prompt when the subscription/trial has actually expired — not pre-emptively
+    if (user?.role === 'PROVIDER' && (isExpired || isTrialExpired)) {
+      setShowReviewModal(true);
+    }
+  }, [user, isExpired, isTrialExpired]);
 
   const handleSubmitReview = async () => {
     if (reviewRating === 0) return toast.error("Please select a rating");
@@ -161,7 +164,7 @@ export default function ProviderLayout() {
     try {
       await providersApi.submitReview({ rating: reviewRating, reviewText });
       toast.success("Thank you for your feedback!");
-      localStorage.setItem(`hlynk_reviewed_${user?.tenantId}_${targetEndDate}`, 'true');
+      localStorage.setItem(`hlynk_reviewed_${user?.tenantId}`, 'true');
       setShowReviewModal(false);
     } catch (err: any) {
       toast.error(err.message || "Failed to submit review");
@@ -344,7 +347,7 @@ export default function ProviderLayout() {
                 <button
                   onClick={() => {
                     setShowReviewModal(false);
-                    localStorage.setItem(`hlynk_reviewed_${user?.tenantId}_${targetEndDate}`, 'true');
+                    localStorage.setItem(`hlynk_reviewed_${user?.tenantId}`, 'true');
                   }}
                   className="absolute top-6 right-6 text-slate-400 hover:text-slate-900 transition-colors"
                 >

@@ -27,7 +27,7 @@ const KcbIcon = ({ className, size = 18 }: { className?: string, size?: number }
 );
 
 export default function SettingsPage() {
-  const { user, refreshUser, logout } = useAuth()
+  const { user, refreshUser, logout, patchUser } = useAuth()
   const queryClient = useQueryClient()
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState(() => window.innerWidth < 1024 ? 'Platform Hub' : 'Profile')
@@ -63,6 +63,11 @@ export default function SettingsPage() {
     mutationFn: providersApi.updateProfile,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['my-profile'] })
+      // Instantly update the sidebar business name without waiting for /auth/me round-trip
+      patchUser({
+        businessName: formData.businessName,
+        name: formData.name,
+      })
       refreshUser()
       toast.success('Settings saved successfully')
     },
@@ -501,7 +506,16 @@ export default function SettingsPage() {
                                 await caches.delete(key);
                               }
                             }
+                            // Preserve one-time prompt sentinels so they don't re-fire after reset
+                            const preserve: Record<string, string | null> = {};
+                            for (let i = 0; i < localStorage.length; i++) {
+                              const k = localStorage.key(i)!;
+                              if (k === 'hlynk_pin_prompted' || k.startsWith('hlynk_reviewed_')) {
+                                preserve[k] = localStorage.getItem(k);
+                              }
+                            }
                             localStorage.clear();
+                            Object.entries(preserve).forEach(([k, v]) => { if (v !== null) localStorage.setItem(k, v); });
                             sessionStorage.clear();
                             window.location.href = '/login?reset=true';
                           }

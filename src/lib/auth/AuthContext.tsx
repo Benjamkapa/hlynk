@@ -13,6 +13,8 @@ interface AuthContextValue {
   lock: () => void
   unlock: (pin: string) => Promise<boolean>
   refreshUser: () => Promise<any>
+  /** Instantly patch specific fields in the cached user (optimistic update) */
+  patchUser: (patch: Partial<AuthUser>) => void
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null)
@@ -158,8 +160,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
+  /** Instantly merge a partial update into the cached user without a network call */
+  const patchUser = (patch: Partial<AuthUser>) => {
+    setUser(prev => {
+      if (!prev) return prev
+      const updated = { ...prev, ...patch }
+      storage.setItem('user_profile', JSON.stringify(updated))
+      return updated
+    })
+  }
+
   return (
-    <AuthContext.Provider value={{ user, isLoading, isLocked, login, logout, lock, unlock, refreshUser }}>
+    <AuthContext.Provider value={{ user, isLoading, isLocked, login, logout, lock, unlock, refreshUser, patchUser }}>
       {children}
     </AuthContext.Provider>
   )
