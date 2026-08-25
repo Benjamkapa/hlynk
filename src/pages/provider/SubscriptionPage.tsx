@@ -12,55 +12,45 @@ import { Filter, Search } from 'lucide-react'
 
 const PLANS = [
   {
-    id: 'LITE',
+    id: 'PLUS',
     name: 'Starter',
     price: 4450,
-    desc: 'For small businesses that want better control of daily sales and expenses.',
-    color: 'emerald',
-    features: ['Manage up to 15 items', 'Record Sales', 'Track Expenses', 'Daily Profit Reports', 'Standard Support'],
-    notIncluded: ['eTIMS Compliance Hub', 'M-Pesa Express Automation', 'Staff Accounts']
-  },
-  {
-    id: 'PLUS',
-    name: 'Growth',
-    price: 9450,
-    desc: 'For growing businesses that need deeper reports and better business tracking.',
-    color: 'blue',
-    features: ['Everything in Starter','Manage up to 100 items', 'Profit Analytics', 'Sales Reports & Graphs', 'M-Pesa Express Automation', 'eTIMS Compliance Hub', '1 Staff Account', 'Priority Support'],
+    desc: 'For businesses that want automatic M-Pesa checkout, detailed reports, and team delegation.',
+    color: 'teal',
+    features: ['Manage up to 100 items', 'Record Sales & Expenses', 'Profit Analytics & Reports', 'M-Pesa Express Automation', '1 Staff Account', 'Priority Support'],
     notIncluded: ['KCB Buni Settlement', 'Unlimited Staff Accounts']
   },
   {
     id: 'MAX',
     name: 'Business Pro',
-    price: 16999,
-    desc: 'For businesses that need complete operational and staff management.',
+    price: 8200,
+    desc: 'For businesses that need complete team management, audit logs, and direct bank settlements.',
     color: 'purple',
-    features: ['Everything in Growth','Unlimited Inventory Items', 'KCB Buni Settlement', 'Unlimited Staff Accounts', 'Staff Activity Tracking', 'Roles & Permissions', 'Advanced Business Controls'],
+    features: ['Everything in Starter', 'Unlimited Inventory Items', 'KCB Buni Settlement', 'Unlimited Staff Accounts', 'Staff Activity Tracking (Audit Logs)', 'Roles & Permissions', 'Advanced Business Controls'],
     notIncluded: []
   },
 ]
 
 const FEATURE_COMPARISON = [
-  { name: 'Inventory Management (Items)', lite: 'Up to 15', plus: 'Up to 100', max: 'Unlimited' },
-  { name: 'Record & View Sales', lite: true, plus: true, max: true },
-  { name: 'Track Daily Expenses', lite: true, plus: true, max: true },
-  { name: 'Profit Analytics', lite: true, plus: true, max: true },
-  { name: 'Priority Support', lite: true , plus: true, max: true },
-  { name: 'M-Pesa Express Automation', lite: false, plus: true, max: true },
-  { name: 'KRA eTIMS Auto-Sync', lite: false, plus: true, max: true },
-  { name: '1 Staff Account', lite: false, plus: true, max: true },
-  { name: 'KCB Buni Settlement', lite: false, plus: false, max: true },
-  { name: 'Unlimited Staff Accounts', lite: false, plus: false, max: true },
-  { name: 'Staff Activity Tracking', lite: false, plus: false, max: true },
-  { name: 'Roles & Permissions', lite: false, plus: false, max: true },
+  { name: 'Inventory Management (Items)', starter: 'Up to 100', pro: 'Unlimited' },
+  { name: 'Record & View Sales', starter: true, pro: true },
+  { name: 'Track Daily Expenses', starter: true, pro: true },
+  { name: 'Profit Analytics & Reports', starter: true, pro: true },
+  { name: 'Priority Support', starter: true, pro: true },
+  { name: 'M-Pesa Express Automation', starter: true, pro: true },
+  { name: '1 Staff Account', starter: true, pro: true },
+  { name: 'KCB Buni Settlement', starter: false, pro: true },
+  { name: 'Unlimited Staff Accounts', starter: false, pro: true },
+  { name: 'Staff Activity Tracking (Audit Logs)', starter: false, pro: true },
+  { name: 'Roles & Permissions', starter: false, pro: true },
 ]
 
 import { SubscriptionExpiredBanner } from '../../components/shared/SubscriptionGuard'
 import { ConfirmModal } from '../../components/shared/ConfirmModal'
 
 // Base reward per referral per plan (in KES) & commission rate labels
-const REFERRAL_REWARDS = { lite: 1200, plus: 2650, max: 4950 }
-const REFERRAL_RATES  = { lite: '27%', plus: '28%', max: '29%' }
+const REFERRAL_REWARDS = { lite: 1200, plus: 1200, max: 2300 }
+const REFERRAL_RATES  = { lite: '27%', plus: '27%', max: '28%' }
 
 function ReferralsTab() {
   const { user, refreshUser } = useAuth()
@@ -1095,9 +1085,8 @@ export default function SubscriptionPage() {
                 <thead>
                   <tr className="border-b-2 border-gray-50">
                     <th className="py-6 text-[10px] font-black text-gray-400 uppercase tracking-widest">Feature</th>
-                    <th className="py-6 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Starter</th>
-                    <th className="py-6 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Growth</th>
-                    <th className="py-6 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Business Pro</th>
+                    <th className="py-6 text-[10px] font-black text-teal-500 uppercase tracking-widest text-center">Starter</th>
+                    <th className="py-6 text-[10px] font-black text-purple-500 uppercase tracking-widest text-center">Business Pro</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
@@ -1105,27 +1094,18 @@ export default function SubscriptionPage() {
                     <tr key={i} className="hover:bg-slate-50/50 transition-all group">
                       <td className="py-6 font-bold text-slate-700 text-sm">{f.name}</td>
                       <td className="py-6 text-center">
-                        {typeof f.lite === 'string' ? (
-                          <span className="text-xs font-black text-emerald-600 hl-mono">{f.lite}</span>
-                        ) : f.lite ? (
-                          <CheckCircle2 size={20} className="mx-auto text-emerald-500" />
+                        {typeof f.starter === 'string' ? (
+                          <span className="text-xs font-black text-teal-600 hl-mono">{f.starter}</span>
+                        ) : f.starter ? (
+                          <CheckCircle2 size={20} className="mx-auto text-teal-500" />
                         ) : (
                           <span className="text-slate-200">✕</span>
                         )}
                       </td>
                       <td className="py-6 text-center">
-                        {typeof f.plus === 'string' ? (
-                          <span className="text-xs font-black text-blue-600 hl-mono">{f.plus}</span>
-                        ) : f.plus ? (
-                          <CheckCircle2 size={20} className="mx-auto text-blue-500" />
-                        ) : (
-                          <span className="text-slate-200">✕</span>
-                        )}
-                      </td>
-                      <td className="py-6 text-center">
-                        {typeof f.max === 'string' ? (
-                          <span className="text-xs font-black text-purple-600 hl-mono">{f.max}</span>
-                        ) : f.max ? (
+                        {typeof f.pro === 'string' ? (
+                          <span className="text-xs font-black text-purple-600 hl-mono">{f.pro}</span>
+                        ) : f.pro ? (
                           <CheckCircle2 size={20} className="mx-auto text-purple-500" />
                         ) : (
                           <span className="text-slate-200">✕</span>
@@ -1164,8 +1144,7 @@ export default function SubscriptionPage() {
               className="bg-slate-50 border-none rounded-[.5em] px-4 py-2 text-xs font-black text-slate-600 outline-none focus:ring-2 focus:ring-emerald-500/10 min-w-[140px]"
             >
               <option value="">All Plans</option>
-              <option value="LITE">Starter</option>
-              <option value="PLUS">Growth</option>
+              <option value="PLUS">Starter</option>
               <option value="MAX">Business Pro</option>
             </select>
 

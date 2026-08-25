@@ -46,29 +46,81 @@ export default function SettingsPage() {
   useEffect(() => {
     if (profile?.data) {
       const d = profile.data
-      setFormData({
+      let mods: string[] = [];
+      if (Array.isArray(d.activeModules) && d.activeModules.length > 0) mods = d.activeModules;
+      else if (typeof d.activeModules === 'string') {
+        try { mods = JSON.parse(d.activeModules); } catch (_) {}
+      }
+      if (!mods.length && Array.isArray(user?.activeModules)) mods = user.activeModules;
+      else if (!mods.length && typeof user?.activeModules === 'string') {
+        try { mods = JSON.parse(user.activeModules); } catch (_) {}
+      }
+      if (!mods.length) mods = ['POS'];
+
+      setFormData((prev: any) => ({
+        ...prev,
         name: d.user?.name || '',
         email: d.user?.email || '',
         phone: d.phone || '',
         businessName: d.businessName || '',
         category: d.category || '',
         location: d.location || '',
+        activeModules: prev?.activeModules?.length ? prev.activeModules : mods,
         notificationSettings: d.notificationSettings || { emailAlerts: true, smsNotifications: true, marketing: false },
         operationalSettings: d.operationalSettings || { taxInclusive: true, autoPrint: false, lowStockThreshold: 5 }
-      })
+      }))
     }
   }, [profile])
+
+  const handleModuleToggle = (moduleKey: 'POS' | 'HOSPITALITY', enable: boolean) => {
+    let current: string[] = [];
+    if (Array.isArray(formData.activeModules) && formData.activeModules.length > 0) {
+      current = formData.activeModules;
+    } else if (Array.isArray(user?.activeModules) && user.activeModules.length > 0) {
+      current = user.activeModules;
+    } else {
+      current = ['POS'];
+    }
+
+    let updated: string[] = [];
+    if (enable) {
+      updated = Array.from(new Set([...current, moduleKey]));
+    } else {
+      updated = current.filter((m: string) => m !== moduleKey);
+    }
+
+    if (updated.length === 0) {
+      toast.error('At least one active module must remain enabled');
+      return;
+    }
+
+    // 1. Update local state
+    setFormData((prev: any) => ({ ...prev, activeModules: updated }));
+
+    // 2. Real-time navigation menu update!
+    patchUser({ activeModules: updated });
+
+    // 3. Persist to backend database immediately
+    providersApi.updateProfile({
+      businessName: formData.businessName || user?.businessName,
+      activeModules: updated
+    }).then(async () => {
+      toast.success(`${moduleKey === 'POS' ? 'POS & Retail' : 'Bookings, Rentals & Services'} module updated`);
+      await refreshUser();
+      queryClient.invalidateQueries({ queryKey: ['my-profile'] });
+    }).catch((err) => {
+      toast.error(getErrorMessage(err));
+    });
+  };
 
   const updateMutation = useMutation({
     mutationFn: providersApi.updateProfile,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['my-profile'] })
-      // Instantly update the name in the sidebar/topnav without a network round-trip.
-      // We do NOT call refreshUser() here because /auth/me may still return the OLD
-      // value (race condition) and would overwrite this optimistic update.
       patchUser({
         businessName: formData.businessName,
         name: formData.name,
+        activeModules: formData.activeModules,
       })
       toast.success('Settings saved successfully')
     },
@@ -223,7 +275,7 @@ export default function SettingsPage() {
                 <div className="grid grid-cols-2 gap-4">
                   <ModuleTile icon={FileText} label="Inventory" sub="Products & Stock" link="/dashboard/products" color="bg-blue-50 text-blue-600" />
                   <ModuleTile icon={RefreshCcw} label="Sales" sub="History & Records" link="/dashboard/sales" color="bg-emerald-50 text-emerald-600" />
-                  <ModuleTile icon={EtimsIcon} label="KRA eTIMS" sub="Compliance" link="/dashboard/etims" color="bg-red-50 text-red-600" isImg />
+                  <ModuleTile icon={EtimsIcon} label="KRA eTIMS" sub="Compliance" link="/dashboard/etims" color="bg-red-50 text-red-600" isImg isComingSoon />
                   <ModuleTile icon={Users} label="Customers" sub="CRM Database" link="/dashboard/customers" color="bg-amber-50 text-amber-600" />
                   <ModuleTile icon={CreditCard} label="Gateways" sub="Direct Payouts" link="/dashboard/developer" color="bg-emerald-50 text-emerald-600" />
                   <ModuleTile icon={Trash2} label="Expenses" sub="Cost Tracking" link="/dashboard/expenses" color="bg-purple-50 text-purple-600" />
@@ -415,6 +467,26 @@ export default function SettingsPage() {
                       }}
                       className="w-full bg-gray-50 border-none rounded-[.5rem] py-3.5 px-4 outline-none focus:ring-2 focus:ring-emerald-500/10 transition-all text-sm font-bold"
                    />
+                </div>
+
+                <div className="pt-6 border-t border-gray-50 mt-6">
+                  <h4 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-1">Active Platform Modules</h4>
+                  <p className="text-xs text-gray-500 font-medium mb-6">Enable or disable modules for your business. Sidebar and navigation update in real time.</p>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                    <ToggleItem
+                      title="Point of Sale & Retail Inventory"
+                      desc="Inventory Management, Cashier Terminal, Sales History & Expense Tracking"
+                      active={(formData.activeModules || user?.activeModules || ['POS']).includes('POS')}
+                      onToggle={(active: boolean) => handleModuleToggle('POS', active)}
+                    />
+                    <ToggleItem
+                      title="Bookings, Rentals & Services"
+                      desc="Units, Fleet/Car Rentals, Car Wash, Equipment, Stays, Rates & Operations"
+                      active={(formData.activeModules || user?.activeModules || []).includes('HOSPITALITY')}
+                      onToggle={(active: boolean) => handleModuleToggle('HOSPITALITY', active)}
+                    />
+                  </div>
                 </div>
 
                 <div className="pt-6 border-t border-gray-50 mt-6">
@@ -814,15 +886,20 @@ function Toggle({ active, onToggle }: { active: boolean; onToggle?: (v: boolean)
 }
 
 
-function ModuleTile({ icon: Icon, label, sub, link, color, isImg = false }: any) {
+function ModuleTile({ icon: Icon, label, sub, link, color, isImg = false, isComingSoon = false }: any) {
   return (
-    <Link to={link} className="p-6 bg-gray-50 border border-gray-100 rounded-[.5rem] hover:bg-white hover:shadow-md transition-all group">
+    <Link to={link} className={`p-6 bg-gray-50 border border-gray-100 rounded-[.5rem] hover:bg-white hover:shadow-md transition-all group relative ${isComingSoon ? 'opacity-60 grayscale' : ''}`}>
+      {isComingSoon && (
+        <span className="absolute top-3 right-3 text-[8px] font-black bg-slate-200 text-slate-600 px-2 py-0.5 rounded-full uppercase tracking-widest">
+          Soon
+        </span>
+      )}
       <div className={`h-12 w-12 rounded-[.5rem] flex items-center justify-center mb-4 transition-transform group-hover:scale-110 ${color}`}>
         <Icon size={24} />
       </div>
       <div>
         <p className="text-sm font-black text-gray-900 leading-none mb-1.5">{label}</p>
-        <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">{sub}</p>
+        {/* <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">{sub} {isComingSoon ? '(Coming Soon)' : ''}</p> */}
       </div>
     </Link>
   )

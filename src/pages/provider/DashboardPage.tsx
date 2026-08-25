@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { 
   Zap, ShoppingCart, Users, Package, 
   TrendingUp, ArrowUpRight, ArrowDownRight, 
@@ -12,15 +12,28 @@ import {
 import { useQuery } from '@tanstack/react-query'
 import { providersApi, salesApi } from '../../lib/api/providers'
 import { toast } from 'sonner'
-import { Link } from 'react-router-dom'
+import { Link, Navigate } from 'react-router-dom'
 import { getErrorMessage } from '../../lib/utils/error'
 import FeatureGate from '../../components/shared/FeatureGate'
-
-
-import { useEffect } from 'react'
+import { useAuth } from '../../lib/auth/AuthContext'
 import { ProviderStats, PaginatedResponse } from '../../lib/types/api'
 
 export default function DashboardPage() {
+  const { user } = useAuth()
+
+  const userModules = useMemo(() => {
+    let mods: string[] = [];
+    if (Array.isArray(user?.activeModules)) mods = user.activeModules;
+    else if (typeof user?.activeModules === 'string') {
+      try { mods = JSON.parse(user.activeModules); } catch (_) {}
+    }
+    if (!mods.length) mods = ['POS'];
+    return mods;
+  }, [user]);
+
+  if (userModules.includes('HOSPITALITY') && !userModules.includes('POS')) {
+    return <Navigate to="/dashboard/hospitality" replace />;
+  }
   const { data: stats, isLoading: statsLoading, error: statsError } = useQuery<ProviderStats>({
     queryKey: ['provider-stats'],
     queryFn: providersApi.getStats,

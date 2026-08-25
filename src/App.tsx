@@ -60,6 +60,10 @@ const HelpPageProvider = lazy(() => import('./pages/provider/HelpPage'))
 const DeveloperPage = lazy(() => import('./pages/provider/DeveloperPage'))
 const LogsPage = lazy(() => import('./pages/provider/MpesaLogsPage'))
 const EtimsPage = lazy(() => import('./pages/provider/EtimsPage'))
+const HospitalityOverviewPage = lazy(() => import('./pages/provider/hospitality/HospitalityOverviewPage'))
+const PropertiesPage = lazy(() => import('./pages/provider/hospitality/PropertiesPage'))
+const BookingsPage = lazy(() => import('./pages/provider/hospitality/BookingsPage'))
+const OperationsPage = lazy(() => import('./pages/provider/hospitality/OperationsPage'))
 
 function LoadingScreen() {
   return (
@@ -147,6 +151,10 @@ export default function App() {
           <Route path="developer" element={<DeveloperPage />} />
           <Route path="logs" element={<LogsPage />} />
           <Route path="etims" element={<EtimsPage />} />
+          <Route path="hospitality" element={<HospitalityOverviewPage />} />
+          <Route path="hospitality/properties" element={<PropertiesPage />} />
+          <Route path="hospitality/bookings" element={<BookingsPage />} />
+          <Route path="hospitality/operations" element={<OperationsPage />} />
           <Route path="help" element={<HelpPageProvider />} />
         </Route>
 

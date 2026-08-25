@@ -1,10 +1,11 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useAuth } from "../../lib/auth/AuthContext";
 import {
   LayoutDashboard, Calendar, BarChart2, Users,
   Settings, LogOut, Package, ShoppingCart,
   Zap, Clock, AlertTriangle,
-  Lock, Shield, X, Star, Loader2, Terminal, ShieldCheck, Receipt, CreditCard
+  Lock, Shield, X, Star, Loader2, Terminal, ShieldCheck, Receipt, CreditCard,
+  Hotel, Building, CalendarCheck, Sparkles
 } from "lucide-react";
 import { useLocation, Outlet, NavLink, Link } from "react-router-dom";
 import TopNav from "./TopNav";
@@ -31,7 +32,9 @@ interface NavItem {
   permission?: string;
   role?: 'PROVIDER' | 'SUPER_ADMIN' | 'STAFF' | 'CUSTOMER';
   plan?: 'PLUS' | 'MAX';
+  module?: 'POS' | 'HOSPITALITY';
   end?: boolean;
+  isComingSoon?: boolean;
 }
 
 interface NavGroup {
@@ -77,21 +80,40 @@ export default function ProviderLayout() {
   const [reviewText, setReviewText] = useState("");
   const [isSubmittingReview, setIsSubmittingReview] = useState(false);
 
+  const userModules = useMemo(() => {
+    let mods: string[] = [];
+    if (Array.isArray(user?.activeModules)) mods = user.activeModules;
+    else if (typeof user?.activeModules === 'string') {
+      try { mods = JSON.parse(user.activeModules); } catch (_) {}
+    }
+    if (!mods.length) mods = ['POS'];
+    return mods;
+  }, [user]);
+
   const navGroups: NavGroup[] = [
     {
-      label: 'Main',
+      label: 'Sales & Revenue',
       items: [
-        { to: '/dashboard/sales/new', label: 'Sell Now', icon: Zap, permission: 'sales' },
-        { to: '/dashboard/sales', label: 'History', icon: Package, end: true, permission: 'sales' },
-        { to: '/dashboard/expenses', label: 'Expenses', icon: ShoppingCart, permission: 'sales' },
+        { to: '/dashboard/sales/new', label: 'New Sale', icon: Zap, permission: 'sales', module: 'POS' },
+        { to: '/dashboard/sales', label: 'History', icon: Package, end: true, permission: 'sales', module: 'POS' },
+        { to: '/dashboard/expenses', label: 'Expenses', icon: ShoppingCart, permission: 'sales', module: 'POS' },
       ],
     },
     {
-      label: 'Store & Staff',
+      label: 'Catalogue & CRM',
       items: [
         { to: '/dashboard', label: 'Home', icon: LayoutDashboard, end: true, permission: 'overview' },
-        { to: '/dashboard/products', label: 'Items & Price', icon: Package, permission: 'products' },
+        { to: '/dashboard/products', label: 'Items & Pricing', icon: Package, permission: 'products', module: 'POS' },
         { to: '/dashboard/customers', label: 'Customers', icon: Users, permission: 'customers' },
+      ],
+    },
+    {
+      label: 'Bookings, Rentals & Services',
+      items: [
+        { to: '/dashboard/hospitality', label: 'Overview', icon: CalendarCheck, end: true, permission: 'hospitality', module: 'HOSPITALITY' },
+        { to: '/dashboard/hospitality/bookings', label: 'Bookings & Reservations', icon: CalendarCheck, permission: 'hospitality', module: 'HOSPITALITY' },
+        { to: '/dashboard/hospitality/properties', label: 'Units, Slots & Rates', icon: Building, permission: 'properties', module: 'HOSPITALITY' },
+        { to: '/dashboard/hospitality/operations', label: 'Tasks & Maintenance', icon: Sparkles, permission: 'operations', module: 'HOSPITALITY' },
       ],
     },
     {
@@ -112,7 +134,7 @@ export default function ProviderLayout() {
         { to: '/dashboard/logs', label: 'Staff Activity', icon: ShieldCheck, permission: 'logs', plan: 'MAX' },
         { to: '/dashboard/subscription', label: 'My Plan', icon: Calendar, role: 'PROVIDER' },
         { to: '/dashboard/developer', label: 'Payment Gateway', icon: CreditCard, role: 'PROVIDER', plan: 'PLUS' },
-        { to: '/dashboard/etims', label: 'KRA eTIMS', icon: Receipt, role: 'PROVIDER' },
+        { to: '/dashboard/etims', label: 'KRA eTIMS', icon: EtimsIcon, role: 'PROVIDER', isComingSoon: true },
       ],
     },
   ];
@@ -122,6 +144,9 @@ export default function ProviderLayout() {
   const filteredGroups = navGroups.map(group => ({
     ...group,
     items: group.items.map(item => {
+      // Module relativity filter
+      if (item.module && !userModules.includes(item.module)) return null;
+
       if (user?.role === 'SUPER_ADMIN') return { ...item, isLocked: false };
       if (user?.role === 'STAFF') {
         if (item.permission && !user.permissions?.includes(item.permission)) return null;
@@ -177,7 +202,7 @@ export default function ProviderLayout() {
   const RAIL_W = isDesktop ? 68 : 60;
   const FULL_W = 280;
 
-  const SidebarContent = () => (
+  const sidebarContent = useMemo(() => (
     <div className="flex flex-col h-full">
       <div className={`h-16 lg:h-20 flex items-center flex-shrink-0 ${sidebarExpanded ? 'px-5' : 'justify-center'}`}>
         <AnimatePresence mode="wait" initial={false}>
@@ -249,7 +274,11 @@ export default function ProviderLayout() {
                     className="flex items-center justify-between flex-1 min-w-0 ml-3"
                   >
                     <span className="text-sm font-bold whitespace-nowrap truncate">{item.label}</span>
-                    {item.isLocked && (
+                    {item.isComingSoon ? (
+                      <span className="text-[7px] font-black bg-slate-200 text-slate-600 px-1.5 py-0.5 rounded-full uppercase tracking-widest ml-2 flex-shrink-0">
+                        Soon
+                      </span>
+                    ) : item.isLocked && (
                       <span className="text-[7px] font-black bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-full uppercase tracking-widest ml-2 flex-shrink-0">
                         {item.plan === 'MAX' ? 'Pro' : 'Growth'}
                       </span>
@@ -259,12 +288,27 @@ export default function ProviderLayout() {
 
                 const tooltip = !sidebarExpanded && isDesktop && (
                   <div className="absolute left-[calc(100%+10px)] bg-slate-900 text-white px-3 py-1.5 rounded-[.4rem] text-[10px] font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 invisible group-hover:visible translate-x-2 group-hover:translate-x-0 transition-all pointer-events-none whitespace-nowrap z-[200] shadow-2xl">
-                    {item.label}
+                    {item.label} {item.isComingSoon ? '(Coming Soon)' : ''}
                     <div className="absolute top-1/2 -left-1 -translate-y-1/2 border-y-4 border-y-transparent border-r-4 border-r-slate-900" />
                   </div>
                 );
 
                 const baseClass = `group relative flex items-center rounded-[.45rem] transition-all duration-150 ${sidebarExpanded ? 'px-3 py-2.5' : 'justify-center py-2.5 px-0'}`;
+
+                if (item.isComingSoon) {
+                  return (
+                    <NavLink
+                      key={item.label}
+                      to={item.to}
+                      end={item.end}
+                      className={({ isActive }) =>
+                        `${baseClass} opacity-50 grayscale hover:opacity-80 cursor-pointer ${isActive ? 'bg-slate-100 text-slate-700' : 'text-slate-400 hover:bg-slate-50'}`
+                      }
+                    >
+                      {iconEl}{labelEl}{tooltip}
+                    </NavLink>
+                  );
+                }
 
                 if (item.isLocked) {
                   return (
@@ -325,7 +369,7 @@ export default function ProviderLayout() {
         </NavLink>
       </div>
     </div>
-  );
+  ), [sidebarExpanded, filteredGroups, user, isTrial, isCritical, targetEndDate]);
 
   return (
     <div className="flex h-screen overflow-hidden bg-slate-50/50">
@@ -424,7 +468,7 @@ export default function ProviderLayout() {
             transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
             className={`absolute inset-y-0 left-0 bg-white overflow-hidden ${isCollapsed && isHovered ? 'shadow-2xl shadow-slate-200 border-r border-slate-100' : ''}`}
           >
-            <SidebarContent />
+            {sidebarContent}
           </motion.div>
         </motion.aside>
       ) : null}
@@ -490,7 +534,12 @@ function MobileBottomNav({ user, targetEndDate }: {
   targetEndDate: string | undefined;
 }) {
   const [showBanner, setShowBanner] = useState(false);
+  const [showMoreSheet, setShowMoreSheet] = useState(false);
+  const location = useLocation();
   const isTrial = Number(user?.subscription?.status) === 2 || user?.subscription?.status === 'TRIAL';
+
+  // Close "More" sheet on navigation
+  useEffect(() => { setShowMoreSheet(false); }, [location.pathname]);
 
   useEffect(() => {
     if (!showBanner) return;
@@ -498,15 +547,73 @@ function MobileBottomNav({ user, targetEndDate }: {
     return () => clearTimeout(t);
   }, [showBanner]);
 
-  const navItems = [
-    { to: '/dashboard', label: 'Home', icon: LayoutDashboard, end: true, isCenter: false },
-    { to: '/dashboard/products', label: 'Items', icon: Package, end: false, isCenter: false },
-    { to: '/dashboard/expenses', label: 'Spends', icon: ShoppingCart, end: false, isCenter: false },
-    { to: '/dashboard/sales/new', label: 'Sell', icon: Zap, end: false, isCenter: true },
-    { to: '/dashboard/sales', label: 'History', icon: Clock, end: true, isCenter: false },
-    { to: '/dashboard/reports', label: 'Growth', icon: BarChart2, end: false, isCenter: false, plan: 'PLUS' as const },
-    { to: '/dashboard/settings', label: 'Tools', icon: Settings, end: false, isCenter: false },
-  ];
+  const userModules = useMemo(() => {
+    let mods: string[] = [];
+    if (Array.isArray(user?.activeModules)) mods = user.activeModules;
+    else if (typeof user?.activeModules === 'string') {
+      try { mods = JSON.parse(user.activeModules); } catch (_) {}
+    }
+    if (!mods.length) mods = ['POS'];
+    return mods;
+  }, [user]);
+
+  const hasPos = userModules.includes('POS');
+  const hasHosp = userModules.includes('HOSPITALITY');
+
+  // Primary nav items (always visible in the bar) — max 4 when both modules active
+  const primaryItems = useMemo(() => {
+    if (hasHosp && !hasPos) {
+      // Hospitality-only: 4 primary + 1 in overflow
+      return [
+        { to: '/dashboard/hospitality', label: 'Overview', icon: CalendarCheck, end: true, isCenter: false },
+        { to: '/dashboard/hospitality/bookings', label: 'Bookings', icon: CalendarCheck, end: false, isCenter: true },
+        { to: '/dashboard/hospitality/properties', label: 'Units', icon: Building, end: false, isCenter: false },
+        { to: '/dashboard/hospitality/operations', label: 'Tasks', icon: Sparkles, end: false, isCenter: false },
+      ];
+    }
+    if (hasHosp && hasPos) {
+      // Both modules: 4 items — POS Sell (CTA), Home, Bookings, More
+      return [
+        { to: '/dashboard', label: 'Home', icon: LayoutDashboard, end: true, isCenter: false },
+        { to: '/dashboard/sales/new', label: 'Sell', icon: Zap, end: false, isCenter: true },
+        { to: '/dashboard/hospitality', label: 'Bookings', icon: CalendarCheck, end: true, isCenter: false },
+        { to: '/dashboard/hospitality/properties', label: 'Units', icon: Building, end: false, isCenter: false },
+      ];
+    }
+    // POS only
+    return [
+      { to: '/dashboard', label: 'Home', icon: LayoutDashboard, end: true, isCenter: false },
+      { to: '/dashboard/products', label: 'Items', icon: Package, end: false, isCenter: false },
+      { to: '/dashboard/expenses', label: 'Spends', icon: ShoppingCart, end: false, isCenter: false },
+      { to: '/dashboard/sales/new', label: 'Sell', icon: Zap, end: false, isCenter: true },
+      { to: '/dashboard/sales', label: 'History', icon: Clock, end: true, isCenter: false },
+      { to: '/dashboard/reports', label: 'Growth', icon: BarChart2, end: false, isCenter: false, plan: 'PLUS' as const },
+    ];
+  }, [hasPos, hasHosp]);
+
+  // Overflow items shown in the "More" sheet
+  const overflowItems = useMemo(() => {
+    if (hasHosp && !hasPos) {
+      return [
+        { to: '/dashboard/settings', label: 'Settings & Tools', icon: Settings },
+        { to: '/dashboard/subscription', label: 'My Plan', icon: Calendar },
+      ];
+    }
+    if (hasHosp && hasPos) {
+      return [
+        { to: '/dashboard/hospitality/operations', label: 'Tasks & Maintenance', icon: Sparkles },
+        { to: '/dashboard/customers', label: 'Customers', icon: Users },
+        { to: '/dashboard/sales', label: 'Sales History', icon: Clock },
+        { to: '/dashboard/settings', label: 'Settings & Tools', icon: Settings },
+        { to: '/dashboard/subscription', label: 'My Plan', icon: Calendar },
+      ];
+    }
+    // POS only — just settings
+    return [
+      { to: '/dashboard/settings', label: 'Settings & Tools', icon: Settings },
+      { to: '/dashboard/subscription', label: 'My Plan', icon: Calendar },
+    ];
+  }, [hasPos, hasHosp]);
 
   const getPlanWeight = (p: string) => p.includes('MAX') ? 3 : p.includes('PLUS') ? 2 : 1;
   const currentPlan = (user?.subscription?.planName || 'LITE').toUpperCase();
@@ -522,121 +629,185 @@ function MobileBottomNav({ user, targetEndDate }: {
     });
   };
 
-  return (
-    <div className="fixed inset-x-0 bottom-6 z-[95] lg:hidden flex flex-col items-center pointer-events-none">
+  const renderNavItem = (item: any) => {
+    const isLocked = item.plan && userWeight < getPlanWeight(item.plan);
 
-      {/* Subscription status banner */}
+    if (isLocked) {
+      return (
+        <button
+          key={item.label}
+          onClick={() => handleLockedClick(item.plan!)}
+          className="flex-1 min-w-0 flex flex-col items-center gap-0.5 py-1 opacity-30 grayscale no-tap-highlight"
+        >
+          <div className="w-9 h-9 rounded-full flex items-center justify-center">
+            <item.icon className="w-[18px] h-[18px] text-[#0D4A3E]" strokeWidth={2} />
+          </div>
+          <span className="text-[9px] font-medium text-[#0D4A3E] truncate w-full text-center">{item.label}</span>
+        </button>
+      );
+    }
+
+    if (item.isCenter) {
+      return (
+        <NavLink
+          key={item.label}
+          to={item.to}
+          className="flex-1 min-w-0 flex flex-col items-center gap-0.5 py-1 no-tap-highlight"
+          onTouchStart={() => setShowBanner(true)}
+        >
+          {({ isActive }) => (
+            <>
+              <div className={`w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 active:scale-95 ${isActive ? 'bg-emerald-500 shadow-lg shadow-emerald-500/30' : 'bg-[#0D4A3E] shadow-lg shadow-[#0D4A3E]/25'}`}>
+                <item.icon className="w-5 h-5 text-white" strokeWidth={2.5} />
+              </div>
+              <span className={`text-[9px] font-medium transition-all truncate w-full text-center ${isActive ? 'text-emerald-600' : 'text-[#0D4A3E] opacity-50'}`}>{item.label}</span>
+            </>
+          )}
+        </NavLink>
+      );
+    }
+
+    return (
+      <NavLink
+        key={item.label}
+        to={item.to}
+        end={item.end}
+        className="flex-1 min-w-0 flex flex-col items-center gap-0.5 py-1 no-tap-highlight"
+        onTouchStart={() => setShowBanner(true)}
+      >
+        {({ isActive }) => (
+          <>
+            <div className={`w-9 h-9 rounded-full flex items-center justify-center transition-all duration-200 ${isActive ? 'bg-emerald-50 shadow-sm' : 'bg-transparent'}`}>
+              <item.icon className={`w-[18px] h-[18px] transition-colors ${isActive ? 'text-[#0D4A3E]' : 'text-[#0D4A3E] opacity-35'}`} strokeWidth={isActive ? 2.5 : 2} />
+            </div>
+            <span className={`text-[9px] font-medium transition-all truncate w-full text-center ${isActive ? 'text-[#0D4A3E]' : 'text-[#0D4A3E] opacity-35'}`}>{item.label}</span>
+          </>
+        )}
+      </NavLink>
+    );
+  };
+
+  // Check if any overflow item is currently active
+  const isOverflowActive = overflowItems.some(item => location.pathname === item.to || location.pathname.startsWith(item.to + '/'));
+
+  return (
+    <>
+      {/* ── More Sheet backdrop ── */}
       <AnimatePresence>
-        {targetEndDate && showBanner && (
+        {showMoreSheet && (
           <motion.div
-            initial={{ opacity: 0, y: 16, scale: 0.94 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 16, scale: 0.94 }}
+            key="more-backdrop"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="w-full max-w-[340px] pointer-events-auto mb-4 px-4"
+            className="fixed inset-0 z-[93] bg-slate-900/30 backdrop-blur-[2px] lg:hidden"
+            onClick={() => setShowMoreSheet(false)}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* ── More Sheet panel ── */}
+      <AnimatePresence>
+        {showMoreSheet && (
+          <motion.div
+            key="more-sheet"
+            initial={{ opacity: 0, y: 24, scale: 0.97 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 16, scale: 0.97 }}
+            transition={{ duration: 0.22, ease: [0.32, 0.72, 0, 1] }}
+            className="fixed inset-x-3 z-[94] lg:hidden bottom-[calc(5.5rem+1.5rem)]"
           >
-            <Link
-              to="/dashboard/subscription"
-              className="bg-[#0D4A3E] border border-white/10 p-3 rounded-[1.5rem] flex items-center justify-between shadow-[0_20px_50px_rgba(13,74,61,0.4)]"
-            >
-              <div className="pl-2">
-                <p className="text-[7px] font-black text-emerald-400 uppercase tracking-widest leading-none">
-                  Subscription Status
-                </p>
-                <p className="text-[9px] font-black text-white mt-1 uppercase tracking-tight">
-                  {isTrial ? 'Free Trial' : 'Active Plan'}
-                </p>
+            <div className="bg-white rounded-[1.5rem] shadow-[0_20px_60px_rgba(0,0,0,0.14)] overflow-hidden border border-slate-100">
+              {/* Sheet header */}
+              <div className="flex items-center justify-between px-5 pt-4 pb-3 border-b border-slate-50">
+                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">More Options</p>
+                <button
+                  onClick={() => setShowMoreSheet(false)}
+                  className="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 hover:bg-slate-200 transition-colors"
+                >
+                  <X size={12} />
+                </button>
               </div>
-              <div className="bg-white/5 px-4 py-2 rounded-xl">
-                <MiniCountdown expiryDate={targetEndDate} />
+              {/* Sheet items */}
+              <div className="p-3 grid grid-cols-2 gap-2">
+                {overflowItems.map((item) => (
+                  <NavLink
+                    key={item.label}
+                    to={item.to}
+                    className={({ isActive }) =>
+                      `flex items-center gap-3 px-4 py-3.5 rounded-[.9rem] transition-all no-tap-highlight ${isActive ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-50 text-slate-600 hover:bg-emerald-50 hover:text-emerald-700'}`
+                    }
+                  >
+                    <item.icon className="w-[18px] h-[18px] flex-shrink-0" strokeWidth={2} />
+                    <span className="text-[11px] font-bold leading-tight">{item.label}</span>
+                  </NavLink>
+                ))}
               </div>
-            </Link>
+              {/* Sheet bottom padding for safe area */}
+              <div className="h-2" />
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Floating nav with background container to prevent content clash */}
-      <div className="w-full px-3 pointer-events-auto">
-        <div className="relative py-2 bg-white/95 backdrop-blur-xl rounded-[2rem] shadow-[0_8px_30px_rgba(0,0,0,0.08)] flex items-end justify-between px-2">
-          {navItems.map((item) => {
-            const isLocked = item.plan && userWeight < getPlanWeight(item.plan);
+      <div className="fixed inset-x-0 bottom-6 z-[95] lg:hidden flex flex-col items-center pointer-events-none">
 
-            /* ── Locked item ── */
-            if (isLocked) {
-              return (
-                <button
-                  key={item.label}
-                  onClick={() => handleLockedClick(item.plan!)}
-                  className="flex-1 min-w-0 flex flex-col items-center gap-0.5 py-1 opacity-30 grayscale no-tap-highlight"
-                >
-                  <div className="w-9 h-9 rounded-full flex items-center justify-center">
-                    <item.icon className="w-[18px] h-[18px] text-[#0D4A3E]" strokeWidth={2} />
-                  </div>
-                  <span className="text-[9px] font-medium text-[#0D4A3E] truncate w-full text-center">{item.label}</span>
-                </button>
-              );
-            }
-
-            /* ── Center CTA (Sell) ── */
-            if (item.isCenter) {
-              return (
-                <NavLink
-                  key={item.label}
-                  to={item.to}
-                  className="flex-1 min-w-0 flex flex-col items-center gap-0.5 py-1 no-tap-highlight"
-                  onTouchStart={() => setShowBanner(true)}
-                >
-                  {({ isActive }) => (
-                    <>
-                      <div
-                        className={`w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 active:scale-95
-                        ${isActive
-                            ? 'bg-emerald-500 shadow-lg shadow-emerald-500/30'
-                            : 'bg-[#0D4A3E] shadow-lg shadow-[#0D4A3E]/25'
-                          }`}
-                      >
-                        <item.icon className="w-5 h-5 text-white" strokeWidth={2.5} />
-                      </div>
-                      <span className={`text-[9px] font-medium transition-all truncate w-full text-center ${isActive ? 'text-emerald-600' : 'text-[#0D4A3E] opacity-50'}`}>
-                        {item.label}
-                      </span>
-                    </>
-                  )}
-                </NavLink>
-              );
-            }
-
-            /* ── Regular item ── */
-            return (
-              <NavLink
-                key={item.label}
-                to={item.to}
-                end={item.end}
-                className="flex-1 min-w-0 flex flex-col items-center gap-0.5 py-1 no-tap-highlight"
-                onTouchStart={() => setShowBanner(true)}
+        {/* Subscription status banner */}
+        <AnimatePresence>
+          {targetEndDate && showBanner && (
+            <motion.div
+              initial={{ opacity: 0, y: 16, scale: 0.94 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 16, scale: 0.94 }}
+              transition={{ duration: 0.2 }}
+              className="w-full max-w-[340px] pointer-events-auto mb-4 px-4"
+            >
+              <Link
+                to="/dashboard/subscription"
+                className="bg-[#0D4A3E] border border-white/10 p-3 rounded-[1.5rem] flex items-center justify-between shadow-[0_20px_50px_rgba(13,74,61,0.4)]"
               >
-                {({ isActive }) => (
-                  <>
-                    <div
-                      className={`w-9 h-9 rounded-full flex items-center justify-center transition-all duration-200
-                      ${isActive ? 'bg-emerald-50 shadow-sm' : 'bg-transparent'}`}
-                    >
-                      <item.icon
-                        className={`w-[18px] h-[18px] transition-colors ${isActive ? 'text-[#0D4A3E]' : 'text-[#0D4A3E] opacity-35'}`}
-                        strokeWidth={isActive ? 2.5 : 2}
-                      />
-                    </div>
-                    <span className={`text-[9px] font-medium transition-all truncate w-full text-center ${isActive ? 'text-[#0D4A3E]' : 'text-[#0D4A3E] opacity-35'}`}>
-                      {item.label}
-                    </span>
-                  </>
-                )}
-              </NavLink>
-            );
-          })}
+                <div className="pl-2">
+                  <p className="text-[7px] font-black text-emerald-400 uppercase tracking-widest leading-none">
+                    Subscription Status
+                  </p>
+                  <p className="text-[9px] font-black text-white mt-1 uppercase tracking-tight">
+                    {isTrial ? 'Free Trial' : 'Active Plan'}
+                  </p>
+                </div>
+                <div className="bg-white/5 px-4 py-2 rounded-xl">
+                  <MiniCountdown expiryDate={targetEndDate} />
+                </div>
+              </Link>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Floating nav */}
+        <div className="w-full px-3 pointer-events-auto">
+          <div className="relative py-2 bg-white/95 backdrop-blur-xl rounded-[2rem] shadow-[0_8px_30px_rgba(0,0,0,0.08)] flex items-end justify-between px-2">
+            {primaryItems.map(renderNavItem)}
+
+            {/* ── "More" button — shown when there are overflow items ── */}
+            <button
+              key="more-btn"
+              onClick={() => setShowMoreSheet(v => !v)}
+              className="flex-1 min-w-0 flex flex-col items-center gap-0.5 py-1 no-tap-highlight"
+            >
+              <div className={`w-9 h-9 rounded-full flex items-center justify-center transition-all duration-200 ${showMoreSheet || isOverflowActive ? 'bg-emerald-50' : 'bg-transparent'}`}>
+                {/* Three-dot icon using inline SVG for compactness */}
+                <svg viewBox="0 0 20 20" fill="none" className={`w-[18px] h-[18px] transition-colors ${showMoreSheet || isOverflowActive ? 'text-[#0D4A3E]' : 'text-[#0D4A3E] opacity-35'}`}>
+                  <circle cx="4" cy="10" r="1.5" fill="currentColor" />
+                  <circle cx="10" cy="10" r="1.5" fill="currentColor" />
+                  <circle cx="16" cy="10" r="1.5" fill="currentColor" />
+                </svg>
+              </div>
+              <span className={`text-[9px] font-medium transition-all truncate w-full text-center ${showMoreSheet || isOverflowActive ? 'text-[#0D4A3E]' : 'text-[#0D4A3E] opacity-35'}`}>More</span>
+            </button>
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }
 

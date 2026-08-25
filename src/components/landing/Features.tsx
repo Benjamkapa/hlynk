@@ -1,83 +1,65 @@
-import { TrendingUp, Receipt, PackageSearch, BarChart3, LayoutDashboard, Users, ShieldCheck } from 'lucide-react'
-import { FadeUp } from './Animations'
+import { TrendingUp, Receipt, PackageSearch, Hotel, LayoutDashboard, Users } from 'lucide-react'
 
 const features = [
   {
     icon: <TrendingUp size={24} />,
-    title: "Profit Tracking",
-    desc: "Know exactly how much money you made after all costs. No more manual calculations or guessing."
+    title: "Real-Time Profit Tracking",
+    desc: "See your exact profits instantly. Hlynk automatically subtracts your purchase costs and expenses so you always know your real earnings."
   },
   {
     icon: <Receipt size={24} />,
-    title: "Fast Point of Sale",
-    desc: "Tap or search for products to record sales in seconds. Professional receipts sent via SMS."
+    title: "Fast Cashier Register",
+    desc: "Checkout customer sales in seconds. Search items, scan barcodes, issue receipts, and log expenses easily from your phone or tablet."
+  },
+  {
+    icon: <Hotel size={24} />,
+    title: "Bookings, Rentals & Services",
+    desc: "Track rooms, rental cars, services, or equipment hired out. A live calendar ensures you never double-book."
   },
   {
     icon: <PackageSearch size={24} />,
-    title: "Stock Management",
-    desc: "Your inventory updates automatically with every sale. Get smart alerts when items are low."
-  },
-  {
-    icon: <BarChart3 size={24} />,
-    title: "Expense Logging",
-    desc: "Track rent, supplies, and wages. See where your cash is going with itemized expense categories."
-  },
-  {
-    icon: <LayoutDashboard size={24} />,
-    title: "Daily Summaries",
-    desc: "Get a clear summary of your business health every morning and evening. Simple, easy to read."
+    title: "Smart Stock Count & Alerts",
+    desc: "Your stock levels update automatically as you sell. Get friendly SMS/email alerts before an item runs out."
   },
   {
     icon: <Users size={24} />,
-    title: "Staff Management",
-    desc: "Create sub-accounts for your staff with limited access. Keep your business secure while you delegate tasks."
+    title: "Staff Accounts & Commissions",
+    desc: "Create accounts for your workers. Choose what they can see or edit, track their sales, and calculate their daily commissions automatically."
   },
   {
-    icon: <img src="https://etims.kra.go.ke/assets/images/logo.jpg" alt="eTIMS" className="w-20 bg-white hover:bg-white" />,
-    title: "KRA eTIMS Integrated",
-    desc: "Stay fully compliant with KRA effortlessly. Optional direct system-to-system eTIMS integration pushes invoices automatically for your peace of mind."
+    icon: <LayoutDashboard size={24} />,
+    title: "M-Pesa & eTIMS Ready",
+    desc: "Receive M-Pesa payments that instantly update your sales ledger. Generate eTIMS invoices for KRA automatically with no extra steps."
   },
-  {
-    icon: <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/15/M-PESA_LOGO-01.svg/960px-M-PESA_LOGO-01.svg.png?_=20251215193002" alt="M-Pesa" className="h-12 w-auto object-contain" />,
-    title: "M-Pesa Integration",
-    desc: "Accept payments via M-Pesa effortlessly. Get instant notifications and update your sales automatically."
-  },
-  {
-    icon: <img src="https://buni.kcbgroup.com/_nuxt/logo.71b8fc4b.svg" alt="KCB Buni" className="h-14 w-auto object-contain" />,
-    title: "KCB Buni Integration",
-    desc: "Get paid directly to your KCB account whenever a customer pays via KCB Buni. Instant notifications and seamless integration with your business operations."
-  }
 ]
 
 export default function Features() {
   return (
-    <section id="features" className="py-24 bg-white relative overflow-hidden">
+    <section id="features" className="py-32 bg-slate-950 text-white relative overflow-hidden">
       <div className="max-w-7xl mx-auto px-6 md:px-12 relative z-10">
-        <div className="text-center max-w-3xl mx-auto mb-24">
-          <FadeUp delay={0.1}>
-            <span className="text-[10px] font-black text-emerald-600 uppercase tracking-[0.2em] mb-4 block">Core Features</span>
-            <h2 className="text-4xl md:text-5xl font-black text-slate-900 font-thin tracking-tighter mb-6 font-ubuntu">
-              Stop guessing. Start <span className="text-emerald-600 ">growing.</span>
-            </h2>
-            <p className="text-lg text-slate-500 font-medium">
-              We built hlynk to solve the real problems Kenyan business owners face each and every day, starting with easier access.
-            </p>
-          </FadeUp>
+        <div className="text-center max-w-3xl mx-auto mb-20 space-y-3">
+          <span className="text-xs font-black text-emerald-400 uppercase tracking-widest block">Core Platform Capabilities</span>
+          <h2 className="text-3xl md:text-5xl font-black text-white font-ubuntu tracking-tight">
+            Stop guessing your profits. Start growing.
+          </h2>
+          <p className="text-slate-400 text-sm md:text-base font-medium">
+            Hlynk gives you simple, powerful tools to run your business, reduce waste, and track every shilling.
+          </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {features.map((f, i) => (
-            <FadeUp key={f.title} delay={i * 0.25}>
-              <div className="p-10 rounded-2xl bg-slate-50 border border-slate-100 transition-all group h-full">
-                <div className="w-16 h-16 rounded-xl bg-white border border-slate-100 flex items-center justify-center text-emerald-600 mb-8 group-hover:scale-110 transition-transform shadow-sm">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {features.map((f) => (
+            <div key={f.title} className="p-8 rounded-2xl bg-slate-900 border border-slate-800 transition-all hover:border-slate-700 flex flex-col justify-between">
+              <div>
+                <div className="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center mb-6">
                   {f.icon}
                 </div>
-                <h3 className="text-xl font-black text-emerald-900 mb-4 tracking-tight font-ubuntu italic font-thin">{f.title}</h3>
-                <p className="text-slate-500 font-medium leading-relaxed text-sm">
+                <h3 className="text-lg font-black text-white mb-2 font-ubuntu">{f.title}</h3>
+                <p className="text-slate-400 font-medium leading-relaxed text-xs">
                   {f.desc}
                 </p>
               </div>
-            </FadeUp>
+            </div>
           ))}
         </div>
       </div>

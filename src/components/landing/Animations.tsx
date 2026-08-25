@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react"
 
-export function useInView(threshold = 0.2) {
+export function useInView(threshold = 0.1) {
   const ref = useRef<HTMLDivElement>(null)
   const [inView, setInView] = useState(false)
   useEffect(() => {
@@ -14,12 +14,16 @@ export function useInView(threshold = 0.2) {
 export function FadeUp({ children, delay = 0, className = "", style = {} }: { children: React.ReactNode; delay?: number; className?: string; style?: React.CSSProperties }) {
   const { ref, inView } = useInView()
   return (
-    <div ref={ref} className={className} style={{
-      ...style,
-      opacity: inView ? 1 : 0,
-      transform: inView ? "translateY(0)" : "translateY(60px)",
-      transition: `opacity 2s cubic-bezier(0.16, 1, 0.3, 1) ${delay}s, transform 2s cubic-bezier(0.16, 1, 0.3, 1) ${delay}s`
-    }}>
+    <div
+      ref={ref}
+      className={`transition-all duration-1000 ease-out transform ${
+        inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
+      } ${className}`}
+      style={{
+        ...style,
+        transitionDelay: `${delay}s`,
+      }}
+    >
       {children}
     </div>
   )
@@ -28,12 +32,16 @@ export function FadeUp({ children, delay = 0, className = "", style = {} }: { ch
 export function ScaleIn({ children, delay = 0, className = "", style = {} }: { children: React.ReactNode; delay?: number; className?: string; style?: React.CSSProperties }) {
   const { ref, inView } = useInView()
   return (
-    <div ref={ref} className={className} style={{
-      ...style,
-      opacity: inView ? 1 : 0,
-      transform: inView ? "scale(1)" : "scale(0.85)",
-      transition: `opacity 2s cubic-bezier(0.16, 1, 0.3, 1) ${delay}s, transform 2s cubic-bezier(0.16, 1, 0.3, 1) ${delay}s`
-    }}>
+    <div
+      ref={ref}
+      className={`transition-all duration-1000 ease-out transform ${
+        inView ? "opacity-100 scale-100" : "opacity-0 scale-95"
+      } ${className}`}
+      style={{
+        ...style,
+        transitionDelay: `${delay}s`,
+      }}
+    >
       {children}
     </div>
   )
@@ -41,13 +49,18 @@ export function ScaleIn({ children, delay = 0, className = "", style = {} }: { c
 
 export function SlideIn({ children, delay = 0, direction = "left", className = "", style = {} }: { children: React.ReactNode; delay?: number; direction?: "left" | "right"; className?: string; style?: React.CSSProperties }) {
   const { ref, inView } = useInView()
+  const translation = direction === "left" ? "-translate-x-8" : "translate-x-8"
   return (
-    <div ref={ref} className={className} style={{
-      ...style,
-      opacity: inView ? 1 : 0,
-      transform: inView ? "translateX(0)" : direction === "left" ? "translateX(-60px)" : "translateX(60px)",
-      transition: `opacity 2s cubic-bezier(0.16, 1, 0.3, 1) ${delay}s, transform 2s cubic-bezier(0.16, 1, 0.3, 1) ${delay}s`
-    }}>
+    <div
+      ref={ref}
+      className={`transition-all duration-1000 ease-out transform ${
+        inView ? "opacity-100 translate-x-0" : `opacity-0 ${translation}`
+      } ${className}`}
+      style={{
+        ...style,
+        transitionDelay: `${delay}s`,
+      }}
+    >
       {children}
     </div>
   )
@@ -56,14 +69,16 @@ export function SlideIn({ children, delay = 0, direction = "left", className = "
 export function Reveal({ children, delay = 0, className = "" }: { children: React.ReactNode; delay?: number; className?: string }) {
   const { ref, inView } = useInView()
   return (
-    <div ref={ref} className={`relative overflow-hidden ${className}`}>
-      <div style={{
-        opacity: inView ? 1 : 0,
-        transform: inView ? "translateY(0)" : "translateY(100%)",
-        transition: `opacity 2s cubic-bezier(0.16, 1, 0.3, 1) ${delay}s, transform 2s cubic-bezier(0.16, 1, 0.3, 1) ${delay}s`
-      }}>
-        {children}
-      </div>
+    <div
+      ref={ref}
+      className={`transition-all duration-1000 ease-out transform ${
+        inView ? "opacity-100 scale-100 translate-y-0" : "opacity-0 scale-98 translate-y-4"
+      } ${className}`}
+      style={{
+        transitionDelay: `${delay}s`,
+      }}
+    >
+      {children}
     </div>
   )
 }
@@ -233,84 +248,12 @@ export function POSCanvas() {
 // Each section sticks to the top and the next one slides over it, Apple-style.
 export function StackedSections({ children }: { children: React.ReactNode[] }) {
   return (
-    <div className="relative">
+    <div className="space-y-12">
       {children.map((child, i) => (
-        <StackSection key={i} index={i} total={children.length}>
+        <div key={i}>
           {child}
-        </StackSection>
+        </div>
       ))}
-    </div>
-  )
-}
-
-function StackSection({
-  children,
-  index,
-  total,
-}: {
-  children: React.ReactNode
-  index: number
-  total: number
-}) {
-  const ref = useRef<HTMLDivElement>(null)
-  const [style, setStyle] = useState<React.CSSProperties>({})
-
-  useEffect(() => {
-    const el = ref.current
-    if (!el) return
-
-    // Scale down slightly as newer cards stack over this one
-    const scaleStep = 0.03
-    const isLast = index === total - 1
-
-    function onScroll() {
-      if (!el) return
-      const rect = el.getBoundingClientRect()
-      const parentTop = el.offsetTop
-      const scrollY = window.scrollY
-
-      // How much the user has scrolled past this section's entry point
-      const progress = Math.max(0, Math.min(1, (scrollY - (parentTop - window.innerHeight * 0.8)) / (window.innerHeight * 0.5)))
-
-      // After this card is pinned, scale it down as user scrolls further
-      const pinned = rect.top <= 0
-      const distancePastTop = pinned ? Math.abs(rect.top) : 0
-      const sectionH = el.offsetHeight
-      const exitProgress = Math.min(1, distancePastTop / sectionH)
-      const scale = isLast ? 1 : Math.max(1 - scaleStep * (index + 1) * exitProgress * 3, 0.88)
-      const opacity = isLast ? 1 : Math.max(1 - exitProgress * 0.25, 0.75)
-
-      setStyle({
-        opacity: progress,
-        transform: `translateY(${(1 - progress) * 60}px) scale(${scale})`,
-        transformOrigin: 'top center',
-        filter: isLast ? 'none' : exitProgress > 0.05 ? `blur(${exitProgress * 1.5}px)` : 'none',
-      })
-    }
-
-    window.addEventListener('scroll', onScroll, { passive: true })
-    onScroll()
-    return () => window.removeEventListener('scroll', onScroll)
-  }, [index, total])
-
-  return (
-    <div
-      ref={ref}
-      style={{
-        position: 'sticky',
-        top: `${index * 8}px`,
-        zIndex: 10 + index,
-      }}
-    >
-      <div
-        style={{
-          willChange: 'transform, opacity',
-          transition: 'transform 0.6s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.6s ease, filter 0.4s ease',
-          ...style,
-        }}
-      >
-        {children}
-      </div>
     </div>
   )
 }

@@ -1,19 +1,31 @@
-import { useState, useEffect } from 'react'
-import { Plus, Search, Edit, Trash2, Users, Shield, DollarSign, Activity } from 'lucide-react'
+import { useState, useEffect, useMemo } from 'react'
+import { Plus, Search, Edit, Trash2, Shield, DollarSign, Sparkles, Check } from 'lucide-react'
 import { ConfirmModal } from '../../components/shared/ConfirmModal'
 import { SlideOver } from '../../components/shared/SlideOver'
 import { toast } from 'sonner'
 import { providersApi } from '../../lib/api/providers'
 import { getErrorMessage } from '../../lib/utils/error'
 import FeatureGate from '../../components/shared/FeatureGate'
+import { useAuth } from '../../lib/auth/AuthContext'
 
 export default function StaffManagementPage() {
+  const { user } = useAuth()
   const [staffList, setStaffList] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   const [editingStaff, setEditingStaff] = useState<any>(null)
   const [search, setSearch] = useState('')
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
+
+  const userModules = useMemo(() => {
+    let mods: string[] = [];
+    if (Array.isArray(user?.activeModules)) mods = user.activeModules;
+    else if (typeof user?.activeModules === 'string') {
+      try { mods = JSON.parse(user.activeModules); } catch (_) {}
+    }
+    if (!mods.length) mods = ['POS'];
+    return mods;
+  }, [user]);
 
   const loadStaff = async () => {
     setIsLoading(true)
@@ -45,12 +57,26 @@ export default function StaffManagementPage() {
     }
   }
 
-  const getCalculatedCommission = (saleTotal: number, type: string, rate: number) => {
-    if (!saleTotal) return 0
-    if (type === 'PERCENTAGE') return saleTotal * (rate / 100)
-    if (type === 'FLAT') return rate // Note: this calculates aggregate flat rate which might not be correct if it's per item, but we'll approximate per sale count instead? Wait. Flat might mean per sale. Let's do (rate * salesCount) later.
-    return 0
-  }
+  const getRoleBadge = (perms: string[] = []) => {
+    if (!perms || perms.length === 0) return { label: 'Basic Staff', color: 'bg-slate-100 text-slate-600 border-slate-200' };
+    
+    const hasSales = perms.includes('sales');
+    const hasProducts = perms.includes('products');
+    const hasHosp = perms.includes('hospitality');
+    const hasProps = perms.includes('properties');
+    const hasOps = perms.includes('operations');
+    const hasStaff = perms.includes('staff');
+
+    if (hasStaff) return { label: 'Manager', color: 'bg-purple-100 text-purple-800 border-purple-200' };
+    if (hasHosp && hasProps) return { label: 'Unit Supervisor', color: 'bg-emerald-100 text-emerald-800 border-emerald-200' };
+    if (hasHosp) return { label: 'Reception / Desk', color: 'bg-blue-100 text-blue-800 border-blue-200' };
+    if (hasOps && !hasSales && !hasProducts) return { label: 'Tasks Attendant', color: 'bg-amber-100 text-amber-800 border-amber-200' };
+    if (hasSales && !hasProducts) return { label: 'Cashier', color: 'bg-emerald-100 text-emerald-800 border-emerald-200' };
+    if (hasProducts && !hasSales) return { label: 'Inventory Admin', color: 'bg-slate-100 text-slate-800 border-slate-200' };
+    if (hasSales && hasProducts) return { label: 'Store Associate', color: 'bg-emerald-100 text-emerald-800 border-emerald-200' };
+    
+    return { label: 'Custom Role', color: 'bg-slate-100 text-slate-700 border-slate-200' };
+  };
 
   return (
     <FeatureGate feature="staff_accounts">
@@ -59,7 +85,7 @@ export default function StaffManagementPage() {
         <div className="flex justify-between items-end">
           <div>
             <h1 className="text-3xl font-black text-gray-900 tracking-tight">Team Management</h1>
-            <p className="text-gray-500 font-medium">Manage team members, permissions, and calculate commissions</p>
+            <p className="text-gray-500 font-medium">Manage team members, module-based permissions, and commissions</p>
           </div>
           <div className="flex gap-3">
             <button 
@@ -79,7 +105,7 @@ export default function StaffManagementPage() {
             onClose={() => setIsAddModalOpen(false)} 
             title="Add New Member"
           >
-            <StaffForm onClose={() => { setIsAddModalOpen(false); loadStaff() }} />
+            <StaffForm userModules={userModules} onClose={() => { setIsAddModalOpen(false); loadStaff() }} />
           </SlideOver>
 
           <SlideOver 
@@ -87,7 +113,7 @@ export default function StaffManagementPage() {
             onClose={() => setEditingStaff(null)} 
             title="Edit Member"
           >
-            {editingStaff && <StaffForm staff={editingStaff} onClose={() => { setEditingStaff(null); loadStaff() }} />}
+            {editingStaff && <StaffForm userModules={userModules} staff={editingStaff} onClose={() => { setEditingStaff(null); loadStaff() }} />}
           </SlideOver>
 
           <div className="p-6 border-b border-gray-50 flex gap-4">
@@ -109,7 +135,7 @@ export default function StaffManagementPage() {
                 <tr className="bg-gray-50/50">
                   <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest">Name</th>
                   <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest">Contact</th>
-                  <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest">Permissions</th>
+                  <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest">Role & Permissions</th>
                   <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Total Sales</th>
                   <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Owed Commission</th>
                   <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Action</th>
@@ -131,6 +157,8 @@ export default function StaffManagementPage() {
                     : s.commissionType === 'FLAT' 
                       ? sCount * Number(s.commissionRate) 
                       : 0;
+
+                  const badge = getRoleBadge(s.permissions);
 
                   return (
                     <tr key={s.id} className="hover:bg-emerald-50/30 transition-all group cursor-pointer">
@@ -161,12 +189,17 @@ export default function StaffManagementPage() {
                         {s.email && <span className="block text-[10px] text-slate-400">{s.email}</span>}
                       </td>
                       <td className="px-8 py-5">
-                        <div className="flex flex-wrap gap-1">
-                          {s.permissions?.length > 0 ? s.permissions.map((p: string) => (
-                            <span key={p} className="text-[9px] font-black text-slate-500 bg-slate-100 px-2 py-0.5 rounded-[.5em] uppercase tracking-widest">{p}</span>
-                          )) : (
-                            <span className="text-[9px] text-slate-400">Basic</span>
-                          )}
+                        <div className="space-y-1">
+                          <span className={`inline-block text-[10px] font-extrabold px-2.5 py-0.5 rounded-full border ${badge.color}`}>
+                            {badge.label}
+                          </span>
+                          <div className="flex flex-wrap gap-1">
+                            {s.permissions?.length > 0 ? s.permissions.map((p: string) => (
+                              <span key={p} className="text-[8px] font-black text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded uppercase tracking-wider">{p}</span>
+                            )) : (
+                              <span className="text-[9px] text-slate-400">Basic</span>
+                            )}
+                          </div>
                         </div>
                       </td>
                       <td className="px-8 py-5 text-right">
@@ -220,7 +253,7 @@ export default function StaffManagementPage() {
   )
 }
 
-function StaffForm({ staff, onClose }: { staff?: any; onClose: () => void }) {
+function StaffForm({ userModules, staff, onClose }: { userModules: string[]; staff?: any; onClose: () => void }) {
   const [form, setForm] = useState({ 
     name: staff?.name || '', 
     phone: staff?.phone || '', 
@@ -240,6 +273,10 @@ function StaffForm({ staff, onClose }: { staff?: any; onClose: () => void }) {
         ? prev.permissions.filter((x: string) => x !== p)
         : [...prev.permissions, p]
     }))
+  }
+
+  const applyRolePreset = (perms: string[]) => {
+    setForm(prev => ({ ...prev, permissions: perms }))
   }
 
   const handleSubmit = async () => {
@@ -268,15 +305,93 @@ function StaffForm({ staff, onClose }: { staff?: any; onClose: () => void }) {
     }
   }
 
-  const availablePermissions = [
-    { id: 'overview', label: 'View Dashboard' },
-    { id: 'sales', label: 'Record Sales' },
-    { id: 'products', label: 'Manage Inventory' },
-    { id: 'customers', label: 'Manage Customers' },
-    { id: 'reports', label: 'View Reports' },
-    { id: 'staff', label: 'Manage Team' },
-    { id: 'logs', label: 'Audit Logs' },
-  ]
+  // Module-based permissions configuration
+  const permissionGroups = [
+    {
+      module: 'COMMON',
+      title: 'Core & General Access',
+      permissions: [
+        { id: 'overview', label: 'View Overview / Dashboard' },
+        { id: 'customers', label: 'Manage Customers & CRM' },
+        { id: 'reports', label: 'View Growth & Analytics' },
+        { id: 'staff', label: 'Manage Team Members' },
+        { id: 'logs', label: 'View Audit Logs' },
+      ]
+    },
+    {
+      module: 'POS',
+      title: 'Sales & Inventory (POS Module)',
+      permissions: [
+        { id: 'sales', label: 'Record Sales & Expenses' },
+        { id: 'products', label: 'Manage Items & Pricing' },
+      ]
+    },
+    {
+      module: 'HOSPITALITY',
+      title: 'Bookings, Rentals & Services Module',
+      permissions: [
+        { id: 'hospitality', label: 'Manage Bookings & Reservations' },
+        { id: 'properties', label: 'Manage Units, Slots & Rates' },
+        { id: 'operations', label: 'Manage Tasks & Maintenance' },
+      ]
+    }
+  ].filter(g => g.module === 'COMMON' || userModules.includes(g.module))
+
+  // Quick Role Presets dynamically filtered by active modules
+  const rolePresets = useMemo(() => {
+    const presets: { id: string; label: string; icon: string; permissions: string[] }[] = [];
+    const hasPos = userModules.includes('POS');
+    const hasHosp = userModules.includes('HOSPITALITY');
+
+    if (hasPos) {
+      presets.push({
+        id: 'cashier',
+        label: 'Cashier / Sales',
+        icon: '💳',
+        permissions: ['overview', 'sales', 'customers']
+      });
+      presets.push({
+        id: 'inventory',
+        label: 'Inventory Admin',
+        icon: '📦',
+        permissions: ['overview', 'products']
+      });
+    }
+
+    if (hasHosp) {
+      presets.push({
+        id: 'reception',
+        label: 'Desk / Reception',
+        icon: '📅',
+        permissions: ['overview', 'hospitality', 'customers']
+      });
+      presets.push({
+        id: 'operations',
+        label: 'Tasks Attendant',
+        icon: '🧹',
+        permissions: ['overview', 'operations']
+      });
+      presets.push({
+        id: 'supervisor',
+        label: 'Unit / Fleet Supervisor',
+        icon: '🏢',
+        permissions: ['overview', 'hospitality', 'properties', 'operations']
+      });
+    }
+
+    const allPerms = ['overview', 'customers', 'reports', 'staff', 'logs'];
+    if (hasPos) allPerms.push('sales', 'products');
+    if (hasHosp) allPerms.push('hospitality', 'properties', 'operations');
+
+    presets.push({
+      id: 'manager',
+      label: 'Full Manager',
+      icon: '👑',
+      permissions: allPerms
+    });
+
+    return presets;
+  }, [userModules]);
 
   return (
     <div className="space-y-6">
@@ -285,14 +400,6 @@ function StaffForm({ staff, onClose }: { staff?: any; onClose: () => void }) {
         <InputGroup label="Phone Number *" placeholder="0712 345 678" mono value={form.phone} onChange={(v: string) => setForm({ ...form, phone: v })} />
         <InputGroup label="Work Email" placeholder="Required for Google Login" value={form.email} onChange={(v: string) => setForm({ ...form, email: v })} />
       </div>
-      
-      {/* <InputGroup 
-        label={staff ? "Change Password" : "Manual Password (Optional if Email is set)"} 
-        placeholder="••••••••" 
-        type="password"
-        value={form.password} 
-        onChange={(v: string) => setForm({ ...form, password: v })} 
-      /> */}
 
       <div className="border-t border-slate-100 pt-6 mt-2">
         <h3 className="text-xs font-black uppercase text-slate-800 mb-4 tracking-widest flex items-center gap-2"><DollarSign size={14} /> Commission Settings</h3>
@@ -321,21 +428,59 @@ function StaffForm({ staff, onClose }: { staff?: any; onClose: () => void }) {
         </div>
       </div>
 
+      {/* Module-Aware Role Presets */}
       <div className="border-t border-slate-100 pt-6">
-        <h3 className="text-xs font-black uppercase text-slate-800 mb-4 tracking-widest flex items-center gap-2"><Shield size={14} /> Access Permissions</h3>
-        <div className="grid grid-cols-2 gap-3">
-          {availablePermissions.map(p => (
-            <label key={p.id} className="flex items-center gap-3 p-3 bg-slate-50 rounded-[.5em] cursor-pointer hover:bg-emerald-50 transition-colors border border-transparent hover:border-emerald-100">
-              <input 
-                type="checkbox"
-                checked={form.permissions.includes(p.id)}
-                onChange={() => togglePermission(p.id)}
-                className="h-4 w-4 accent-emerald-600 rounded"
-              />
-              <span className="text-xs font-bold text-slate-700">{p.label}</span>
-            </label>
-          ))}
+        <h3 className="text-xs font-black uppercase text-slate-800 mb-2 tracking-widest flex items-center gap-2">
+          <Sparkles size={14} className="text-amber-500" /> Quick Role Presets
+        </h3>
+        <p className="text-xs text-slate-500 font-medium mb-3">Select a role template matching your active business modules:</p>
+        <div className="flex flex-wrap gap-2">
+          {rolePresets.map(preset => {
+            const isMatch = preset.permissions.length === form.permissions.length && preset.permissions.every(p => form.permissions.includes(p));
+            return (
+              <button
+                key={preset.id}
+                type="button"
+                onClick={() => applyRolePreset(preset.permissions)}
+                className={`px-3 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 border ${
+                  isMatch 
+                    ? 'bg-[#0D4A3E] text-white border-[#0D4A3E] shadow-sm' 
+                    : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+                }`}
+              >
+                <span>{preset.icon}</span>
+                <span>{preset.label}</span>
+                {isMatch && <Check size={12} className="ml-1" />}
+              </button>
+            )
+          })}
         </div>
+      </div>
+
+      {/* Access Permissions by Active Module */}
+      <div className="border-t border-slate-100 pt-6 space-y-5">
+        <h3 className="text-xs font-black uppercase text-slate-800 tracking-widest flex items-center gap-2"><Shield size={14} /> Custom Access Permissions</h3>
+        
+        {permissionGroups.map(group => (
+          <div key={group.module} className="space-y-2">
+            <div className="text-[10px] font-black uppercase tracking-wider text-emerald-800 bg-emerald-50/60 px-2.5 py-1 rounded-md inline-block">
+              {group.title}
+            </div>
+            <div className="grid grid-cols-2 gap-2.5">
+              {group.permissions.map(p => (
+                <label key={p.id} className="flex items-center gap-3 p-3 bg-slate-50 rounded-[.5em] cursor-pointer hover:bg-emerald-50 transition-colors border border-transparent hover:border-emerald-100">
+                  <input 
+                    type="checkbox"
+                    checked={form.permissions.includes(p.id)}
+                    onChange={() => togglePermission(p.id)}
+                    className="h-4 w-4 accent-emerald-600 rounded"
+                  />
+                  <span className="text-xs font-bold text-slate-700">{p.label}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+        ))}
       </div>
 
       {staff && (

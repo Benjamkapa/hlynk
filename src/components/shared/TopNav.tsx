@@ -157,7 +157,7 @@ export default function TopNav({ isMobileOpen, onMobileMenuToggle, isCollapsed, 
         <div className="lg:hidden flex items-center gap-3">
           <img src="/fav.png" alt="hlynk" className="h-8 w-8 object-contain" />
           <div className="flex flex-col min-w-0">
-            <span className="text-normal font-black text-emerald-800 truncate max-w-[140px] leading-none tracking-tight">
+            <span className="text-normal font-nunito font-bold text-emerald-800 truncate max-w-[140px] leading-none tracking-tight">
               {user?.businessName}
             </span>
           </div>
@@ -193,29 +193,30 @@ export default function TopNav({ isMobileOpen, onMobileMenuToggle, isCollapsed, 
             } catch (_) { /* swallow — individual queries handle their own errors */ }
             setIsRefreshing(false)
           }}
-          className="w-11 h-11 sm:w-12 sm:h-12 rounded-[.5rem] border flex items-center justify-center transition-all border-slate-200 text-slate-600 bg-emerald-50 hover:bg-slate-50 hover:border-slate-100 hover:text-emerald-600"
+          className="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white/90 shadow hover:shadow-md hover:scale-105 transition-all text-slate-600 hover:text-emerald-700 flex items-center justify-center"
           title="Refresh Data"
         >
-          <RefreshCw size={18} className={`transition-transform duration-700 ${isRefreshing ? 'animate-spin' : ''}`} />
+          <RefreshCw size={17} className={`transition-transform duration-700 ${isRefreshing ? 'animate-spin' : ''}`} />
         </button>
 
         {/* NOTIFICATIONS */}
         <div className="relative" ref={notificationRef}>
           <button 
             onClick={() => setShowNotifications(!showNotifications)} 
-            className={`w-11 h-11 sm:w-12 sm:h-12 rounded-[.5rem] border flex items-center justify-center transition-all relative ${showNotifications ? 'bg-white border-emerald-200 shadow-xl text-emerald-600' : 'hover:bg-slate-50 hover:border-slate-100 hover:text-slate-400 border-slate-200 text-slate-600 bg-emerald-50'}`}
+            className={`w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white shadow transition-all flex items-center justify-center relative ${showNotifications ? 'border-emerald-500 shadow-md text-emerald-700 ring-2 ring-emerald-500/10' : 'border-slate-200/60 shadow-sm hover:shadow-md hover:scale-105 text-slate-600 hover:text-emerald-700'}`}
+            title="Notifications"
           >
-            <Bell size={18} />
+            <Bell size={17} />
             {unreadCount > 0 && (
-              <span className="absolute top-1 right-1 w-4 h-4 sm:w-5 sm:h-5 bg-red-500 rounded-full border-2 border-white flex items-center justify-center text-[8px] sm:text-[10px] font-black text-white">
+              <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-red-500 rounded-full border-2 border-white flex items-center justify-center text-[8px] font-black text-white shadow-sm">
                 {unreadCount}
               </span>
             )}
           </button>
 
           {showNotifications && (
-            <div className="fixed sm:absolute top-24 sm:top-16 right-4 sm:right-0 w-[calc(100vw-2rem)] sm:w-[340px] bg-white border border-slate-100 rounded-[.5rem] shadow-2xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200 z-[200]">
-              <div className="p-5 bg-slate-50/50 border-b border-slate-100 flex justify-between items-center">
+            <div className="fixed sm:absolute top-24 sm:top-14 right-4 sm:right-0 w-[calc(100vw-2rem)] sm:w-[340px] bg-white border border-slate-100 rounded-xl shadow-2xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200 z-[200]">
+              <div className="p-4 bg-slate-50/50 border-b border-slate-100 flex justify-between items-center">
                 <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">System Notifications</span>
                 {notifications.length > 0 && (
                   <button onClick={() => deleteNotificationsMutation.mutate()} className="text-[10px] font-black text-red-600 uppercase tracking-widest hover:text-red-800 transition-colors">Wipe History</button>
@@ -229,9 +230,9 @@ export default function TopNav({ isMobileOpen, onMobileMenuToggle, isCollapsed, 
                 ) : (
                   <div className="divide-y divide-slate-50">
                     {notifications.map((n: any) => (
-                      <div key={n.id} className="p-5 hover:bg-slate-50 transition-colors cursor-pointer" onClick={() => !n.isRead && markReadMutation.mutate(n.id)}>
-                        <div className="flex gap-4">
-                          <div className="h-8 w-8 shrink-0 bg-white border border-slate-100 rounded-[.4rem] p-1.5 shadow-sm flex items-center justify-center">
+                      <div key={n.id} className="p-4 hover:bg-slate-50 transition-colors cursor-pointer" onClick={() => !n.isRead && markReadMutation.mutate(n.id)}>
+                        <div className="flex gap-3">
+                          <div className="h-7 w-7 shrink-0 bg-white border border-slate-100 rounded-md p-1 shadow-sm flex items-center justify-center">
                             <img src="/fav.png" alt="hlynk" className="w-full h-full object-contain" />
                           </div>
                           <div className="flex-1 min-w-0">
@@ -251,33 +252,24 @@ export default function TopNav({ isMobileOpen, onMobileMenuToggle, isCollapsed, 
           )}
         </div>
 
-        {/* IDENTITY PILL */}
-        <div className="relative" ref={userMenuRef}>
+        {/* PROFILE ICON (Circled image with soft shadow, no text name) */}
+        <div className="relative ml-1" ref={userMenuRef}>
           <button 
             onClick={() => setShowUserMenu(!showUserMenu)} 
             className={`
-              flex items-center gap-2 sm:gap-3 p-1 rounded-full sm:rounded-[.5rem] transition-all border
+              w-10 h-10 sm:w-11 sm:h-11 rounded-full transition-all shadow-sm overflow-hidden flex items-center justify-center
               ${showUserMenu 
-                ? 'bg-white shadow-xl ring-4 ring-emerald-500/5 border-emerald-100' 
-                : 'bg-white/50 backdrop-blur-md border-white/80 hover:bg-white hover:shadow-lg shadow-sm'
+                ? 'bg-white border-emerald-500 shadow-md ring-2 ring-emerald-500/10' 
+                : 'bg-white border-slate-200/60 shadow-sm hover:shadow-md hover:scale-105'
               }
             `}
+            title={user?.name || "Profile"}
           >
-            <span className="hidden sm:block pl-3 text-sm font-black text-slate-900 tracking-tight">
-              {user?.name}
-            </span>
-            <span className="sm:hidden pl-3 text-xs font-black text-slate-900 tracking-tight">
-              {user?.name?.split(' ')[0]}
-            </span>
-
-            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full sm:rounded-[.5rem] bg-emerald-600 overflow-hidden shadow-sm flex items-center justify-center">
-              <img
-                src={user?.photoUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || '')}&background=0D4A3E&color=fff`}
-                alt="Profile"
-                className="w-full h-full object-cover"
-              />
-            </div>
-            <ChevronDown size={14} className={`text-slate-400 mr-2 transition-transform duration-300 ${showUserMenu ? 'rotate-180 text-emerald-500' : ''}`} />
+            <img
+              src={user?.photoUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || '')}&background=0D4A3E&color=fff`}
+              alt="Profile"
+              className="w-full h-full rounded-full object-cover"
+            />
           </button>
 
           {showUserMenu && (

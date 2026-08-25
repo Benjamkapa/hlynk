@@ -125,8 +125,27 @@ export default function EtimsPage() {
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500 pt-6">
-      {/* Header */}
-      <div className="flex items-start justify-between gap-4">
+      {/* Coming Soon Notice Banner */}
+      <div className="bg-amber-500/10 border-2 border-amber-500/20 p-6 rounded-[1rem] flex flex-col md:flex-row items-center justify-between gap-4 text-amber-900 shadow-sm">
+        <div className="flex items-center gap-4">
+          <div className="h-12 w-12 rounded-2xl bg-amber-500/20 text-amber-800 flex items-center justify-center shrink-0">
+            <Clock size={24} />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <h2 className="text-base font-black uppercase tracking-wider text-amber-950">KRA eTIMS Auto-Sync — Coming Soon</h2>
+              <span className="text-[9px] font-black bg-amber-200 text-amber-900 px-2 py-0.5 rounded-full uppercase tracking-widest">In Development</span>
+            </div>
+            <p className="text-xs font-medium text-amber-800/80 mt-1">
+              Direct System-to-System (OSCU) KRA eTIMS invoice generation is currently being finalized. All controls are temporarily grayed out and will be unlocked upon official launch.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div className="opacity-50 pointer-events-none select-none grayscale space-y-8">
+        {/* Header */}
+        <div className="flex items-start justify-between gap-4">
         <div className="flex items-start gap-5">
           {/* etims image */}
           <div>
@@ -353,6 +372,7 @@ export default function EtimsPage() {
           )}
         </div>
       )}
+      </div>
     </div>
   )
 }

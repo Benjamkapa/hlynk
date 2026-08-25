@@ -9,6 +9,9 @@ export interface AuthUser {
   tenantId: string
   tenantSlug: string
   businessName: string
+  businessType?: string
+  activeModules?: string[] | string
+  category?: string
   avatar?: string
   photoUrl?: string
   phoneVerified: boolean

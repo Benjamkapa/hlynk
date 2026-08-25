@@ -1,137 +1,96 @@
-import { Scissors, Wrench, Smartphone, Sparkles, Zap, Utensils, Shirt, Camera, Monitor, GraduationCap, Cpu, Plus } from 'lucide-react'
-import { FadeUp } from './Animations'
-import { useState } from 'react'
-import IndustryDetailsModal from './IndustryDetailsModal'
+import { Scissors, Wrench, Sparkles, Hotel, Car, ShoppingBag, Utensils, Smartphone, Cpu, ShieldCheck } from 'lucide-react'
 
 const categories = [
   { 
-    icon: <Scissors size={20} />, 
+    icon: <Hotel size={22} />, 
+    label: "BnBs & Apartments",
+    description: "Track your rooms, guest bookings, check-in dates, and cleanings. No more double bookings or lost records.",
+    features: ["Room Calendar", "Guest Payments & Balances", "Airbnb & Direct Bookings", "Room Cleaning Status"],
+    onboarding: ["Sign in with Google", "Add your rooms or units", "Record your first guest booking"],
+    integration: "Hlynk immediately updates room availability and calculates guest balances."
+  },
+  { 
+    icon: <Car size={22} />, 
+    label: "Car Rentals & Fleet",
+    description: "Keep track of your cars, daily rental prices, customer bookings, and maintenance costs. Always know which car is available.",
+    features: ["Car Availability Tracker", "Daily Rent Calculator", "Maintenance Expense Logs", "Simple Deposit Records"],
+    onboarding: ["Sign in with Google", "Add your vehicle fleet", "Record a rental trip"],
+    integration: "Rentals are automatically linked to your profit reports, including repair costs."
+  },
+  { 
+    icon: <Sparkles size={22} />, 
+    label: "Car Wash & Detailing",
+    description: "Log every wash, track water/soap usage, assign jobs to staff, and calculate daily payouts automatically.",
+    features: ["Wash Style Packages", "Employee Job Assignment", "Water & Soap Stock Count", "Fast Customer Receipts"],
+    onboarding: ["Sign in with Google", "Enter your wash package prices", "Record your first car wash"],
+    integration: "Calculates employee commissions and updates wash sales in real-time."
+  },
+  { 
+    icon: <ShoppingBag size={22} />, 
+    label: "Retail & Mini Marts",
+    description: "Sell faster with quick barcode scanning, track your stock levels, get alerts when items are running out, and see your profit instantly.",
+    features: ["Fast POS Checkout", "Low Stock Text Alerts", "Supplier Payments", "Instant Profit Summary"],
+    onboarding: ["Sign in with Google", "Enter your items and prices", "Record your first sale"],
+    integration: "Deducts stock automatically from inventory with every cash or M-Pesa sale."
+  },
+  { 
+    icon: <Scissors size={22} />, 
     label: "Salons & Barbers",
-    description: "Tired of manual books and staff calculations? Manage every haircut and service directly from your phone. It's simple and fast.",
-    features: ["Staff Commission tracking", "Daily Sales records", "Inventory and stock levels", "Client History"],
-    onboarding: ["Login using your Google (Gmail) account", "Add your list of services (Cuts, Braids, etc.)", "Record your first sale on your phone"],
-    integration: "Makes daily payouts to barbers instant and accurate, and builds trust by showing them digital records of their work."
+    description: "Track haircuts, salon services, and cosmetic product sales. Calculate staff commissions and daily earnings without errors.",
+    features: ["Staff Commission Tracker", "Daily Service Logs", "Hair Product Inventory", "Client Visit History"],
+    onboarding: ["Sign in with Google", "Enter your service packages", "Record daily client visits"],
+    integration: "Makes daily payouts to barbers and beauticians transparent and fast."
   },
   { 
-    icon: <Wrench size={20} />, 
-    label: "Mechanics",
-    description: "Garage records should be easy. Track every job card and spare part used without the messy paperwork.",
-    features: ["Digital Job Cards", "Spare parts list", "Customer service history", "Expense tracking"],
-    onboarding: ["Sign in securely with Google", "Setup your garage profile", "Create your first digital job card for a vehicle"],
-    integration: "Remembers what you fixed for a customer 6 months ago—professional service that keeps them coming back."
-  },
-  { 
-    icon: <Smartphone size={20} />, 
-    label: "Electronic Repair",
-    description: "From electronics repair to PC shops. Log repairs from intake to pickup and never lose a customer's device.",
-    features: ["Repair status tracking", "Parts inventory", "Pickup notifications", "Technician records"],
-    onboarding: ["Onboard with your Gmail account", "Add common repair costs", "Log a device and provide a digital receipt"],
-    integration: "Automatically deducts screens and batteries from your stock whenever you fix a device."
-  },
-  { 
-    icon: <Sparkles size={20} />, 
-    label: "Cleaning & Spas",
-    description: "Manage your cleaning business or spa bookings professionally. Track what supplies you are using.",
-    features: ["Service Packages", "Staff Scheduling", "Supply alerts", "Digital Billing"],
-    onboarding: ["Fast login via Google", "List your cleaning or spa packages", "Set your staff names"],
-    integration: "Monitors your stock levels—never get stuck without supplies or oils when a client arrives."
-  },
-  { 
-    icon: <Zap size={20} />, 
-    label: "Electricians",
-    description: "For freelance technicians and electrical firms. Track site material costs and turn quotes into records easily.",
-    features: ["Material Costing", "Client Records", "Quote conversion", "Expense tracking"],
-    onboarding: ["Link your Google account", "Add your common materials", "Create a digital record for your next site visit"],
-    integration: "Shows you exactly what materials were taken to the site vs. what was used, keeping your project profits clear."
-  },
-  { 
-    icon: <Utensils size={20} />, 
-    label: "Catering & Cafe",
-    description: "Fast-paced service for modern businesses. Record food orders quickly and see your daily profit at a glance.",
-    features: ["Fast Billing", "Daily Profit tracking", "Stock alerts", "Sales History"],
-    onboarding: ["Login with Google", "Type in your menu items", "Start taking orders on your mobile or tablet"],
-    integration: "Shows you exactly how much money you made at the end of the shift after accounting for ingredient costs."
-  },
-  { 
-    icon: <Shirt size={20} />, 
-    label: "Tailors",
-    description: "Store customer measurements safely online. Never lose a measurement card again and track delivery dates.",
-    features: ["Measurement Storage", "Delivery Tracking", "Fabric Stock", "Deposit Records"],
-    onboarding: ["Secure login via Google", "Save your first customer's measurements", "Note the fabric delivery date"],
-    integration: "Alerts you as delivery dates approach so you can keep your customers happy and stylish."
-  },
-  { 
-    icon: <Camera size={20} />, 
-    label: "Studio",
-    description: "Photography business made professional. Track shoot deposits and final payments for every session.",
-    features: ["Session Logs", "Payment milestones", "Equipment List", "Client History"],
-    onboarding: ["Login professionally with Google", "Setup your shoot packages", "Record your first customer deposit"],
-    integration: "Helps you know who has paid for their files vs. who is still pending, keeping your cashflow healthy."
-  },
-  { 
-    icon: <Monitor size={20} />, 
-    label: "Freelancers",
-    description: "Digital business records for modern work. Track project income, expenses, and invoices in one place.",
-    features: ["Clean Invoicing", "Expense Log", "Payment Tracking", "Searchable Clients"],
-    onboarding: ["One-tap Google login", "Add your service rates", "Create a digital receipt for your latest project"],
-    integration: "Keeps your digital records clean for taxes or when you are applying for a business loan."
-  },
-  { 
-    icon: <GraduationCap size={20} />, 
-    label: "Tutors",
-    description: "Manage your teaching services professionally. Track student attendance and fee payments in real-time.",
-    features: ["Fee Records", "Attendance tracking", "Student list", "Subject scheduling"],
-    onboarding: ["Login using Google", "Register your students", "Log their first lesson fee"],
-    integration: "Clearly shows which parents haven't paid, helping you manage your tuition business with zero guesswork."
-  },
-  { 
-    icon: <Cpu size={20} />, 
-    label: "Tech Shop",
-    description: "Electronic business needs serious records. Track serial numbers and monitor your stock from your phone.",
-    features: ["Serial Number (IMEI) tracking", "Warranty logs", "Fast stock search", "Supplier list"],
-    onboarding: ["Sign in via Google", "Add your gadgets to inventory", "Record a sale using your phone"],
-    integration: "Ensures you only honor warranties for items you actually sold, protecting your business from fraud."
-  },
-  { 
-    icon: <Plus size={20} />, 
-    label: "Retail & Stalls",
-    description: "Built for busy shops and stalls. Get stock alerts on your phone before your fast-moving items run out.",
-    features: ["Low stock alerts", "Fast checkout", "Multiple payment logs", "Profit analytics"],
-    onboarding: ["Link your Google account", "Add your item quantities", "Start recording sales and see your profit"],
-    integration: "The system monitors your stock and tells you exactly what needs restocking at the end of the day."
+    icon: <Wrench size={22} />, 
+    label: "Garages & Mechanics",
+    description: "Create digital job cards for every vehicle, track used spare parts, record mechanic jobs, and view service history.",
+    features: ["Digital Job Cards", "Spare Parts Count", "Vehicle Service History", "Mechanics' Commission Logs"],
+    onboarding: ["Sign in with Google", "Enter your garage details", "Create your first job card"],
+    integration: "Never forget previous repair history for any vehicle serviced in your garage."
   },
 ]
 
 export default function WhoUses({ onSelectCategory }: { onSelectCategory: (cat: any) => void }) {
   return (
-    <section id="who" className="py-32 bg-[#050D0A] text-center relative overflow-hidden">
+    <section id="who" className="py-32 bg-slate-50 text-center relative overflow-hidden border-y border-slate-200">
       <div className="max-w-7xl mx-auto px-6 md:px-12 relative z-10">
-        <FadeUp className="mb-20">
-          <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-4 block underline decoration-emerald-500/30 underline-offset-8">Tailored Solutions</span>
-          <h2 className="text-4xl md:text-5xl font-black font-thin text-white tracking-tighter font-ubuntu leading-tight">
-            Built for every <br className="hidden md:block" />
-            <span className="text-white font-ubuntu underline decoration-white/10">business owner.</span>
+        <div className="max-w-3xl mx-auto mb-20 space-y-3">
+          <span className="text-xs font-black text-emerald-600 uppercase tracking-widest block">
+            Tailored Operating System
+          </span>
+          <h2 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tight font-ubuntu">
+            Built for your type of business
           </h2>
-          <p className="text-white/40 mt-6 text-sm font-medium max-w-lg mx-auto leading-relaxed">
-            Get a system that understands your work. Select your industry to see how we simplify your daily business records.
+          <p className="text-slate-600 text-sm md:text-base font-medium">
+            Select your business type below to see how Hlynk makes your daily work easier.
           </p>
-        </FadeUp>
+        </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6">
-          {categories.map((c, i) => (
-            <FadeUp key={c.label} delay={i * 0.05} className="group">
-              <div 
-                onClick={() => onSelectCategory(c)}
-                className="p-8 rounded-2xl bg-white/[0.03] border border-white/5 transition-all flex flex-col items-center gap-5 hover:bg-white/[0.08] hover:border-white/20 cursor-pointer"
-              >
-                <div className="w-14 h-14 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-white/60 group-hover:scale-110 group-hover:bg-white group-hover:text-black transition-all shadow-sm">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 text-left">
+          {categories.map((c) => (
+            <div 
+              key={c.label}
+              onClick={() => onSelectCategory(c)}
+              className="p-6 rounded-2xl bg-white border border-slate-200 hover:border-emerald-500 hover:shadow-md transition-all flex flex-col justify-between cursor-pointer group"
+            >
+              <div>
+                <div className="w-12 h-12 rounded-xl bg-emerald-50 border border-emerald-100 text-emerald-600 flex items-center justify-center mb-4 group-hover:scale-105 transition-transform">
                   {c.icon}
                 </div>
-                <span className="text-[10px] font-black uppercase tracking-widest text-white/30 group-hover:text-white transition-colors">
+                <h3 className="text-lg font-black text-slate-900 group-hover:text-emerald-600 transition-colors mb-2 font-ubuntu">
                   {c.label}
-                </span>
+                </h3>
+                <p className="text-slate-500 text-sm font-medium leading-relaxed mb-4">
+                  {c.description}
+                </p>
               </div>
-            </FadeUp>
+
+              <div className="pt-4 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-emerald-600">
+                <span>View Details</span>
+                <span className="group-hover:translate-x-1 transition-transform">→</span>
+              </div>
+            </div>
           ))}
         </div>
       </div>

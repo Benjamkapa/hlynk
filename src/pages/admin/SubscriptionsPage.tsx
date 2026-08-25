@@ -109,8 +109,7 @@ export default function SubscriptionsPage() {
               className="bg-slate-50 border-none rounded-xl px-4 py-3.5 text-sm font-bold outline-none focus:ring-2 focus:ring-emerald-500/10 min-w-[140px] transition-all"
             >
               <option value="">All Plans</option>
-              <option value="LITE">Starter</option>
-              <option value="PLUS">Growth</option>
+              <option value="PLUS">Starter</option>
               <option value="MAX">Business Pro</option>
             </select>
           </div>
@@ -159,14 +158,14 @@ export default function SubscriptionsPage() {
                   </td>
                   <td className="px-8 py-5 text-right">
                     <div className="flex justify-end gap-2">
-                       {['LITE', 'PLUS', 'MAX'].filter(p => p !== s.planName).map(p => (
+                       {['PLUS', 'MAX'].filter(p => p !== s.planName).map(p => (
                          <button 
                            key={p}
                            disabled={upgradeMutation.isPending}
                            onClick={() => setConfirmUpgradePayload({ id: s.tenantId, plan: p }) } 
                            className="text-[9px] font-black uppercase tracking-widest hover:bg-slate-50 px-2 py-1.5 rounded border border-slate-100 transition-all"
                          >
-                           {p === 'MAX' ? 'Business Pro' : p === 'PLUS' ? 'Growth' : 'Starter'}
+                           {p === 'MAX' ? 'Business Pro' : 'Starter'}
                          </button>
                        ))}
                     </div>
