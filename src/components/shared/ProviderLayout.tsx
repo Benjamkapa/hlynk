@@ -560,58 +560,65 @@ function MobileBottomNav({ user, targetEndDate }: {
   const hasPos = userModules.includes('POS');
   const hasHosp = userModules.includes('HOSPITALITY');
 
-  // Primary nav items (always visible in the bar) — max 4 when both modules active
+  // Primary nav items (always visible in the bar) — mirrors POS: 3 left | CTA center | 2 right | More
   const primaryItems = useMemo(() => {
     if (hasHosp && !hasPos) {
-      // Hospitality-only: 4 primary + 1 in overflow
+      // Hospitality-only — mirrors POS structure: 3 | Book⬤ | 2 | More
       return [
-        { to: '/dashboard/hospitality', label: 'Overview', icon: CalendarCheck, end: true, isCenter: false },
-        { to: '/dashboard/hospitality/bookings', label: 'Bookings', icon: CalendarCheck, end: false, isCenter: true },
-        { to: '/dashboard/hospitality/properties', label: 'Units', icon: Building, end: false, isCenter: false },
-        { to: '/dashboard/hospitality/operations', label: 'Tasks', icon: Sparkles, end: false, isCenter: false },
+        { to: '/dashboard/hospitality',            label: 'Overview', icon: CalendarCheck, end: true,  isCenter: false },
+        { to: '/dashboard/hospitality/properties', label: 'Units',    icon: Building,      end: false, isCenter: false },
+        { to: '/dashboard/hospitality/operations', label: 'Tasks',    icon: Sparkles,      end: false, isCenter: false },
+        { to: '/dashboard/hospitality/bookings',   label: 'Book',     icon: CalendarCheck, end: false, isCenter: true  },
+        { to: '/dashboard/customers',              label: 'Guests',   icon: Users,         end: false, isCenter: false },
+        { to: '/dashboard/reports',                label: 'Growth',   icon: BarChart2,     end: false, isCenter: false, plan: 'PLUS' as const },
       ];
     }
     if (hasHosp && hasPos) {
-      // Both modules: 4 items — POS Sell (CTA), Home, Bookings, More
+      // Both modules — 3 | Sell⬤ | 2 | More
       return [
-        { to: '/dashboard', label: 'Home', icon: LayoutDashboard, end: true, isCenter: false },
-        { to: '/dashboard/sales/new', label: 'Sell', icon: Zap, end: false, isCenter: true },
-        { to: '/dashboard/hospitality', label: 'Bookings', icon: CalendarCheck, end: true, isCenter: false },
-        { to: '/dashboard/hospitality/properties', label: 'Units', icon: Building, end: false, isCenter: false },
+        { to: '/dashboard',                        label: 'Home',     icon: LayoutDashboard, end: true,  isCenter: false },
+        { to: '/dashboard/hospitality/properties', label: 'Units',    icon: Building,        end: false, isCenter: false },
+        { to: '/dashboard/hospitality/operations', label: 'Tasks',    icon: Sparkles,        end: false, isCenter: false },
+        { to: '/dashboard/sales/new',              label: 'Sell',     icon: Zap,             end: false, isCenter: true  },
+        { to: '/dashboard/hospitality',            label: 'Bookings', icon: CalendarCheck,   end: true,  isCenter: false },
+        { to: '/dashboard/customers',              label: 'Guests',   icon: Users,           end: false, isCenter: false },
       ];
     }
-    // POS only
+    // POS only — 3 | Sell⬤ | 2 | More
     return [
-      { to: '/dashboard', label: 'Home', icon: LayoutDashboard, end: true, isCenter: false },
-      { to: '/dashboard/products', label: 'Items', icon: Package, end: false, isCenter: false },
-      { to: '/dashboard/expenses', label: 'Spends', icon: ShoppingCart, end: false, isCenter: false },
-      { to: '/dashboard/sales/new', label: 'Sell', icon: Zap, end: false, isCenter: true },
-      { to: '/dashboard/sales', label: 'History', icon: Clock, end: true, isCenter: false },
-      { to: '/dashboard/reports', label: 'Growth', icon: BarChart2, end: false, isCenter: false, plan: 'PLUS' as const },
+      { to: '/dashboard',           label: 'Home',    icon: LayoutDashboard, end: true,  isCenter: false },
+      { to: '/dashboard/products',  label: 'Items',   icon: Package,         end: false, isCenter: false },
+      { to: '/dashboard/expenses',  label: 'Spends',  icon: ShoppingCart,    end: false, isCenter: false },
+      { to: '/dashboard/sales/new', label: 'Sell',    icon: Zap,             end: false, isCenter: true  },
+      { to: '/dashboard/sales',     label: 'History', icon: Clock,           end: true,  isCenter: false },
+      { to: '/dashboard/reports',   label: 'Growth',  icon: BarChart2,       end: false, isCenter: false, plan: 'PLUS' as const },
     ];
   }, [hasPos, hasHosp]);
 
   // Overflow items shown in the "More" sheet
   const overflowItems = useMemo(() => {
     if (hasHosp && !hasPos) {
+      // Hospitality-only overflow
       return [
-        { to: '/dashboard/settings', label: 'Settings & Tools', icon: Settings },
-        { to: '/dashboard/subscription', label: 'My Plan', icon: Calendar },
+        { to: '/dashboard/sales/new',  label: 'New Booking',      icon: CalendarCheck },
+        { to: '/dashboard/settings',   label: 'Settings & Tools', icon: Settings },
+        { to: '/dashboard/subscription', label: 'My Plan',        icon: Calendar },
       ];
     }
     if (hasHosp && hasPos) {
+      // Both-modules overflow
       return [
-        { to: '/dashboard/hospitality/operations', label: 'Tasks & Maintenance', icon: Sparkles },
-        { to: '/dashboard/customers', label: 'Customers', icon: Users },
-        { to: '/dashboard/sales', label: 'Sales History', icon: Clock },
-        { to: '/dashboard/settings', label: 'Settings & Tools', icon: Settings },
-        { to: '/dashboard/subscription', label: 'My Plan', icon: Calendar },
+        { to: '/dashboard/sales',        label: 'Sales History',    icon: Clock },
+        { to: '/dashboard/products',     label: 'Items & Pricing',  icon: Package },
+        { to: '/dashboard/expenses',     label: 'Expenses',         icon: ShoppingCart },
+        { to: '/dashboard/settings',     label: 'Settings & Tools', icon: Settings },
+        { to: '/dashboard/subscription', label: 'My Plan',          icon: Calendar },
       ];
     }
-    // POS only — just settings
+    // POS only — settings + subscription
     return [
-      { to: '/dashboard/settings', label: 'Settings & Tools', icon: Settings },
-      { to: '/dashboard/subscription', label: 'My Plan', icon: Calendar },
+      { to: '/dashboard/settings',     label: 'Settings & Tools', icon: Settings },
+      { to: '/dashboard/subscription', label: 'My Plan',          icon: Calendar },
     ];
   }, [hasPos, hasHosp]);
 
