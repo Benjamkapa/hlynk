@@ -10,8 +10,8 @@ const MobileViewportContext = createContext<MobileViewportContextType | undefine
 export function MobileViewportProvider({ children }: { children: React.ReactNode }) {
   const [isZoomedOut, setIsZoomedOut] = useState(() => {
     const saved = localStorage.getItem('hlynk_mobile_zoomed_out');
-    // Default to normal (expanded) for mobile to ensure readability for non-tech users
-    return saved !== null ? saved === 'true' : false;
+    // Default to compact (fit-to-screen) for mobile so page contents automatically fit small screen viewports
+    return saved !== null ? saved === 'true' : true;
   });
 
   useEffect(() => {

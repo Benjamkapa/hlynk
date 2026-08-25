@@ -119,67 +119,67 @@ function ReferralsTab() {
     <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
 
       {/* ── Hero Banner ── */}
-      <div className="bg-gradient-to-br from-indigo-900 to-slate-900 p-12 rounded-[.5em] text-white shadow-2xl relative overflow-hidden">
+      <div className="bg-gradient-to-br from-indigo-900 to-slate-900 p-5 sm:p-8 lg:p-10 rounded-2xl text-white shadow-xl relative overflow-hidden">
         <div className="relative z-10">
-          <div className="flex items-center gap-3 mb-6">
-            <span className="bg-white/10 text-indigo-200 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest">Growth Program</span>
-            <span className="bg-amber-400 text-amber-950 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest">Season Rules Active</span>
+          <div className="flex flex-wrap items-center gap-2 mb-4">
+            <span className="bg-white/10 text-indigo-200 px-3 py-1 rounded-full text-[9px] sm:text-[10px] font-black uppercase tracking-widest">Growth Program</span>
+            <span className="bg-amber-400 text-amber-950 px-3 py-1 rounded-full text-[9px] sm:text-[10px] font-black uppercase tracking-widest">Season Rules Active</span>
           </div>
-          <h2 className="text-4xl font-black mb-4 tracking-tight">Invite Vendors to hlynk</h2>
-          <p className="text-indigo-200/60 text-sm font-medium leading-relaxed max-w-xl mb-10">
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black mb-3 tracking-tight">Invite Vendors to hlynk</h2>
+          <p className="text-indigo-200/70 text-xs sm:text-sm font-medium leading-relaxed max-w-xl mb-6">
             Help traditional businesses go digital and earn massive rewards. When a vendor joins via your link, you get a significant share of their first "Season" payment.
           </p>
-          <div className="flex flex-col sm:flex-row items-center gap-4 bg-white/5 p-2 rounded-2xl border border-white/10 backdrop-blur-md max-w-2xl">
-            <div className="flex-1 px-6 py-3 font-bold text-indigo-100 hl-mono text-sm truncate uppercase tracking-widest">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 bg-white/5 p-2 rounded-xl border border-white/10 backdrop-blur-md max-w-2xl">
+            <div className="flex-1 px-4 py-2 font-bold text-indigo-100 hl-mono text-xs sm:text-sm truncate uppercase tracking-widest">
               {referralLink}
             </div>
             <button
               onClick={copyToClipboard}
-              className="w-full sm:w-auto px-8 py-3 bg-white text-indigo-900 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-indigo-50 transition-all active:scale-95 shadow-xl"
+              className="w-full sm:w-auto px-6 py-2.5 bg-white text-indigo-900 rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-indigo-50 transition-all active:scale-95 shadow-md"
             >
               Copy Link
             </button>
           </div>
         </div>
-        <Star size={200} className="absolute -right-20 -top-20 text-white opacity-5" />
+        <Star size={160} className="absolute -right-16 -top-16 text-white opacity-5 hidden sm:block" />
       </div>
 
       {/* ══════════════════════════════════════════════════════════════
           SECTION 1 — Season Time Progress
       ══════════════════════════════════════════════════════════════ */}
-      <div className="bg-white rounded-[.5em] border border-slate-100 shadow-sm overflow-hidden">
-        <div className="p-8 border-b border-slate-50 flex items-center gap-3">
-          <div className="h-8 w-8 rounded-xl bg-indigo-50 flex items-center justify-center">
+      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+        <div className="p-4 sm:p-6 border-b border-slate-50 flex items-center gap-3">
+          <div className="h-8 w-8 rounded-xl bg-indigo-50 flex items-center justify-center shrink-0">
             <Calendar size={16} className="text-indigo-500" />
           </div>
           <div>
             <h3 className="text-xs font-black uppercase tracking-widest text-slate-800">Season Progress</h3>
-            <p className="text-[11px] text-slate-400 font-medium mt-0.5">Your current 180-day referral season window</p>
+            <p className="text-[10px] sm:text-[11px] text-slate-400 font-medium mt-0.5">Your current 180-day referral season window</p>
           </div>
         </div>
 
-        <div className="p-8">
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-6">
-            <div className="flex items-baseline gap-3">
-              <span className="text-5xl font-black text-slate-900 hl-mono">{elapsedDays}</span>
-              <span className="text-sm font-bold text-slate-400">/ {SEASON_DAYS} days elapsed</span>
+        <div className="p-4 sm:p-8 space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+            <div className="flex items-baseline gap-2 sm:gap-3">
+              <span className="text-3xl sm:text-4xl lg:text-5xl font-black text-slate-900 hl-mono">{elapsedDays}</span>
+              <span className="text-xs sm:text-sm font-bold text-slate-400">/ {SEASON_DAYS} days elapsed</span>
             </div>
-            <div className="flex items-center gap-8 text-right">
+            <div className="flex items-center gap-4 sm:gap-8">
               <div>
-                <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Season Ends</p>
-                <p className="text-sm font-black text-slate-800 hl-mono">
+                <p className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-slate-400 mb-0.5">Season Ends</p>
+                <p className="text-xs sm:text-sm font-black text-slate-800 hl-mono">
                   {seasonEndDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                 </p>
               </div>
               <div>
-                <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Days Remaining</p>
-                <p className="text-sm font-black text-indigo-600 hl-mono">{remainingDays} days</p>
+                <p className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-slate-400 mb-0.5">Days Remaining</p>
+                <p className="text-xs sm:text-sm font-black text-indigo-600 hl-mono">{remainingDays} days</p>
               </div>
             </div>
           </div>
 
           {/* Progress bar */}
-          <div className="h-4 bg-slate-100 rounded-full overflow-hidden relative">
+          <div className="h-3 sm:h-4 bg-slate-100 rounded-full overflow-hidden relative">
             <div
               className="h-full rounded-full transition-all duration-700 ease-out relative overflow-hidden"
               style={{ width: `${progressPct}%`, background: 'linear-gradient(90deg, #4f46e5, #818cf8)' }}
@@ -188,12 +188,12 @@ function ReferralsTab() {
             </div>
           </div>
 
-          <div className="flex justify-between mt-3">
-            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+          <div className="flex justify-between items-center text-[9px] sm:text-[10px]">
+            <span className="font-black text-slate-400 uppercase tracking-widest">
               {seasonStartDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
             </span>
             <span
-              className="text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full"
+              className="font-black uppercase tracking-widest px-2.5 py-0.5 rounded-full"
               style={{
                 background: progressPct >= 80 ? '#fef3c7' : progressPct >= 50 ? '#e0e7ff' : '#f0fdf4',
                 color:      progressPct >= 80 ? '#92400e'  : progressPct >= 50 ? '#3730a3'  : '#166534'
@@ -201,13 +201,13 @@ function ReferralsTab() {
             >
               {progressPct >= 80 ? '⚡ Season Ending Soon' : progressPct >= 50 ? '🔥 Season Active' : '✅ Early Season'}
             </span>
-            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+            <span className="font-black text-slate-400 uppercase tracking-widest">
               {seasonEndDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
             </span>
           </div>
 
           {/* Season milestones */}
-          <div className="grid grid-cols-3 gap-4 mt-8">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
             {[
               { label: 'Qualify for Renewal Bonus', day: 1, met: elapsedDays >= 1 && providerCount >= 1 },
               { label: 'Mid-Season Check',          day: 90, met: elapsedDays >= 90 },
@@ -215,12 +215,12 @@ function ReferralsTab() {
             ].map((m, i) => (
               <div
                 key={i}
-                className={`p-4 rounded-2xl border text-center transition-all ${m.met ? 'bg-emerald-50 border-emerald-100' : 'bg-slate-50 border-slate-100'}`}
+                className={`p-3 rounded-xl border text-center transition-all ${m.met ? 'bg-emerald-50 border-emerald-100' : 'bg-slate-50 border-slate-100'}`}
               >
-                <div className={`text-xs font-black uppercase tracking-widest mb-1 ${m.met ? 'text-emerald-700' : 'text-slate-400'}`}>
+                <div className={`text-[10px] font-black uppercase tracking-widest mb-0.5 ${m.met ? 'text-emerald-700' : 'text-slate-400'}`}>
                   {m.met ? '✔ Achieved' : `Day ${m.day}`}
                 </div>
-                <p className="text-[11px] font-medium text-slate-600 leading-tight">{m.label}</p>
+                <p className="text-[10px] font-medium text-slate-600 leading-tight">{m.label}</p>
               </div>
             ))}
           </div>
@@ -230,25 +230,25 @@ function ReferralsTab() {
       {/* ══════════════════════════════════════════════════════════════
           SECTION 2 — Providers Onboarded Simulator
       ══════════════════════════════════════════════════════════════ */}
-      <div className="bg-white rounded-[.5em] border border-slate-100 shadow-sm overflow-hidden">
-        <div className="p-8 border-b border-slate-50 flex items-center gap-3">
-          <div className="h-8 w-8 rounded-xl bg-violet-50 flex items-center justify-center">
+      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+        <div className="p-4 sm:p-6 border-b border-slate-50 flex items-center gap-3">
+          <div className="h-8 w-8 rounded-xl bg-violet-50 flex items-center justify-center shrink-0">
             <TrendingUp size={16} className="text-violet-500" />
           </div>
           <div className="flex-1">
             <h3 className="text-xs font-black uppercase tracking-widest text-slate-800">Earnings Simulator</h3>
-            <p className="text-[11px] text-slate-400 font-medium mt-0.5">Drag the slider to see how much you earn per plan — the higher the plan, the bigger your reward</p>
+            <p className="text-[10px] sm:text-[11px] text-slate-400 font-medium mt-0.5">Drag the slider to see how much you earn per plan — the higher the plan, the bigger your reward</p>
           </div>
-          <div className="bg-indigo-50 px-5 py-2 rounded-xl border border-indigo-100 text-center">
-            <p className="text-[9px] font-black uppercase tracking-widest text-indigo-400 mb-0.5">Providers</p>
-            <p className="text-xl font-black text-indigo-700 hl-mono leading-none">{providerCount}</p>
+          <div className="bg-indigo-50 px-3 py-1.5 rounded-xl border border-indigo-100 text-center shrink-0">
+            <p className="text-[8px] font-black uppercase tracking-widest text-indigo-400 mb-0.5">Providers</p>
+            <p className="text-base sm:text-xl font-black text-indigo-700 hl-mono leading-none">{providerCount}</p>
           </div>
         </div>
 
-        <div className="p-8 space-y-8">
+        <div className="p-4 sm:p-8 space-y-6">
           {/* Slider */}
-          <div className="space-y-4">
-            <div className="flex justify-between text-[10px] font-black text-slate-400 uppercase tracking-widest">
+          <div className="space-y-3">
+            <div className="flex justify-between text-[9px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest">
               <span>1 Provider</span>
               <span>100 Providers</span>
             </div>
@@ -265,27 +265,6 @@ function ReferralsTab() {
                 WebkitAppearance: 'none',
               }}
             />
-            <style>{`
-              input[type='range']::-webkit-slider-thumb {
-                -webkit-appearance: none;
-                width: 24px; height: 24px;
-                border-radius: 50%;
-                background: #4f46e5;
-                border: 3px solid white;
-                box-shadow: 0 4px 12px rgba(79,70,229,0.4);
-                cursor: pointer;
-                transition: transform 0.15s;
-              }
-              input[type='range']::-webkit-slider-thumb:hover { transform: scale(1.2); }
-              input[type='range']::-moz-range-thumb {
-                width: 24px; height: 24px;
-                border-radius: 50%;
-                background: #4f46e5;
-                border: 3px solid white;
-                box-shadow: 0 4px 12px rgba(79,70,229,0.4);
-                cursor: pointer;
-              }
-            `}</style>
 
             {/* Tick marks */}
             <div className="flex justify-between px-0.5">
@@ -302,26 +281,26 @@ function ReferralsTab() {
           </div>
 
           {/* Grand Total Banner */}
-          <div className="bg-gradient-to-r from-indigo-900 to-slate-800 p-6 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="bg-gradient-to-r from-indigo-900 to-slate-800 p-5 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
-              <p className="text-[10px] font-black uppercase tracking-widest text-indigo-300/60 mb-1">Best-Case Earnings</p>
-              <p className="text-3xl font-black text-white hl-mono transition-all">
+              <p className="text-[9px] font-black uppercase tracking-widest text-indigo-300/60 mb-0.5">Best-Case Earnings</p>
+              <p className="text-xl sm:text-2xl lg:text-3xl font-black text-white hl-mono transition-all">
                 KES {maxProjected.toLocaleString()}
               </p>
-              <p className="text-[10px] text-indigo-300/50 font-medium mt-1">
+              <p className="text-[9px] text-indigo-300/50 font-medium mt-0.5">
                 If all {providerCount} provider{providerCount !== 1 ? 's' : ''} subscribe to Business Pro
               </p>
             </div>
-            <div className="flex items-center gap-2 bg-white/10 px-5 py-3 rounded-xl border border-white/10">
-              <Star size={16} className="text-amber-400" fill="currentColor" />
-              <span className="text-xs font-black text-white uppercase tracking-widest">
+            <div className="flex items-center gap-2 bg-white/10 px-4 py-2 rounded-lg border border-white/10 w-fit">
+              <Star size={14} className="text-amber-400" fill="currentColor" />
+              <span className="text-[10px] font-black text-white uppercase tracking-widest">
                 {providerCount >= 50 ? 'Elite Referrer' : providerCount >= 20 ? 'Power Referrer' : providerCount >= 5 ? 'Active Referrer' : 'Getting Started'}
               </span>
             </div>
           </div>
 
           {/* Reward Cards (reactive) */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             {plans.map((item, i) => {
               const colorMap: Record<string, { bg: string, text: string, badge: string, bar: string }> = {
                 indigo: { bg: 'bg-indigo-50', text: 'text-indigo-600', badge: 'bg-indigo-100 text-indigo-700', bar: '#4f46e5' },
@@ -331,26 +310,26 @@ function ReferralsTab() {
               const c = colorMap[item.color]
               const barWidth = Math.round((item.projected / maxProjected) * 100)
               return (
-                <div key={i} className="bg-white p-8 rounded-[.5em] border border-slate-100 shadow-sm group hover:border-indigo-200 transition-all space-y-5">
+                <div key={i} className="bg-white p-4 sm:p-6 rounded-xl border border-slate-100 shadow-sm hover:border-indigo-200 transition-all space-y-3">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">{item.desc}</p>
-                      <h4 className="text-lg font-black text-slate-900">{item.plan}</h4>
+                      <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-0.5">{item.desc}</p>
+                      <h4 className="text-sm font-black text-slate-900">{item.plan}</h4>
                     </div>
-                    <span className={`${c.badge} px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest`}>
-                      {item.rate} Commission
+                    <span className={`${c.badge} px-2.5 py-0.5 rounded-full text-[8px] font-black uppercase tracking-widest`}>
+                      {item.rate}
                     </span>
                   </div>
 
                   <div className="flex items-baseline gap-2">
-                    <span className="text-xs font-bold text-slate-400">Per referral:</span>
-                    <span className={`text-sm font-black ${c.text} hl-mono`}>KES {item.base.toLocaleString()}</span>
+                    <span className="text-[10px] font-bold text-slate-400">Per referral:</span>
+                    <span className={`text-xs font-black ${c.text} hl-mono`}>KES {item.base.toLocaleString()}</span>
                   </div>
 
-                  <div className="space-y-2">
+                  <div className="space-y-1.5">
                     <div className="flex justify-between items-baseline">
-                      <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">If all {providerCount} join</span>
-                      <span className={`text-2xl font-black ${c.text} hl-mono transition-all`}>
+                      <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">If all {providerCount} join</span>
+                      <span className={`text-base font-black ${c.text} hl-mono transition-all`}>
                         KES {item.projected.toLocaleString()}
                       </span>
                     </div>
@@ -360,9 +339,6 @@ function ReferralsTab() {
                         style={{ width: `${barWidth}%`, background: c.bar }}
                       />
                     </div>
-                    <p className="text-[10px] text-slate-400 font-medium">
-                      {barWidth}% of max potential
-                    </p>
                   </div>
                 </div>
               )
@@ -372,37 +348,36 @@ function ReferralsTab() {
       </div>
 
       {/* ── Season Rule Info ── */}
-      <div className="bg-slate-50 p-10 rounded-[.5em] border border-slate-100">
-        <div className="flex items-center gap-2 mb-6">
+      <div className="bg-slate-50 p-4 sm:p-6 rounded-2xl border border-slate-100">
+        <div className="flex items-center gap-2 mb-3">
           <Info size={16} className="text-slate-400" />
           <h4 className="text-xs font-black uppercase tracking-widest text-slate-600">The 180-Day Season Rule</h4>
         </div>
-        <div className="space-y-4 text-sm text-slate-500 font-medium leading-relaxed">
+        <div className="space-y-2 text-xs text-slate-500 font-medium leading-relaxed">
           <p>
             To keep rewards sustainable, we use the <span className="text-slate-900 font-bold">180-Day Rule</span>:
           </p>
-          <ul className="list-disc list-inside space-y-2">
+          <ul className="list-disc list-inside space-y-1">
             <li>You receive rewards automatically for every NEW vendor you refer.</li>
             <li>For RENEWALS, you only receive a bonus if you have referred <span className="text-indigo-600 font-bold">at least 1 new vendor</span> in the last 6 months (180 days).</li>
-            <li>This ensures active growth and community engagement.</li>
           </ul>
         </div>
       </div>
 
       {/* ── Referral Tracking Table ── */}
-      <div className="bg-white rounded-[.5em] border border-slate-100 shadow-sm overflow-hidden">
-        <div className="p-8 border-b border-slate-50 flex items-center justify-between">
+      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+        <div className="p-4 sm:p-6 border-b border-slate-50 flex items-center justify-between">
           <div className="flex items-center gap-3">
-             <div className="h-8 w-8 rounded-xl bg-emerald-50 flex items-center justify-center">
+             <div className="h-8 w-8 rounded-xl bg-emerald-50 flex items-center justify-center shrink-0">
                <Users size={16} className="text-emerald-500" />
              </div>
              <div>
                <h3 className="text-xs font-black uppercase tracking-widest text-slate-800">Your Referrals</h3>
-               <p className="text-[11px] text-slate-400 font-medium mt-0.5">Track businesses that joined via your link</p>
+               <p className="text-[10px] sm:text-[11px] text-slate-400 font-medium mt-0.5">Track businesses that joined via your link</p>
              </div>
           </div>
           <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest hl-mono">
-            {referrals.length} Total Vendors
+            {referrals.length} Total
           </span>
         </div>
 
@@ -410,17 +385,17 @@ function ReferralsTab() {
           <table className="w-full text-left border-collapse">
             <thead>
                <tr className="bg-slate-50/50 border-b border-slate-100">
-                 <th className="p-8 text-[10px] font-black text-slate-400 uppercase tracking-widest">Biashara</th>
-                 <th className="p-8 text-[10px] font-black text-slate-400 uppercase tracking-widest">Joined</th>
-                 <th className="p-8 text-[10px] font-black text-slate-400 uppercase tracking-widest">Status</th>
-                 <th className="p-8 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Potential Reward</th>
+                 <th className="px-4 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">Biashara</th>
+                 <th className="px-4 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">Joined</th>
+                 <th className="px-4 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">Status</th>
+                 <th className="px-4 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Potential Reward</th>
                </tr>
             </thead>
             <tbody className="divide-y divide-slate-50">
               {refsLoading ? (
-                <tr><td colSpan={4} className="p-20 text-center animate-pulse text-slate-400 font-medium italic">Loading your referral list...</td></tr>
+                <tr><td colSpan={4} className="p-10 text-center animate-pulse text-slate-400 font-medium italic">Loading your referral list...</td></tr>
               ) : referrals.length === 0 ? (
-                <tr><td colSpan={4} className="p-20 text-center text-slate-400 font-medium italic">You haven't referred any businesses yet. Share your link to start earning!</td></tr>
+                <tr><td colSpan={4} className="p-10 text-center text-slate-400 font-medium italic">You haven't referred any businesses yet. Share your link to start earning!</td></tr>
               ) : (
                 referrals.map((ref: any, i: number) => {
                   const isTrial = ref.subStatus === 2;
@@ -429,38 +404,38 @@ function ReferralsTab() {
                   
                   return (
                     <tr key={i} className="hover:bg-slate-50/50 transition-all group">
-                      <td className="p-8">
-                         <p className="font-bold text-slate-900 text-sm">{ref.businessName}</p>
-                         <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">{planName} Plan</p>
+                      <td className="px-4 py-3">
+                         <p className="font-bold text-slate-900 text-xs sm:text-sm">{ref.businessName}</p>
+                         <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-0.5">{planName} Plan</p>
                       </td>
-                      <td className="p-8 text-slate-500 text-sm font-medium">
+                      <td className="px-4 py-3 text-slate-500 text-xs font-medium">
                         {new Date(ref.joinedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                       </td>
-                      <td className="p-8">
+                      <td className="px-4 py-3">
                         {isTrial ? (
-                          <div className="flex flex-col gap-1">
-                            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest bg-amber-50 text-amber-700 w-fit">
+                          <div className="flex flex-col gap-0.5">
+                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest bg-amber-50 text-amber-700 w-fit">
                               <Loader2 size={10} className="animate-spin" /> In Trial
                             </span>
-                            <p className="text-[9px] text-slate-400 font-bold ml-1">Ends {new Date(ref.trialEndDate).toLocaleDateString()}</p>
+                            <p className="text-[8px] text-slate-400 font-bold ml-1">Ends {new Date(ref.trialEndDate).toLocaleDateString()}</p>
                           </div>
                         ) : (
-                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest bg-emerald-50 text-emerald-700 w-fit">
+                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest bg-emerald-50 text-emerald-700 w-fit">
                             <Check size={10} /> Plan Paid
                           </span>
                         )}
                       </td>
-                      <td className="p-8 text-right">
+                      <td className="px-4 py-3 text-right">
                         {latestPayout ? (
-                          <div className="flex flex-col items-end gap-1">
-                            <p className="text-sm font-black text-slate-900 hl-mono">KES {Number(latestPayout.amount).toLocaleString()}</p>
-                            <span className={`text-[8px] font-black uppercase tracking-[0.15em] px-2 py-0.5 rounded ${latestPayout.status === 'PENDING' ? 'bg-indigo-100 text-indigo-700' : 'bg-emerald-100 text-emerald-700'}`}>
-                              {latestPayout.status === 'PENDING' ? 'Mature: Settlement Pending' : 'Paid Out'}
+                          <div className="flex flex-col items-end gap-0.5">
+                            <p className="text-xs sm:text-sm font-black text-slate-900 hl-mono">KES {Number(latestPayout.amount).toLocaleString()}</p>
+                            <span className={`text-[8px] font-black uppercase tracking-[0.15em] px-1.5 py-0.5 rounded ${latestPayout.status === 'PENDING' ? 'bg-indigo-100 text-indigo-700' : 'bg-emerald-100 text-emerald-700'}`}>
+                              {latestPayout.status === 'PENDING' ? 'Settlement Pending' : 'Paid Out'}
                             </span>
                           </div>
                         ) : (
-                          <div className="flex flex-col items-end gap-1">
-                            <p className="text-sm font-black text-slate-300 hl-mono">---</p>
+                          <div className="flex flex-col items-end gap-0.5">
+                            <p className="text-xs font-black text-slate-300 hl-mono">---</p>
                             <span className="text-[8px] font-black uppercase tracking-[0.15em] text-slate-400">
                               {isTrial ? 'Awaiting Payment' : 'No payout logged'}
                             </span>
@@ -499,107 +474,109 @@ function PayoutsTab() {
   return (
     <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
       
-      <div className="bg-[#0D4A3E] p-12 rounded-[.5em] text-white shadow-2xl shadow-emerald-900/10 relative overflow-hidden">
-        <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+      <div className="bg-[#0D4A3E] p-5 sm:p-8 lg:p-10 rounded-2xl text-white shadow-xl shadow-emerald-900/10 relative overflow-hidden">
+        <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-12 items-center">
           <div>
-            <span className="bg-white/10 text-emerald-200 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest mb-6 inline-block">Revenue Share Settlement</span>
-            <h2 className="text-4xl font-black mb-4 tracking-tight">Your Paybill Earnings</h2>
-            <p className="text-emerald-200/60 text-sm font-medium leading-relaxed max-w-sm">
+            <span className="bg-white/10 text-emerald-200 px-3 py-1 rounded-full text-[9px] sm:text-[10px] font-black uppercase tracking-widest mb-3 inline-block">Revenue Share Settlement</span>
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black mb-3 tracking-tight">Your Paybill Earnings</h2>
+            <p className="text-emerald-200/70 text-xs sm:text-sm font-medium leading-relaxed max-w-sm">
               Since you're using hlynk's shared Paybill infrastructures, a {((stats?.shareRate || 0) * 100).toFixed(0)}% platform fee is applied. We settle your net earnings every 7 days.
             </p>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            <div className="bg-white/5 p-6 rounded-2xl border border-white/10 backdrop-blur-sm">
-              <p className="text-[10px] font-black opacity-50 uppercase tracking-widest mb-2">Unsettled (Net)</p>
-              <p className="text-2xl font-black hl-mono">KES {Math.floor(stats?.pendingNet || 0).toLocaleString()}</p>
-              <div className="h-1.5 w-full bg-white/10 rounded-full mt-4 overflow-hidden">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="bg-white/5 p-4 sm:p-5 rounded-xl border border-white/10 backdrop-blur-sm">
+              <p className="text-[9px] font-black opacity-60 uppercase tracking-widest mb-1">Unsettled (Net)</p>
+              <p className="text-xl sm:text-2xl font-black hl-mono">KES {Math.floor(stats?.pendingNet || 0).toLocaleString()}</p>
+              <div className="h-1.5 w-full bg-white/10 rounded-full mt-3 overflow-hidden">
                  <div className="h-full bg-emerald-400 w-[60%] shadow-[0_0_10px_rgba(52,211,153,0.5)]" />
               </div>
             </div>
-            <div className="bg-white/5 p-6 rounded-2xl border border-white/10 backdrop-blur-sm">
-              <p className="text-[10px] font-black opacity-50 uppercase tracking-widest mb-2">Total Settled</p>
-              <p className="text-2xl font-black hl-mono">KES {Math.floor(stats?.settledNet || 0).toLocaleString()}</p>
-              <div className="flex items-center gap-2 text-[10px] font-black text-emerald-400 uppercase tracking-widest mt-4">
+            <div className="bg-white/5 p-4 sm:p-5 rounded-xl border border-white/10 backdrop-blur-sm">
+              <p className="text-[9px] font-black opacity-60 uppercase tracking-widest mb-1">Total Settled</p>
+              <p className="text-xl sm:text-2xl font-black hl-mono">KES {Math.floor(stats?.settledNet || 0).toLocaleString()}</p>
+              <div className="flex items-center gap-2 text-[9px] font-black text-emerald-400 uppercase tracking-widest mt-3">
                  <CheckCircle2 size={12} /> Verified Payments
               </div>
             </div>
           </div>
         </div>
-        <TrendingUp size={240} className="absolute -right-20 -bottom-20 text-white opacity-5 rotate-12" />
+        <TrendingUp size={200} className="absolute -right-16 -bottom-16 text-white opacity-5 rotate-12 hidden sm:block" />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-         <div className="lg:col-span-2 space-y-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+         <div className="lg:col-span-2 space-y-4">
             <div className="flex justify-between items-center">
-               <h3 className="text-xl font-black text-slate-900 tracking-tight">Settlement History</h3>
+               <h3 className="text-base sm:text-lg font-black text-slate-900 tracking-tight">Settlement History</h3>
                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest hl-mono">{history.length} Batches Found</span>
             </div>
             
-            <div className="bg-white rounded-[.5em] border border-slate-100 shadow-sm overflow-hidden">
-               <table className="w-full text-left border-collapse">
-                  <thead>
-                    <tr className="bg-slate-50/50 border-b border-slate-100">
-                      <th className="p-8 text-[10px] font-black text-slate-400 uppercase tracking-widest">Period / Batch</th>
-                      <th className="p-8 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Gross Volume</th>
-                      <th className="p-8 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Net Payout</th>
-                      <th className="p-8 text-[10px] font-black text-slate-400 uppercase tracking-widest">Status</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-50">
-                    {history.length === 0 ? (
-                      <tr><td colSpan={4} className="p-20 text-center text-slate-400 font-medium italic">No payouts processed yet. settlements occur weekly.</td></tr>
-                    ) : (
-                      history.map((row: any, i: number) => {
-                        const net = row.grossAmount * (1 - (stats?.shareRate || 0));
-                        return (
-                          <tr key={i} className="hover:bg-slate-50/50 transition-all group">
-                            <td className="p-8">
-                              <p className="font-bold text-slate-900 text-sm">
-                                {new Date(row.periodStart).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - {new Date(row.periodEnd).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                              </p>
-                              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1 italic">{row.txCount} payments bundled</p>
-                            </td>
-                            <td className="p-8 text-right font-black text-slate-400 hl-mono text-sm">KES {Number(row.grossAmount).toLocaleString()}</td>
-                            <td className="p-8 text-right font-black text-[#0D4A3E] hl-mono text-sm">KES {Math.floor(net).toLocaleString()}</td>
-                            <td className="p-8">
-                              <span className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${row.payoutStatus === 1 ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700 font-black animate-pulse'}`}>
-                                {row.payoutStatus === 1 ? 'Settled' : 'Unsettled'}
-                              </span>
-                            </td>
-                          </tr>
-                        );
-                      })
-                    )}
-                  </tbody>
-               </table>
+            <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+               <div className="overflow-x-auto">
+                 <table className="w-full text-left border-collapse">
+                    <thead>
+                      <tr className="bg-slate-50/50 border-b border-slate-100">
+                        <th className="px-4 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">Period / Batch</th>
+                        <th className="px-4 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Gross Volume</th>
+                        <th className="px-4 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Net Payout</th>
+                        <th className="px-4 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-50">
+                      {history.length === 0 ? (
+                        <tr><td colSpan={4} className="p-10 text-center text-slate-400 font-medium italic">No payouts processed yet. settlements occur weekly.</td></tr>
+                      ) : (
+                        history.map((row: any, i: number) => {
+                          const net = row.grossAmount * (1 - (stats?.shareRate || 0));
+                          return (
+                            <tr key={i} className="hover:bg-slate-50/50 transition-all group">
+                              <td className="px-4 py-3">
+                                <p className="font-bold text-slate-900 text-xs sm:text-sm">
+                                  {new Date(row.periodStart).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - {new Date(row.periodEnd).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                                </p>
+                                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-0.5 italic">{row.txCount} payments bundled</p>
+                              </td>
+                              <td className="px-4 py-3 text-right font-black text-slate-400 hl-mono text-xs sm:text-sm">KES {Number(row.grossAmount).toLocaleString()}</td>
+                              <td className="px-4 py-3 text-right font-black text-[#0D4A3E] hl-mono text-xs sm:text-sm">KES {Math.floor(net).toLocaleString()}</td>
+                              <td className="px-4 py-3">
+                                <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${row.payoutStatus === 1 ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700 font-black animate-pulse'}`}>
+                                  {row.payoutStatus === 1 ? 'Settled' : 'Unsettled'}
+                                </span>
+                              </td>
+                            </tr>
+                          );
+                        })
+                      )}
+                    </tbody>
+                 </table>
+               </div>
             </div>
          </div>
 
-         <div className="space-y-6">
-            <h3 className="text-xl font-black text-slate-900 tracking-tight">Financial Summary</h3>
-            <div className="bg-white p-10 rounded-[.5em] border border-slate-100 shadow-sm space-y-10">
+         <div className="space-y-4">
+            <h3 className="text-base sm:text-lg font-black text-slate-900 tracking-tight">Financial Summary</h3>
+            <div className="bg-white p-5 sm:p-6 rounded-2xl border border-slate-100 shadow-sm space-y-6">
                <div className="space-y-1">
                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Gross Platform Intake</p>
-                  <p className="text-3xl font-black text-slate-900 hl-mono">KES {(Number(stats?.pendingGross || 0) + Number(stats?.settledGross || 0)).toLocaleString()}</p>
+                  <p className="text-xl sm:text-2xl font-black text-slate-900 hl-mono">KES {(Number(stats?.pendingGross || 0) + Number(stats?.settledGross || 0)).toLocaleString()}</p>
                </div>
                
-               <div className="space-y-6 pt-6 border-t border-slate-50">
-                  <div className="flex justify-between items-center">
-                     <span className="text-xs font-bold text-slate-500">Platform Share (10%)</span>
-                     <span className="text-xs font-black text-red-500 hl-mono">- KES {Math.floor((Number(stats?.pendingGross || 0) + Number(stats?.settledGross || 0)) * 0.10).toLocaleString()}</span>
+               <div className="space-y-3 pt-4 border-t border-slate-50">
+                  <div className="flex justify-between items-center text-xs">
+                     <span className="font-medium text-slate-500">Platform Share (10%)</span>
+                     <span className="font-black text-red-500 hl-mono">- KES {Math.floor((Number(stats?.pendingGross || 0) + Number(stats?.settledGross || 0)) * 0.10).toLocaleString()}</span>
                   </div>
-                  <div className="flex justify-between items-center">
-                     <span className="text-xs font-bold text-slate-500">Already Settled</span>
-                     <span className="text-xs font-black text-blue-500 hl-mono">KES {Math.floor(stats?.settledNet || 0).toLocaleString()}</span>
+                  <div className="flex justify-between items-center text-xs">
+                     <span className="font-medium text-slate-500">Already Settled</span>
+                     <span className="font-black text-blue-500 hl-mono">KES {Math.floor(stats?.settledNet || 0).toLocaleString()}</span>
                   </div>
                </div>
 
-               <div className="bg-emerald-50 p-8 rounded-2xl border border-emerald-100">
-                  <div className="flex items-center gap-2 text-[10px] font-black text-[#0D4A3E] uppercase tracking-widest mb-2">
+               <div className="bg-emerald-50 p-4 sm:p-5 rounded-xl border border-emerald-100">
+                  <div className="flex items-center gap-2 text-[9px] font-black text-[#0D4A3E] uppercase tracking-widest mb-1.5">
                     <Smartphone size={14} /> Available for Withdrawal
                   </div>
-                  <p className="text-3xl font-black text-emerald-900 hl-mono">KES {Math.floor(stats?.pendingNet || 0).toLocaleString()}</p>
-                  <p className="text-[10px] font-medium text-emerald-800/60 mt-4 leading-relaxed italic">
+                  <p className="text-2xl sm:text-3xl font-black text-emerald-900 hl-mono">KES {Math.floor(stats?.pendingNet || 0).toLocaleString()}</p>
+                  <p className="text-[10px] font-medium text-emerald-800/60 mt-2 leading-relaxed italic">
                     Funds are automatically sent to your registered M-Pesa number upon Super Admin approval.
                   </p>
                </div>
@@ -905,35 +882,35 @@ export default function SubscriptionPage() {
 
 
       
-      <div className="flex justify-between items-end">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-black text-gray-900 tracking-tight">Subscription</h1>
-          <p className="text-gray-500 font-medium italic">"Know your real profit. Not just what came in — what stayed."</p>
+          <h1 className="text-xl sm:text-2xl lg:text-3xl font-black text-gray-900 tracking-tight">Subscription</h1>
+          <p className="text-xs sm:text-sm text-gray-500 font-medium italic">"Know your real profit. Not just what came in — what stayed."</p>
         </div>
 
-        <div className="flex bg-gray-100 p-1 rounded-[.5em]">
+        <div className="flex flex-wrap sm:flex-nowrap bg-gray-100 p-1 rounded-xl gap-1 overflow-x-auto custom-scrollbar">
           <button
             onClick={() => setActiveTab('current')}
-            className={`px-6 py-2 rounded-[.5em]lg text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'current' ? 'bg-white text-emerald-600 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
+            className={`px-4 sm:px-6 py-2 rounded-lg text-[10px] sm:text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'current' ? 'bg-white text-emerald-600 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
           >
             Manage Plan
           </button>
           <button
             onClick={() => setActiveTab('history')}
-            className={`px-6 py-2 rounded-[.5em]lg text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'history' ? 'bg-white text-emerald-600 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
+            className={`px-4 sm:px-6 py-2 rounded-lg text-[10px] sm:text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'history' ? 'bg-white text-emerald-600 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
           >
             Billing History
           </button>
           <button
             onClick={() => setActiveTab('referrals')}
-            className={`px-6 py-2 rounded-[.5em] text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'referrals' ? 'bg-white text-emerald-600 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
+            className={`px-4 sm:px-6 py-2 rounded-lg text-[10px] sm:text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'referrals' ? 'bg-white text-emerald-600 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
           >
             Refer & Earn
           </button>
           {user?.isRented === 1 && (
             <button
               onClick={() => setActiveTab('payouts')}
-              className={`px-6 py-2 rounded-[.5em] text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'payouts' ? 'bg-white text-emerald-600 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
+              className={`px-4 sm:px-6 py-2 rounded-lg text-[10px] sm:text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'payouts' ? 'bg-white text-emerald-600 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
             >
               Payouts Hub
             </button>
@@ -1005,38 +982,38 @@ export default function SubscriptionPage() {
             </div>
           </div>
 
-          <div className="bg-white p-10 rounded-[.5em] border border-gray-100 shadow-sm overflow-hidden relative">
-            <div className="absolute top-0 right-0 p-10 opacity-10">
+          <div className="bg-white p-5 sm:p-8 lg:p-10 rounded-2xl border border-gray-100 shadow-sm overflow-hidden relative">
+            <div className="absolute top-0 right-0 p-10 opacity-10 hidden sm:block">
               <Zap size={160} className="text-emerald-900" />
             </div>
 
-            <div className="max-w-xl relative z-10">
-              <span className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${isExpired ? 'bg-red-100 text-red-700' : 'bg-emerald-100 text-emerald-700'}`}>
+            <div className="max-w-xl relative z-10 space-y-4 sm:space-y-6">
+              <span className={`px-3 py-1 rounded-full text-[9px] sm:text-[10px] font-black uppercase tracking-widest ${isExpired ? 'bg-red-100 text-red-700' : 'bg-emerald-100 text-emerald-700'}`}>
                 {isExpired ? 'EXPIRED' : (isTrial ? 'FREE TRIAL' : 'ACTIVE SUBSCRIPTION')}
               </span>
-              <h2 className="text-5xl font-black text-gray-900 mt-6 mb-4 tracking-tighter">
+              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black text-gray-900 tracking-tight">
                 {isTrial ? "Free Trial (Starter)" : (PLANS.find(p => p.id === subscription?.planName)?.name || 'Custom')}
               </h2>
-              <p className="text-gray-500 font-medium text-xl mb-12 leading-relaxed">
+              <p className="text-gray-500 font-medium text-xs sm:text-sm lg:text-base leading-relaxed">
                 {isTrial 
                   ? "Explore all Starter features free for 14 days. Grow your business risk-free."
                   : (PLANS.find(p => p.id === subscription?.planName)?.desc || 'Your current subscription plan details.')}
               </p>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-10 mb-12">
-                <div className="space-y-1">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 py-2">
+                <div className="space-y-1 bg-slate-50/60 p-4 rounded-xl border border-slate-100">
                   <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-2">
                     <Calendar size={14} className="text-emerald-500" /> {isTrial ? 'Trial Ends' : 'Next Billing Date'}
                   </p>
-                  <p className="text-xl font-black text-gray-900 hl-mono">
+                  <p className="text-base sm:text-lg font-black text-gray-900 hl-mono">
                     {targetEndDate ? new Date(targetEndDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : 'N/A'}
                   </p>
                 </div>
-                <div className="space-y-1">
+                <div className="space-y-1 bg-slate-50/60 p-4 rounded-xl border border-slate-100">
                   <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-2">
                     <CreditCard size={14} className="text-emerald-500" /> Investment Amount
                   </p>
-                  <p className="text-xl font-black text-[#0D4A3E] hl-mono">
+                  <p className="text-base sm:text-lg font-black text-[#0D4A3E] hl-mono">
                     {isTrial ? "Free (KES 0)" : (
                       (() => {
                         const base = PLANS.find(p => p.id === subscription?.planName)?.price || 0
@@ -1047,26 +1024,26 @@ export default function SubscriptionPage() {
                         return `KES ${total.toLocaleString()}`
                       })()
                     )}
-                    <span className="text-[10px] text-emerald-600/40 ml-2">
+                    <span className="text-[10px] text-emerald-600/60 ml-1 font-sans">
                        / {billingCycle === '1' ? '28' : billingCycle === '6' ? '180' : '365'} Days
                     </span>
                   </p>
                 </div>
               </div>
 
-              <div className="flex flex-wrap gap-4">
+              <div className="flex flex-col sm:flex-row gap-3 pt-2">
                 <button
                   onClick={() => {
                     setMpesaPhone('')
                     setShowRenewModal(true)
                   }}
-                  className="px-12 py-5 rounded-[.5em] font-black text-xs uppercase tracking-widest transition-all shadow-xl active:scale-95 bg-[#0D4A3E] text-white hover:bg-[#0A3D33] shadow-emerald-900/20"
+                  className="w-full sm:w-auto px-6 py-3.5 rounded-xl font-black text-xs uppercase tracking-widest transition-all shadow-md active:scale-95 bg-[#0D4A3E] text-white hover:bg-[#0A3D33] shadow-emerald-900/20"
                 >
                   Renew For {billingCycle === '1' ? '1 Month' : billingCycle === '6' ? '6 Months' : '1 Year'}
                 </button>
                 <button
                   onClick={() => setShowChangeModal(true)}
-                  className="bg-white text-gray-600 px-12 py-5 rounded-[.5em] font-black text-xs uppercase tracking-widest border border-gray-100 hover:bg-gray-50 transition-all active:scale-95"
+                  className="w-full sm:w-auto bg-white text-gray-600 px-6 py-3.5 rounded-xl font-black text-xs uppercase tracking-widest border border-gray-200 hover:bg-gray-50 transition-all active:scale-95"
                 >
                   Change My Plan
                 </button>
@@ -1074,39 +1051,39 @@ export default function SubscriptionPage() {
             </div>
           </div>
 
-          <div className="bg-white p-12 rounded-[.5em] border border-gray-100 shadow-sm">
-            <div className="mb-12">
-              <h3 className="text-2xl font-black text-gray-900 tracking-tight mb-2">Compare hlynk Packages</h3>
-              <p className="text-gray-500 font-medium italic">Choose the level of control your business needs.</p>
+          <div className="bg-white p-5 sm:p-8 lg:p-10 rounded-2xl border border-gray-100 shadow-sm">
+            <div className="mb-6 sm:mb-8">
+              <h3 className="text-lg sm:text-xl font-black text-gray-900 tracking-tight mb-1">Compare hlynk Packages</h3>
+              <p className="text-xs sm:text-sm text-gray-500 font-medium italic">Choose the level of control your business needs.</p>
             </div>
 
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="border-b-2 border-gray-50">
-                    <th className="py-6 text-[10px] font-black text-gray-400 uppercase tracking-widest">Feature</th>
-                    <th className="py-6 text-[10px] font-black text-teal-500 uppercase tracking-widest text-center">Starter</th>
-                    <th className="py-6 text-[10px] font-black text-purple-500 uppercase tracking-widest text-center">Business Pro</th>
+                    <th className="py-3 px-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Feature</th>
+                    <th className="py-3 px-4 text-[10px] font-black text-teal-500 uppercase tracking-widest text-center">Starter</th>
+                    <th className="py-3 px-4 text-[10px] font-black text-purple-500 uppercase tracking-widest text-center">Business Pro</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
                   {FEATURE_COMPARISON.map((f: any, i) => (
                     <tr key={i} className="hover:bg-slate-50/50 transition-all group">
-                      <td className="py-6 font-bold text-slate-700 text-sm">{f.name}</td>
-                      <td className="py-6 text-center">
+                      <td className="py-3.5 px-4 font-bold text-slate-700 text-xs sm:text-sm">{f.name}</td>
+                      <td className="py-3.5 px-4 text-center">
                         {typeof f.starter === 'string' ? (
                           <span className="text-xs font-black text-teal-600 hl-mono">{f.starter}</span>
                         ) : f.starter ? (
-                          <CheckCircle2 size={20} className="mx-auto text-teal-500" />
+                          <CheckCircle2 size={18} className="mx-auto text-teal-500" />
                         ) : (
                           <span className="text-slate-200">✕</span>
                         )}
                       </td>
-                      <td className="py-6 text-center">
+                      <td className="py-3.5 px-4 text-center">
                         {typeof f.pro === 'string' ? (
                           <span className="text-xs font-black text-purple-600 hl-mono">{f.pro}</span>
                         ) : f.pro ? (
-                          <CheckCircle2 size={20} className="mx-auto text-purple-500" />
+                          <CheckCircle2 size={18} className="mx-auto text-purple-500" />
                         ) : (
                           <span className="text-slate-200">✕</span>
                         )}
@@ -1141,7 +1118,7 @@ export default function SubscriptionPage() {
             <select
               value={planFilter}
               onChange={(e) => { setPlanFilter(e.target.value); setHistoryPage(1); }}
-              className="bg-slate-50 border-none rounded-[.5em] px-4 py-2 text-xs font-black text-slate-600 outline-none focus:ring-2 focus:ring-emerald-500/10 min-w-[140px]"
+              className="bg-slate-50 border-none rounded-xl px-4 py-2 text-xs font-black text-slate-600 outline-none focus:ring-2 focus:ring-emerald-500/10 min-w-[140px]"
             >
               <option value="">All Plans</option>
               <option value="PLUS">Starter</option>
@@ -1153,80 +1130,82 @@ export default function SubscriptionPage() {
             </div>
           </div>
 
-          <div className="bg-white rounded-[.5em] border border-gray-100 shadow-sm overflow-hidden">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="bg-gray-50/50 border-b border-gray-100">
-                  <th className="p-8 text-[10px] font-black text-gray-400 uppercase tracking-widest">Date</th>
-                  <th className="p-8 text-[10px] font-black text-gray-400 uppercase tracking-widest">Reference</th>
-                  <th className="p-8 text-[10px] font-black text-gray-400 uppercase tracking-widest">Receipt</th>
-                  <th className="p-8 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Amount</th>
-                  <th className="p-8 text-[10px] font-black text-gray-400 uppercase tracking-widest">Status</th>
-                  <th className="p-8 text-right"></th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-50">
-                {historyLoading ? (
-                  <tr><td colSpan={5} className="p-20 text-center animate-pulse text-slate-300 uppercase font-black text-[10px] tracking-widest">Loading history...</td></tr>
-                ) : history.length === 0 ? (
-                  <tr><td colSpan={5} className="p-20 text-center text-gray-400 font-medium italic">No billing records found matching your filters.</td></tr>
-                ) : (
-                  history.map((inv: any) => (
-                    <tr key={inv.id} className="hover:bg-gray-50/50 transition-all group">
-                      <td className="p-8 font-bold text-gray-900 text-sm">{new Date(inv.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: 'numeric' })}</td>
-                      <td className="p-8">
-                        <p className="font-medium text-gray-400 text-[10px] hl-mono uppercase tracking-tighter">{inv.reference}</p>
-                        <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest mt-1">{inv.plan}</p>
-                      </td>
-                      <td className="p-8">
-                        {inv.mpesaReceipt ? (
-                          <span className="font-black text-[10px] hl-mono text-emerald-600 bg-emerald-50 px-2 py-1 rounded-[.5em]">{inv.mpesaReceipt}</span>
-                        ) : (
-                          <span className="text-[10px] font-medium text-slate-300 italic">No receipt</span>
-                        )}
-                      </td>
-                      <td className="p-8 font-black text-emerald-800 hl-mono text-right text-sm">KES {Number(inv.amount).toLocaleString()}</td>
-                      <td className="p-8">
-                        <div className="flex items-center gap-2">
-                          <span className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${inv.status === 0 ? 'bg-emerald-100 text-emerald-700' :
-                            inv.status === 1 ? 'bg-red-100 text-red-700' :
-                              inv.status === 3 ? 'bg-amber-100 text-amber-700' :
-                              inv.status === 4 ? 'bg-red-100 text-red-700' :
-                                'bg-gray-100 text-gray-700'
-                            }`}>
-                            {inv.status === 0 ? 'PAID' : inv.status === 1 ? 'FAILED' : inv.status === 3 ? 'CANCELLED' : inv.status === 4 ? 'ERROR' : 'PENDING'}
-                          </span>
-                        </div>
-                      </td>
-                      <td className="p-8 text-right">
-                        <div className="flex justify-end items-center gap-2">
-                          {inv.status === 2 && (
-                            <button
-                              onClick={() => verifyMutation.mutate(inv.id)}
-                              disabled={verifyMutation.isPending}
-                              title="Verify Payment"
-                              className="h-8 w-8 rounded-[.5em] bg-emerald-50 text-emerald-600 flex items-center justify-center hover:bg-emerald-100 transition-all"
-                            >
-                              {verifyMutation.isPending ? <Loader2 size={14} className="animate-spin" /> : <RefreshCcw size={14} />}
-                            </button>
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-gray-50/50 border-b border-gray-100">
+                    <th className="px-4 py-3 text-[10px] font-black text-gray-400 uppercase tracking-widest">Date</th>
+                    <th className="px-4 py-3 text-[10px] font-black text-gray-400 uppercase tracking-widest">Reference</th>
+                    <th className="px-4 py-3 text-[10px] font-black text-gray-400 uppercase tracking-widest">Receipt</th>
+                    <th className="px-4 py-3 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Amount</th>
+                    <th className="px-4 py-3 text-[10px] font-black text-gray-400 uppercase tracking-widest">Status</th>
+                    <th className="px-4 py-3 text-right"></th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-50">
+                  {historyLoading ? (
+                    <tr><td colSpan={6} className="p-10 text-center animate-pulse text-slate-300 uppercase font-black text-[10px] tracking-widest">Loading history...</td></tr>
+                  ) : history.length === 0 ? (
+                    <tr><td colSpan={6} className="p-10 text-center text-gray-400 font-medium italic">No billing records found matching your filters.</td></tr>
+                  ) : (
+                    history.map((inv: any) => (
+                      <tr key={inv.id} className="hover:bg-gray-50/50 transition-all group">
+                        <td className="px-4 py-3 font-bold text-gray-900 text-xs sm:text-sm">{new Date(inv.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: 'numeric' })}</td>
+                        <td className="px-4 py-3">
+                          <p className="font-medium text-gray-400 text-[10px] hl-mono uppercase tracking-tighter">{inv.reference}</p>
+                          <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-0.5">{inv.plan}</p>
+                        </td>
+                        <td className="px-4 py-3">
+                          {inv.mpesaReceipt ? (
+                            <span className="font-black text-[10px] hl-mono text-emerald-600 bg-emerald-50 px-2 py-1 rounded-lg">{inv.mpesaReceipt}</span>
+                          ) : (
+                            <span className="text-[10px] font-medium text-slate-300 italic">No receipt</span>
                           )}
-                          <button
-                            onClick={() => setSelectedTransaction(inv)}
-                            className="h-8 w-8 rounded-[.5em] bg-slate-50 text-slate-400 flex items-center justify-center hover:bg-slate-100 hover:text-slate-900 transition-all"
-                            title="View Details"
-                          >
-                            <Eye size={14} />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
+                        </td>
+                        <td className="px-4 py-3 font-black text-emerald-800 hl-mono text-right text-xs sm:text-sm">KES {Number(inv.amount).toLocaleString()}</td>
+                        <td className="px-4 py-3">
+                          <div className="flex items-center gap-2">
+                            <span className={`px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${inv.status === 0 ? 'bg-emerald-100 text-emerald-700' :
+                              inv.status === 1 ? 'bg-red-100 text-red-700' :
+                                inv.status === 3 ? 'bg-amber-100 text-amber-700' :
+                                inv.status === 4 ? 'bg-red-100 text-red-700' :
+                                  'bg-gray-100 text-gray-700'
+                              }`}>
+                              {inv.status === 0 ? 'PAID' : inv.status === 1 ? 'FAILED' : inv.status === 3 ? 'CANCELLED' : inv.status === 4 ? 'ERROR' : 'PENDING'}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="px-4 py-3 text-right">
+                          <div className="flex justify-end items-center gap-2">
+                            {inv.status === 2 && (
+                              <button
+                                onClick={() => verifyMutation.mutate(inv.id)}
+                                disabled={verifyMutation.isPending}
+                                title="Verify Payment"
+                                className="h-8 w-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center hover:bg-emerald-100 transition-all"
+                              >
+                                {verifyMutation.isPending ? <Loader2 size={14} className="animate-spin" /> : <RefreshCcw size={14} />}
+                              </button>
+                            )}
+                            <button
+                              onClick={() => setSelectedTransaction(inv)}
+                              className="h-8 w-8 rounded-lg bg-slate-50 text-slate-400 flex items-center justify-center hover:bg-slate-100 hover:text-slate-900 transition-all"
+                              title="View Details"
+                            >
+                              <Eye size={14} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
 
             {pagination && pagination.totalPages > 1 && (
-              <div className="p-8 bg-gray-50/30 border-t border-gray-50">
+              <div className="p-4 sm:p-6 bg-gray-50/30 border-t border-gray-50">
                 <Pagination
                   page={historyPage}
                   pages={pagination.totalPages}
@@ -1247,35 +1226,35 @@ export default function SubscriptionPage() {
       {/* Renew Modal */}
       {showRenewModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-[.5em] shadow-2xl w-full max-w-md p-8 animate-in zoom-in duration-300">
-            <div className="flex justify-between items-start mb-6">
-              <div className="h-12 w-12 rounded-[.5em] bg-emerald-50 text-emerald-600 flex items-center justify-center">
-                <CreditCard size={24} />
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-5 sm:p-8 animate-in zoom-in duration-300">
+            <div className="flex justify-between items-start mb-4">
+              <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                <CreditCard size={22} />
               </div>
               <button onClick={() => setShowRenewModal(false)} className="text-gray-400 hover:text-gray-600">✕</button>
             </div>
 
-            <h3 className="text-2xl font-black text-gray-900 mb-2">Renew Subscription</h3>
-            <p className="text-gray-500 text-sm mb-6 font-medium">Choose your preferred M-Pesa payment method.</p>
+            <h3 className="text-xl sm:text-2xl font-black text-gray-900 mb-1">Renew Subscription</h3>
+            <p className="text-gray-500 text-xs sm:text-sm mb-5 font-medium">Choose your preferred M-Pesa payment method.</p>
 
-            <div className="flex bg-slate-100 p-1 rounded-xl mb-8">
+            <div className="flex bg-slate-100 p-1 rounded-xl mb-6">
               <button
                 onClick={() => setSubPaymentMethod('STK')}
-                className={`flex-1 py-3 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${subPaymentMethod === 'STK' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                className={`flex-1 py-2.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${subPaymentMethod === 'STK' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
               >
                 STK Push
               </button>
               <button
                 onClick={() => setSubPaymentMethod('MANUAL')}
-                className={`flex-1 py-3 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${subPaymentMethod === 'MANUAL' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                className={`flex-1 py-2.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${subPaymentMethod === 'MANUAL' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
               >
                 Manual
               </button>
             </div>
 
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
               {subPaymentMethod === 'STK' ? (
-                <div className="space-y-2">
+                <div className="space-y-1.5">
                   <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">M-Pesa Number</label>
                   <div className="relative">
                     <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
@@ -1284,40 +1263,40 @@ export default function SubscriptionPage() {
                       placeholder="0712345678"
                       value={mpesaPhone}
                       onChange={(e) => setMpesaPhone(e.target.value)}
-                      className="w-full bg-gray-50 border-none rounded-[.5em] py-4 pl-12 pr-4 outline-none focus:ring-2 focus:ring-emerald-500/10 text-lg font-black hl-mono"
+                      className="w-full bg-gray-50 border-none rounded-xl py-3.5 pl-12 pr-4 outline-none focus:ring-2 focus:ring-emerald-500/10 text-base font-black hl-mono"
                     />
                   </div>
-                  <p className="text-[10px] font-medium text-slate-400 italic mt-1">We will send a prompt to this number.</p>
+                  <p className="text-[10px] font-medium text-slate-400 italic">We will send a prompt to this number.</p>
                 </div>
               ) : (
-                <div className="space-y-6 animate-in fade-in slide-in-from-top-2 duration-300">
-                  <div className="bg-emerald-50 p-6 rounded-xl border border-emerald-100 space-y-4">
-                    <p className="text-[10px] font-black text-emerald-800 uppercase tracking-widest mb-2">Instructions</p>
-                    <div className="space-y-2">
-                      <p className="text-xs font-medium text-emerald-700">1. Go to M-Pesa &gt; Lipa na M-Pesa</p>
-                      <p className="text-xs font-medium text-emerald-700">2. Paybill: 4003431 </p>
-                      <p className="text-xs font-medium text-emerald-700">3. Account: {user?.phone || 'Your Phone Number'}</p>
-                      <p className="text-xs font-medium text-emerald-700">4. Amount: KES {PLANS.find(p => p.id === subscription?.planName)?.price.toLocaleString()}</p>
+                <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                  <div className="bg-emerald-50 p-4 rounded-xl border border-emerald-100 space-y-2">
+                    <p className="text-[10px] font-black text-emerald-800 uppercase tracking-widest mb-1">Instructions</p>
+                    <div className="space-y-1 text-xs font-medium text-emerald-700">
+                      <p>1. Go to M-Pesa &gt; Lipa na M-Pesa</p>
+                      <p>2. Paybill: 4003431 </p>
+                      <p>3. Account: {user?.phone || 'Your Phone Number'}</p>
+                      <p>4. Amount: KES {PLANS.find(p => p.id === subscription?.planName)?.price.toLocaleString()}</p>
                     </div>
                   </div>
 
-                  <div className="space-y-2">
+                  <div className="space-y-1.5">
                     <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Transaction Code</label>
                     <input
                       type="text"
                       placeholder="SFL89H..."
                       value={mpesaCode}
                       onChange={(e) => setMpesaCode(e.target.value.toUpperCase())}
-                      className="w-full bg-gray-50 border-none rounded-[.5em] py-4 px-6 outline-none focus:ring-2 focus:ring-emerald-500/10 text-lg font-black hl-mono uppercase"
+                      className="w-full bg-gray-50 border-none rounded-xl py-3.5 px-4 outline-none focus:ring-2 focus:ring-emerald-500/10 text-base font-black hl-mono uppercase"
                     />
-                    <p className="text-[10px] font-medium text-slate-400 italic mt-1">Paste the M-Pesa confirmation code here.</p>
+                    <p className="text-[10px] font-medium text-slate-400 italic">Paste the M-Pesa confirmation code here.</p>
                   </div>
                 </div>
               )}
 
-              <div className="bg-gray-50 p-4 rounded-[.5em] flex justify-between items-center">
+              <div className="bg-gray-50 p-4 rounded-xl flex justify-between items-center">
                 <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Amount to Pay</span>
-                <span className="text-xl font-black text-emerald-900 hl-mono">KES {PLANS.find(p => p.id === subscription?.planName)?.price.toLocaleString() || '0'}</span>
+                <span className="text-lg font-black text-emerald-900 hl-mono">KES {PLANS.find(p => p.id === subscription?.planName)?.price.toLocaleString() || '0'}</span>
               </div>
 
               <button
@@ -1334,7 +1313,7 @@ export default function SubscriptionPage() {
                   }
                 }}
                 disabled={renewMutation.isPending || manualPaymentMutation.isPending || (subPaymentMethod === 'STK' ? !mpesaPhone : !mpesaCode)}
-                className="w-full bg-[#0D4A3E] text-white py-4 rounded-[.5em] font-black text-xs uppercase tracking-widest hover:bg-[#0A3D33] transition-all flex items-center justify-center gap-2 shadow-lg shadow-emerald-900/20 disabled:opacity-50"
+                className="w-full bg-[#0D4A3E] text-white py-3.5 rounded-xl font-black text-xs uppercase tracking-widest hover:bg-[#0A3D33] transition-all flex items-center justify-center gap-2 shadow-lg shadow-emerald-900/20 disabled:opacity-50"
               >
                 {renewMutation.isPending || manualPaymentMutation.isPending ? <Loader2 className="animate-spin" size={18} /> : (subPaymentMethod === 'STK' ? 'Pay via M-Pesa' : 'Submit Code')}
               </button>
@@ -1346,61 +1325,60 @@ export default function SubscriptionPage() {
       {/* Change Plan Modal */}
       {showChangeModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-md p-4">
-          <div className="bg-slate-50 rounded-[.5em] shadow-2xl w-full max-w-4xl p-12 animate-in zoom-in duration-300 max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-start mb-12">
+          <div className="bg-slate-50 rounded-2xl shadow-2xl w-full max-w-3xl p-5 sm:p-8 lg:p-10 animate-in zoom-in duration-300 max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-start mb-6 sm:mb-8">
               <div>
-                <h3 className="text-3xl font-black text-slate-900 mb-2">Upgrade Your Business</h3>
-                <p className="text-slate-500 font-medium italic">Unlock advanced features and scale your operations.</p>
+                <h3 className="text-xl sm:text-2xl font-black text-slate-900 mb-1">Upgrade Your Business</h3>
+                <p className="text-slate-500 text-xs sm:text-sm font-medium italic">Unlock advanced features and scale your operations.</p>
               </div>
-              <button onClick={() => setShowChangeModal(false)} className="h-12 w-12 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-400 hover:text-slate-900 transition-all">✕</button>
+              <button onClick={() => setShowChangeModal(false)} className="h-10 w-10 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-400 hover:text-slate-900 transition-all">✕</button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
               {PLANS.map(plan => (
                 <div
                   key={plan.id}
                   onClick={() => setSelectedPlan(plan)}
-                  className={`p-8 rounded-[.5em] cursor-pointer transition-all border-2 flex flex-col ${selectedPlan?.id === plan.id ? 'bg-white border-emerald-500 shadow-xl ring-8 ring-emerald-500/5' : 'bg-white border-white hover:border-slate-200 shadow-sm'}`}
+                  className={`p-5 rounded-xl cursor-pointer transition-all border-2 flex flex-col ${selectedPlan?.id === plan.id ? 'bg-white border-emerald-500 shadow-xl ring-4 ring-emerald-500/5' : 'bg-white border-white hover:border-slate-200 shadow-sm'}`}
                 >
-                  <div className={`h-12 w-12 rounded-[.5em] bg-${plan.color}-50 text-${plan.color}-600 flex items-center justify-center mb-6`}>
-                    <Star size={24} />
+                  <div className={`h-10 w-10 rounded-xl bg-${plan.color}-50 text-${plan.color}-600 flex items-center justify-center mb-4`}>
+                    <Star size={20} />
                   </div>
-                  <h4 className="text-xl font-black text-slate-900 mb-2">{plan.name}</h4>
-                  <div className="flex items-baseline gap-1 mb-6">
-                    <span className="text-2xl font-black text-slate-900 hl-mono">KES {plan.price.toLocaleString()}</span>
-                    <span className="text-xs font-bold text-slate-400 uppercase tracking-widest hl-mono">/28 days</span>
+                  <h4 className="text-base sm:text-lg font-black text-slate-900 mb-1">{plan.name}</h4>
+                  <div className="flex items-baseline gap-1 mb-3">
+                    <span className="text-lg sm:text-xl font-black text-slate-900 hl-mono">KES {plan.price.toLocaleString()}</span>
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest hl-mono">/28 days</span>
                   </div>
-                  <p className="text-xs text-slate-500 font-medium leading-relaxed mb-8 flex-1">{plan.desc}</p>
-                  <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${selectedPlan?.id === plan.id ? 'bg-emerald-500 border-emerald-500 text-white' : 'border-slate-200'}`}>
-                    {selectedPlan?.id === plan.id && <CheckCircle2 size={14} />}
+                  <p className="text-xs text-slate-500 font-medium leading-relaxed mb-4 flex-1">{plan.desc}</p>
+                  <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${selectedPlan?.id === plan.id ? 'bg-emerald-500 border-emerald-500 text-white' : 'border-slate-200'}`}>
+                    {selectedPlan?.id === plan.id && <CheckCircle2 size={12} />}
                   </div>
                 </div>
               ))}
             </div>
 
             {selectedPlan && (
-              <div className="bg-white p-8 rounded-[.5em] border border-slate-100 animate-in slide-in-from-bottom-4">
-                {/* The warning was moved to ConfirmModal */}
-                <div className="flex flex-col gap-6">
+              <div className="bg-white p-5 sm:p-6 rounded-xl border border-slate-100 animate-in slide-in-from-bottom-4">
+                <div className="flex flex-col gap-4">
                   {/* Payment Method Switcher for upgrade */}
                   <div className="flex bg-slate-50 p-1 rounded-xl">
                     <button
                       onClick={() => setSubPaymentMethod('STK')}
-                      className={`flex-1 py-3 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${subPaymentMethod === 'STK' ? 'bg-white text-emerald-600 shadow-sm border border-slate-100' : 'text-slate-400 hover:text-slate-600'}`}
+                      className={`flex-1 py-2.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${subPaymentMethod === 'STK' ? 'bg-white text-emerald-600 shadow-sm border border-slate-100' : 'text-slate-400 hover:text-slate-600'}`}
                     >
                       Instant STK Push
                     </button>
                     <button
                       onClick={() => setSubPaymentMethod('MANUAL')}
-                      className={`flex-1 py-3 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${subPaymentMethod === 'MANUAL' ? 'bg-white text-emerald-600 shadow-sm border border-slate-100' : 'text-slate-400 hover:text-slate-600'}`}
+                      className={`flex-1 py-2.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${subPaymentMethod === 'MANUAL' ? 'bg-white text-emerald-600 shadow-sm border border-slate-100' : 'text-slate-400 hover:text-slate-600'}`}
                     >
                       Manual
                     </button>
                   </div>
 
-                  <div className="flex flex-col md:flex-row items-end gap-8">
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-end gap-4">
                     {subPaymentMethod === 'STK' ? (
-                      <div className="flex-1 w-full space-y-2">
+                      <div className="flex-1 w-full space-y-1">
                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">M-Pesa Payment Number</label>
                         <div className="relative">
                           <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
@@ -1409,12 +1387,12 @@ export default function SubscriptionPage() {
                             placeholder="0712345678"
                             value={mpesaPhone}
                             onChange={(e) => setMpesaPhone(e.target.value)}
-                            className="w-full bg-slate-50 border-none rounded-[.5em] py-4 pl-12 pr-4 outline-none focus:ring-4 focus:ring-emerald-500/5 text-lg font-black hl-mono"
+                            className="w-full bg-slate-50 border-none rounded-xl py-3.5 pl-12 pr-4 outline-none focus:ring-2 focus:ring-emerald-500/10 text-base font-black hl-mono"
                           />
                         </div>
                       </div>
                     ) : (
-                      <div className="flex-1 w-full space-y-2 animate-in fade-in slide-in-from-top-2">
+                      <div className="flex-1 w-full space-y-1 animate-in fade-in slide-in-from-top-2">
                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">M-Pesa Transaction Code</label>
                         <div className="relative">
                           <input
@@ -1422,7 +1400,7 @@ export default function SubscriptionPage() {
                             placeholder="SFL89H..."
                             value={mpesaCode}
                             onChange={(e) => setMpesaCode(e.target.value.toUpperCase())}
-                            className="w-full bg-slate-50 border-none rounded-[.5em] py-4 px-6 outline-none focus:ring-4 focus:ring-emerald-500/5 text-lg font-black hl-mono uppercase"
+                            className="w-full bg-slate-50 border-none rounded-xl py-3.5 px-4 outline-none focus:ring-2 focus:ring-emerald-500/10 text-base font-black hl-mono uppercase"
                           />
                         </div>
                         <p className="text-[9px] font-medium text-slate-400">Pay KES {selectedPlan.price.toLocaleString()} to Paybill 4003431 (Account: {user?.phone || 'Your Phone Number'})</p>
@@ -1443,7 +1421,7 @@ export default function SubscriptionPage() {
                         }
                       }}
                       disabled={changePlanMutation.isPending || manualPaymentMutation.isPending || (subPaymentMethod === 'STK' ? !mpesaPhone : !mpesaCode)}
-                      className="w-full md:w-auto bg-emerald-600 text-white px-12 py-5 rounded-[.5em] font-black text-xs uppercase tracking-widest hover:bg-emerald-700 transition-all flex items-center justify-center gap-3 shadow-xl shadow-emerald-900/20 disabled:opacity-50"
+                      className="w-full sm:w-auto bg-emerald-600 text-white px-6 py-3.5 rounded-xl font-black text-xs uppercase tracking-widest hover:bg-emerald-700 transition-all flex items-center justify-center gap-2 shadow-lg shadow-emerald-900/20 disabled:opacity-50"
                     >
                       {changePlanMutation.isPending || manualPaymentMutation.isPending ? <Loader2 className="animate-spin" size={18} /> : (subPaymentMethod === 'STK' ? `Upgrade to ${selectedPlan.name}` : 'Verify & Upgrade')}
                     </button>
@@ -1484,62 +1462,62 @@ export default function SubscriptionPage() {
       {/* ── TRANSACTION DETAIL MODAL ── */}
       {selectedTransaction && (
         <div className="fixed inset-0 z-[120] flex items-center justify-center bg-slate-900/60 backdrop-blur-md p-4 animate-in fade-in duration-300">
-          <div className="bg-white rounded-[.5em] shadow-2xl w-full max-w-2xl overflow-hidden animate-in zoom-in-95 duration-300">
-            <div className="bg-slate-50 p-8 flex justify-between items-center border-b border-slate-100">
-              <div className="flex items-center gap-4">
-                <div className={`h-12 w-12 rounded-[.5em] flex items-center justify-center shadow-sm ${
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden animate-in zoom-in-95 duration-300 max-h-[90vh] overflow-y-auto">
+            <div className="bg-slate-50 p-4 sm:p-6 flex justify-between items-center border-b border-slate-100">
+              <div className="flex items-center gap-3">
+                <div className={`h-10 w-10 rounded-xl flex items-center justify-center shadow-sm ${
                   selectedTransaction.status === 0 ? 'bg-emerald-50 text-emerald-600' :
                   selectedTransaction.status === 1 ? 'bg-red-50 text-red-600' : 'bg-amber-50 text-amber-600'
                 }`}>
-                  <CreditCard size={24} />
+                  <CreditCard size={20} />
                 </div>
                 <div>
-                  <h3 className="text-xl font-black text-slate-900 tracking-tight">Transaction Details</h3>
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">View comprehensive billing data</p>
+                  <h3 className="text-base sm:text-lg font-black text-slate-900 tracking-tight">Transaction Details</h3>
+                  <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">View comprehensive billing data</p>
                 </div>
               </div>
               <button 
                 onClick={() => setSelectedTransaction(null)}
-                className="h-10 w-10 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-400 hover:text-slate-900 transition-all shadow-sm"
+                className="h-8 w-8 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-400 hover:text-slate-900 transition-all shadow-sm"
               >
                 ✕
               </button>
             </div>
 
-            <div className="p-10 space-y-8">
-              <div className="grid grid-cols-2 gap-8">
+            <div className="p-4 sm:p-8 space-y-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1">
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Date & Time</p>
-                  <p className="text-sm font-bold text-slate-900">{new Date(selectedTransaction.createdAt).toLocaleString()}</p>
+                  <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Date & Time</p>
+                  <p className="text-xs sm:text-sm font-bold text-slate-900">{new Date(selectedTransaction.createdAt).toLocaleString()}</p>
                 </div>
                 <div className="space-y-1">
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Internal Reference</p>
-                  <p className="text-sm font-black text-emerald-600 hl-mono">{selectedTransaction.reference}</p>
+                  <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Internal Reference</p>
+                  <p className="text-xs sm:text-sm font-black text-emerald-600 hl-mono">{selectedTransaction.reference}</p>
                 </div>
                 <div className="space-y-1">
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">M-Pesa Receipt</p>
-                  <p className="text-sm font-black text-slate-900 hl-mono">{selectedTransaction.mpesaReceipt || 'N/A'}</p>
+                  <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">M-Pesa Receipt</p>
+                  <p className="text-xs sm:text-sm font-black text-slate-900 hl-mono">{selectedTransaction.mpesaReceipt || 'N/A'}</p>
                 </div>
                 <div className="space-y-1">
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">M-Pesa Number</p>
-                  <p className="text-sm font-black text-slate-900 hl-mono">{selectedTransaction.phone || 'N/A'}</p>
+                  <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">M-Pesa Number</p>
+                  <p className="text-xs sm:text-sm font-black text-slate-900 hl-mono">{selectedTransaction.phone || 'N/A'}</p>
                 </div>
               </div>
 
-              <div className="bg-slate-50 rounded-[.5em] p-8 border border-slate-100 flex justify-between items-center">
+              <div className="bg-slate-50 rounded-xl p-4 sm:p-6 border border-slate-100 flex justify-between items-center">
                 <div>
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Subscription Plan</p>
-                  <p className="text-lg font-black text-slate-900">{selectedTransaction.plan} Tier</p>
+                  <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Subscription Plan</p>
+                  <p className="text-base font-black text-slate-900">{selectedTransaction.plan} Tier</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Amount Paid</p>
-                  <p className="text-2xl font-black text-emerald-900 hl-mono">KES {Number(selectedTransaction.amount).toLocaleString()}</p>
+                  <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Amount Paid</p>
+                  <p className="text-xl font-black text-emerald-900 hl-mono">KES {Number(selectedTransaction.amount).toLocaleString()}</p>
                 </div>
               </div>
 
-              <div className="space-y-4">
+              <div className="space-y-3">
                 <div className="flex items-center gap-3">
-                  <span className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${
+                  <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${
                     selectedTransaction.status === 0 ? 'bg-emerald-100 text-emerald-700' :
                     selectedTransaction.status === 1 ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'
                   }`}>
@@ -1550,8 +1528,8 @@ export default function SubscriptionPage() {
                 </div>
                 
                 {selectedTransaction.message && (
-                  <div className="bg-slate-50/50 p-4 rounded-[.5em] border border-dashed border-slate-200">
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 flex items-center gap-2">
+                  <div className="bg-slate-50/50 p-3 rounded-xl border border-dashed border-slate-200">
+                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 flex items-center gap-2">
                       <Info size={12} /> Gateway Response
                     </p>
                     <p className="text-xs font-medium text-slate-600 leading-relaxed italic">
@@ -1562,14 +1540,14 @@ export default function SubscriptionPage() {
 
                 {/* RAW SAFARICOM JSON AUDIT */}
                 {(selectedTransaction.rawPayload || selectedTransaction.rawResponse) && (
-                  <div className="bg-slate-900 rounded-[.5em] p-6 shadow-inner overflow-hidden border border-slate-800">
-                    <div className="flex justify-between items-center mb-4">
-                      <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-2">
+                  <div className="bg-slate-900 rounded-xl p-4 shadow-inner overflow-hidden border border-slate-800">
+                    <div className="flex justify-between items-center mb-2">
+                      <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-2">
                         <Zap size={12} className="text-amber-400" /> Technical Conversation
                       </p>
-                      <span className="text-[10px] font-black text-slate-600 uppercase tracking-widest hl-mono">Forensic Audit</span>
+                      <span className="text-[9px] font-black text-slate-600 uppercase tracking-widest hl-mono">Forensic Audit</span>
                     </div>
-                    <div className="max-h-48 overflow-y-auto custom-scrollbar">
+                    <div className="max-h-40 overflow-y-auto custom-scrollbar">
                       <pre className="text-[10px] font-medium text-emerald-400/90 hl-mono leading-relaxed whitespace-pre-wrap">
                         {(() => {
                           try {
@@ -1588,16 +1566,16 @@ export default function SubscriptionPage() {
                 )}
               </div>
 
-              <div className="flex gap-4 pt-4">
+              <div className="flex flex-col sm:flex-row gap-3 pt-2">
                 <button
                   onClick={() => window.print()}
-                  className="flex-1 py-4 bg-slate-900 text-white rounded-[.5em] font-black text-xs uppercase tracking-widest hover:bg-black transition-all flex items-center justify-center gap-2"
+                  className="flex-1 py-3 bg-slate-900 text-white rounded-xl font-black text-xs uppercase tracking-widest hover:bg-black transition-all flex items-center justify-center gap-2"
                 >
                   <Download size={14} /> Download Receipt
                 </button>
                 <button
                   onClick={() => setSelectedTransaction(null)}
-                  className="flex-1 py-4 bg-white border border-slate-200 text-slate-500 rounded-[.5em] font-black text-xs uppercase tracking-widest hover:bg-slate-50 transition-all"
+                  className="flex-1 py-3 bg-white border border-slate-200 text-slate-500 rounded-xl font-black text-xs uppercase tracking-widest hover:bg-slate-50 transition-all"
                 >
                   Close
                 </button>

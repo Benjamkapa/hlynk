@@ -3,10 +3,10 @@ import { Plus, Minus } from 'lucide-react'
 import { FadeUp } from './Animations'
 
 const faqs = [
-  {
-    question: "Is Hlynk legally compliant with KRA eTIMS?",
-    answer: "Yes. Hlynk connects directly with KRA. When you sell, the receipt is sent to the eTIMS system automatically. You don't need to log in to another website or type anything manually."
-  },
+  // {
+  //   question: "Is Hlynk legally compliant with KRA eTIMS?",
+  //   answer: "Yes. Hlynk connects directly with KRA. When you sell, the receipt is sent to the eTIMS system automatically. You don't need to log in to another website or type anything manually."
+  // },
   {
     question: "Do I need my own Paybill or Till Number?",
     answer: "No, you don't need your own. Small businesses can use Hlynk's shared Till to receive payments, and we will send the money straight to your phone or bank. If you already have your own Paybill or Till, you can easily link it so customers pay you directly."

@@ -192,7 +192,7 @@ export default function SettingsPage() {
     { name: 'Customers', icon: Users, role: ['PROVIDER'], mobileOnly: true },
     { name: 'Notifications', icon: Bell },
     { name: 'Payment Gateway', icon: CreditCard, role: ['PROVIDER'], plan: 'PLUS', mobileOnly: true },
-    { name: 'KRA eTIMS', icon: EtimsIcon, role: ['PROVIDER'], mobileOnly: true },
+    // { name: 'KRA eTIMS', icon: EtimsIcon, role: ['PROVIDER'], mobileOnly: true },
     { name: 'My Plan', icon: Sparkles, role: ['PROVIDER', 'SUPER_ADMIN'], mobileOnly: true },
     { name: 'Data Management', icon: Trash2, role: ['PROVIDER', 'SUPER_ADMIN'] },
     { name: 'Security', icon: Lock },

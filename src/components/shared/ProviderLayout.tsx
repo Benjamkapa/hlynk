@@ -134,7 +134,7 @@ export default function ProviderLayout() {
         { to: '/dashboard/logs', label: 'Staff Activity', icon: ShieldCheck, permission: 'logs', plan: 'MAX' },
         { to: '/dashboard/subscription', label: 'My Plan', icon: Calendar, role: 'PROVIDER' },
         { to: '/dashboard/developer', label: 'Payment Gateway', icon: CreditCard, role: 'PROVIDER', plan: 'PLUS' },
-        { to: '/dashboard/etims', label: 'KRA eTIMS', icon: EtimsIcon, role: 'PROVIDER', isComingSoon: true },
+        // { to: '/dashboard/etims', label: 'KRA eTIMS', icon: EtimsIcon, role: 'PROVIDER', isComingSoon: true },
       ],
     },
   ];
@@ -513,7 +513,7 @@ export default function ProviderLayout() {
           }
         />
 
-        <main className="flex-1 overflow-y-auto px-4 lg:px-10 py-4 lg:py-8 bg-slate-50/30 pb-32 lg:pb-8">
+        <main className="flex-1 overflow-y-auto px-3 sm:px-6 lg:px-10 py-3 sm:py-4 lg:py-8 bg-slate-50/30 pb-28 lg:pb-8 max-w-full overflow-x-hidden">
           <Outlet />
         </main>
       </div>
