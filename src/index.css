@@ -38,6 +38,12 @@
     --brand-blue: 214 89% 44%;
     --brand-green: 161 63% 46%;
     --brand-orange: 27 98% 54%;
+
+    /* Safe Area Insets for Mobile Devices (iPhone notch, Dynamic Island, status bar) */
+    --sat: env(safe-area-inset-top, 0px);
+    --sab: env(safe-area-inset-bottom, 0px);
+    --sal: env(safe-area-inset-left, 0px);
+    --sar: env(safe-area-inset-right, 0px);
   }
 
   * { @apply border-border box-border; }
@@ -45,6 +51,20 @@
     scroll-behavior: smooth; 
     -webkit-tap-highlight-color: transparent; 
     overflow-x: hidden;
+  }
+
+  /* Safe Area Utility Classes */
+  .pt-safe {
+    padding-top: env(safe-area-inset-top, 0px);
+  }
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  .mt-safe {
+    margin-top: env(safe-area-inset-top, 0px);
+  }
+  .mb-safe {
+    margin-bottom: env(safe-area-inset-bottom, 0px);
   }
 
   /* Mobile Fit-to-Screen & High-Density Sizing */

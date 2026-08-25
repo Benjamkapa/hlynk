@@ -148,7 +148,8 @@ export default function TopNav({ isMobileOpen, onMobileMenuToggle, isCollapsed, 
   }
 
   return (
-    <header className="h-16 lg:h-24 bg-transparent flex items-center justify-between z-[100] px-4 sm:px-8 relative">
+    <header className="w-full bg-transparent flex flex-col justify-center z-[100] px-4 sm:px-8 relative pt-[env(safe-area-inset-top,0px)]">
+      <div className="w-full h-16 lg:h-24 flex items-center justify-between">
       
       {/* LEFT: logo on mobile / toggles on desktop */}
       <div className="flex items-center gap-4">
@@ -215,7 +216,7 @@ export default function TopNav({ isMobileOpen, onMobileMenuToggle, isCollapsed, 
           </button>
 
           {showNotifications && (
-            <div className="fixed sm:absolute top-24 sm:top-14 right-4 sm:right-0 w-[calc(100vw-2rem)] sm:w-[340px] bg-white border border-slate-100 rounded-xl shadow-2xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200 z-[200]">
+            <div className="fixed sm:absolute top-[calc(100%+0.5rem)] right-4 sm:right-0 w-[calc(100vw-2rem)] sm:w-[340px] bg-white border border-slate-100 rounded-xl shadow-2xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200 z-[200]">
               <div className="p-4 bg-slate-50/50 border-b border-slate-100 flex justify-between items-center">
                 <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">System Notifications</span>
                 {notifications.length > 0 && (
@@ -273,7 +274,7 @@ export default function TopNav({ isMobileOpen, onMobileMenuToggle, isCollapsed, 
           </button>
 
           {showUserMenu && (
-            <div className="absolute top-16 right-0 w-64 bg-white border border-slate-100 rounded-[.5rem] shadow-2xl p-2 animate-in fade-in slide-in-from-top-2 duration-200 z-[200]">
+            <div className="absolute top-[calc(100%+0.5rem)] right-0 w-64 bg-white border border-slate-100 rounded-[.5rem] shadow-2xl p-2 animate-in fade-in slide-in-from-top-2 duration-200 z-[200]">
               <div className="px-5 py-4 mb-2 border-b border-slate-50">
                 <p className="text-[9px] font-black text-slate-300 uppercase tracking-widest mb-1.5">Authenticated ID</p>
                 <p className="text-xs font-black text-slate-900 truncate">{user?.email}</p>
@@ -300,6 +301,7 @@ export default function TopNav({ isMobileOpen, onMobileMenuToggle, isCollapsed, 
             </div>
           )}
         </div>
+      </div>
       </div>
     </header>
   )

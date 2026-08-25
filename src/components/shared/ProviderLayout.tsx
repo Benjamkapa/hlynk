@@ -372,7 +372,7 @@ export default function ProviderLayout() {
   ), [sidebarExpanded, filteredGroups, user, isTrial, isCritical, targetEndDate]);
 
   return (
-    <div className="flex h-screen overflow-hidden bg-slate-50/50">
+    <div className="flex h-screen h-[100dvh] overflow-hidden bg-slate-50/50">
       <AnimatePresence>
         {showReviewModal && (
           <motion.div
@@ -475,7 +475,7 @@ export default function ProviderLayout() {
 
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {isCritical && user?.role === 'PROVIDER' && (
-          <div className="bg-red-600 text-white px-6 py-3 flex items-center justify-between z-[60] shadow-2xl flex-shrink-0">
+          <div className="bg-red-600 text-white px-6 pb-3 pt-[calc(0.75rem+env(safe-area-inset-top,0px))] flex items-center justify-between z-[60] shadow-2xl flex-shrink-0">
             <div className="flex items-center gap-3">
               <div className="h-8 w-8 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
                 <AlertTriangle size={16} className="animate-bounce" />
@@ -723,7 +723,7 @@ function MobileBottomNav({ user, targetEndDate }: {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 16, scale: 0.97 }}
             transition={{ duration: 0.22, ease: [0.32, 0.72, 0, 1] }}
-            className="fixed inset-x-3 z-[94] lg:hidden bottom-[calc(5.5rem+1.5rem)]"
+            className="fixed inset-x-3 z-[94] lg:hidden bottom-[calc(5.5rem+1.5rem+env(safe-area-inset-bottom,0px))]"
           >
             <div className="bg-white rounded-[1.5rem] shadow-[0_20px_60px_rgba(0,0,0,0.14)] overflow-hidden border border-slate-100">
               {/* Sheet header */}
@@ -758,7 +758,7 @@ function MobileBottomNav({ user, targetEndDate }: {
         )}
       </AnimatePresence>
 
-      <div className="fixed inset-x-0 bottom-6 z-[95] lg:hidden flex flex-col items-center pointer-events-none">
+      <div className="fixed inset-x-0 bottom-[calc(1.5rem+env(safe-area-inset-bottom,0px))] z-[95] lg:hidden flex flex-col items-center pointer-events-none">
 
         {/* Subscription status banner */}
         <AnimatePresence>
