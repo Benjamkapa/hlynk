@@ -2,12 +2,14 @@ import { useState, useEffect, useRef } from "react";
 import {
   Building, Plus, Edit2, Trash2, CheckCircle2, AlertTriangle, Sparkles,
   Loader2, DollarSign, Tag, Layers, X, Camera, Image as ImageIcon,
-  ChevronLeft, ChevronRight, Eye, UploadCloud, Star, Link as LinkIcon
+  ChevronLeft, ChevronRight, Eye, UploadCloud, Star, Link as LinkIcon, Share2
 } from "lucide-react";
 import { resourcesApi, Resource } from "../../../lib/api/universal";
 import { CameraCapture } from "../../../components/shared/CameraCapture";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
+import { useQuery } from "@tanstack/react-query";
+import { providersApi } from "../../../lib/api/providers";
 
 const PRESET_PHOTOS = [
   { name: "Luxury Suite", url: "https://images.unsplash.com/photo-1590490360182-c33d57733427?w=800" },
@@ -16,12 +18,47 @@ const PRESET_PHOTOS = [
   { name: "Executive SUV", url: "https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?w=800" },
   { name: "Apartment", url: "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=800" },
   { name: "Conference Hall", url: "https://images.unsplash.com/photo-1431540015161-0bf868a2d407?w=800" },
+  { name: "Penthouse", url: "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800" },
+  { name: "Pool Villa", url: "https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800" },
+  { name: "Beach Cottage", url: "https://images.unsplash.com/photo-1499793983690-e29da59ef1c2?w=800" },
+  { name: "Modern Loft", url: "https://images.unsplash.com/photo-1536376072261-38c75010e6c9?w=800" },
+  { name: "Twin Room", url: "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=800" },
+  { name: "Budget Room", url: "https://images.unsplash.com/photo-1555854877-bab0e564b8d5?w=800" },
+  { name: "Boardroom", url: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=800" },
+  { name: "Garden Suite", url: "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800" },
+  { name: "Sedan / Saloon", url: "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=800" },
+  { name: "Minibus / Van", url: "https://images.unsplash.com/photo-1464219789935-c2d9d9aba644?w=800" },
+  { name: "Event Hall", url: "https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=800" },
+  { name: "Rooftop Terrace", url: "https://images.unsplash.com/photo-1533090161767-e6ffed986c88?w=800" },
+  { name: "Co-working Space", url: "https://images.unsplash.com/photo-1497366811353-6870744d04b2?w=800" },
+  { name: "Gym / Fitness", url: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800" },
 ];
 
 export default function PropertiesPage() {
   const [properties, setProperties] = useState<Resource[]>([]);
   const [rooms, setRooms] = useState<Resource[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const { data: profile, isLoading: isProfileLoading } = useQuery({
+    queryKey: ['my-profile'],
+    queryFn: providersApi.getMyProfile
+  });
+  const slug = (profile as any)?.data?.slug;
+  const publicListingUrl = slug ? `${window.location.origin}/stay/${slug}` : null;
+
+  const handleShareListing = () => {
+    if (isProfileLoading) {
+      return toast.info('Loading your listing link...');
+    }
+    if (!publicListingUrl) {
+      return toast.error('Listing link unavailable. Please refresh the page.');
+    }
+    navigator.clipboard.writeText(publicListingUrl).then(() => {
+      toast.success('Listing link copied to clipboard!', { description: publicListingUrl });
+    }).catch(() => {
+      toast.info(`Your public listing URL is: ${publicListingUrl}`);
+    });
+  };
 
   // Modals
   const [showPropertyModal, setShowPropertyModal] = useState(false);
@@ -286,6 +323,24 @@ export default function PropertiesPage() {
         </div>
 
         <div className="flex items-center gap-3">
+          {publicListingUrl && (
+            <a
+              href={publicListingUrl}
+              // target="_blank"
+              rel="noopener noreferrer"
+              className="px-4 py-2.5 bg-slate-100 text-slate-700 font-bold text-xs rounded-[.5rem] hover:bg-slate-200 transition-all flex items-center gap-2"
+              title="Preview your public listing"
+            >
+              <Eye size={14} /> Preview
+            </a>
+          )}
+          <button
+            onClick={handleShareListing}
+            className="px-4 py-2.5 bg-emerald-50 text-emerald-800 font-bold text-xs rounded-[.5rem] hover:bg-emerald-100 transition-all flex items-center gap-2 border border-emerald-200"
+            title="Copy your public listing link"
+          >
+            <Share2 size={14} /> Share Listing
+          </button>
           <button
             onClick={() => setShowPropertyModal(true)}
             className="px-4 py-2.5 bg-slate-100 text-slate-800 font-bold text-xs rounded-[.5rem] hover:bg-slate-200 transition-all flex items-center gap-2"

@@ -1,11 +1,11 @@
 import { useState } from 'react'
-import { Plus, Search, Filter, Download, Edit, Trash2, Package, TrendingDown, Activity, AlertTriangle, LayoutGrid, List, Camera, FileText } from 'lucide-react'
+import { Plus, Search, Filter, Download, Edit, Trash2, Package, TrendingDown, Activity, AlertTriangle, LayoutGrid, List, Camera, FileText, Eye, Share2, ShoppingBag, Phone, MessageSquare, CheckCircle2, Clock, Check } from 'lucide-react'
 import { CameraCapture } from '../../components/shared/CameraCapture'
 import { ConfirmModal } from '../../components/shared/ConfirmModal'
 import { SlideOver } from '../../components/shared/SlideOver'
 import { toast } from 'sonner'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { inventoryApi, providersApi } from '../../lib/api/providers'
+import { inventoryApi, providersApi, requestsApi } from '../../lib/api/providers'
 import { getErrorMessage } from '../../lib/utils/error'
 import { getLocalDateString, formatLocalDate } from '../../lib/utils/date'
 import { exportToCSV } from '../../lib/utils/export'
@@ -15,6 +15,29 @@ import { useEffect } from 'react'
 import { keepPreviousData } from '@tanstack/react-query'
 import { PaginatedResponse } from '../../lib/types/api'
 import { cacheInventory } from '../../lib/offline/db'
+
+const PRESET_PRODUCT_PHOTOS = [
+  { name: "Fresh Vegetables", url: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=800" },
+  { name: "Groceries", url: "https://images.unsplash.com/photo-1542838132-92c53300491e?w=800" },
+  { name: "Bakery / Bread", url: "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=800" },
+  { name: "Coffee / Drinks", url: "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=800" },
+  { name: "Juice / Smoothie", url: "https://images.unsplash.com/photo-1546173159-315724a31696?w=800" },
+  { name: "Bottled Water", url: "https://images.unsplash.com/photo-1616118132534-381055b6a5cf?w=800" },
+  { name: "Snacks / Chips", url: "https://images.unsplash.com/photo-1566478989037-eec170784d0b?w=800" },
+  { name: "Dairy / Milk", url: "https://images.unsplash.com/photo-1550583724-b2692b85b150?w=800" },
+  { name: "Meat / Butchery", url: "https://images.unsplash.com/photo-1607623814075-e51df1bdc82f?w=800" },
+  { name: "Electronics", url: "https://images.unsplash.com/photo-1468495244123-6c6c332eeece?w=800" },
+  { name: "Mobile Phone", url: "https://images.unsplash.com/photo-1598327105666-5b89351aff97?w=800" },
+  { name: "Laptop", url: "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=800" },
+  { name: "Clothing / Fashion", url: "https://images.unsplash.com/photo-1558769132-cb1aea458c5e?w=800" },
+  { name: "Shoes / Footwear", url: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800" },
+  { name: "Beauty / Cosmetics", url: "https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=800" },
+  { name: "Medicine / Pharmacy", url: "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=800" },
+  { name: "Furniture", url: "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=800" },
+  { name: "Hardware / Tools", url: "https://images.unsplash.com/photo-1581235720704-06d3acfcb36f?w=800" },
+  { name: "Cleaning Products", url: "https://images.unsplash.com/photo-1563453392212-326f5e854473?w=800" },
+  { name: "Stationery", url: "https://images.unsplash.com/photo-1527176930608-09cb256ab504?w=800" },
+];
 
 export default function ProductsPage() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
@@ -41,6 +64,38 @@ export default function ProductsPage() {
   })
 
   const threshold = profile?.data?.operationalSettings?.lowStockThreshold || 10;
+  const slug = profile?.data?.slug;
+  const publicStoreUrl = slug ? `${window.location.origin}/shop/${slug}` : null;
+
+  const [isOrdersOpen, setIsOrdersOpen] = useState(false)
+
+  const { data: requestsData, refetch: refetchRequests } = useQuery({
+    queryKey: ['requests'],
+    queryFn: () => requestsApi.list(),
+    refetchInterval: 10_000
+  })
+
+  const incomingOrders = requestsData?.requests || []
+  const pendingOrdersCount = incomingOrders.filter((r: any) => r.status === 'PENDING').length
+
+  const handleUpdateOrderStatus = async (id: string, newStatus: string) => {
+    try {
+      await requestsApi.updateStatus(id, newStatus)
+      toast.success(`Order status updated to ${newStatus}`)
+      refetchRequests()
+    } catch (err: any) {
+      toast.error('Failed to update order status')
+    }
+  }
+
+  const handleShareStore = () => {
+    if (!publicStoreUrl) return toast.error('Your store link is not ready yet');
+    navigator.clipboard.writeText(publicStoreUrl).then(() => {
+      toast.success('Public store link copied to clipboard!', { description: publicStoreUrl });
+    }).catch(() => {
+      toast.info(`Your public store URL is: ${publicStoreUrl}`);
+    });
+  };
 
   useEffect(() => {
     if (error) toast.error(getErrorMessage(error))
@@ -87,8 +142,38 @@ export default function ProductsPage() {
         </div>
         <div className="flex gap-3">
           <button
+            onClick={() => setIsOrdersOpen(true)}
+            className="relative bg-amber-50 text-amber-900 h-12 px-4 rounded-[.5rem] border border-amber-200 font-bold text-xs hover:bg-amber-100 transition-all flex items-center gap-2"
+            title="View orders placed by clients via public link"
+          >
+            <ShoppingBag size={16} /> Orders
+            {pendingOrdersCount > 0 && (
+              <span className="bg-amber-600 text-white font-black text-[10px] px-2 py-0.5 rounded-full animate-pulse">
+                {pendingOrdersCount} NEW
+              </span>
+            )}
+          </button>
+          {publicStoreUrl && (
+            <a
+              href={publicStoreUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="bg-white text-gray-700 h-12 px-4 rounded-[.5rem] border border-gray-100 font-bold text-xs hover:bg-gray-50 transition-all flex items-center gap-2"
+              title="Preview your public store catalog"
+            >
+              <Eye size={16} /> Preview Store
+            </a>
+          )}
+          <button
+            onClick={handleShareStore}
+            className="bg-emerald-50 text-emerald-800 h-12 px-4 rounded-[.5rem] border border-emerald-200 font-bold text-xs hover:bg-emerald-100 transition-all flex items-center gap-2"
+            title="Copy your store link to share with clients"
+          >
+            <Share2 size={16} /> Share Store
+          </button>
+          <button
             onClick={handleExport}
-            className="bg-white text-gray-600 h-12 px-6 rounded-[.5rem] border border-gray-100 font-bold text-sm hover:bg-gray-50 transition-all flex items-center gap-2"
+            className="bg-white text-gray-600 h-12 px-5 rounded-[.5rem] border border-gray-100 font-bold text-sm hover:bg-gray-50 transition-all flex items-center gap-2"
           >
             <FileText size={18} />
             CSV
@@ -114,6 +199,116 @@ export default function ProductsPage() {
 
       {/* Products Table */}
       <div className="bg-white rounded-[.5rem] border border-gray-100 shadow-sm overflow-hidden">
+
+        <SlideOver
+          isOpen={isOrdersOpen}
+          onClose={() => setIsOrdersOpen(false)}
+          title={`Incoming Client Orders (${incomingOrders.length})`}
+        >
+          <div className="space-y-4">
+            {incomingOrders.length === 0 ? (
+              <div className="text-center py-12 text-slate-400">
+                <ShoppingBag size={36} className="mx-auto text-slate-300 mb-2" />
+                <p className="font-bold text-sm">No incoming orders yet.</p>
+                <p className="text-xs text-slate-400 mt-1">Share your store link with clients to start receiving orders!</p>
+              </div>
+            ) : (
+              incomingOrders.map((req: any) => {
+                let msgData: any = null;
+                try { msgData = JSON.parse(req.message); } catch (_) {}
+
+                const cleanPhone = (req.customerPhone || '').replace(/[^0-9]/g, '');
+
+                return (
+                  <div key={req.id} className="bg-slate-50 border border-slate-200 rounded-2xl p-4 space-y-3">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <h4 className="font-black text-slate-900 text-sm">{req.customerName}</h4>
+                        <p className="text-xs text-slate-500 font-medium">{new Date(req.createdAt).toLocaleString()}</p>
+                      </div>
+                      <span className={`text-[10px] font-black uppercase px-2.5 py-1 rounded-full ${
+                        req.status === 'PENDING' ? 'bg-amber-100 text-amber-800' :
+                        req.status === 'COMPLETED' ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-200 text-slate-700'
+                      }`}>
+                        {req.status}
+                      </span>
+                    </div>
+
+                    {/* Phone & Contact Buttons */}
+                    <div className="flex items-center gap-2 pt-1">
+                      <a
+                        href={`tel:${req.customerPhone}`}
+                        className="px-3 py-1.5 bg-emerald-600 text-white font-bold text-xs rounded-xl flex items-center gap-1.5 hover:bg-emerald-700 transition-all"
+                      >
+                        <Phone size={13} /> Call {req.customerPhone}
+                      </a>
+                      {cleanPhone && (
+                        <a
+                          href={`https://wa.me/${cleanPhone}`}
+                          target="_blank" rel="noopener noreferrer"
+                          className="px-3 py-1.5 bg-green-500 text-white font-bold text-xs rounded-xl flex items-center gap-1.5 hover:bg-green-600 transition-all"
+                        >
+                          <MessageSquare size={13} /> WhatsApp
+                        </a>
+                      )}
+                    </div>
+
+                    {/* Message Details */}
+                    {msgData && (
+                      <div className="bg-white p-3 rounded-xl border border-slate-200 text-xs space-y-2">
+                        {msgData.deliveryAddress && (
+                          <p className="text-slate-600"><strong>Address/Location:</strong> {msgData.deliveryAddress}</p>
+                        )}
+                        {msgData.notes && (
+                          <p className="text-slate-600"><strong>Notes:</strong> {msgData.notes}</p>
+                        )}
+                        {msgData.items && Array.isArray(msgData.items) && (
+                          <div>
+                            <strong className="text-slate-700 block mb-1">Items Ordered:</strong>
+                            <ul className="divide-y divide-slate-100">
+                              {msgData.items.map((it: any, idx: number) => (
+                                <li key={idx} className="py-1 flex justify-between">
+                                  <span>{it.quantity}x {it.name}</span>
+                                  <span className="font-bold text-slate-800">KES {(it.price * it.quantity).toLocaleString()}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                        {msgData.totalAmount && (
+                          <div className="pt-2 border-t border-slate-100 flex justify-between font-black text-sm text-emerald-700">
+                            <span>Total Amount</span>
+                            <span>KES {Number(msgData.totalAmount).toLocaleString()}</span>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Status Action Buttons */}
+                    <div className="flex gap-2 pt-1">
+                      {req.status !== 'COMPLETED' && (
+                        <button
+                          onClick={() => handleUpdateOrderStatus(req.id, 'COMPLETED')}
+                          className="flex-1 py-1.5 bg-emerald-50 text-emerald-700 font-bold text-xs rounded-xl border border-emerald-200 hover:bg-emerald-100 flex items-center justify-center gap-1"
+                        >
+                          <Check size={13} /> Mark Completed
+                        </button>
+                      )}
+                      {req.status === 'PENDING' && (
+                        <button
+                          onClick={() => handleUpdateOrderStatus(req.id, 'CONTACTED')}
+                          className="flex-1 py-1.5 bg-blue-50 text-blue-700 font-bold text-xs rounded-xl border border-blue-200 hover:bg-blue-100 flex items-center justify-center gap-1"
+                        >
+                          Mark Contacted
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+        </SlideOver>
 
         <SlideOver
           isOpen={isAddModalOpen}
@@ -529,6 +724,27 @@ function ProductForm({ onClose }: { onClose: () => void }) {
           )}
         </div>
 
+        {/* Stock Photo Presets */}
+        <div className="w-full px-1">
+          <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Or pick a stock photo:</p>
+          <div className="flex flex-wrap gap-1">
+            {PRESET_PRODUCT_PHOTOS.map((p) => (
+              <button
+                key={p.name}
+                type="button"
+                onClick={() => setForm({ ...form, imageUrl: p.url, file: null })}
+                className={`px-2 py-0.5 text-[9px] font-bold rounded border transition-colors ${
+                  form.imageUrl === p.url
+                    ? 'bg-emerald-600 text-white border-emerald-600'
+                    : 'bg-white hover:bg-emerald-50 hover:text-emerald-800 text-slate-600 border-slate-200'
+                }`}
+              >
+                + {p.name}
+              </button>
+            ))}
+          </div>
+        </div>
+
         {isCameraOpen && (
           <CameraCapture
             onCapture={(file) => {
@@ -805,6 +1021,27 @@ function EditProductForm({ product, onClose }: { product: any; onClose: () => vo
               Remove
             </button>
           )}
+        </div>
+
+        {/* Stock Photo Presets */}
+        <div className="w-full px-1">
+          <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Or pick a stock photo:</p>
+          <div className="flex flex-wrap gap-1">
+            {PRESET_PRODUCT_PHOTOS.map((p) => (
+              <button
+                key={p.name}
+                type="button"
+                onClick={() => setForm({ ...form, imageUrl: p.url, file: null })}
+                className={`px-2 py-0.5 text-[9px] font-bold rounded border transition-colors ${
+                  form.imageUrl === p.url
+                    ? 'bg-emerald-600 text-white border-emerald-600'
+                    : 'bg-white hover:bg-emerald-50 hover:text-emerald-800 text-slate-600 border-slate-200'
+                }`}
+              >
+                + {p.name}
+              </button>
+            ))}
+          </div>
         </div>
 
         {isCameraOpen && (

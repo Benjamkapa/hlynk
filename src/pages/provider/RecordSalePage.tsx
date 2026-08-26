@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Search, Plus, Minus, Trash2, CreditCard, Wallet, Banknote, Zap, CheckCircle2, Package, Scan, ArrowRight, ShoppingCart, Loader2, LayoutGrid, List, ChevronLeft, ChevronRight, Lock, Smartphone, AlertTriangle, RefreshCcw, Wifi, X } from 'lucide-react'
+import { Search, Plus, Minus, Trash2, CreditCard, Wallet, Banknote, Zap, CheckCircle2, Package, Scan, ArrowRight, ShoppingCart, Loader2, LayoutGrid, List, ChevronLeft, ChevronRight, Lock, Smartphone, AlertTriangle, RefreshCcw, Wifi, X, Share2, Eye } from 'lucide-react'
 
 const KcbBankIcon = ({ className, size = 64 }: { className?: string, size?: number }) => (
   <img src="https://buni.kcbgroup.com/_nuxt/logo.71b8fc4b.svg" alt="KCB" style={{ width: size, height: size }} className={`${className || ''} object-contain shrink-0`} />
@@ -29,6 +29,18 @@ export default function RecordSalePage() {
     queryKey: ['my-profile'],
     queryFn: providersApi.getMyProfile
   })
+
+  const slug = profile?.data?.slug;
+  const publicStoreUrl = slug ? `${window.location.origin}/shop/${slug}` : null;
+
+  const handleShareStore = () => {
+    if (!publicStoreUrl) return toast.error('Your store link is not ready yet');
+    navigator.clipboard.writeText(publicStoreUrl).then(() => {
+      toast.success('Store link copied to clipboard!', { description: publicStoreUrl });
+    }).catch(() => {
+      toast.info(`Your store URL is: ${publicStoreUrl}`);
+    });
+  };
   const [search, setSearch] = useState('')
   const [searchInput, setSearchInput] = useState('')
   const [page, setPage] = useState(1)
@@ -478,20 +490,30 @@ export default function RecordSalePage() {
                 />
               </div>
 
-              {/* Grid/List toggle — on the far right */}
-              <div className="flex bg-slate-100 p-1 shrink-0 rounded-md">
+              {/* Actions & Grid/List toggle — on the far right */}
+              <div className="flex items-center gap-2">
                 <button
-                  onClick={() => setViewMode('grid')}
-                  className={`p-1 rounded transition-all ${viewMode === 'grid' ? 'bg-white shadow-sm text-emerald-600' : 'text-slate-400 hover:text-slate-600'}`}
+                  onClick={handleShareStore}
+                  className="bg-emerald-50 text-emerald-800 px-3 py-1.5 rounded-full border border-emerald-200 font-bold text-xs hover:bg-emerald-100 transition-all flex items-center gap-1.5"
+                  title="Share your online store link with a customer"
                 >
-                  <LayoutGrid size={15} />
+                  <Share2 size={13} />
+                  <span className="hidden sm:inline">Share Store</span>
                 </button>
-                <button
-                  onClick={() => setViewMode('list')}
-                  className={`p-1 rounded transition-all ${viewMode === 'list' ? 'bg-white shadow-sm text-emerald-600' : 'text-slate-400 hover:text-slate-600'}`}
-                >
-                  <List size={15} />
-                </button>
+                <div className="flex bg-slate-100 p-1 shrink-0 rounded-md">
+                  <button
+                    onClick={() => setViewMode('grid')}
+                    className={`p-1 rounded transition-all ${viewMode === 'grid' ? 'bg-white shadow-sm text-emerald-600' : 'text-slate-400 hover:text-slate-600'}`}
+                  >
+                    <LayoutGrid size={15} />
+                  </button>
+                  <button
+                    onClick={() => setViewMode('list')}
+                    className={`p-1 rounded transition-all ${viewMode === 'list' ? 'bg-white shadow-sm text-emerald-600' : 'text-slate-400 hover:text-slate-600'}`}
+                  >
+                    <List size={15} />
+                  </button>
+                </div>
               </div>
 
             </div>
