@@ -86,9 +86,9 @@ export default function Hero() {
 
           {/* Left Column */}
           <div className="lg:col-span-7 space-y-7">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-[#E3A23C]/25 bg-[#E3A23C]/[0.06] text-[#E3A23C] text-[11px] font-bold uppercase tracking-[0.14em]">
+            {/* <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-[#E3A23C]/25 bg-[#E3A23C]/[0.06] text-[#E3A23C] text-[11px] font-bold uppercase tracking-[0.14em]">
               Built for every kind of Kenyan business
-            </div>
+            </div> */}
 
             <h1 className="text-4xl sm:text-5xl lg:text-[3.4rem] font-black font-ubuntu tracking-tight leading-[1.06]">
               Duka, lodge, fleet, or workshop —
