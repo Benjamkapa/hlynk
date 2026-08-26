@@ -758,7 +758,7 @@ function MobileBottomNav({ user, targetEndDate }: {
         )}
       </AnimatePresence>
 
-      <div className="fixed inset-x-0 bottom-[calc(0.25rem+env(safe-area-inset-bottom,0px))] z-[95] lg:hidden flex flex-col items-center pointer-events-none">
+      <div className="fixed inset-x-0 bottom-[calc(0.05rem+env(safe-area-inset-bottom,0px))] z-[95] lg:hidden flex flex-col items-center pointer-events-none">
 
         {/* Subscription status banner */}
         <AnimatePresence>
