@@ -22,7 +22,7 @@ export default function LandingPage() {
     <div className="min-h-screen bg-slate-950 text-slate-100 selection:bg-emerald-500 selection:text-white overflow-x-hidden">
       <Navbar />
 
-      <main className="space-y-0 py-2">
+      <main className="space-y-0 py-0.5">
         <Hero />
         <WhoUses onSelectCategory={handleSelectCategory} />
         <Features />
