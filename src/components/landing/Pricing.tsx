@@ -61,7 +61,7 @@ export default function Pricing() {
               "The tools you need to succeed, without hidden fees."
             </p>
 
-            <div className="flex items-center text- justify-center gap-6 font-black mb-12">
+            <div className="flex items-center text- justify-center gap-6 text-black mb-12">
                {[
                  { id: '1', label: '28 Days (Monthly)', days: 28 },
                  { id: '6', label: '180 Days (6 Months)', days: 180, promo: 'Save 5%' },
