@@ -71,7 +71,7 @@ const TRADES = [
 
 export default function Hero() {
   const [activeId, setActiveId] = useState('retail')
-  const active = TRADES.find((t) => t.id === activeId)
+  const active = TRADES.find((t) => t.id === activeId) ?? TRADES[0]
   const ActiveIcon = active.icon
 
   return (
