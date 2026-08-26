@@ -506,9 +506,9 @@ export default function LoginPage() {
           }
           .mob-nav {
             display: flex !important; align-items: center;
-            justify-content: space-between; padding: 20px 24px 0;
+            justify-content: space-between; padding: 48px 24px 0;
           }
-          .mob-hero { padding: 28px 24px 24px; }
+          .mob-hero { padding: 32px 24px 24px; }
           .mob-hero-title {
             font-family: 'Cormorant Garamond', serif;
             font-size: clamp(44px, 12vw, 54px); font-weight: 400;
@@ -531,8 +531,8 @@ export default function LoginPage() {
         }
 
         @media (max-width: 500px) {
-          .mob-hero { padding: 24px 20px 20px; }
-          .mob-nav  { padding: 18px 20px 0; }
+          .mob-hero { padding: 28px 20px 20px; }
+          .mob-nav  { padding: 44px 20px 0; }
           .lp-right .mob-form-wrap { padding: 24px 20px 100px; }
         }
       `}</style>
