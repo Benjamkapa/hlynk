@@ -135,15 +135,15 @@ export default function ProductsPage() {
     <div className="space-y-8 animate-in fade-in duration-500 pt-6">
 
       {/* Header section */}
-      <div className="flex justify-between items-end">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
         <div>
           <h1 className="text-3xl font-black text-gray-900 tracking-tight">Products & Services</h1>
           <p className="text-gray-500 font-medium">Track your inventory, stock levels, and profit margins</p>
         </div>
-        <div className="flex gap-3">
+        <div className="flex flex-wrap gap-2 sm:gap-3 w-full md:w-auto">
           <button
             onClick={() => setIsOrdersOpen(true)}
-            className="relative bg-amber-50 text-amber-900 h-12 px-4 rounded-[.5rem] border border-amber-200 font-bold text-xs hover:bg-amber-100 transition-all flex items-center gap-2"
+            className="relative bg-amber-50 text-amber-900 h-11 sm:h-12 px-3 sm:px-4 rounded-[.5rem] border border-amber-200 font-bold text-xs hover:bg-amber-100 transition-all flex items-center gap-2"
             title="View orders placed by clients via public link"
           >
             <ShoppingBag size={16} /> Orders
@@ -158,7 +158,7 @@ export default function ProductsPage() {
               href={publicStoreUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="bg-white text-gray-700 h-12 px-4 rounded-[.5rem] border border-gray-100 font-bold text-xs hover:bg-gray-50 transition-all flex items-center gap-2"
+              className="bg-white text-gray-700 h-11 sm:h-12 px-3 sm:px-4 rounded-[.5rem] border border-gray-100 font-bold text-xs hover:bg-gray-50 transition-all flex items-center gap-2"
               title="Preview your public store catalog"
             >
               <Eye size={16} /> Preview Store
@@ -166,21 +166,21 @@ export default function ProductsPage() {
           )}
           <button
             onClick={handleShareStore}
-            className="bg-emerald-50 text-emerald-800 h-12 px-4 rounded-[.5rem] border border-emerald-200 font-bold text-xs hover:bg-emerald-100 transition-all flex items-center gap-2"
+            className="bg-emerald-50 text-emerald-800 h-11 sm:h-12 px-3 sm:px-4 rounded-[.5rem] border border-emerald-200 font-bold text-xs hover:bg-emerald-100 transition-all flex items-center gap-2"
             title="Copy your store link to share with clients"
           >
             <Share2 size={16} /> Share Store
           </button>
           <button
             onClick={handleExport}
-            className="bg-white text-gray-600 h-12 px-5 rounded-[.5rem] border border-gray-100 font-bold text-sm hover:bg-gray-50 transition-all flex items-center gap-2"
+            className="bg-white text-gray-600 h-11 sm:h-12 px-4 sm:px-5 rounded-[.5rem] border border-gray-100 font-bold text-sm hover:bg-gray-50 transition-all flex items-center gap-2"
           >
             <FileText size={18} />
             CSV
           </button>
           <button
             onClick={() => setIsAddModalOpen(true)}
-            className="bg-[#0D4A3E] text-white h-12 px-6 rounded-[.5rem] font-bold text-sm hover:bg-[#0A3D33] transition-all flex items-center gap-2"
+            className="bg-[#0D4A3E] text-white h-11 sm:h-12 px-5 sm:px-6 rounded-[.5rem] font-bold text-sm hover:bg-[#0A3D33] transition-all flex items-center gap-2"
           >
             <Plus size={18} /> Product
           </button>
@@ -188,7 +188,7 @@ export default function ProductsPage() {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 grid-compact-cols md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         <SummaryCard title="Total Items" value={stats.totalItems.toLocaleString()} sub="Unique SKUs" icon={Package} variant="emerald" />
         <FeatureGate feature="low_stock_alerts" variant="tease">
           <SummaryCard title="Low Stock" value={`${stats.lowStock} ALERTS`} sub="Requires attention" icon={TrendingDown} variant="red" />
@@ -326,8 +326,8 @@ export default function ProductsPage() {
           {editingProduct && <EditProductForm product={editingProduct} onClose={() => setEditingProduct(null)} />}
         </SlideOver>
 
-        <div className="p-6 border-b border-gray-50 flex gap-4">
-          <div className="relative flex-1">
+        <div className="p-4 sm:p-6 border-b border-gray-50 flex flex-col md:flex-row gap-3 md:gap-4">
+          <div className="relative flex-1 min-w-0">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
             <input
               type="text"
@@ -337,7 +337,8 @@ export default function ProductsPage() {
               className="w-full bg-gray-50 border-none rounded-[.5rem] py-3.5 pl-12 pr-4 outline-none focus:ring-2 focus:ring-emerald-500/10 transition-all text-sm font-medium"
             />
           </div>
-          <div className="flex items-center gap-2 bg-gray-50 p-1.5 rounded-[.5rem] border border-gray-100 pr-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="flex items-center gap-2 bg-gray-50 p-1.5 rounded-[.5rem] border border-gray-100 pr-2">
             <Filter className="ml-2 text-slate-400" size={14} />
             <select
               value={category}
@@ -443,6 +444,7 @@ export default function ProductsPage() {
               <LayoutGrid size={18} />
             </button>
           </div>
+        </div>
         </div>
 
         {viewMode === 'list' ? (

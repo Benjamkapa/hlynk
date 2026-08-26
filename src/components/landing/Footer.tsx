@@ -10,17 +10,17 @@ export default function Footer() {
             <span style={{ color: '#fff', fontSize: '1.5rem', fontWeight: '400', marginBlock: '4px', marginRight: '4px' }}>lynk</span>
           </Link>
 
-          <nav className="flex flex-wrap justify-center gap-8 md:gap-12">
-            {['About', 'Features', 'Pricing', 'Contact'].map(link => (
+          {/* <nav className="flex flex-wrap justify-center gap-8 md:gap-12">
+            {['About', 'Features', 'Pricing', 'Users'].map(link => (
               <a
                 key={link}
                 href={`#${link.toLowerCase()}`}
-                className="text-[10px] font-black uppercase tracking-[0.2em] text-white hover:text-emerald-500 transition-colors"
+                className="text-[10px] font-black font-thin tracking-[0.2em] text-emerald-300 hover:text-emerald-500 transition-colors"
               >
                 {link}
               </a>
-            ))}
-          </nav>
+            ))} */}
+          {/* </nav> */}
 
           <div className="flex flex-col items-center md:items-end gap-3">
             <div className="text-[13px] font-black font-thin tracking-[0.2em] text-white">

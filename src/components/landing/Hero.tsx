@@ -85,23 +85,23 @@ export default function Hero() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
 
           {/* Left Column */}
-          <div className="lg:col-span-7 py-2 space-y-7">
+          <div className="lg:col-span-7 space-y-7 py-5">
             {/* <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-[#E3A23C]/25 bg-[#E3A23C]/[0.06] text-[#E3A23C] text-[11px] font-bold uppercase tracking-[0.14em]">
               Built for every kind of Kenyan business
             </div> */}
 
-            <h1 className="text-4xl sm:text-5xl lg:text-[3.4rem] font-black font-ubuntu tracking-tight leading-[1.06]">
+            <h1 className="text-4xl sm:text-5xl lg:text-[3.4rem] font-black pt-5 font-ubuntu tracking-tight leading-[1.06]">
               Duka, lodge, fleet, or workshop —
               <br className="hidden sm:block" />
-              <span className="text-[#E3A23C]">run it all</span> from one board.
+              <span className="text-[#E3A23C]"> run it all</span> from one board.
             </h1>
 
-            <p className="text-[#AAB0BC] text-base sm:text-lg leading-relaxed max-w-2xl">
+            {/* <p className="text-[#AAB0BC] text-base sm:text-lg leading-relaxed max-w-2xl">
               Hlynk isn't built for one trade — it's built for how business actually
               happens in Kenya. Ring up sales, take bookings, dispatch a fleet, or
               track a job card, all with the same clean dashboard and the same
               M-Pesa till underneath.
-            </p>
+            </p> */}
 
             <div className="flex flex-wrap items-center gap-4 pt-1">
               <a
