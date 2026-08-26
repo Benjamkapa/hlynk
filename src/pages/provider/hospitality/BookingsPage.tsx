@@ -270,8 +270,25 @@ export default function BookingsPage() {
                       </td>
 
                       <td className="p-4">
-                        <span className="font-bold text-slate-900 block">{b.resourceTitle || 'Room'}</span>
-                        <span className="text-[10px] text-slate-400 font-semibold uppercase">{b.resourceType || 'Unit'}</span>
+                        {(() => {
+                          const matchedRoom = rooms.find(r => r.id === b.resourceId);
+                          const roomImg = matchedRoom?.meta?.imageUrl || (Array.isArray(matchedRoom?.meta?.images) ? matchedRoom?.meta?.images[0] : null);
+                          return (
+                            <div className="flex items-center gap-2.5">
+                              {roomImg ? (
+                                <img src={roomImg} alt="unit" className="w-9 h-9 rounded-lg object-cover border border-slate-200 shrink-0 shadow-sm" />
+                              ) : (
+                                <div className="w-9 h-9 rounded-lg bg-emerald-50 text-emerald-700 font-bold text-xs flex items-center justify-center border border-emerald-100 shrink-0">
+                                  {(b.resourceTitle || 'U').slice(0, 2).toUpperCase()}
+                                </div>
+                              )}
+                              <div>
+                                <span className="font-bold text-slate-900 block leading-tight">{b.resourceTitle || 'Unit'}</span>
+                                <span className="text-[10px] text-slate-400 font-semibold uppercase">{b.resourceType || 'Resource'}</span>
+                              </div>
+                            </div>
+                          );
+                        })()}
                       </td>
 
                       <td className="p-4">
@@ -390,6 +407,40 @@ export default function BookingsPage() {
                       </option>
                     ))}
                   </select>
+
+                  {/* Selected Unit Visual Card */}
+                  {selectedRoomId && (() => {
+                    const room = rooms.find(r => r.id === selectedRoomId);
+                    if (!room) return null;
+                    const img = room.meta?.imageUrl || (Array.isArray(room.meta?.images) ? room.meta.images[0] : null);
+                    return (
+                      <div className="mt-2.5 p-3 bg-emerald-50/80 rounded-xl border border-emerald-100 flex items-center gap-3">
+                        {img ? (
+                          <img src={img} alt={room.title} className="w-14 h-14 rounded-lg object-cover border border-emerald-200 shrink-0 shadow-sm" />
+                        ) : (
+                          <div className="w-14 h-14 rounded-lg bg-emerald-800 text-white font-black text-sm flex items-center justify-center shrink-0">
+                            {room.title.slice(0, 2).toUpperCase()}
+                          </div>
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs font-black text-slate-900 truncate">{room.title}</span>
+                            <span className="text-[9px] font-bold uppercase tracking-wider bg-emerald-200 text-emerald-900 px-2 py-0.5 rounded-md shrink-0">
+                              {room.status}
+                            </span>
+                          </div>
+                          <p className="text-[11px] text-emerald-800 font-bold mt-0.5">
+                            KES {Number(room.basePrice).toLocaleString()} / unit rate
+                          </p>
+                          {Array.isArray(room.meta?.amenities) && room.meta.amenities.length > 0 && (
+                            <p className="text-[10px] text-slate-500 font-medium truncate mt-0.5">
+                              ✨ {room.meta.amenities.join(' • ')}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })()}
                 </div>
 
                 {/* Guest Details */}

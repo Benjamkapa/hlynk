@@ -261,15 +261,29 @@ export default function HospitalityOverviewPage() {
                   : 'bg-emerald-50 border-emerald-200 text-emerald-700';
 
                 return (
-                  <div key={room.id} className={`p-4 rounded-xl border ${badgeBg} flex flex-col justify-between`}>
-                    <div>
-                      <span className="text-xs font-black uppercase tracking-tight block truncate">
-                        {room.title}
-                      </span>
-                      <span className="text-[10px] font-semibold opacity-75 uppercase tracking-wider">
-                        {room.code ? `#${room.code}` : room.type}
-                      </span>
+                  <div key={room.id} className={`p-3.5 rounded-xl border ${badgeBg} flex flex-col justify-between`}>
+                    <div className="flex items-center gap-3">
+                      {room.meta?.imageUrl || (Array.isArray(room.meta?.images) && room.meta.images[0]) ? (
+                        <img
+                          src={room.meta?.imageUrl || room.meta?.images?.[0]}
+                          alt={room.title}
+                          className="w-10 h-10 rounded-lg object-cover border border-black/10 shrink-0 shadow-sm"
+                        />
+                      ) : (
+                        <div className="w-10 h-10 rounded-lg bg-white/70 font-black text-xs flex items-center justify-center border border-black/5 shrink-0">
+                          {room.title.slice(0, 2).toUpperCase()}
+                        </div>
+                      )}
+                      <div className="min-w-0 flex-1">
+                        <span className="text-xs font-black uppercase tracking-tight block truncate">
+                          {room.title}
+                        </span>
+                        <span className="text-[10px] font-semibold opacity-75 uppercase tracking-wider block truncate">
+                          {room.code ? `#${room.code}` : room.type}
+                        </span>
+                      </div>
                     </div>
+
                     <div className="mt-3 flex items-center justify-between">
                       <span className="text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md bg-white/80">
                         {room.status}

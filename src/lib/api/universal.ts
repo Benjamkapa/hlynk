@@ -9,7 +9,15 @@ export interface Resource {
   parentId?: string;
   basePrice: number;
   status: string;
-  meta: Record<string, any>;
+  meta: {
+    roomType?: string;
+    amenities?: string[];
+    description?: string;
+    imageUrl?: string;
+    images?: string[];
+    address?: string;
+    [key: string]: any;
+  };
   createdAt: string;
   updatedAt: string;
 }
@@ -81,6 +89,15 @@ export const resourcesApi = {
   deleteResource: async (id: string) => {
     const res = await api.delete<{ success: boolean; message: string }>(`/resources/${id}`);
     return res.data;
+  },
+
+  uploadPhoto: async (file: File) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    const res = await api.post<{ success: boolean; data: { url: string } }>('/resources/upload', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
+    return res.data.data.url;
   }
 };
 
