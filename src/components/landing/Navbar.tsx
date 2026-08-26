@@ -179,7 +179,7 @@ export default function Navbar() {
         left: 0,
         width: '100%',
         zIndex: 100,
-        paddingTop: 'env(safe-area-inset-top, 0px)',
+        paddingTop: 'max(12px, env(safe-area-inset-top, 12px))',
         transform: `translateY(${navVisible ? '0' : '-100%'})`,
         background: scrolled ? 'rgba(255,255,255,0.85)' : 'transparent',
         backdropFilter: scrolled ? 'blur(20px) saturate(180%)' : 'none',

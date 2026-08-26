@@ -506,7 +506,7 @@ export default function LoginPage() {
           }
           .mob-nav {
             display: flex !important; align-items: center;
-            justify-content: space-between; padding: 48px 24px 0;
+            justify-content: space-between; padding: max(60px, env(safe-area-inset-top, 60px)) 24px 0;
           }
           .mob-hero { padding: 32px 24px 24px; }
           .mob-hero-title {

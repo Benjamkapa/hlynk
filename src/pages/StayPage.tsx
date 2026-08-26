@@ -269,13 +269,29 @@ export default function StayPage({ isShopMode }: { isShopMode?: boolean }) {
         <div className="absolute inset-0 bg-gradient-to-br from-emerald-950/50 via-[#030A07] to-slate-950 pointer-events-none" />
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-emerald-800/10 blur-[120px] pointer-events-none" />
 
-        <div className="relative max-w-5xl mx-auto px-5 pt-8 pb-8">
-          <div className="flex justify-between items-center mb-8">
-            <a href="/" className="flex items-center gap-2 text-emerald-400 hover:text-emerald-300 transition-colors group">
-              <Sparkles size={16} className="group-hover:animate-pulse" />
-              <span className="text-xs font-black uppercase tracking-widest">Powered by Hlynk</span>
-            </a>
-            
+        <div className="relative max-w-5xl mx-auto px-5 pt-16 sm:pt-14 md:pt-12 pb-8">
+          <div className="flex justify-between items-center mb-8 gap-3">
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => window.history.back()}
+                className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-white/10 hover:bg-emerald-500 hover:text-slate-950 text-white font-bold text-xs transition-all active:scale-95 border border-white/10"
+                title="Go Back"
+              >
+                <ChevronLeft size={16} /> Back
+              </button>
+              <button
+                onClick={() => window.history.forward()}
+                className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-white/10 hover:bg-emerald-500 hover:text-slate-950 text-white font-bold text-xs transition-all active:scale-95 border border-white/10"
+                title="Go Forward"
+              >
+                Next <ChevronRight size={16} />
+              </button>
+              <a href="/" className="hidden sm:flex items-center gap-2 text-emerald-400 hover:text-emerald-300 transition-colors group ml-2">
+                <Sparkles size={14} className="group-hover:animate-pulse" />
+                <span className="text-[10px] font-black uppercase tracking-widest">Powered by Hlynk</span>
+              </a>
+            </div>
+
             {/* Cart Button */}
             {cart.length > 0 && (
               <button
@@ -425,26 +441,48 @@ export default function StayPage({ isShopMode }: { isShopMode?: boolean }) {
       {(activeTab === "products" || allRooms.length === 0) && allProducts.length > 0 && (
         <div className="max-w-5xl mx-auto px-5 space-y-6">
           {productCategories.length > 1 && (
-            <div className="flex flex-wrap gap-2">
+            <div className="flex items-center gap-1.5">
               <button
-                onClick={() => setCategoryFilter("all")}
-                className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-all ${
-                  categoryFilter === "all" ? "bg-emerald-600 text-white" : "bg-white/5 text-slate-400 hover:bg-white/10"
-                }`}
+                onClick={() => {
+                  const el = document.getElementById("category-scroll-container");
+                  if (el) el.scrollBy({ left: -150, behavior: "smooth" });
+                }}
+                className="p-1.5 rounded-full bg-white/5 hover:bg-white/15 text-slate-300 transition-all"
+                title="Scroll Left"
               >
-                All ({allProducts.length})
+                <ChevronLeft size={14} />
               </button>
-              {productCategories.map(c => (
+              <div id="category-scroll-container" className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1 flex-1">
                 <button
-                  key={c}
-                  onClick={() => setCategoryFilter(c)}
-                  className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-all ${
-                    categoryFilter === c ? "bg-emerald-600 text-white" : "bg-white/5 text-slate-400 hover:bg-white/10"
+                  onClick={() => setCategoryFilter("all")}
+                  className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${
+                    categoryFilter === "all" ? "bg-emerald-600 text-white shadow" : "bg-white/5 text-slate-400 hover:bg-white/10"
                   }`}
                 >
-                  {c} ({allProducts.filter(p => (p.category || "General") === c).length})
+                  All ({allProducts.length})
                 </button>
-              ))}
+                {productCategories.map(c => (
+                  <button
+                    key={c}
+                    onClick={() => setCategoryFilter(c)}
+                    className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${
+                      categoryFilter === c ? "bg-emerald-600 text-white shadow" : "bg-white/5 text-slate-400 hover:bg-white/10"
+                    }`}
+                  >
+                    {c} ({allProducts.filter(p => (p.category || "General") === c).length})
+                  </button>
+                ))}
+              </div>
+              <button
+                onClick={() => {
+                  const el = document.getElementById("category-scroll-container");
+                  if (el) el.scrollBy({ left: 150, behavior: "smooth" });
+                }}
+                className="p-1.5 rounded-full bg-white/5 hover:bg-white/15 text-slate-300 transition-all"
+                title="Scroll Right"
+              >
+                <ChevronRight size={14} />
+              </button>
             </div>
           )}
 
