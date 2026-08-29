@@ -40,5 +40,5 @@ export default function LandingPage() {
         category={selectedCategory}
       />
     </div>
-  )
+  ) 
 }
