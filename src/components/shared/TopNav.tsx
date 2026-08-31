@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import { Bell, User, LogOut, ChevronDown, RefreshCw, Lock as LockIcon } from 'lucide-react'
+import { Bell, User, LogOut, ChevronDown, RefreshCw, Lock as LockIcon, CheckCircle2 } from 'lucide-react'
 import { useAuth } from '../../lib/auth/AuthContext'
 
 import { Link, useNavigate } from 'react-router-dom'
@@ -216,36 +216,58 @@ export default function TopNav({ isMobileOpen, onMobileMenuToggle, isCollapsed, 
           </button>
 
           {showNotifications && (
-            <div className="fixed sm:absolute left-2 right-2 sm:left-auto sm:right-0 top-20 sm:top-[calc(100%+0.5rem)] sm:w-[340px] bg-white border border-slate-100 rounded-xl shadow-2xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200 z-[200]">
+            <div className="fixed sm:absolute left-2 right-2 sm:left-auto sm:right-0 top-20 sm:top-[calc(100%+0.5rem)] sm:w-[360px] bg-white border border-slate-100 rounded-xl shadow-2xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200 z-[200]">
               <div className="p-4 bg-slate-50/50 border-b border-slate-100 flex justify-between items-center">
-                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">System Notifications</span>
+                <div>
+                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">System Notifications</span>
+                  {unreadCount > 0 && (
+                    <span className="ml-2 bg-red-100 text-red-600 text-[9px] font-black px-1.5 py-0.5 rounded-full">{unreadCount} unread</span>
+                  )}
+                </div>
                 {notifications.length > 0 && (
-                  <button onClick={() => deleteNotificationsMutation.mutate()} className="text-[10px] font-black text-red-600 uppercase tracking-widest hover:text-red-800 transition-colors">Wipe History</button>
+                  <button onClick={() => deleteNotificationsMutation.mutate()} className="text-[10px] font-black text-red-500 hover:text-red-700 transition-colors">Clear All</button>
                 )}
               </div>
-              <div className="max-h-[400px] overflow-y-auto">
+              <div className="max-h-[420px] overflow-y-auto">
                 {notifyLoading ? (
-                   <div className="p-12 text-center animate-pulse text-slate-400 font-black text-[9px] uppercase tracking-widest">Fetching...</div>
+                   <div className="p-12 text-center animate-pulse text-slate-400 font-bold text-xs">Fetching notifications...</div>
                 ) : notifications.length === 0 ? (
-                  <div className="p-16 text-center text-sm font-black text-slate-400 italic">No notifications</div>
+                  <div className="p-16 text-center text-sm font-medium text-slate-400">No notifications yet</div>
                 ) : (
                   <div className="divide-y divide-slate-50">
-                    {notifications.map((n: any) => (
-                      <div key={n.id} className="p-4 hover:bg-slate-50 transition-colors cursor-pointer" onClick={() => !n.isRead && markReadMutation.mutate(n.id)}>
-                        <div className="flex gap-3">
-                          <div className="h-7 w-7 shrink-0 bg-white border border-slate-100 rounded-md p-1 shadow-sm flex items-center justify-center">
-                            <img src="/fav.png" alt="hlynk" className="w-full h-full object-contain" />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex justify-between items-start">
-                              <p className={`text-xs font-black tracking-tight ${n.isRead ? 'text-slate-400' : 'text-slate-900'}`}>{n.title}</p>
-                              <span className="text-[9px] text-slate-400 ml-2">{new Date(n.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                    {notifications.map((n: any) => {
+                      const notifDate = new Date(n.createdAt);
+                      const today = new Date();
+                      const isToday = notifDate.toDateString() === today.toDateString();
+                      const dateStr = isToday
+                        ? `Today, ${notifDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
+                        : notifDate.toLocaleDateString([], { day: 'numeric', month: 'short', year: 'numeric' }) + ', ' + notifDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                      return (
+                        <div key={n.id} className={`p-4 transition-colors ${!n.isRead ? 'bg-emerald-50/40' : 'hover:bg-slate-50'}`}>
+                          <div className="flex gap-3">
+                            <div className={`h-8 w-8 shrink-0 rounded-lg flex items-center justify-center ${!n.isRead ? 'bg-emerald-100' : 'bg-slate-100'}`}>
+                              <img src="/fav.png" alt="hlynk" className="w-4 h-4 object-contain" />
                             </div>
-                            <p className="text-[10px] text-slate-500 leading-tight mt-0.5 line-clamp-2">{n.message}</p>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex justify-between items-start gap-2">
+                                <p className={`text-xs font-bold leading-tight ${n.isRead ? 'text-slate-500' : 'text-slate-900'}`}>{n.title}</p>
+                                {!n.isRead && (
+                                  <button
+                                    onClick={() => markReadMutation.mutate(n.id)}
+                                    title="Mark as done"
+                                    className="flex-shrink-0 flex items-center gap-1 px-2 py-0.5 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 rounded-full text-[9px] font-black transition-colors"
+                                  >
+                                    <CheckCircle2 size={10} /> Done
+                                  </button>
+                                )}
+                              </div>
+                              <p className="text-[10px] text-slate-500 leading-tight mt-0.5 line-clamp-2">{n.message}</p>
+                              <p className="text-[9px] text-slate-400 mt-1 font-medium">{dateStr}</p>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 )}
               </div>

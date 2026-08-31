@@ -217,9 +217,17 @@ export default function StayPage({ isShopMode }: { isShopMode?: boolean }) {
         items: cart,
       });
 
-      setOrderSuccess(res.data.data);
+      // Save name for success screen, then clear everything
+      const orderedByName = customerName;
+      setOrderSuccess({ ...res.data.data, orderedByName });
+      // Clear cart and all form fields so next order starts fresh
       setCart([]);
+      setCustomerName("");
+      setCustomerPhone("");
+      setDeliveryAddress("");
+      setNotes("");
       setIsOrdering(false);
+      setIsCartOpen(false);
       toast.success("Order submitted successfully!");
     } catch (err: any) {
       toast.error(err.response?.data?.message || "Failed to submit order. Please try again.");
@@ -686,26 +694,26 @@ export default function StayPage({ isShopMode }: { isShopMode?: boolean }) {
               </div>
               <h2 className="text-2xl font-black text-white">Order Received!</h2>
               <p className="text-xs text-slate-300 leading-relaxed">
-                Thank you, <span className="font-bold text-emerald-400">{customerName}</span>! Your order has been placed with <span className="font-bold">{listing.businessName}</span>.
+                Thank you, <span className="font-bold text-emerald-400">{orderSuccess.orderedByName}</span>! Your order has been placed with <span className="font-bold">{listing.businessName}</span>. They will reach out to confirm shortly.
               </p>
-              <div className="bg-white/5 p-3 rounded-2xl text-xs text-slate-400">
-                Order ID: <span className="font-mono text-emerald-400 font-bold">{orderSuccess.orderId}</span>
+              <div className="bg-emerald-900/30 border border-emerald-500/20 p-3 rounded-2xl text-xs text-emerald-300">
+                <Tag size={12} className="inline mr-1.5 opacity-70" />Your order has been saved. The business will contact you on the phone number you provided.
               </div>
               <div className="pt-2 flex flex-col gap-2">
                 {listing.phone && (
                   <a
-                    href={`https://wa.me/${listing.phone.replace(/[^0-9]/g, "")}?text=${encodeURIComponent(`Hi ${listing.businessName}, I just placed order ${orderSuccess.orderId} on your online store.`)}`}
+                    href={`https://wa.me/${listing.phone.replace(/[^0-9]/g, "")}?text=${encodeURIComponent(`Hi ${listing.businessName}, I just placed an order on your online store. My name is ${orderSuccess.orderedByName}.`)}`}
                     target="_blank" rel="noopener noreferrer"
-                    className="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs uppercase tracking-wider rounded-xl flex items-center justify-center gap-2"
+                    className="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm rounded-xl flex items-center justify-center gap-2"
                   >
-                    <MessageSquare size={16} /> Contact via WhatsApp
+                    <MessageSquare size={16} /> Chat on WhatsApp
                   </a>
                 )}
                 <button
                   onClick={() => setOrderSuccess(null)}
-                  className="w-full py-2.5 bg-white/10 hover:bg-white/20 text-slate-300 font-bold text-xs rounded-xl"
+                  className="w-full py-2.5 bg-white/10 hover:bg-white/20 text-slate-300 font-medium text-sm rounded-xl"
                 >
-                  Done / Close
+                  Done
                 </button>
               </div>
             </div>

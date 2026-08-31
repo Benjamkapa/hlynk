@@ -39,9 +39,15 @@ export default function FinancialsPage() {
     queryFn: () => adminApi.getVaultStats()
   })
 
-  const vault = vaultData?.data || {}
+  const { data: payoutData } = useQuery({
+    queryKey: ['admin-payouts'],
+    queryFn: () => adminApi.getPayouts()
+  })
 
+  const vault = vaultData?.data || {}
   const stats = rawStats?.data || rawStats;
+
+  const hasPendingPayoutDues = (payoutData?.data?.payouts?.length || 0) > 0 || Number(stats?.overview?.totalPendingPayouts || 0) > 0
 
   useEffect(() => {
     if (error) toast.error(getErrorMessage(error))
@@ -73,7 +79,7 @@ export default function FinancialsPage() {
              className={`px-8 py-3 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all relative flex items-center gap-2 ${activeTab === 'PAYOUTS' ? 'bg-white text-slate-900 shadow-xl shadow-slate-200' : 'text-slate-400 hover:text-slate-600'}`}
            >
              Pending Payouts
-             {Number(stats?.overview?.totalPendingPayouts || 0) > 0 && (
+             {hasPendingPayoutDues && (
                <span className="h-2 w-2 rounded-full bg-red-500 animate-ping" />
              )}
            </button>

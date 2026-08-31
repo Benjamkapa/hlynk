@@ -157,9 +157,18 @@ export default function PayoutsManager() {
                   <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1">Accrued Net</p>
                   <p className="text-lg font-black text-slate-900 hl-mono">KES {Math.floor(a.netSettlement).toLocaleString()}</p>
                 </div>
-                <div className="text-right">
-                  <p className="text-[8px] font-black text-emerald-500 uppercase tracking-widest mb-1">Platform Share</p>
-                  <p className="text-[10px] font-black text-emerald-600 hl-mono">KES {Math.floor(a.platformShare).toLocaleString()}</p>
+                <div className="text-right flex flex-col items-end gap-2">
+                  <div>
+                    <p className="text-[8px] font-black text-emerald-500 uppercase tracking-widest mb-1">Platform Share</p>
+                    <p className="text-[10px] font-black text-emerald-600 hl-mono">KES {Math.floor(a.platformShare).toLocaleString()}</p>
+                  </div>
+                  <button
+                    disabled={markPaidMutation.isPending}
+                    onClick={() => markPaidMutation.mutate({ tenantId: a.tenantId, disburse: false })}
+                    className="px-3 py-1 bg-slate-100 text-slate-600 hover:bg-slate-200 rounded text-[9px] font-bold transition-all"
+                  >
+                    Clear Accrued
+                  </button>
                 </div>
               </div>
             </div>

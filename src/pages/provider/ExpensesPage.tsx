@@ -83,7 +83,7 @@ export default function ExpensesPage() {
   })
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500 pt-6">
+    <div className="space-y-6 animate-in fade-in duration-500 pt-4">
 
       <SlideOver
         isOpen={!!viewDetailsId}
@@ -93,28 +93,28 @@ export default function ExpensesPage() {
         {isDetailLoading ? (
           <div className="p-32 flex flex-col items-center justify-center text-slate-400 gap-4">
             <Loader2 className="animate-spin" size={48} />
-            <p className="font-black uppercase tracking-widest text-xs">Fetching Details...</p>
+            <p className="font-semibold text-sm text-slate-400">Fetching details...</p>
           </div>
         ) : selectedExpense && (
           <div className="space-y-8">
             <div className="bg-slate-50 p-8 rounded-[.5rem] border border-slate-100 text-center">
-               <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Total Amount</p>
+               <p className="text-xs font-semibold text-slate-400 mb-2">Total Amount</p>
                <h2 className="text-4xl font-black text-slate-900 hl-mono">KES {Number(selectedExpense.amount).toLocaleString()}</h2>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
                <div className="p-6 bg-white rounded-[.5rem] border border-slate-100 shadow-sm">
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Category</p>
+                  <p className="text-xs font-semibold text-slate-400 mb-1">Category</p>
                   <p className="text-sm font-black text-slate-900">{selectedExpense.category}</p>
                </div>
                <div className="p-6 bg-white rounded-[.5rem] border border-slate-100 shadow-sm">
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Date</p>
+                  <p className="text-xs font-semibold text-slate-400 mb-1">Date</p>
                   <p className="text-sm font-black text-slate-900 hl-mono">{formatLocalDate(selectedExpense.date)}</p>
                </div>
             </div>
 
             <div className="p-6 bg-white rounded-[.5rem] border border-slate-100 shadow-sm">
-               <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Description</p>
+               <p className="text-xs font-semibold text-slate-400 mb-2">Description</p>
                <p className="text-sm font-medium text-slate-600 leading-relaxed italic">"{selectedExpense.description}"</p>
             </div>
 
@@ -124,8 +124,8 @@ export default function ExpensesPage() {
                      <Eye size={20} />
                   </div>
                   <div>
-                    <p className="text-[8px] font-black text-slate-500 uppercase tracking-widest">Recorded By</p>
-                    <p className="text-xs font-black text-white uppercase tracking-widest">{selectedExpense.recordedBy || 'System Admin'}</p>
+                    <p className="text-xs font-semibold text-slate-500">Recorded by</p>
+                    <p className="text-sm font-bold text-white">{selectedExpense.recordedBy || 'System Admin'}</p>
                   </div>
                </div>
             </div>
@@ -133,23 +133,24 @@ export default function ExpensesPage() {
         )}
       </SlideOver>
 
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
+      {/* Page Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-black text-gray-900 tracking-tight">Expense Tracking</h1>
-          <p className="text-gray-500 font-medium">Monitor your business overheads and spending flow</p>
+          <h1 className="text-2xl font-black text-gray-900 tracking-tight">Expense Tracking</h1>
+          <p className="text-gray-500 text-sm mt-0.5">Monitor business overheads and spending</p>
         </div>
-        <div className="flex gap-4">
+        <div className="flex items-center gap-3">
           <button
             onClick={handleExport}
-            className="bg-gray-100 text-gray-600 h-12 px-6 rounded-[.5rem] font-bold text-sm hover:bg-gray-200 transition-all flex items-center gap-2"
+            className="bg-gray-100 text-gray-600 h-10 px-5 rounded-[.5rem] font-semibold text-sm hover:bg-gray-200 transition-all flex items-center gap-2"
           >
-            <Save size={18} /> CSV
+            <Save size={16} /> Export CSV
           </button>
           <button
             onClick={() => setIsAddModalOpen(true)}
-            className="bg-[#0D4A3E] text-white h-12 px-6 rounded-[.5rem] font-bold text-sm hover:bg-[#0A3D33] transition-all flex items-center gap-2 shadow-xl shadow-emerald-900/10"
+            className="bg-[#0D4A3E] text-white h-10 px-5 rounded-[.5rem] font-bold text-sm hover:bg-[#0A3D33] transition-all flex items-center gap-2 shadow-xl shadow-emerald-900/10"
           >
-            <Plus size={20} /> Log Expense
+            <Plus size={18} /> Log Expense
           </button>
         </div>
       </div>
@@ -161,11 +162,11 @@ export default function ExpensesPage() {
         <BurnRateGauge value={stats.totalExpenses} target={250000} />
       </div>
 
-      {/* Expenses Table */}
+        {/* Expenses Table */}
       <div className="bg-white rounded-[.5rem] border border-gray-100 shadow-xl shadow-gray-900/5 overflow-hidden">
-        <div className="p-6 border-b border-gray-50 flex flex-col md:flex-row gap-4">
+        <div className="p-5 border-b border-gray-50 flex flex-col md:flex-row gap-4">
           <div className="relative flex-1">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
             <input
               type="text"
               placeholder="Search by description or category..."
@@ -174,7 +175,7 @@ export default function ExpensesPage() {
                 setSearch(e.target.value)
                 setPage(1)
               }}
-              className="w-full bg-gray-50 border-none rounded-[.5rem] py-3.5 pl-12 pr-4 outline-none focus:ring-4 focus:ring-emerald-500/5 transition-all text-sm font-bold"
+              className="w-full bg-gray-50 border-none rounded-[.5rem] py-3 pl-11 pr-4 outline-none focus:ring-4 focus:ring-emerald-500/5 transition-all text-sm font-medium"
             />
           </div>
         </div>
@@ -183,56 +184,59 @@ export default function ExpensesPage() {
           <table className="w-full text-left">
             <thead>
               <tr className="bg-gray-50/50">
-                <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest cursor-pointer hover:text-emerald-600" onClick={() => { setSortBy('date'); setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc') }}>Date {sortBy === 'date' && (sortOrder === 'asc' ? '↑' : '↓')}</th>
-                <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest cursor-pointer hover:text-emerald-600" onClick={() => { setSortBy('description'); setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc') }}>Description {sortBy === 'description' && (sortOrder === 'asc' ? '↑' : '↓')}</th>
-                <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest cursor-pointer hover:text-emerald-600" onClick={() => { setSortBy('category'); setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc') }}>Category {sortBy === 'category' && (sortOrder === 'asc' ? '↑' : '↓')}</th>
-                <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest cursor-pointer hover:text-emerald-600" onClick={() => { setSortBy('recordedBy'); setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc') }}>Recorded By {sortBy === 'recordedBy' && (sortOrder === 'asc' ? '↑' : '↓')}</th>
-                <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right cursor-pointer hover:text-emerald-600" onClick={() => { setSortBy('amount'); setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc') }}>Amount {sortBy === 'amount' && (sortOrder === 'asc' ? '↑' : '↓')}</th>
-                <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Action</th>
+                <th className="px-6 py-4 text-xs font-semibold text-gray-400 cursor-pointer hover:text-emerald-600" onClick={() => { setSortBy('date'); setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc') }}>Date {sortBy === 'date' && (sortOrder === 'asc' ? '↑' : '↓')}</th>
+                <th className="px-6 py-4 text-xs font-semibold text-gray-400 cursor-pointer hover:text-emerald-600" onClick={() => { setSortBy('description'); setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc') }}>Description {sortBy === 'description' && (sortOrder === 'asc' ? '↑' : '↓')}</th>
+                <th className="px-6 py-4 text-xs font-semibold text-gray-400 cursor-pointer hover:text-emerald-600" onClick={() => { setSortBy('category'); setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc') }}>Category {sortBy === 'category' && (sortOrder === 'asc' ? '↑' : '↓')}</th>
+                <th className="px-6 py-4 text-xs font-semibold text-gray-400 cursor-pointer hover:text-emerald-600" onClick={() => { setSortBy('recordedBy'); setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc') }}>Recorded By {sortBy === 'recordedBy' && (sortOrder === 'asc' ? '↑' : '↓')}</th>
+                <th className="px-6 py-4 text-xs font-semibold text-gray-400 text-right cursor-pointer hover:text-emerald-600" onClick={() => { setSortBy('amount'); setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc') }}>Amount {sortBy === 'amount' && (sortOrder === 'asc' ? '↑' : '↓')}</th>
+                <th className="px-6 py-4 text-xs font-semibold text-gray-400 text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
               {isLoading ? (
                 <tr>
-                  <td colSpan={5} className="py-20 text-center">
+                  <td colSpan={6} className="py-20 text-center">
                     <div className="h-10 w-10 animate-spin rounded-full border-4 border-emerald-500 border-t-transparent mx-auto" />
                   </td>
                 </tr>
               ) : expenses.length > 0 ? expenses.map((e: any, i: number) => (
-                <tr key={e.id ?? i} className="hover:bg-red-50/30 transition-all group cursor-pointer">
-                  <td className="px-8 py-5 text-xs font-bold text-gray-400 hl-mono">{new Date(e.date || e.createdAt).toLocaleDateString('en-KE', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' }).toUpperCase()}</td>
-                  <td className="px-8 py-5">
-                    <span className="font-black text-gray-900 text-sm">{e.description}</span>
-                    <p className="text-[9px] text-gray-400 font-bold hl-mono tracking-tighter uppercase">ID: {e.id.slice(-8).toUpperCase()}</p>
+                <tr key={e.id ?? i} className="hover:bg-red-50/20 transition-all group cursor-pointer">
+                  <td className="px-6 py-4 text-xs font-medium text-gray-500 hl-mono whitespace-nowrap">{new Date(e.date || e.createdAt).toLocaleDateString('en-KE', { day: '2-digit', month: 'short', year: 'numeric' })}</td>
+                  <td className="px-6 py-4">
+                    <span className="font-bold text-gray-900 text-sm">{e.description}</span>
+                    <p className="text-[10px] text-gray-400 font-medium hl-mono mt-0.5">ID: {e.id.slice(-8).toUpperCase()}</p>
                   </td>
-                  <td className="px-8 py-5">
-                    <span className="text-[10px] font-black text-gray-500 bg-gray-100 px-2.5 py-1 rounded-[.5rem] uppercase tracking-widest">{e.category}</span>
+                  <td className="px-6 py-4">
+                    <span className="text-xs font-semibold text-gray-600 bg-gray-100 px-2.5 py-1 rounded-full">{e.category}</span>
                   </td>
-                  <td className="px-8 py-5">
-                    <span className="text-[10px] font-black text-gray-500 bg-gray-100 px-2.5 py-1 rounded-[.5rem] uppercase tracking-widest">{e.recordedBy || 'System Provider'}</span>
+                  <td className="px-6 py-4">
+                    <span className="text-xs font-medium text-gray-500">{e.recordedBy || 'System'}</span>
                   </td>
-                  <td className="px-8 py-5 text-right font-black text-red-600 text-sm hl-mono whitespace-nowrap">KES {Number(e.amount).toLocaleString()}</td>
-                  <td className="px-8 py-5 text-right">
-                    <button
-                      onClick={() => setConfirmDeleteId(e.id)}
-                      disabled={deleteMutation.isPending}
-                      className="p-2 hover:bg-white hover:shadow-lg rounded-[.5rem] transition-all text-slate-300 hover:text-red-600 disabled:opacity-50"
-                    >
-                      <Trash2 size={16} />
-                    </button>
-                    {/* view details */}
-                    <button
-                      onClick={() => setViewDetailsId(e.id)}
-                      disabled={ viewDetailsMutation.isPending }
-                      className="p-2 hover:bg-white hover:shadow-lg rounded-[.5rem] transition-all text-slate-300 hover:text-red-600 disabled:opacity-50"
-                    >
-                      <Eye size={16} />
-                    </button>
+                  <td className="px-6 py-4 text-right font-black text-red-600 text-sm hl-mono whitespace-nowrap">KES {Number(e.amount).toLocaleString()}</td>
+                  <td className="px-6 py-4 text-right">
+                    <div className="flex items-center justify-end gap-1">
+                      <button
+                        onClick={() => setViewDetailsId(e.id)}
+                        disabled={viewDetailsMutation.isPending}
+                        className="p-2 hover:bg-white hover:shadow-lg rounded-[.5rem] transition-all text-slate-400 hover:text-emerald-600 disabled:opacity-50"
+                        title="View details"
+                      >
+                        <Eye size={15} />
+                      </button>
+                      <button
+                        onClick={() => setConfirmDeleteId(e.id)}
+                        disabled={deleteMutation.isPending}
+                        className="p-2 hover:bg-white hover:shadow-lg rounded-[.5rem] transition-all text-slate-400 hover:text-red-500 disabled:opacity-50"
+                        title="Delete"
+                      >
+                        <Trash2 size={15} />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               )) : (
                 <tr>
-                  <td colSpan={5} className="py-20 text-center text-sm font-bold text-gray-400">
+                  <td colSpan={6} className="py-20 text-center text-sm font-medium text-gray-400">
                     No expenses found.
                   </td>
                 </tr>
@@ -481,14 +485,14 @@ function KpiCard({ title, value, sub, icon: Icon, variant }: any) {
   }
 
   return (
-    <div className="bg-white p-8 rounded-[.5rem] border border-gray-100 shadow-xl shadow-gray-900/5 flex items-center gap-6 hover:shadow-2xl hover:shadow-gray-900/10 transition-all group">
-      <div className={`h-16 w-16 rounded-[.5rem] flex items-center justify-center shrink-0 transition-all group-hover:scale-110 ${variants[variant]} border`}>
-        <Icon size={32} />
+    <div className="bg-white p-6 rounded-[.5rem] border border-gray-100 shadow-xl shadow-gray-900/5 flex items-center gap-5 hover:shadow-2xl hover:shadow-gray-900/10 transition-all group">
+      <div className={`h-14 w-14 rounded-[.5rem] flex items-center justify-center shrink-0 transition-all group-hover:scale-110 ${variants[variant]} border`}>
+        <Icon size={28} />
       </div>
       <div>
-        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">{title}</p>
+        <p className="text-xs font-semibold text-gray-400 mb-1">{title}</p>
         <h3 className="text-2xl font-black text-gray-900 hl-mono tracking-tight">{value}</h3>
-        <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest opacity-60">{sub}</p>
+        <p className="text-xs text-gray-500 font-medium mt-0.5 opacity-70">{sub}</p>
       </div>
     </div>
   )
@@ -496,14 +500,14 @@ function KpiCard({ title, value, sub, icon: Icon, variant }: any) {
 
 function InputGroup({ label, placeholder, mono = false, type = 'text', value, onChange }: any) {
   return (
-    <div className="space-y-2">
-      <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">{label}</label>
+    <div className="space-y-1.5">
+      <label className="text-xs font-semibold text-gray-500 px-1">{label}</label>
       <input
         type={type}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className={`w-full bg-gray-50 border-none rounded-[.5rem] py-4 px-4 outline-none focus:ring-4 focus:ring-emerald-500/5 transition-all text-sm font-bold ${mono ? 'hl-mono text-red-600' : ''}`}
+        className={`w-full bg-gray-50 border-none rounded-[.5rem] py-3.5 px-4 outline-none focus:ring-4 focus:ring-emerald-500/5 transition-all text-sm font-medium ${mono ? 'hl-mono text-red-600' : ''}`}
       />
     </div>
   )

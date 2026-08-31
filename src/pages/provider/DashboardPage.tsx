@@ -303,28 +303,28 @@ function StoreKpi({ title, value, sub, icon: Icon, color, trend }: any) {
   const isDark = color === 'dark';
 
   return (
-    <div className={`p-4 lg:p-8 rounded-[.5rem] border shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all group cursor-pointer relative overflow-hidden ${
+    <div className={`p-4 lg:p-7 rounded-[.5rem] border shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all group cursor-pointer relative overflow-hidden ${
       isDark
         ? 'bg-slate-900 border-slate-900 text-white'
         : 'bg-white border-slate-100 text-slate-900'
     }`}>
-      <div className={`h-10 w-10 lg:h-14 lg:w-14 rounded-[.5rem] flex items-center justify-center mb-3 lg:mb-6 transition-transform group-hover:scale-110 ${
+      <div className={`h-10 w-10 lg:h-12 lg:w-12 rounded-[.5rem] flex items-center justify-center mb-3 lg:mb-5 transition-transform group-hover:scale-110 ${
         isDark ? 'bg-white/10' : colorMap[color as keyof typeof colorMap]
       }`}>
-        <Icon size={22} className={isDark ? 'text-white' : ''} />
+        <Icon size={20} className={isDark ? 'text-white' : ''} />
       </div>
       <div>
-        <p className={`text-[10px] font-black uppercase tracking-widest mb-1 ${
-          isDark ? 'text-slate-400' : 'text-slate-400'
+        <p className={`text-xs font-semibold mb-1 ${
+          isDark ? 'text-slate-400' : 'text-slate-500'
         }`}>{title}</p>
         <div className="flex items-baseline gap-2">
            <h2 className={`text-xl lg:text-3xl font-black hl-mono tracking-tighter ${
              isDark ? 'text-white' : 'text-slate-900'
            }`}>{value}</h2>
-           <span className={`text-[10px] font-black hl-mono ${color === 'red' ? 'text-red-500' : isDark ? 'text-emerald-400' : 'text-emerald-600'}`}>{trend}</span>
+           <span className={`text-[10px] font-bold hl-mono ${color === 'red' ? 'text-red-500' : isDark ? 'text-emerald-400' : 'text-emerald-600'}`}>{trend}</span>
         </div>
-        <p className={`text-[10px] font-bold mt-1.5 ${
-          isDark ? 'text-slate-500' : 'text-slate-400'
+        <p className={`text-xs font-medium mt-1.5 ${
+          isDark ? 'text-slate-400' : 'text-slate-400'
         }`}>{sub}</p>
       </div>
     </div>

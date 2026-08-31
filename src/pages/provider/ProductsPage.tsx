@@ -1153,14 +1153,14 @@ function SummaryCard({ title, value, sub, icon: Icon, variant }: any) {
   }
 
   return (
-    <div className="bg-white p-6 rounded-[.5rem] border border-gray-100 shadow-sm flex items-center gap-5 hover:shadow-md transition-all group">
-      <div className={`h-12 w-12 rounded-[.5rem] flex items-center justify-center shrink-0 ${variants[variant as keyof typeof variants]} group-hover:scale-110 transition-transform`}>
-        <Icon size={24} />
+    <div className="bg-white p-5 rounded-[.5rem] border border-gray-100 shadow-sm flex items-center gap-4 hover:shadow-md transition-all group">
+      <div className={`h-11 w-11 rounded-[.5rem] flex items-center justify-center shrink-0 ${variants[variant as keyof typeof variants]} group-hover:scale-110 transition-transform`}>
+        <Icon size={22} />
       </div>
       <div>
-        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-0.5">{title}</p>
+        <p className="text-xs font-semibold text-gray-400 mb-0.5">{title}</p>
         <h3 className="text-xl font-black text-gray-900 hl-mono">{value}</h3>
-        <p className="text-[10px] text-gray-500 font-bold">{sub}</p>
+        <p className="text-xs text-gray-500 font-medium">{sub}</p>
       </div>
     </div>
   )
@@ -1168,14 +1168,14 @@ function SummaryCard({ title, value, sub, icon: Icon, variant }: any) {
 
 function InputGroup({ label, placeholder, mono = false, value, onChange }: any) {
   return (
-    <div className="space-y-2">
-      <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{label}</label>
+    <div className="space-y-1.5">
+      <label className="text-xs font-semibold text-gray-500 px-0.5">{label}</label>
       <input
         type="text"
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className={`w-full bg-gray-50 border-none rounded-[.5rem] py-4 px-4 outline-none focus:ring-2 focus:ring-emerald-500/10 transition-all text-sm font-bold ${mono ? 'hl-mono text-[#0D4A3E]' : ''}`}
+        className={`w-full bg-gray-50 border-none rounded-[.5rem] py-3.5 px-4 outline-none focus:ring-2 focus:ring-emerald-500/10 transition-all text-sm font-medium ${mono ? 'hl-mono text-[#0D4A3E]' : ''}`}
       />
     </div>
   )
