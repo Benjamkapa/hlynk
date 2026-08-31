@@ -3,6 +3,7 @@ import { adminApi } from '../../lib/api/providers'
 import { toast } from 'sonner'
 import { Banknote, Clock, CheckCircle2, AlertCircle, ArrowRight, ExternalLink, Calendar, Search, Star, Smartphone } from 'lucide-react'
 import { useState } from 'react'
+import { formatDate } from '../../lib/utils/date'
 
 export default function PayoutsManager() {
   const queryClient = useQueryClient()
@@ -105,7 +106,7 @@ export default function PayoutsManager() {
                          </div>
                       </div>
                       <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                        <Calendar size={12} /> Logged on {new Date(p.createdAt).toLocaleDateString()} — {p.message}
+                        <Calendar size={12} /> Logged on {formatDate(p.createdAt)} — {p.message}
                       </p>
                    </div>
                 </div>

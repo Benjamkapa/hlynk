@@ -145,6 +145,18 @@ export default function SettingsPage() {
     onError: (err) => toast.error(getErrorMessage(err))
   })
 
+  const deleteAccountMutation = useMutation({
+    mutationFn: providersApi.deleteProfileAndFacility,
+    onSuccess: () => {
+      toast.success('Your profile, facility, and all business data have been permanently erased.')
+      localStorage.clear()
+      sessionStorage.clear()
+      logout()
+      window.location.href = '/register'
+    },
+    onError: (err) => toast.error(getErrorMessage(err))
+  })
+
   const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
@@ -558,6 +570,24 @@ export default function SettingsPage() {
                   </div>
                 </div>
 
+                <div className="p-8 bg-red-50 border border-red-100 rounded-[.5rem] flex items-start gap-5">
+                  <Trash2 className="text-red-600 shrink-0 mt-1" size={24} />
+                  <div>
+                    <h4 className="text-lg font-black text-red-900 mb-2">Delete Profile & Facility Data</h4>
+                    <p className="text-sm text-red-800 leading-relaxed max-w-xl">
+                      Completely and permanently erases your user profile, facility tenant, staff logins, product catalog, sales, expenses, and financial logs from HudumaLynk. <strong>This action cannot be undone.</strong>
+                    </p>
+                    <div className="mt-8">
+                      <button
+                        onClick={() => setConfirmDeleteId('delete-profile-facility')}
+                        className="px-8 py-4 bg-red-600 text-white rounded-[.5rem] font-black text-xs uppercase tracking-widest hover:bg-red-700 transition-all shadow-xl shadow-red-900/10 active:scale-95"
+                      >
+                        Delete Profile & Facility
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
                 <div className="p-8 bg-blue-50 border border-blue-100 rounded-[.5rem] flex items-start gap-5">
                   <RefreshCcw className="text-blue-600 shrink-0 mt-1" size={24} />
                   <div>
@@ -675,17 +705,32 @@ export default function SettingsPage() {
 
                 <div className="pt-10 border-t border-gray-100">
                   <h4 className="text-xs font-black text-red-500 uppercase tracking-widest mb-6">Danger Zone</h4>
-                  <div className="p-8 rounded-[.5rem] bg-red-50 border border-red-100 flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-black text-red-900">Deactivate Account</p>
-                      <p className="text-[10px] text-red-600 font-bold mt-1">This will immediately revoke access for all your staff.</p>
+                  <div className="space-y-4">
+                    <div className="p-8 rounded-[.5rem] bg-amber-50 border border-amber-100 flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-black text-amber-900">Deactivate Account</p>
+                        <p className="text-[10px] text-amber-700 font-bold mt-1">This will temporarily revoke access for all your staff logins.</p>
+                      </div>
+                      <button
+                        onClick={() => setConfirmDeleteId('deactivate')}
+                        className="px-6 py-3 bg-amber-600 text-white rounded-[.5rem] text-[10px] font-black uppercase tracking-widest hover:bg-amber-700 transition-all shadow-lg shadow-amber-900/10"
+                      >
+                        Deactivate
+                      </button>
                     </div>
-                    <button
-                      onClick={() => setConfirmDeleteId('deactivate')}
-                      className="px-6 py-3 bg-red-600 text-white rounded-[.5rem] text-[10px] font-black uppercase tracking-widest hover:bg-red-700 transition-all shadow-lg shadow-red-900/10"
-                    >
-                      Deactivate
-                    </button>
+
+                    <div className="p-8 rounded-[.5rem] bg-red-50 border border-red-100 flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-black text-red-900">Permanently Delete Profile & Facility Data</p>
+                        <p className="text-[10px] text-red-600 font-bold mt-1">Completely wipes your user account, staff, sales, inventory, and facility from HudumaLynk.</p>
+                      </div>
+                      <button
+                        onClick={() => setConfirmDeleteId('delete-profile-facility')}
+                        className="px-6 py-3 bg-red-600 text-white rounded-[.5rem] text-[10px] font-black uppercase tracking-widest hover:bg-red-700 transition-all shadow-lg shadow-red-900/10"
+                      >
+                        Delete Profile & Facility
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -698,11 +743,24 @@ export default function SettingsPage() {
 
       <ConfirmModal
         isOpen={!!confirmDeleteId}
-        title="Delete Account"
-        message="Are you sure you want to delete your account? This action will disable your access."
-        confirmText="Delete"
+        title={
+          confirmDeleteId === 'delete-profile-facility'
+            ? 'PERMANENTLY DELETE PROFILE & FACILITY?'
+            : confirmDeleteId === 'deactivate'
+            ? 'Deactivate Account?'
+            : 'Reset Business Data?'
+        }
+        message={
+          confirmDeleteId === 'delete-profile-facility'
+            ? 'CRITICAL WARNING: This will permanently erase your user profile, all staff logins, inventory, sales, financial records, and your facility tenant from HudumaLynk. THIS CANNOT BE UNDONE. Are you absolutely sure?'
+            : confirmDeleteId === 'deactivate'
+            ? 'Are you sure you want to deactivate your account? This action will disable access for you and your staff.'
+            : 'Are you sure you want to reset workshop data? All sales and product data will be cleared.'
+        }
+        confirmText={confirmDeleteId === 'delete-profile-facility' ? 'Yes, Delete Everything' : 'Confirm'}
         onConfirm={() => {
           if (confirmDeleteId === 'deactivate') deactivateMutation.mutate()
+          if (confirmDeleteId === 'delete-profile-facility') deleteAccountMutation.mutate()
           if (confirmDeleteId === 'clear-workshop') {
             providersApi.clearData()
               .then(() => {

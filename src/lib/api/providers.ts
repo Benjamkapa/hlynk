@@ -7,6 +7,7 @@ export const providersApi = {
   changePassword: (data: any) => api.post('/providers/me/security/password', data).then(r => r.data),
   deactivateAccount: () => api.post('/providers/me/security/deactivate').then(r => r.data),
   clearData: () => api.post('/providers/me/clear-data').then(r => r.data),
+  deleteProfileAndFacility: () => api.delete('/providers/me/delete-account').then(r => r.data),
   getActivityLogs: (params?: { page?: number; limit?: number }) => api.get('/providers/me/activity', { params }).then(r => r.data),
   getStats: () => api.get('/providers/stats').then(r => r.data),
   getStaff: () => api.get('/staff').then(r => r.data),
@@ -160,6 +161,8 @@ export const adminApi = {
   getMedia: () => api.get('/admin/media').then(r => r.data),
   deleteMedia: (path: string) => api.post('/admin/media/delete', { path }).then(r => r.data),
   testB2C: (data: { phone: string, amount: number, remarks?: string }) => api.post('/admin/test-b2c', data).then(r => r.data),
+  clearTable: (table: string, tenantId?: string) => api.post('/admin/data/clear-table', { table, tenantId }).then(r => r.data),
+  deleteRecord: (table: string, id: string) => api.post('/admin/data/delete-record', { table, id }).then(r => r.data),
   downloadDatabaseBackup: (onDownloadProgress?: (progressEvent: any) => void) => api.get('/admin/backup/db', { responseType: 'blob', onDownloadProgress }).then(r => r.data),
   restoreDatabaseBackup: (file: File, onUploadProgress?: (progressEvent: any) => void) => {
     const formData = new FormData()

@@ -1,15 +1,17 @@
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { adminApi } from '../../lib/api/providers'
 import { toast } from 'sonner'
 import { getErrorMessage } from '../../lib/utils/error'
-import { DollarSign, TrendingUp, PieChart, ArrowUpRight, Download, Search, Filter, CheckCircle2, Clock, CreditCard, Activity, Landmark, Wallet, AlertTriangle, ExternalLink, Smartphone, Banknote, ChevronLeft, ChevronRight, X } from 'lucide-react'
+import { DollarSign, TrendingUp, PieChart, ArrowUpRight, Download, Search, Filter, CheckCircle2, Clock, CreditCard, Activity, Landmark, Wallet, AlertTriangle, ExternalLink, Smartphone, Banknote, ChevronLeft, ChevronRight, X, Trash2, ShieldAlert } from 'lucide-react'
 import PayoutsManager from '../../components/admin/PayoutsManager'
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, BarChart, Bar } from 'recharts'
 
 import { useEffect, useState } from 'react'
 import { AdminStats } from '../../lib/types/api'
+import { formatDate, formatDateTime } from '../../lib/utils/date'
 
 export default function FinancialsPage() {
+  const queryClient = useQueryClient()
   const [page, setPage] = useState(1)
   const [activeTab, setActiveTab] = useState<'LEDGER' | 'PAYOUTS'>('LEDGER')
   const [search, setSearch] = useState('')
@@ -17,6 +19,28 @@ export default function FinancialsPage() {
   const [method, setMethod] = useState('')
   const [type, setType] = useState('')
   const [selectedTxId, setSelectedTxId] = useState<string | null>(null)
+
+  const deleteTxMutation = useMutation({
+    mutationFn: (txId: string) => adminApi.deleteRecord('payment', txId),
+    onSuccess: (res) => {
+      toast.success(res.message || 'Transaction record deleted')
+      queryClient.invalidateQueries({ queryKey: ['admin-transactions'] })
+      queryClient.invalidateQueries({ queryKey: ['financial-stats'] })
+      queryClient.invalidateQueries({ queryKey: ['admin-vault'] })
+    },
+    onError: (err) => toast.error(getErrorMessage(err))
+  })
+
+  const clearLedgerMutation = useMutation({
+    mutationFn: () => adminApi.clearTable('payment'),
+    onSuccess: (res) => {
+      toast.success(res.message || 'Payment ledger cleared')
+      queryClient.invalidateQueries({ queryKey: ['admin-transactions'] })
+      queryClient.invalidateQueries({ queryKey: ['financial-stats'] })
+      queryClient.invalidateQueries({ queryKey: ['admin-vault'] })
+    },
+    onError: (err) => toast.error(getErrorMessage(err))
+  })
 
   const { data: rawStats, error } = useQuery<any>({
     queryKey: ['financial-stats'],
@@ -164,9 +188,22 @@ export default function FinancialsPage() {
 
           <div className="bg-white rounded-lg border border-slate-100 shadow-sm overflow-hidden">
             <div className="p-8 border-b border-slate-50 flex flex-col xl:flex-row gap-6 justify-between items-start xl:items-center">
-              <div>
-                <h3 className="text-xl font-black text-slate-900 tracking-tight">Active Payments Log</h3>
-                <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mt-1">Unified view of all platform transactions</p>
+              <div className="flex justify-between items-center w-full xl:w-auto gap-4">
+                <div>
+                  <h3 className="text-xl font-black text-slate-900 tracking-tight">Active Payments Log</h3>
+                  <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mt-1">Unified view of all platform transactions</p>
+                </div>
+                <button
+                  disabled={clearLedgerMutation.isPending}
+                  onClick={() => {
+                    if (window.confirm('CRITICAL ACTION: Are you sure you want to purge all payment ledger records? This cannot be undone!')) {
+                      clearLedgerMutation.mutate()
+                    }
+                  }}
+                  className="px-4 py-2 bg-red-50 text-red-600 hover:bg-red-100 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2"
+                >
+                  <Trash2 size={12} /> Purge Ledger
+                </button>
               </div>
               
               <div className="flex flex-wrap gap-4 w-full xl:w-auto">
@@ -269,16 +306,31 @@ export default function FinancialsPage() {
                       </td>
                       <td className="px-8 py-6 text-right">
                         <span className="text-[10px] font-black text-slate-400 hl-mono uppercase">
-                          {new Date(tx.createdAt).toLocaleDateString()}
+                          {formatDate(tx.createdAt)}
                         </span>
                       </td>
                       <td className="px-8 py-6 text-right">
-                        <button 
-                          onClick={() => setSelectedTxId(tx.id)}
-                          className="p-2 h-8 w-8 rounded-full hover:bg-emerald-50 text-slate-300 hover:text-emerald-600 transition-all flex items-center justify-center"
-                        >
-                          <ExternalLink size={14} />
-                        </button>
+                        <div className="flex items-center justify-end gap-1">
+                          <button 
+                            title="View Audit Detail"
+                            onClick={() => setSelectedTxId(tx.id)}
+                            className="p-2 h-8 w-8 rounded-full hover:bg-emerald-50 text-slate-300 hover:text-emerald-600 transition-all flex items-center justify-center"
+                          >
+                            <ExternalLink size={14} />
+                          </button>
+                          <button 
+                            title="Super Admin Delete Record"
+                            disabled={deleteTxMutation.isPending}
+                            onClick={() => {
+                              if (window.confirm(`Are you sure you want to permanently delete transaction #${tx.id}?`)) {
+                                deleteTxMutation.mutate(tx.id)
+                              }
+                            }}
+                            className="p-2 h-8 w-8 rounded-full hover:bg-red-50 text-slate-300 hover:text-red-600 transition-all flex items-center justify-center"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}

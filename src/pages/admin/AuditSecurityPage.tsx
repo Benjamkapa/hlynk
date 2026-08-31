@@ -6,6 +6,7 @@ import { useState, useEffect } from 'react'
 import { AdminStats } from '../../lib/types/api'
 import { exportToCSV } from '../../lib/utils/export'
 import CountUp from '../../components/shared/CountUp'
+import { formatDate } from '../../lib/utils/date'
 
 export default function AuditSecurityPage() {
   const [logPage, setLogPage] = useState(1)
@@ -235,7 +236,7 @@ export default function AuditSecurityPage() {
               ) : logsData?.items.map((log: any) => (
                 <tr key={log.id} className="hover:bg-gray-50/50 transition-all group cursor-pointer">
                   <td className="p-6">
-                    <p className="text-sm font-black text-gray-900 leading-none mb-1">{new Date(log.createdAt).toLocaleDateString()}</p>
+                    <p className="text-sm font-black text-gray-900 leading-none mb-1">{formatDate(log.createdAt)}</p>
                     <p className="text-[10px] font-bold text-gray-400 hl-mono">{new Date(log.createdAt).toLocaleTimeString()}</p>
                   </td>
                   <td className="p-6">
