@@ -8,7 +8,6 @@ import { SlideOver } from '../../components/shared/SlideOver'
 import { exportToCSV } from '../../lib/utils/export'
 import TablePagination from '../../components/shared/TablePagination'
 
-import { useEffect } from 'react'
 import { keepPreviousData } from '@tanstack/react-query'
 import { PaginatedResponse } from '../../lib/types/api'
 
@@ -49,53 +48,51 @@ export default function CustomersPage() {
   }
 
   return (
-    <div className="mx-auto space-y-12 animate-in fade-in duration-700 pb-20">
+    <div className="space-y-8 pt-4">
 
-      {/* Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
-        <div className="space-y-2">
-          <h1 className="text-5xl font-black text-slate-900 tracking-tighter">Community</h1>
-          <p className="text-slate-500 font-bold uppercase tracking-[0.2em] text-[10px] flex items-center gap-2">
-            <Users size={14} className="text-emerald-500" /> Relationship Management
-          </p>
+      {/* Page header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-xl font-semibold text-gray-900">Customers</h1>
+          <p className="text-gray-400 text-sm mt-0.5">Relationship management</p>
         </div>
-        <div className="flex gap-3">
+        <div className="flex items-center gap-2">
           <button
             onClick={handleExport}
-            className="h-14 px-6 bg-white border border-slate-200 text-slate-600 rounded-[.5em] font-black text-xs uppercase tracking-widest hover:bg-slate-50 transition-all shadow-xl shadow-slate-200/50 flex items-center gap-2"
+            className="h-9 px-4 rounded-[.5rem] text-sm font-medium text-gray-500 hover:text-gray-900 hover:bg-gray-50 transition-colors flex items-center gap-2"
           >
-            <Download size={18} /> Export
+            <Download size={15} /> Export
           </button>
           <button
             onClick={() => setIsAddModalOpen(true)}
-            className="h-14 px-8 bg-[#0D4A3E] text-white rounded-[.5em] font-black text-xs uppercase tracking-widest hover:bg-[#0A3D33] transition-all shadow-2xl shadow-emerald-900/20 flex items-center gap-2"
+            className="bg-[#0D4A3E] text-white h-9 px-4 rounded-[.5rem] text-sm font-medium hover:bg-[#0A3D33] transition-colors flex items-center gap-2"
           >
-            <Plus size={20} /> New Customer
+            <Plus size={16} /> New customer
           </button>
         </div>
       </div>
 
-      {/* KPI Cards */}
-      <div className="grid grid-cols-1 grid-compact-cols md:grid-cols-3 gap-6">
-        <KpiCard title="Total Database" value={stats.total} sub="Registered Customers" icon={Users} variant="emerald" />
-        <KpiCard title="Active Today" value={stats.activeToday} sub="Visiting Customers" icon={Star} variant="amber" />
-        <KpiCard title="Top Spender" value={stats.topSpender} sub="High Value Profile" icon={TrendingUpIcon} variant="blue" />
+      {/* Overview */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-px bg-gray-100 rounded-[.5rem] overflow-hidden border border-gray-100">
+        <StatCell icon={Users} label="Total database" value={String(stats.total)} sub="Registered customers" />
+        <StatCell icon={Star} label="Active today" value={String(stats.activeToday)} sub="Visiting customers" />
+        <StatCell icon={Star} label="Top spender" value={String(stats.topSpender)} sub="High value profile" />
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-[.5rem] border border-slate-100 shadow-2xl shadow-slate-900/5 overflow-hidden">
-        <div className="p-8 border-b border-slate-50 flex flex-col md:flex-row gap-6">
-          <div className="relative flex-1">
-            <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
+      <div className="bg-white rounded-[.5rem] border border-gray-100">
+        <div className="p-4 border-b border-gray-100">
+          <div className="relative max-w-sm">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-300" size={15} />
             <input
               type="text"
-              placeholder="Search by name, phone or email..."
+              placeholder="Search by name, phone or email…"
               value={search}
               onChange={(e) => {
                 setSearch(e.target.value)
                 setPage(1)
               }}
-              className="w-full bg-slate-50 border-none rounded-[.5rem] py-4.5 pl-14 pr-6 outline-none focus:ring-4 focus:ring-emerald-500/5 transition-all text-sm font-bold placeholder:text-slate-400"
+              className="w-full bg-gray-50 border-none rounded-[.5rem] py-2.5 pl-9 pr-3 outline-none focus:ring-2 focus:ring-gray-200 transition-all text-sm"
             />
           </div>
         </div>
@@ -103,84 +100,79 @@ export default function CustomersPage() {
         <div className="overflow-x-auto">
           <table className="w-full text-left">
             <thead>
-              <tr className="bg-slate-50/50">
-                <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Customer Profile</th>
-                <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Contact Information</th>
-                <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Total Spend</th>
-                <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Last Visit</th>
-                <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Actions</th>
+              <tr>
+                <th className="px-5 py-3 text-xs font-medium text-gray-400">Customer profile</th>
+                <th className="px-5 py-3 text-xs font-medium text-gray-400">Contact information</th>
+                <th className="px-5 py-3 text-xs font-medium text-gray-400">Total spend</th>
+                <th className="px-5 py-3 text-xs font-medium text-gray-400">Last visit</th>
+                <th className="px-5 py-3 text-xs font-medium text-gray-400 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-50">
+            <tbody className="divide-y divide-gray-50">
               {isLoading ? (
                 <tr>
-                  <td colSpan={5} className="py-32 text-center">
-                    <div className="h-12 w-12 animate-spin rounded-full border-4 border-emerald-500 border-t-transparent mx-auto" />
-                  </td>
+                  <td colSpan={5} className="py-16 text-center text-sm text-gray-400">Loading…</td>
                 </tr>
               ) : customers.length > 0 ? customers.map((c: any) => (
-                <tr key={c.id} className="hover:bg-slate-50/50 transition-all group">
-                  <td className="px-8 py-6">
-                    <div className="flex items-center gap-4">
-                      <div className="h-12 w-12 rounded-[.5rem] bg-emerald-50 border border-emerald-100 flex items-center justify-center overflow-hidden">
+                <tr key={c.id} className="hover:bg-gray-50/60 transition-colors">
+                  <td className="px-5 py-3.5">
+                    <div className="flex items-center gap-3">
+                      <div className="h-9 w-9 rounded-[.5rem] bg-gray-50 border border-gray-100 flex items-center justify-center overflow-hidden flex-shrink-0">
                         <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${c.name}`} alt="avatar" referrerPolicy="no-referrer" />
                       </div>
                       <div>
-                        <p className="font-black text-slate-900 text-sm">{c.name}</p>
-                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">ID: {c.id.slice(-8).toUpperCase()}</p>
+                        <p className="font-medium text-gray-900 text-sm">{c.name}</p>
+                        <p className="text-xs text-gray-400 hl-mono">ID: {c.id.slice(-8).toUpperCase()}</p>
                       </div>
                     </div>
                   </td>
-                  <td className="px-8 py-6">
+                  <td className="px-5 py-3.5">
                     <div className="space-y-1">
-                      <div className="flex items-center gap-2 text-xs font-bold text-slate-600">
-                        <Phone size={14} className="text-slate-300" /> {c.phone}
+                      <div className="flex items-center gap-2 text-sm text-gray-600">
+                        <Phone size={13} className="text-gray-300" /> {c.phone}
                       </div>
                       {c.email && (
-                        <div className="flex items-center gap-2 text-[11px] font-bold text-slate-400">
-                          <Mail size={14} className="text-slate-300" /> {c.email}
+                        <div className="flex items-center gap-2 text-xs text-gray-400">
+                          <Mail size={13} className="text-gray-300" /> {c.email}
                         </div>
                       )}
                     </div>
                   </td>
-                  <td className="px-8 py-6 font-black text-slate-900 text-sm hl-mono">
+                  <td className="px-5 py-3.5 font-medium text-gray-900 text-sm hl-mono">
                     KES {Number(c.totalSpend || 0).toLocaleString()}
                   </td>
-                  <td className="px-8 py-6 text-xs font-bold text-slate-400 hl-mono uppercase">
+                  <td className="px-5 py-3.5 text-sm text-gray-400 hl-mono">
                     {c.lastVisit ? new Date(c.lastVisit).toLocaleDateString() : 'Never'}
                   </td>
-                  <td className="px-8 py-6 text-right">
-                    <div className="flex justify-end gap-2 transition-all">
+                  <td className="px-5 py-3.5">
+                    <div className="flex justify-end gap-1">
                       <button
                         onClick={() => setViewingCustomer(c)}
-                        className="p-2 hover:bg-white hover:shadow-lg rounded-[.5rem] transition-all text-slate-400 hover:text-blue-500"
-                        title="View Insights"
+                        className="p-1.5 rounded-[.5rem] text-gray-300 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+                        title="View insights"
                       >
-                        <Eye size={18} />
+                        <Eye size={15} />
                       </button>
                       <button
                         onClick={() => setEditingCustomer(c)}
-                        className="p-2 hover:bg-white hover:shadow-lg rounded-[.5rem] transition-all text-slate-400 hover:text-emerald-600"
+                        className="p-1.5 rounded-[.5rem] text-gray-300 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+                        title="Edit"
                       >
-                        <Edit size={18} />
+                        <Edit size={15} />
                       </button>
                       <button
                         onClick={() => setConfirmDeleteId(c.id)}
-                        className="p-2 hover:bg-white hover:shadow-lg rounded-[.5rem] transition-all text-slate-400 hover:text-red-600"
+                        className="p-1.5 rounded-[.5rem] text-gray-300 hover:text-red-500 hover:bg-red-50 transition-colors"
+                        title="Delete"
                       >
-                        <Trash2 size={18} />
+                        <Trash2 size={15} />
                       </button>
                     </div>
                   </td>
                 </tr>
               )) : (
                 <tr>
-                  <td colSpan={5} className="py-40 text-center">
-                    <div className="h-20 w-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6">
-                      <User size={40} className="text-slate-200" />
-                    </div>
-                    <p className="text-sm font-black uppercase tracking-[0.3em] text-slate-300">No customers found</p>
-                  </td>
+                  <td colSpan={5} className="py-16 text-center text-sm text-gray-400">No customers found.</td>
                 </tr>
               )}
             </tbody>
@@ -202,7 +194,7 @@ export default function CustomersPage() {
           setEditingCustomer(null);
           setViewingCustomer(null);
         }}
-        title={viewingCustomer ? "Customer Insights" : editingCustomer ? "Edit Customer" : "Add New Customer"}
+        title={viewingCustomer ? "Customer insights" : editingCustomer ? "Edit customer" : "Add new customer"}
       >
         {viewingCustomer ? (
           <CustomerInsights
@@ -219,9 +211,9 @@ export default function CustomersPage() {
 
       <ConfirmModal
         isOpen={!!confirmDeleteId}
-        title="Delete Customer"
+        title="Delete customer"
         message="Delete this customer? This will remove their profile but preserve sales history."
-        confirmText="Delete Customer"
+        confirmText="Delete customer"
         onConfirm={() => confirmDeleteId && deleteMutation.mutate(confirmDeleteId)}
         onCancel={() => setConfirmDeleteId(null)}
       />
@@ -248,60 +240,50 @@ function CustomerForm({ customer, onClose }: { customer?: any; onClose: () => vo
   })
 
   return (
-    <div className="space-y-6">
-      <InputGroup label="Full Name" placeholder="e.g. John Doe" value={form.name} onChange={(v: string) => setForm({ ...form, name: v })} />
-      <InputGroup label="Phone Number" placeholder="0712..." value={form.phone} onChange={(v: string) => setForm({ ...form, phone: v })} />
-      <InputGroup label="Email Address" placeholder="john@example.com" value={form.email} onChange={(v: string) => setForm({ ...form, email: v })} />
+    <div className="space-y-5">
+      <InputGroup label="Full name" placeholder="e.g. John Doe" value={form.name} onChange={(v: string) => setForm({ ...form, name: v })} />
+      <InputGroup label="Phone number" placeholder="0712…" value={form.phone} onChange={(v: string) => setForm({ ...form, phone: v })} />
+      <InputGroup label="Email address" placeholder="john@example.com" value={form.email} onChange={(v: string) => setForm({ ...form, email: v })} />
 
       <button
         onClick={() => mutation.mutate(form)}
         disabled={mutation.isPending}
-        className="w-full py-5 mt-8 bg-[#0D4A3E] text-white rounded-[.5rem] font-black text-xs uppercase tracking-widest hover:bg-[#0A3D33] transition-all shadow-2xl shadow-emerald-900/20"
+        className="w-full py-3.5 mt-4 bg-[#0D4A3E] text-white rounded-[.5rem] text-sm font-medium hover:bg-[#0A3D33] transition-colors"
       >
-        {mutation.isPending ? 'Processing...' : customer ? 'Update Profile' : 'Register Customer'}
+        {mutation.isPending ? 'Processing…' : customer ? 'Update profile' : 'Register customer'}
       </button>
     </div>
   )
 }
 
-function KpiCard({ title, value, sub, icon: Icon, variant }: any) {
-  const variants = {
-    emerald: 'bg-emerald-50 text-emerald-600 border-emerald-100',
-    amber: 'bg-amber-50 text-amber-600 border-amber-100',
-    blue: 'bg-blue-50 text-blue-600 border-blue-100',
-  }
+// ─── Overview cell ──────────────────────────────────────────────────────────
 
+function StatCell({ icon: Icon, label, value, sub }: { icon: any; label: string; value: string; sub: string }) {
   return (
-    <div className="bg-white p-8 rounded-[.5rem] border border-slate-100 shadow-xl shadow-slate-900/5 flex items-center gap-6 hover:shadow-2xl transition-all border-b-4 group">
-      <div className={`h-16 w-16 rounded-[.5rem] flex items-center justify-center shrink-0 transition-all group-hover:scale-110 ${variants[variant as keyof typeof variants]} border`}>
-        <Icon size={32} />
+    <div className="bg-white p-6">
+      <div className="flex items-center gap-2 mb-2">
+        <Icon size={13} className="text-gray-300" />
+        <p className="text-xs text-gray-400">{label}</p>
       </div>
-      <div>
-        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">{title}</p>
-        <h3 className="text-2xl font-black text-slate-900 hl-mono tracking-tight">{value}</h3>
-        <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest opacity-60">{sub}</p>
-      </div>
+      <p className="text-2xl font-semibold text-gray-900 hl-mono tracking-tight">{value}</p>
+      <p className="text-xs text-gray-400 mt-1">{sub}</p>
     </div>
   )
 }
 
 function InputGroup({ label, placeholder, value, onChange }: any) {
   return (
-    <div className="space-y-2">
-      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">{label}</label>
+    <div className="space-y-1.5">
+      <label className="text-xs text-gray-500">{label}</label>
       <input
         type="text"
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="w-full bg-slate-50 border-none rounded-[.5rem] py-4.5 px-6 outline-none focus:ring-4 focus:ring-emerald-500/5 transition-all text-sm font-bold"
+        className="w-full bg-gray-50 border-none rounded-[.5rem] py-3 px-3.5 outline-none focus:ring-2 focus:ring-gray-200 transition-all text-sm"
       />
     </div>
   )
-}
-
-function TrendingUpIcon(props: any) {
-  return <Star {...props} />
 }
 
 function CustomerInsights({ customer, onClose }: { customer: any; onClose: () => void }) {
@@ -314,55 +296,54 @@ function CustomerInsights({ customer, onClose }: { customer: any; onClose: () =>
   const sales = salesData?.items || []
 
   return (
-    <div className="space-y-10">
-      <div className="bg-emerald-50 rounded-[1.5rem] p-8 border border-emerald-100 flex items-center gap-6">
-        <div className="h-20 w-20 rounded-2xl bg-white flex items-center justify-center p-2 shadow-sm border border-emerald-100">
+    <div className="space-y-6">
+      <div className="bg-gray-50 rounded-[.5rem] p-5 border border-gray-100 flex items-center gap-4">
+        <div className="h-14 w-14 rounded-[.5rem] bg-white flex items-center justify-center p-1.5 border border-gray-100 flex-shrink-0">
           <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${customer.name}`} alt="avatar" />
         </div>
         <div>
-          <h3 className="text-2xl font-black text-slate-800 tracking-tight">{customer.name}</h3>
-          <p className="text-xs font-bold text-emerald-600 uppercase tracking-widest hl-mono">Pulse Active</p>
-          <p className="text-xs font-bold text-slate-500 mt-1">{customer.phone}</p>
+          <h3 className="text-base font-semibold text-gray-900">{customer.name}</h3>
+          <p className="text-sm text-gray-400 mt-0.5">{customer.phone}</p>
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
-        <div className="bg-white p-6 rounded-[1rem] border border-slate-100 shadow-sm text-center">
-          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Total Spent</p>
-          <h4 className="text-xl font-black text-slate-900 hl-mono">KES {Number(customer.totalSpend || 0).toLocaleString()}</h4>
+      <div className="grid grid-cols-2 gap-px bg-gray-100 rounded-[.5rem] overflow-hidden border border-gray-100">
+        <div className="bg-white p-5 text-center">
+          <p className="text-xs text-gray-400 mb-1">Total spent</p>
+          <h4 className="text-lg font-semibold text-gray-900 hl-mono">KES {Number(customer.totalSpend || 0).toLocaleString()}</h4>
         </div>
-        <div className="bg-white p-6 rounded-[1rem] border border-slate-100 shadow-sm text-center">
-          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Visits</p>
-          <h4 className="text-xl font-black text-slate-900 hl-mono">{sales.length} Purchases</h4>
+        <div className="bg-white p-5 text-center">
+          <p className="text-xs text-gray-400 mb-1">Visits</p>
+          <h4 className="text-lg font-semibold text-gray-900 hl-mono">{sales.length} purchases</h4>
         </div>
       </div>
 
-      <div className="space-y-4">
-        <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest border-l-4 border-emerald-500 pl-3">Recent Transactions</h4>
+      <div className="space-y-3">
+        <h4 className="text-xs text-gray-400">Recent transactions</h4>
         {isLoading ? (
-          <div className="py-10 text-center text-slate-300 text-xs font-black uppercase">Loading activity...</div>
+          <div className="py-8 text-center text-sm text-gray-400">Loading…</div>
         ) : sales.length > 0 ? (
-          <div className="space-y-3">
+          <div className="divide-y divide-gray-50 border border-gray-100 rounded-[.5rem]">
             {sales.slice(0, 5).map((sale: any) => (
-              <div key={sale.id} className="p-4 rounded-[1rem] bg-slate-50 border border-slate-100 flex justify-between items-center group hover:bg-white hover:shadow-xl transition-all">
-                <div className="text-xs font-black text-slate-800">#{sale.id.slice(-6).toUpperCase()}</div>
+              <div key={sale.id} className="p-3.5 flex justify-between items-center hover:bg-gray-50/60 transition-colors">
+                <div className="text-sm text-gray-700 hl-mono">#{sale.id.slice(-6).toUpperCase()}</div>
                 <div className="text-right">
-                  <p className="text-sm font-black text-emerald-600 hl-mono">KES {Number(sale.totalAmount).toLocaleString()}</p>
-                  <p className="text-[9px] font-black uppercase text-slate-400">{new Date(sale.createdAt).toLocaleDateString()}</p>
+                  <p className="text-sm font-medium text-gray-900 hl-mono">KES {Number(sale.totalAmount).toLocaleString()}</p>
+                  <p className="text-xs text-gray-400">{new Date(sale.createdAt).toLocaleDateString()}</p>
                 </div>
               </div>
             ))}
           </div>
         ) : (
-          <div className="py-10 text-center bg-slate-50 rounded-[1rem] border-2 border-dashed border-slate-100 text-slate-300 text-[10px] font-black uppercase">No history found</div>
+          <div className="py-8 text-center bg-gray-50 rounded-[.5rem] border border-gray-100 text-sm text-gray-400">No history found</div>
         )}
       </div>
 
       <button
         onClick={onClose}
-        className="w-full py-5 bg-slate-900 text-white rounded-[1rem] font-black text-xs uppercase tracking-widest shadow-xl shadow-slate-900/10 hover:bg-black transition-all"
+        className="w-full py-3.5 bg-gray-900 text-white rounded-[.5rem] text-sm font-medium hover:bg-black transition-colors"
       >
-        Close Pulse View
+        Close
       </button>
     </div>
   )

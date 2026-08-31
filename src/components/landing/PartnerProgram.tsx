@@ -4,16 +4,14 @@ import { CheckCircle2, TrendingUp, Wallet, Users, Award, Percent, ArrowRight, Me
 import { FadeUp } from './Animations'
 
 export default function PartnerProgram() {
-  const [liteCount, setLiteCount] = useState<number>(5)
-  const [plusCount, setPlusCount] = useState<number>(3)
-  const [maxCount, setMaxCount] = useState<number>(1)
+  const [starterCount, setStarterCount] = useState<number>(5)
+  const [maxCount, setMaxCount] = useState<number>(3)
 
   // Earnings configuration
-  const LITE_COMMISSION = 1200
-  const PLUS_COMMISSION = 2650
-  const MAX_COMMISSION = 4950
+  const STARTER_COMMISSION = 1200
+  const MAX_COMMISSION = 2300
 
-  const monthlyTotal = (liteCount * LITE_COMMISSION) + (plusCount * PLUS_COMMISSION) + (maxCount * MAX_COMMISSION)
+  const monthlyTotal = (starterCount * STARTER_COMMISSION) + (maxCount * MAX_COMMISSION)
   const annualTotal = monthlyTotal * 12
 
   // Interactive milestone messages based on KES output
@@ -22,7 +20,7 @@ export default function PartnerProgram() {
       return "Slide the controls to simulate your monthly earnings!"
     }
     if (monthlyTotal < 10000) {
-      return "💡 Tip: Just onboarding 4 shops on the Growth plan gets you over KES 10,000/mo!"
+      return "💡 Tip: Onboarding 5 shops on Business Pro earns you KES 11,500!"
     }
     if (monthlyTotal >= 10000 && monthlyTotal < 35000) {
       return "🌟 Steady Side Earn: That covers rent, data, and daily transport comfortably!"
@@ -122,75 +120,51 @@ export default function PartnerProgram() {
                 {/* Sliders Grid */}
                 <div className="space-y-6">
                   
-                  {/* Slider 1: Lite (Starter) */}
+                  {/* Slider 1: Starter */}
                   <div className="space-y-2">
                     <div className="flex justify-between items-center">
-                      <label className="text-sm font-black text-[#F472B6] uppercase tracking-wider flex items-center gap-1.5">
-                        <span className="w-2.5 h-2.5 bg-[#F472B6] rounded-full inline-block"></span>
-                        Starter Referrals
+                      <label className="text-sm font-black text-[#0D4A3E] uppercase tracking-wider flex items-center gap-1.5">
+                        <span className="w-2.5 h-2.5 bg-[#0D4A3E] rounded-full inline-block"></span>
+                        Starter Referrals (PLUS)
                       </label>
-                      <span className="text-lg font-bold text-slate-700 bg-slate-50 px-3 py-1 rounded-lg border border-slate-100 hl-mono">{liteCount} shops</span>
+                      <span className="text-lg font-bold text-slate-700 bg-slate-50 px-3 py-1 rounded-lg border border-slate-100 hl-mono">{starterCount} shops</span>
                     </div>
                     <input
                       type="range"
                       min="0"
                       max="50"
-                      value={liteCount}
-                      onChange={(e) => setLiteCount(parseInt(e.target.value))}
-                      className="w-full h-2 bg-[#F472B6]/10 rounded-lg appearance-none cursor-pointer accent-[#F472B6]"
+                      value={starterCount}
+                      onChange={(e) => setStarterCount(parseInt(e.target.value))}
+                      className="w-full h-2 bg-[#0D4A3E]/10 rounded-lg appearance-none cursor-pointer accent-[#0D4A3E]"
                     />
                     <div className="flex justify-between text-[10px] font-bold text-slate-400 hl-mono">
                       <span>0</span>
-                      <span>Comm: KES 1,200/mo per shop</span>
+                      <span>Comm: KES 1,200 (27%) per shop</span>
                       <span>50</span>
                     </div>
                   </div>
 
-                  {/* Slider 2: Plus (Growth) */}
-                  <div className="space-y-2">
-                    <div className="flex justify-between items-center">
-                      <label className="text-sm font-black text-[#2DD4BF] uppercase tracking-wider flex items-center gap-1.5">
-                        <span className="w-2.5 h-2.5 bg-[#2DD4BF] rounded-full inline-block"></span>
-                        Growth Referrals
-                      </label>
-                      <span className="text-lg font-bold text-slate-700 bg-slate-50 px-3 py-1 rounded-lg border border-slate-100 hl-mono">{plusCount} shops</span>
-                    </div>
-                    <input
-                      type="range"
-                      min="0"
-                      max="30"
-                      value={plusCount}
-                      onChange={(e) => setPlusCount(parseInt(e.target.value))}
-                      className="w-full h-2 bg-[#2DD4BF]/10 rounded-lg appearance-none cursor-pointer accent-[#2DD4BF]"
-                    />
-                    <div className="flex justify-between text-[10px] font-bold text-slate-400 hl-mono">
-                      <span>0</span>
-                      <span>Comm: KES 2,650/mo per shop</span>
-                      <span>30</span>
-                    </div>
-                  </div>
-
-                  {/* Slider 3: Max (Business Pro) */}
+                  {/* Slider 2: Business Pro (MAX) */}
                   <div className="space-y-2">
                     <div className="flex justify-between items-center">
                       <label className="text-sm font-black text-[#818CF8] uppercase tracking-wider flex items-center gap-1.5">
                         <span className="w-2.5 h-2.5 bg-[#818CF8] rounded-full inline-block"></span>
-                        Pro Referrals
+                        Business Pro Referrals (MAX)
                       </label>
                       <span className="text-lg font-bold text-slate-700 bg-slate-50 px-3 py-1 rounded-lg border border-slate-100 hl-mono">{maxCount} shops</span>
                     </div>
                     <input
                       type="range"
                       min="0"
-                      max="20"
+                      max="50"
                       value={maxCount}
                       onChange={(e) => setMaxCount(parseInt(e.target.value))}
                       className="w-full h-2 bg-[#818CF8]/10 rounded-lg appearance-none cursor-pointer accent-[#818CF8]"
                     />
                     <div className="flex justify-between text-[10px] font-bold text-slate-400 hl-mono">
                       <span>0</span>
-                      <span>Comm: KES 4,950/mo per shop</span>
-                      <span>20</span>
+                      <span>Comm: KES 2,300 (28%) per shop</span>
+                      <span>50</span>
                     </div>
                   </div>
 

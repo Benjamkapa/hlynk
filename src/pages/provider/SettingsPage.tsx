@@ -232,17 +232,19 @@ export default function SettingsPage() {
   if (isLoading) return <div className="p-12 text-center animate-pulse">Loading settings...</div>
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500 pt-6">
+    // Extra bottom padding on small screens: the primary nav collapses into a
+    // fixed bottom bar there, so page content needs room not to sit under it.
+    <div className="space-y-6 lg:space-y-8 animate-in fade-in duration-500 pt-4 lg:pt-6 pb-28 lg:pb-6">
 
-      <div className="flex justify-between items-end">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="text-3xl font-black text-gray-900 tracking-tight">Settings</h1>
-          <p className="text-gray-500 font-medium">Manage your personal profile and business configurations</p>
+          <h1 className="text-2xl lg:text-3xl font-black text-gray-900 tracking-tight">Settings</h1>
+          <p className="text-gray-500 font-medium text-sm lg:text-base">Manage your personal profile and business configurations</p>
         </div>
         <button
           onClick={handleSave}
           disabled={updateMutation.isPending || passwordMutation.isPending}
-          className="bg-[#0D4A3E] text-white h-12 px-8 rounded-[.5rem] font-black text-sm hover:bg-[#0A3D33] transition-all flex items-center gap-2 disabled:opacity-50"
+          className="w-full sm:w-auto bg-[#0D4A3E] text-white h-12 px-8 rounded-[.5rem] font-black text-sm hover:bg-[#0A3D33] transition-all flex items-center justify-center gap-2 disabled:opacity-50"
         >
           {updateMutation.isPending || passwordMutation.isPending ? (
             <Loader2 className="animate-spin" size={18} />
@@ -253,16 +255,37 @@ export default function SettingsPage() {
         </button>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-        <div className="space-y-2">
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-5 lg:gap-8">
+        {/* Tab navigation: an evenly spaced grid on small screens (everything
+            visible at once, clear of the bottom nav — no side-scrolling
+            needed), vertical sidebar list from lg upward. */}
+        <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 lg:hidden">
           {tabs.map((tab) => (
             <button
               key={tab.name}
               onClick={() => setActiveTab(tab.name)}
-              className={`w-full flex items-center gap-3 px-6 py-4 rounded-[.5rem] font-bold text-sm hover:shadow hover:bg-emerald-100/40 transition-all ${tab.mobileOnly ? 'lg:hidden ' : ''}${activeTab === tab.name
-                ? 'bg-white text-emerald-600 shadow-sm'
-                : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'
-                }`}
+              className={`flex flex-col items-center justify-center gap-1.5 py-3 px-1.5 rounded-[.5rem] text-center transition-all ${
+                activeTab === tab.name
+                  ? 'bg-[#0D4A3E] text-white'
+                  : 'bg-gray-50 text-gray-500 hover:bg-gray-100'
+              }`}
+            >
+              <tab.icon size={18} />
+              <span className="text-[10px] font-semibold leading-tight">{tab.name}</span>
+            </button>
+          ))}
+        </div>
+
+        <div className="hidden lg:flex lg:flex-col lg:gap-2">
+          {tabs.filter((tab) => !tab.mobileOnly).map((tab) => (
+            <button
+              key={tab.name}
+              onClick={() => setActiveTab(tab.name)}
+              className={`w-full flex items-center gap-3 px-6 py-4 rounded-[.5rem] font-bold text-sm transition-all ${
+                activeTab === tab.name
+                  ? 'bg-white text-emerald-600 shadow-sm'
+                  : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'
+              }`}
             >
               <tab.icon size={18} />
               {tab.name}
@@ -271,8 +294,8 @@ export default function SettingsPage() {
         </div>
 
         <div className="lg:col-span-3">
-          <div className="bg-white rounded-[.5rem] border border-gray-100 shadow-sm p-8">
-            <h3 className="text-xl font-black text-gray-900 mb-8 border-b border-gray-50 pb-4">{activeTab} Details</h3>
+          <div className="bg-white rounded-[.5rem] border border-gray-100 shadow-sm p-5 lg:p-8">
+            <h3 className="text-lg lg:text-xl font-black text-gray-900 mb-6 lg:mb-8 border-b border-gray-50 pb-4">{activeTab} Details</h3>
 
             {activeTab === 'Platform Hub' && (
               <div className="space-y-8 animate-in fade-in slide-in-from-top-4 duration-500">
@@ -303,7 +326,7 @@ export default function SettingsPage() {
               <div className="space-y-8">
                 <div className="flex items-center gap-6">
                   <div className="relative group">
-                    <div className="h-24 w-24 rounded-full bg-gray-100 flex items-center justify-center overflow-hidden shadow-lg">
+                    <div className="h-20 w-20 lg:h-24 lg:w-24 rounded-full bg-gray-100 flex items-center justify-center overflow-hidden shadow-lg">
                       <img
                         src={user?.photoUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(formData?.name || user?.name || '')}&background=0D4A3E&color=fff`}
                         className="h-full w-full object-cover"
@@ -463,7 +486,7 @@ export default function SettingsPage() {
                   value={formData.location}
                   onChange={(v: string) => setFormData({ ...formData, location: v })}
                 />
-                
+
                 <div className="space-y-2 mt-6">
                    <label className="text-xs font-black text-gray-400 uppercase tracking-widest">Sales Channels / Sources</label>
                    <input
@@ -484,7 +507,7 @@ export default function SettingsPage() {
                 <div className="pt-6 border-t border-gray-50 mt-6">
                   <h4 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-1">Active Platform Modules</h4>
                   <p className="text-xs text-gray-500 font-medium mb-6">Enable or disable modules for your business. Sidebar and navigation update in real time.</p>
-                  
+
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                     <ToggleItem
                       title="Point of Sale & Retail Inventory"
@@ -543,26 +566,19 @@ export default function SettingsPage() {
               </div>
             )}
 
-
-
-
-
-
-
-
             {activeTab === 'Data Management' && (
-              <div className="space-y-8 animate-in fade-in slide-in-from-top-4 duration-500">
-                <div className="p-8 bg-amber-50 border border-amber-100 rounded-[.5rem] flex items-start gap-5">
+              <div className="space-y-6 lg:space-y-8 animate-in fade-in slide-in-from-top-4 duration-500">
+                <div className="p-5 lg:p-8 bg-amber-50 border border-amber-100 rounded-[.5rem] flex flex-col sm:flex-row items-start gap-5">
                   <AlertTriangle className="text-amber-600 shrink-0 mt-1" size={24} />
-                  <div>
+                  <div className="w-full">
                     <h4 className="text-lg font-black text-amber-900 mb-2">Reset Business Data</h4>
                     <p className="text-sm text-amber-800 leading-relaxed max-w-xl">
                       This action will <strong>permanently delete</strong> all your sales records, history, added products, expenses, and customer logs. This is useful for clearing test data before you start your real business operations.
                     </p>
-                    <div className="mt-8 flex flex-col sm:flex-row gap-4">
+                    <div className="mt-6 lg:mt-8 flex flex-col sm:flex-row gap-4">
                       <button
                         onClick={() => setConfirmDeleteId('clear-workshop')}
-                        className="px-8 py-4 bg-amber-600 text-white rounded-[.5rem] font-black text-xs uppercase tracking-widest hover:bg-amber-700 transition-all shadow-xl shadow-amber-900/10 active:scale-95"
+                        className="w-full sm:w-auto px-8 py-4 bg-amber-600 text-white rounded-[.5rem] font-black text-xs uppercase tracking-widest hover:bg-amber-700 transition-all shadow-xl shadow-amber-900/10 active:scale-95"
                       >
                         Reset Workshop Data
                       </button>
@@ -570,17 +586,17 @@ export default function SettingsPage() {
                   </div>
                 </div>
 
-                <div className="p-8 bg-red-50 border border-red-100 rounded-[.5rem] flex items-start gap-5">
+                <div className="p-5 lg:p-8 bg-red-50 border border-red-100 rounded-[.5rem] flex flex-col sm:flex-row items-start gap-5">
                   <Trash2 className="text-red-600 shrink-0 mt-1" size={24} />
-                  <div>
+                  <div className="w-full">
                     <h4 className="text-lg font-black text-red-900 mb-2">Delete Profile & Facility Data</h4>
                     <p className="text-sm text-red-800 leading-relaxed max-w-xl">
                       Completely and permanently erases your user profile, facility tenant, staff logins, product catalog, sales, expenses, and financial logs from HudumaLynk. <strong>This action cannot be undone.</strong>
                     </p>
-                    <div className="mt-8">
+                    <div className="mt-6 lg:mt-8">
                       <button
                         onClick={() => setConfirmDeleteId('delete-profile-facility')}
-                        className="px-8 py-4 bg-red-600 text-white rounded-[.5rem] font-black text-xs uppercase tracking-widest hover:bg-red-700 transition-all shadow-xl shadow-red-900/10 active:scale-95"
+                        className="w-full sm:w-auto px-8 py-4 bg-red-600 text-white rounded-[.5rem] font-black text-xs uppercase tracking-widest hover:bg-red-700 transition-all shadow-xl shadow-red-900/10 active:scale-95"
                       >
                         Delete Profile & Facility
                       </button>
@@ -588,14 +604,14 @@ export default function SettingsPage() {
                   </div>
                 </div>
 
-                <div className="p-8 bg-blue-50 border border-blue-100 rounded-[.5rem] flex items-start gap-5">
+                <div className="p-5 lg:p-8 bg-blue-50 border border-blue-100 rounded-[.5rem] flex flex-col sm:flex-row items-start gap-5">
                   <RefreshCcw className="text-blue-600 shrink-0 mt-1" size={24} />
-                  <div>
+                  <div className="w-full">
                     <h4 className="text-lg font-black text-blue-900 mb-2">Wipe Application Cache</h4>
                     <p className="text-sm text-blue-800 leading-relaxed max-w-xl">
                       If you see errors like <strong>"Service worker took too long to activate"</strong> or "Old version detected", use this to force the app to refresh. This will log you out but fix most mobile update issues.
                     </p>
-                    <div className="mt-8">
+                    <div className="mt-6 lg:mt-8">
                       <button
                         onClick={async () => {
                           if (confirm('This will wipe local caches and log you out to fix update issues. Proceed?')) {
@@ -623,7 +639,7 @@ export default function SettingsPage() {
                             window.location.href = '/login?reset=true';
                           }
                         }}
-                        className="px-8 py-4 bg-blue-600 text-white rounded-[.5rem] font-black text-xs uppercase tracking-widest hover:bg-blue-700 transition-all shadow-xl shadow-blue-900/10 active:scale-95"
+                        className="w-full sm:w-auto px-8 py-4 bg-blue-600 text-white rounded-[.5rem] font-black text-xs uppercase tracking-widest hover:bg-blue-700 transition-all shadow-xl shadow-blue-900/10 active:scale-95"
                       >
                         Force Hard Reset
                       </button>
@@ -656,15 +672,15 @@ export default function SettingsPage() {
             )}
 
             {activeTab === 'Security' && (
-              <div className="space-y-10">
+              <div className="space-y-8 lg:space-y-10">
                 <ActivityLogViewer />
 
-                <div className="pt-10 border-t border-gray-100">
+                <div className="pt-8 lg:pt-10 border-t border-gray-100">
                   <div className="flex items-center gap-3 mb-6">
                     <ShieldCheck size={18} className="text-emerald-600" />
                     <h4 className="text-xs font-black text-slate-700 uppercase tracking-widest">Offline PIN</h4>
                   </div>
-                  <div className={`p-6 rounded-[.5rem] border flex items-center justify-between gap-4 ${pinHasPin
+                  <div className={`p-5 lg:p-6 rounded-[.5rem] border flex flex-col sm:flex-row sm:items-center justify-between gap-4 ${pinHasPin
                       ? 'bg-emerald-50 border-emerald-100'
                       : 'bg-amber-50 border-amber-100'
                     }`}>
@@ -703,30 +719,30 @@ export default function SettingsPage() {
                   </div>
                 </div>
 
-                <div className="pt-10 border-t border-gray-100">
+                <div className="pt-8 lg:pt-10 border-t border-gray-100">
                   <h4 className="text-xs font-black text-red-500 uppercase tracking-widest mb-6">Danger Zone</h4>
                   <div className="space-y-4">
-                    <div className="p-8 rounded-[.5rem] bg-amber-50 border border-amber-100 flex items-center justify-between">
+                    <div className="p-5 lg:p-8 rounded-[.5rem] bg-amber-50 border border-amber-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                       <div>
                         <p className="text-sm font-black text-amber-900">Deactivate Account</p>
                         <p className="text-[10px] text-amber-700 font-bold mt-1">This will temporarily revoke access for all your staff logins.</p>
                       </div>
                       <button
                         onClick={() => setConfirmDeleteId('deactivate')}
-                        className="px-6 py-3 bg-amber-600 text-white rounded-[.5rem] text-[10px] font-black uppercase tracking-widest hover:bg-amber-700 transition-all shadow-lg shadow-amber-900/10"
+                        className="w-full sm:w-auto px-6 py-3 bg-amber-600 text-white rounded-[.5rem] text-[10px] font-black uppercase tracking-widest hover:bg-amber-700 transition-all shadow-lg shadow-amber-900/10"
                       >
                         Deactivate
                       </button>
                     </div>
 
-                    <div className="p-8 rounded-[.5rem] bg-red-50 border border-red-100 flex items-center justify-between">
+                    <div className="p-5 lg:p-8 rounded-[.5rem] bg-red-50 border border-red-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                       <div>
                         <p className="text-sm font-black text-red-900">Permanently Delete Profile & Facility Data</p>
                         <p className="text-[10px] text-red-600 font-bold mt-1">Completely wipes your user account, staff, sales, inventory, and facility from HudumaLynk.</p>
                       </div>
                       <button
                         onClick={() => setConfirmDeleteId('delete-profile-facility')}
-                        className="px-6 py-3 bg-red-600 text-white rounded-[.5rem] text-[10px] font-black uppercase tracking-widest hover:bg-red-700 transition-all shadow-lg shadow-red-900/10"
+                        className="w-full sm:w-auto px-6 py-3 bg-red-600 text-white rounded-[.5rem] text-[10px] font-black uppercase tracking-widest hover:bg-red-700 transition-all shadow-lg shadow-red-900/10"
                       >
                         Delete Profile & Facility
                       </button>
@@ -817,9 +833,9 @@ function NotificationsPanel({ settings = {}, onUpdate }: any) {
   };
 
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-top-4 duration-500">
-      <div className="bg-emerald-50 p-6 rounded-[.5rem] border border-emerald-100 flex items-start gap-4">
-        <Bell className="text-emerald-600 mt-1" size={24} />
+    <div className="space-y-6 lg:space-y-8 animate-in fade-in slide-in-from-top-4 duration-500">
+      <div className="bg-emerald-50 p-5 lg:p-6 rounded-[.5rem] border border-emerald-100 flex items-start gap-4">
+        <Bell className="text-emerald-600 mt-1 shrink-0" size={24} />
         <div>
           <h4 className="text-sm font-black text-emerald-900 uppercase tracking-widest mb-1">Native Alerts</h4>
           <p className="text-xs text-emerald-700 leading-relaxed max-w-lg">
@@ -829,7 +845,7 @@ function NotificationsPanel({ settings = {}, onUpdate }: any) {
       </div>
 
       <div className="space-y-4">
-        <div className="flex items-center justify-between p-6 bg-gray-50 rounded-[.5rem] border border-gray-100">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 lg:p-6 bg-gray-50 rounded-[.5rem] border border-gray-100">
           <div>
             <p className="font-black text-gray-900 text-sm">Web Push Notifications</p>
             <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-1">
@@ -841,7 +857,7 @@ function NotificationsPanel({ settings = {}, onUpdate }: any) {
           ) : pushState === 'unsupported' ? (
             <span className="text-[10px] font-black text-red-400 uppercase tracking-widest">Unsupported</span>
           ) : pushState === 'ios_browser' ? (
-            <div className="flex flex-col items-end gap-2">
+            <div className="flex flex-col items-start sm:items-end gap-2">
               <span className="text-[10px] font-black text-amber-600 uppercase tracking-widest">Action Required</span>
               <button
                 onClick={() => toast.info('To enable notifications on iPhone: Tap "Share" and select "Add to Home Screen". Push only works in standalone mode!')}
@@ -922,7 +938,7 @@ function InputGroup({ label, value, onChange, placeholder, type = "text", mono =
 
 function ToggleItem({ title, desc, active, onToggle }: any) {
   return (
-    <div className="flex items-center justify-between p-4 rounded-[.5rem] bg-gray-50 border border-gray-100">
+    <div className="flex items-center justify-between gap-4 p-4 rounded-[.5rem] bg-gray-50 border border-gray-100">
       <div>
         <p className="text-sm font-bold text-gray-900">{title}</p>
         <p className="text-[10px] text-gray-500 font-medium">{desc}</p>
@@ -936,7 +952,7 @@ function Toggle({ active, onToggle }: { active: boolean; onToggle?: (v: boolean)
   return (
     <div
       onClick={() => onToggle?.(!active)}
-      className={`w-12 h-6 rounded-full p-1 transition-all cursor-pointer ${active ? 'bg-emerald-600' : 'bg-gray-300'}`}
+      className={`w-12 h-6 rounded-full p-1 transition-all cursor-pointer shrink-0 ${active ? 'bg-emerald-600' : 'bg-gray-300'}`}
     >
       <div className={`w-4 h-4 bg-white rounded-full transition-all ${active ? 'translate-x-6' : 'translate-x-0'}`} />
     </div>
@@ -946,14 +962,14 @@ function Toggle({ active, onToggle }: { active: boolean; onToggle?: (v: boolean)
 
 function ModuleTile({ icon: Icon, label, sub, link, color, isImg = false, isComingSoon = false }: any) {
   return (
-    <Link to={link} className={`p-6 bg-gray-50 border border-gray-100 rounded-[.5rem] hover:bg-white hover:shadow-md transition-all group relative ${isComingSoon ? 'opacity-60 grayscale' : ''}`}>
+    <Link to={link} className={`p-5 lg:p-6 bg-gray-50 border border-gray-100 rounded-[.5rem] hover:bg-white hover:shadow-md transition-all group relative ${isComingSoon ? 'opacity-60 grayscale' : ''}`}>
       {isComingSoon && (
         <span className="absolute top-3 right-3 text-[8px] font-black bg-slate-200 text-slate-600 px-2 py-0.5 rounded-full uppercase tracking-widest">
           Soon
         </span>
       )}
-      <div className={`h-12 w-12 rounded-[.5rem] flex items-center justify-center mb-4 transition-transform group-hover:scale-110 ${color}`}>
-        <Icon size={24} />
+      <div className={`h-11 w-11 lg:h-12 lg:w-12 rounded-[.5rem] flex items-center justify-center mb-4 transition-transform group-hover:scale-110 ${color}`}>
+        <Icon size={22} />
       </div>
       <div>
         <p className="text-sm font-black text-gray-900 leading-none mb-1.5">{label}</p>
@@ -994,9 +1010,9 @@ function ActivityLogViewer() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
         <div>
-          <h3 className="text-xl font-black text-slate-900 tracking-tight mb-1">System Security Logs</h3>
+          <h3 className="text-lg lg:text-xl font-black text-slate-900 tracking-tight mb-1">System Security Logs</h3>
           <p className="text-[11px] text-slate-400 font-medium italic lowercase tracking-wider">
             {logsData?.data?.pagination?.total || 0} secure events recorded in this audit period
           </p>
@@ -1010,7 +1026,7 @@ function ActivityLogViewer() {
           </button>
           <button
             onClick={handleExport}
-            className="flex items-center gap-2 px-6 bg-[#0D4A3E] text-white rounded-[.5rem] text-[10px] font-black uppercase tracking-widest shadow-xl shadow-emerald-900/10 hover:-translate-y-0.5 transition-all"
+            className="flex-1 sm:flex-initial flex items-center justify-center gap-2 px-6 bg-[#0D4A3E] text-white rounded-[.5rem] text-[10px] font-black uppercase tracking-widest shadow-xl shadow-emerald-900/10 hover:-translate-y-0.5 transition-all"
           >
             <FileText size={16} /> Export Audit
           </button>
@@ -1022,10 +1038,10 @@ function ActivityLogViewer() {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-slate-50/50">
-                <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Event Timeline</th>
-                <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">User Agent</th>
-                <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Operation</th>
-                <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Action Details</th>
+                <th className="px-5 lg:px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest whitespace-nowrap">Event Timeline</th>
+                <th className="px-5 lg:px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest whitespace-nowrap">User Agent</th>
+                <th className="px-5 lg:px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest whitespace-nowrap">Operation</th>
+                <th className="px-5 lg:px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest whitespace-nowrap">Action Details</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50">
@@ -1036,13 +1052,13 @@ function ActivityLogViewer() {
               ) : (
                 logsData.data.items.map((log: any) => (
                   <tr key={log.id} className="hover:bg-emerald-50/30 transition-all group">
-                    <td className="px-8 py-5">
+                    <td className="px-5 lg:px-8 py-5 whitespace-nowrap">
                       <p className="text-xs font-black text-slate-900 leading-none mb-1">{new Date(log.createdAt).toLocaleDateString('en-US', { day: 'numeric', month: 'short' })}</p>
                       <p className="text-[9px] font-bold text-slate-400 hl-mono">{new Date(log.createdAt).toLocaleTimeString()}</p>
                     </td>
-                    <td className="px-8 py-5">
+                    <td className="px-5 lg:px-8 py-5 whitespace-nowrap">
                       <div className="flex items-center gap-3">
-                        <div className="h-8 w-8 rounded-[.5rem] bg-slate-50 flex items-center justify-center text-[10px] font-black text-slate-400 group-hover:bg-white transition-all">
+                        <div className="h-8 w-8 rounded-[.5rem] bg-slate-50 flex items-center justify-center text-[10px] font-black text-slate-400 group-hover:bg-white transition-all shrink-0">
                           {log.user?.name?.charAt(0).toUpperCase() || 'S'}
                         </div>
                         <div>
@@ -1051,12 +1067,12 @@ function ActivityLogViewer() {
                         </div>
                       </div>
                     </td>
-                    <td className="px-8 py-5">
+                    <td className="px-5 lg:px-8 py-5 whitespace-nowrap">
                       <span className="px-3 py-1 bg-emerald-50 text-emerald-700 rounded-[.5rem] text-[9px] font-black uppercase tracking-widest border border-emerald-100/50">
                         {log.logName || log.action}
                       </span>
                     </td>
-                    <td className="px-8 py-5">
+                    <td className="px-5 lg:px-8 py-5">
                       <div className="space-y-1.5">
                         <p className="text-[11px] text-slate-600 font-medium max-w-[300px] leading-relaxed">{log.details}</p>
                         {log.actionId && (
@@ -1075,7 +1091,7 @@ function ActivityLogViewer() {
         </div>
 
         {logsData?.data?.pagination && logsData.data.pagination.totalPages > 1 && (
-          <div className="p-6 border-t border-slate-50 flex items-center justify-between bg-slate-50/20">
+          <div className="p-5 lg:p-6 border-t border-slate-50 flex items-center justify-between bg-slate-50/20">
             <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
               Page {page} of {logsData.data.pagination.totalPages}
             </p>

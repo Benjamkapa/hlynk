@@ -1,10 +1,9 @@
-import { useState, useEffect, useMemo } from 'react'
-import { 
-  Zap, ShoppingCart, Users, Package, 
-  TrendingUp, ArrowUpRight, ArrowDownRight, 
-  Clock, DollarSign, Star, PieChart, Wallet
+import { useEffect, useMemo } from 'react'
+import {
+  Zap, Users, Package,
+  TrendingUp, ArrowUpRight,
+  DollarSign, PieChart, Wallet
 } from 'lucide-react'
-import StarRating from '../../components/shared/StarRating'
 import {
   ResponsiveContainer, AreaChart, Area,
   XAxis, YAxis, CartesianGrid, Tooltip
@@ -34,6 +33,7 @@ export default function DashboardPage() {
   if (userModules.includes('HOSPITALITY') && !userModules.includes('POS')) {
     return <Navigate to="/dashboard/hospitality" replace />;
   }
+
   const { data: stats, isLoading: statsLoading, error: statsError } = useQuery<ProviderStats>({
     queryKey: ['provider-stats'],
     queryFn: providersApi.getStats,
@@ -61,8 +61,8 @@ export default function DashboardPage() {
     if (salesError) toast.error(getErrorMessage(salesError))
   }, [statsError, salesError])
 
-  const salesData = stats?.salesChart && stats.salesChart.length > 0 
-    ? stats.salesChart 
+  const salesData = stats?.salesChart && stats.salesChart.length > 0
+    ? stats.salesChart
     : Array.from({ length: 7 }).map((_, i) => {
         const d = new Date();
         d.setDate(d.getDate() - (6 - i));
@@ -75,211 +75,199 @@ export default function DashboardPage() {
 
   if (statsLoading || salesLoading) return (
     <div className="flex h-96 items-center justify-center">
-      <div className="h-12 w-12 animate-spin rounded-full border-4 border-emerald-500 border-t-transparent" />
+      <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#0D4A3E] border-t-transparent" />
     </div>
   )
 
+  const net = stats?.mtdNetProfit ?? 0;
+  const netIsPositive = net >= 0;
+
   return (
-    <div className="mx-auto space-y-5 lg:space-y-12 animate-in fade-in duration-700">
-      
-      {/* Header Section */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 lg:gap-6">
-        <div className="space-y-0.5 lg:space-y-2">
-          <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.25em] lg:hidden">Today</p>
-          <h1 className="text-3xl lg:text-5xl font-black text-slate-900 tracking-tighter">Business Pulse</h1>
-          <p className="text-slate-500 font-medium text-sm lg:text-xl">Store performance overview</p>
-        </div>
+    <div className="space-y-8 pt-4">
+
+      {/* Page header */}
+      <div>
+        <h1 className="text-xl font-semibold text-gray-900">Business pulse</h1>
+        <p className="text-gray-400 text-sm mt-0.5">Store performance overview</p>
       </div>
 
-      {/* KPI Grid — 2 cols on mobile, 5 cols on desktop */}
-      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 lg:gap-8">
-        <StoreKpi 
-          title="Daily Sales" 
-          value={`KES ${stats?.dailySales?.toLocaleString() || '0'}`} 
-          sub={`Profit: KES ${stats?.profit?.toLocaleString() || '0'}`} 
-          icon={Zap} 
-          color="dark" 
-          trend="" 
+      {/* KPI overview */}
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-px bg-gray-100 rounded-[.5rem] overflow-hidden border border-gray-100">
+        <SummaryCell
+          icon={Zap}
+          label="Daily sales"
+          value={`KES ${stats?.dailySales?.toLocaleString() || '0'}`}
+          sub={`Profit: KES ${stats?.profit?.toLocaleString() || '0'}`}
         />
-        <StoreKpi title="New Customers" value={stats?.newCustomers || '0'} sub="Total registered" icon={Users} color="blue" trend="" />
+        <SummaryCell
+          icon={Users}
+          label="New customers"
+          value={String(stats?.newCustomers || '0')}
+          sub="Total registered"
+        />
         <FeatureGate feature="low_stock_alerts" variant="tease">
-          <StoreKpi title="Out of Stock" value={stats?.outOfStockCount || '0'} sub={`Items below ${threshold} qty`} icon={Package} color="red" trend="" />
+          <SummaryCell
+            icon={Package}
+            label="Out of stock"
+            value={String(stats?.outOfStockCount || '0')}
+            sub={`Items below ${threshold} qty`}
+            tone="warn"
+          />
         </FeatureGate>
-        <StoreKpi title="MTD Gross Profit" value={`KES ${stats?.mtdProfit?.toLocaleString() || '0'}`} sub="This month (cost margin)" icon={TrendingUp} color="purple" trend="" />
-        {(() => {
-          const net = stats?.mtdNetProfit ?? 0;
-          const isPositive = net >= 0;
-          return (
-            <StoreKpi
-              title="Net Profit (MTD)"
-              value={`${isPositive ? '' : '−'}KES ${Math.abs(net).toLocaleString()}`}
-              sub={`After KES ${(stats?.mtdExpenses || 0).toLocaleString()} expenses`}
-              icon={Wallet}
-              color={isPositive ? 'emerald' : 'red'}
-              trend=""
-            />
-          );
-        })()}
+        <SummaryCell
+          icon={TrendingUp}
+          label="MTD gross profit"
+          value={`KES ${stats?.mtdProfit?.toLocaleString() || '0'}`}
+          sub="This month (cost margin)"
+        />
+        <SummaryCell
+          icon={Wallet}
+          label="Net profit (MTD)"
+          value={`${netIsPositive ? '' : '−'}KES ${Math.abs(net).toLocaleString()}`}
+          sub={`After KES ${(stats?.mtdExpenses || 0).toLocaleString()} expenses`}
+          tone={netIsPositive ? 'good' : 'warn'}
+        />
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-5 lg:gap-10">
-        {/* Sales Chart */}
-        <div className="xl:col-span-2 bg-white p-5 lg:p-10 rounded-[.5rem] border border-slate-100 shadow-xl shadow-slate-900/5">
-          <div className="flex justify-between items-center mb-5 lg:mb-10">
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+        {/* Revenue chart */}
+        <div className="xl:col-span-2 bg-white rounded-[.5rem] border border-gray-100 p-6">
+          <div className="flex justify-between items-center mb-6">
             <div>
-              <h3 className="text-base lg:text-2xl font-black text-slate-900">Revenue Trajectory</h3>
-              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1 hidden lg:block">Movement of money in your shop (Last 7 Days)</p>
-              <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest mt-0.5 lg:hidden">Last 7 Days</p>
+              <h3 className="text-sm font-medium text-gray-900">Revenue trajectory</h3>
+              <p className="text-xs text-gray-400 mt-0.5">Last 7 days</p>
             </div>
-            <div className="flex gap-4">
-               <div className="flex items-center gap-1.5">
-                  <div className="w-2 h-2 rounded-full bg-slate-900" />
-                  <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Sales</span>
-               </div>
-               <div className="flex items-center gap-1.5">
-                  <div className="w-2 h-2 rounded-full bg-amber-500" />
-                  <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Profit</span>
-               </div>
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-1.5">
+                <div className="w-2 h-2 rounded-full bg-gray-900" />
+                <span className="text-xs text-gray-400">Sales</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <div className="w-2 h-2 rounded-full bg-[#0D4A3E]" />
+                <span className="text-xs text-gray-400">Profit</span>
+              </div>
             </div>
           </div>
-          
-          <div className="h-[200px] lg:h-[350px] w-full">
+
+          <div className="h-[220px] lg:h-[300px] w-full">
             <ResponsiveContainer width="100%" height="100%" minWidth={0} debounce={100}>
               <AreaChart data={salesData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                 <defs>
                   <linearGradient id="colorSales" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#1e293b" stopOpacity={0.08}/>
-                    <stop offset="95%" stopColor="#1e293b" stopOpacity={0}/>
+                    <stop offset="5%" stopColor="#111827" stopOpacity={0.06}/>
+                    <stop offset="95%" stopColor="#111827" stopOpacity={0}/>
                   </linearGradient>
                   <linearGradient id="colorProfit" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#F59E0B" stopOpacity={0.08}/>
-                    <stop offset="95%" stopColor="#F59E0B" stopOpacity={0}/>
+                    <stop offset="5%" stopColor="#0D4A3E" stopOpacity={0.08}/>
+                    <stop offset="95%" stopColor="#0D4A3E" stopOpacity={0}/>
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="0" vertical={false} stroke="#F8FAFC" />
-                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fontSize: 9, fill: '#CBD5E1', fontWeight: 700, fontFamily: 'JetBrains Mono'}} dy={10} />
+                <CartesianGrid strokeDasharray="0" vertical={false} stroke="#F9FAFB" />
+                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#9CA3AF' }} dy={10} />
                 <YAxis hide={true} />
-                <Tooltip 
-                  cursor={{ stroke: '#F1F5F9', strokeWidth: 1 }}
-                  contentStyle={{ borderRadius: '12px', border: '1px solid #f1f5f9', boxShadow: '0 20px 40px -12px rgba(0,0,0,0.05)', padding: '12px 16px' }}
-                  itemStyle={{ fontWeight: 800, fontFamily: 'JetBrains Mono', fontSize: 11 }}
+                <Tooltip
+                  cursor={{ stroke: '#F3F4F6', strokeWidth: 1 }}
+                  contentStyle={{ borderRadius: '.5rem', border: '1px solid #f3f4f6', boxShadow: '0 4px 12px rgba(0,0,0,0.04)', padding: '10px 14px', fontSize: 12 }}
                 />
-                <Area 
-                  type="monotone" 
-                  dataKey="sales" 
-                  stroke="#1e293b" 
-                  strokeWidth={1} 
-                  fillOpacity={1} 
-                  fill="url(#colorSales)" 
+                <Area
+                  type="monotone"
+                  dataKey="sales"
+                  stroke="#111827"
+                  strokeWidth={1.5}
+                  fillOpacity={1}
+                  fill="url(#colorSales)"
                   dot={false}
-                  activeDot={{ r: 4, fill: '#1e293b', strokeWidth: 2, stroke: '#fff' }}
+                  activeDot={{ r: 4, fill: '#111827', strokeWidth: 2, stroke: '#fff' }}
                 />
-                <Area 
-                  type="monotone" 
-                  dataKey="profit" 
-                  stroke="#F59E0B" 
-                  strokeWidth={1} 
-                  fillOpacity={1} 
-                  fill="url(#colorProfit)" 
+                <Area
+                  type="monotone"
+                  dataKey="profit"
+                  stroke="#0D4A3E"
+                  strokeWidth={1.5}
+                  fillOpacity={1}
+                  fill="url(#colorProfit)"
                   dot={false}
-                  activeDot={{ r: 4, fill: '#F59E0B', strokeWidth: 2, stroke: '#fff' }}
+                  activeDot={{ r: 4, fill: '#0D4A3E', strokeWidth: 2, stroke: '#fff' }}
                 />
               </AreaChart>
             </ResponsiveContainer>
           </div>
         </div>
 
-        {/* Recent Activity */}
-        <div className="bg-white p-5 lg:p-8 rounded-[.5rem] border border-slate-100 shadow-xl shadow-slate-900/5 flex flex-col">
-          <h3 className="text-base lg:text-xl font-black text-slate-900 mb-4 lg:mb-8 flex items-center justify-between">
-             Recent Sales
-             <Link to="/dashboard/sales" className="text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-emerald-600 transition-colors flex items-center gap-1">
-               All <ArrowUpRight size={12} />
-             </Link>
+        {/* Recent sales */}
+        <div className="bg-white rounded-[.5rem] border border-gray-100 p-6 flex flex-col">
+          <h3 className="text-sm font-medium text-gray-900 mb-4 flex items-center justify-between">
+            Recent sales
+            <Link to="/dashboard/sales" className="text-xs text-gray-400 hover:text-gray-900 transition-colors flex items-center gap-1">
+              All <ArrowUpRight size={12} />
+            </Link>
           </h3>
-          <div className="space-y-3 lg:space-y-6 flex-1">
-             {recentSales?.length > 0 ? recentSales.map((sale: any, i: number) => (
-               <div key={i} className="flex items-center justify-between group cursor-pointer hover:bg-slate-50 p-2 rounded-[.5rem] transition-all">
-                  <div className="flex items-center gap-3">
-                     <div className="h-9 w-9 lg:h-10 lg:w-10 rounded-[.5rem] bg-slate-100 flex items-center justify-center text-slate-400 group-hover:bg-[#0D4A3E] group-hover:text-white transition-all flex-shrink-0">
-                        <DollarSign size={16} />
-                     </div>
-                     <div>
-                        <p className="text-sm font-black text-slate-900">{sale.customerName || 'Walk-in'}</p>
-                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest hl-mono">#{sale.id.slice(-8).toUpperCase()}</p>
-                     </div>
+          <div className="divide-y divide-gray-50 flex-1">
+            {recentSales?.length > 0 ? recentSales.map((sale: any, i: number) => (
+              <div key={i} className="flex items-center justify-between py-3 hover:bg-gray-50/60 transition-colors -mx-2 px-2 rounded-[.5rem]">
+                <div className="flex items-center gap-3">
+                  <div className="h-9 w-9 rounded-[.5rem] bg-gray-100 flex items-center justify-center text-gray-400 flex-shrink-0">
+                    <DollarSign size={15} />
                   </div>
-                  <div className="text-right">
-                     <p className="text-sm font-black text-[#0D4A3E] hl-mono">KES {Number(sale.totalAmount).toLocaleString()}</p>
-                     <p className="text-[10px] text-slate-400 font-bold hl-mono">{new Date(sale.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                  <div>
+                    <p className="text-sm font-medium text-gray-900">{sale.customerName || 'Walk-in'}</p>
+                    <p className="text-xs text-gray-400 hl-mono">#{sale.id.slice(-8).toUpperCase()}</p>
                   </div>
-               </div>
-             )) : (
-               <p className="text-xs text-slate-400 font-bold text-center py-4">No recent sales</p>
-             )}
+                </div>
+                <div className="text-right">
+                  <p className="text-sm font-medium text-gray-900 hl-mono">KES {Number(sale.totalAmount).toLocaleString()}</p>
+                  <p className="text-xs text-gray-400 hl-mono">{new Date(sale.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                </div>
+              </div>
+            )) : (
+              <p className="text-sm text-gray-400 text-center py-10">No recent sales</p>
+            )}
           </div>
-          <Link to="/dashboard/sales" className="hidden lg:block mt-8 w-full py-4 bg-slate-900 text-white rounded-[.5rem] text-center text-xs font-black uppercase tracking-widest hover:bg-slate-800 transition-all shadow-lg shadow-slate-900/10">
-             View Full History
+          <Link to="/dashboard/sales" className="mt-4 w-full py-3 bg-[#0D4A3E] text-white rounded-[.5rem] text-center text-sm font-medium hover:bg-[#0A3D33] transition-colors">
+            View full history
           </Link>
         </div>
       </div>
 
-      {/* Sales Channels Analysis */}
+      {/* Sales channels */}
       {stats?.profitBySource && stats.profitBySource.length > 0 && (
-        <div className="bg-white p-5 lg:p-8 rounded-[.5rem] border border-slate-100 shadow-xl shadow-slate-900/5 mt-5 lg:mt-10">
-          <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
+        <div className="bg-white rounded-[.5rem] border border-gray-100 p-6">
+          <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-2">
             <div>
-              <h3 className="text-base lg:text-2xl font-black text-slate-900 flex items-center gap-3">
-                <div className="h-10 w-10 bg-[#0D4A3E] text-white rounded-[.5rem] flex items-center justify-center shadow-lg shadow-emerald-900/10">
-                  <PieChart size={20} />
-                </div>
-                Sales Channels
+              <h3 className="text-sm font-medium text-gray-900 flex items-center gap-2">
+                <PieChart size={15} className="text-gray-400" />
+                Sales channels
               </h3>
-              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-2">Filter by channel · click to drill in</p>
-            </div>
-            <div className="flex items-center gap-2 px-4 py-2 bg-slate-50 rounded-full border border-slate-100">
-              <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Real-time Attribution</span>
+              <p className="text-xs text-gray-400 mt-0.5">Filter by channel — click to drill in</p>
             </div>
           </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 lg:gap-6">
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-px bg-gray-100 rounded-[.5rem] overflow-hidden border border-gray-100">
             {stats.profitBySource.map((source: any, i: number) => {
               const margin = source.sales > 0 ? Math.round((source.profit / source.sales) * 100) : 0;
               return (
-                <Link 
+                <Link
                   to={`/dashboard/sales?source=${encodeURIComponent(source.name)}`}
-                  key={i} 
-                  className="p-6 rounded-[.5rem] bg-white border border-slate-100 hover:border-emerald-200 hover:shadow-2xl hover:shadow-emerald-900/5 transition-all group relative overflow-hidden"
+                  key={i}
+                  className="bg-white p-5 hover:bg-gray-50/60 transition-colors group"
                 >
-                  <div className="relative z-10">
-                    <div className="flex items-center justify-between mb-4">
-                      <p className="text-[10px] font-black text-slate-400 group-hover:text-emerald-600 uppercase tracking-[0.2em] transition-colors">{source.name}</p>
-                      <div className="flex items-center gap-2">
-                        <span className={`text-[10px] font-black px-1.5 py-0.5 rounded-full ${margin > 20 ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600'}`}>
-                          {margin}%
-                        </span>
-                        <ArrowUpRight size={14} className="text-slate-300 group-hover:text-emerald-500 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
-                      </div>
-                    </div>
-                    
-                    <div className="space-y-1">
-                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Gross Revenue</p>
-                      <h4 className="text-2xl font-black text-slate-900 hl-mono tracking-tighter">KES {Number(source.sales || 0).toLocaleString()}</h4>
-                    </div>
-
-                    <div className="mt-6 pt-4 border-t border-slate-50 flex items-center justify-between">
-                      <div>
-                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Associated Profit</p>
-                        <p className="text-sm font-black text-emerald-600 hl-mono">KES {Number(source.profit || 0).toLocaleString()}</p>
-                      </div>
-                      <div className="h-8 w-8 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-600 opacity-0 group-hover:opacity-100 transition-all">
-                        <TrendingUp size={14} />
-                      </div>
-                    </div>
+                  <div className="flex items-center justify-between mb-3">
+                    <p className="text-xs text-gray-400">{source.name}</p>
+                    <span className={`text-xs px-1.5 py-0.5 rounded-full ${margin > 20 ? 'bg-emerald-50 text-[#0D4A3E]' : 'bg-gray-50 text-gray-500'}`}>
+                      {margin}%
+                    </span>
                   </div>
-                  {/* Decorative background element */}
-                  <div className="absolute top-0 right-0 h-24 w-24 bg-emerald-50 rounded-full blur-[40px] -mr-12 -mt-12 opacity-0 group-hover:opacity-100 transition-all" />
+
+                  <p className="text-xs text-gray-400 mb-1">Gross revenue</p>
+                  <p className="text-xl font-semibold text-gray-900 hl-mono tracking-tight">KES {Number(source.sales || 0).toLocaleString()}</p>
+
+                  <div className="mt-4 pt-3 border-t border-gray-50 flex items-center justify-between">
+                    <div>
+                      <p className="text-xs text-gray-400">Profit</p>
+                      <p className="text-sm font-medium text-[#0D4A3E] hl-mono">KES {Number(source.profit || 0).toLocaleString()}</p>
+                    </div>
+                    <ArrowUpRight size={14} className="text-gray-300 group-hover:text-[#0D4A3E] transition-colors" />
+                  </div>
                 </Link>
               );
             })}
@@ -291,42 +279,25 @@ export default function DashboardPage() {
   )
 }
 
-function StoreKpi({ title, value, sub, icon: Icon, color, trend }: any) {
-  const colorMap: Record<string, string> = {
-    emerald: 'text-emerald-600 bg-emerald-50 border-emerald-100',
-    blue: 'text-blue-600 bg-blue-50 border-blue-100',
-    purple: 'text-purple-600 bg-purple-50 border-purple-100',
-    red: 'text-red-600 bg-red-50 border-red-100',
-    dark: 'text-white bg-slate-900 border-slate-900',
-  }
+// ─── Overview cell ──────────────────────────────────────────────────────────
 
-  const isDark = color === 'dark';
+function SummaryCell({ icon: Icon, label, value, sub, tone = 'default' }: {
+  icon: any
+  label: string
+  value: string
+  sub: string
+  tone?: 'default' | 'good' | 'warn'
+}) {
+  const toneColor = tone === 'warn' ? 'text-red-600' : tone === 'good' ? 'text-[#0D4A3E]' : 'text-gray-900'
 
   return (
-    <div className={`p-4 lg:p-7 rounded-[.5rem] border shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all group cursor-pointer relative overflow-hidden ${
-      isDark
-        ? 'bg-slate-900 border-slate-900 text-white'
-        : 'bg-white border-slate-100 text-slate-900'
-    }`}>
-      <div className={`h-10 w-10 lg:h-12 lg:w-12 rounded-[.5rem] flex items-center justify-center mb-3 lg:mb-5 transition-transform group-hover:scale-110 ${
-        isDark ? 'bg-white/10' : colorMap[color as keyof typeof colorMap]
-      }`}>
-        <Icon size={20} className={isDark ? 'text-white' : ''} />
+    <div className="bg-white p-6">
+      <div className="flex items-center gap-2 mb-2">
+        <Icon size={13} className="text-gray-300" />
+        <p className="text-xs text-gray-400">{label}</p>
       </div>
-      <div>
-        <p className={`text-xs font-semibold mb-1 ${
-          isDark ? 'text-slate-400' : 'text-slate-500'
-        }`}>{title}</p>
-        <div className="flex items-baseline gap-2">
-           <h2 className={`text-xl lg:text-3xl font-black hl-mono tracking-tighter ${
-             isDark ? 'text-white' : 'text-slate-900'
-           }`}>{value}</h2>
-           <span className={`text-[10px] font-bold hl-mono ${color === 'red' ? 'text-red-500' : isDark ? 'text-emerald-400' : 'text-emerald-600'}`}>{trend}</span>
-        </div>
-        <p className={`text-xs font-medium mt-1.5 ${
-          isDark ? 'text-slate-400' : 'text-slate-400'
-        }`}>{sub}</p>
-      </div>
+      <p className={`text-2xl font-semibold hl-mono tracking-tight ${toneColor}`}>{value}</p>
+      <p className="text-xs text-gray-400 mt-1">{sub}</p>
     </div>
   )
 }

@@ -137,34 +137,35 @@ export default function SalesHistoryPage() {
   }
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500 pt-6">
+    <div className="space-y-8 pt-4">
       <style>{thermalReceiptStyles}</style>
 
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
+      {/* Page header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-black text-gray-900 tracking-tight">Sales History</h1>
-          <p className="text-gray-500 font-medium">Review and manage all recorded transactions</p>
+          <h1 className="text-xl font-semibold text-gray-900">Sales history</h1>
+          <p className="text-gray-400 text-sm mt-0.5">Review and manage all recorded transactions</p>
         </div>
         <button
           onClick={exportToCSV}
-          className="bg-gray-100 text-gray-600 h-12 px-6 rounded-[.5rem] font-bold text-sm hover:bg-gray-200 transition-all flex items-center gap-2"
+          className="h-9 px-4 rounded-[.5rem] text-sm font-medium text-gray-500 hover:text-gray-900 hover:bg-gray-50 transition-colors flex items-center gap-2"
         >
-          <Save size={18} /> CSV
+          <Save size={15} /> Export
         </button>
       </div>
 
-      <SlideOver isOpen={!!selectedSale} onClose={() => { setSelectedSale(null); setVoidConfirm(false); setVoidReason('') }} title="Receipt View">
+      <SlideOver isOpen={!!selectedSale} onClose={() => { setSelectedSale(null); setVoidConfirm(false); setVoidReason('') }} title="Receipt view">
         {selectedSale && (
           <div className="space-y-6 pb-10">
             {/* Voided banner */}
             {Number(selectedSale.status) === 3 && (
-              <div className="flex items-center gap-3 bg-red-50 border border-red-100 rounded-[.5rem] px-5 py-4">
-                <div className="h-9 w-9 bg-red-100 text-red-600 rounded-[.5rem] flex items-center justify-center flex-shrink-0">
-                  <Ban size={18} />
+              <div className="flex items-center gap-3 bg-red-50 border border-red-100 rounded-[.5rem] px-4 py-3.5">
+                <div className="h-8 w-8 bg-white text-red-600 rounded-[.5rem] flex items-center justify-center flex-shrink-0 border border-red-100">
+                  <Ban size={15} />
                 </div>
                 <div>
-                  <p className="text-sm font-black text-red-700 uppercase tracking-widest">This Sale Is Voided</p>
-                  <p className="text-[11px] text-red-400 font-bold mt-0.5">Stock has been restored. This sale is excluded from all revenue calculations.</p>
+                  <p className="text-sm font-medium text-red-700">This sale is voided</p>
+                  <p className="text-xs text-red-400 mt-0.5">Stock has been restored. Excluded from all revenue calculations.</p>
                 </div>
               </div>
             )}
@@ -177,21 +178,21 @@ export default function SalesHistoryPage() {
                 {!voidConfirm ? (
                   <button
                     onClick={() => setVoidConfirm(true)}
-                    className="w-full flex items-center justify-center gap-2 h-12 rounded-[.5rem] border-2 border-red-100 bg-red-50 text-red-600 font-black text-xs uppercase tracking-widest hover:bg-red-100 hover:border-red-200 transition-all"
+                    className="w-full flex items-center justify-center gap-2 h-10 rounded-[.5rem] border border-red-100 bg-red-50 text-red-600 text-sm font-medium hover:bg-red-100 transition-colors"
                   >
                     <Ban size={15} />
-                    Void This Sale
+                    Void this sale
                   </button>
                 ) : (
-                  <div className="bg-red-50 border border-red-100 rounded-[.5rem] p-5 space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-200">
+                  <div className="bg-red-50 border border-red-100 rounded-[.5rem] p-5 space-y-4">
                     <div className="flex items-start gap-3">
-                      <div className="h-8 w-8 bg-red-100 text-red-600 rounded-[.5rem] flex items-center justify-center flex-shrink-0 mt-0.5">
-                        <AlertTriangle size={15} />
+                      <div className="h-7 w-7 bg-white text-red-600 rounded-[.5rem] flex items-center justify-center flex-shrink-0 mt-0.5 border border-red-100">
+                        <AlertTriangle size={13} />
                       </div>
                       <div>
-                        <p className="text-sm font-black text-red-800">Confirm Void</p>
-                        <p className="text-[11px] text-red-500 font-bold mt-0.5 leading-relaxed">
-                          This will cancel sale <span className="font-black">#{selectedSale.id.slice(-8).toUpperCase()}</span> and restore all stock quantities. This cannot be undone.
+                        <p className="text-sm font-medium text-red-800">Confirm void</p>
+                        <p className="text-xs text-red-500 mt-0.5 leading-relaxed">
+                          This will cancel sale #{selectedSale.id.slice(-8).toUpperCase()} and restore all stock quantities. This cannot be undone.
                         </p>
                       </div>
                     </div>
@@ -199,30 +200,30 @@ export default function SalesHistoryPage() {
                     <textarea
                       value={voidReason}
                       onChange={e => setVoidReason(e.target.value)}
-                      placeholder="Reason for voiding (optional)..."
+                      placeholder="Reason for voiding (optional)…"
                       rows={2}
-                      className="w-full bg-white border border-red-100 rounded-[.5rem] px-4 py-3 text-sm font-bold text-gray-700 placeholder-gray-300 outline-none focus:ring-2 focus:ring-red-200 resize-none transition-all"
+                      className="w-full bg-white border border-red-100 rounded-[.5rem] px-3.5 py-3 text-sm text-gray-700 placeholder-gray-300 outline-none focus:ring-2 focus:ring-red-200 resize-none transition-all"
                     />
 
                     <div className="flex gap-3">
                       <button
                         onClick={() => { setVoidConfirm(false); setVoidReason('') }}
                         disabled={voidMutation.isPending}
-                        className="flex-1 h-10 rounded-[.5rem] border border-gray-200 bg-white text-gray-500 font-black text-xs uppercase tracking-widest hover:bg-gray-50 transition-all disabled:opacity-50"
+                        className="flex-1 h-9 rounded-[.5rem] border border-gray-200 bg-white text-gray-500 text-sm font-medium hover:bg-gray-50 transition-colors disabled:opacity-50"
                       >
                         Cancel
                       </button>
                       <button
                         onClick={() => voidMutation.mutate({ id: selectedSale.id, reason: voidReason || undefined })}
                         disabled={voidMutation.isPending}
-                        className="flex-1 h-10 rounded-[.5rem] bg-red-600 text-white font-black text-xs uppercase tracking-widest hover:bg-red-700 transition-all disabled:opacity-60 flex items-center justify-center gap-2"
+                        className="flex-1 h-9 rounded-[.5rem] bg-red-600 text-white text-sm font-medium hover:bg-red-700 transition-colors disabled:opacity-60 flex items-center justify-center gap-2"
                       >
                         {voidMutation.isPending ? (
                           <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                         ) : (
                           <Ban size={13} />
                         )}
-                        {voidMutation.isPending ? 'Voiding...' : 'Yes, Void It'}
+                        {voidMutation.isPending ? 'Voiding…' : 'Yes, void it'}
                       </button>
                     </div>
                   </div>
@@ -233,54 +234,49 @@ export default function SalesHistoryPage() {
         )}
       </SlideOver>
 
-
-      {/* Top KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <StatCard
-          title={selectedDate === getLocalDateString() ? "Total Today" : `Total (${selectedDate})`}
+      {/* Overview */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-px bg-gray-100 rounded-[.5rem] overflow-hidden border border-gray-100">
+        <StatCell
+          icon={Receipt}
+          label={selectedDate === getLocalDateString() ? 'Total today' : `Total (${selectedDate})`}
           value={`KES ${(stats.totalToday || 0).toLocaleString()}`}
           sub={activeSource === '__all__' ? 'All channels' : activeSource}
-          icon={Receipt}
-          variant="emerald"
         />
-        <StatCard
-          title="Transactions"
+        <StatCell
+          icon={CreditCard}
+          label="Transactions"
           value={stats.transactions.toString()}
           sub={activeSource === '__all__' ? 'All channels' : activeSource}
-          icon={CreditCard}
-          variant="blue"
         />
       </div>
 
-      {/* ── Channel / Source Tabs ── */}
-      <div className="bg-white rounded-[.5rem] border border-slate-100 shadow-xl shadow-slate-900/5 overflow-hidden">
-        <div className="p-5 border-b border-slate-50 flex items-center gap-3">
-          <div className="h-9 w-9 bg-emerald-50 text-emerald-600 rounded-[.5rem] flex items-center justify-center">
-            <Layers size={18} />
-          </div>
+      {/* Channel tabs */}
+      <div className="bg-white rounded-[.5rem] border border-gray-100">
+        <div className="p-4 border-b border-gray-100 flex items-center gap-3">
+          <Layers size={15} className="text-gray-300" />
           <div>
-            <h3 className="text-sm font-black text-slate-900">Sales Channels</h3>
-            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Filter by channel · click to drill in</p>
+            <h3 className="text-sm font-medium text-gray-900">Sales channels</h3>
+            <p className="text-xs text-gray-400">Filter by channel — click to drill in</p>
           </div>
         </div>
 
-        <div className="flex gap-2 p-4 overflow-x-auto custom-scrollbar">
+        <div className="flex gap-2 p-4 overflow-x-auto">
           {/* "All" tab */}
           <button
             onClick={() => { setActiveSource('__all__'); setPage(1); }}
-            className={`group flex-shrink-0 flex flex-col gap-1 px-5 py-4 rounded-[.5rem] border-2 transition-all text-left min-w-[140px] ${
+            className={`flex-shrink-0 flex flex-col gap-1 px-4 py-3 rounded-[.5rem] border text-left min-w-[130px] transition-colors ${
               activeSource === '__all__'
-                ? 'border-[#0D4A3E] bg-emerald-50 shadow-lg shadow-emerald-900/10'
-                : 'border-slate-100 bg-slate-50/50 hover:bg-white hover:border-slate-200 hover:shadow-md'
+                ? 'border-[#0D4A3E] bg-gray-50'
+                : 'border-gray-100 hover:bg-gray-50'
             }`}
           >
-            <span className={`text-[10px] font-black uppercase tracking-widest ${activeSource === '__all__' ? 'text-emerald-700' : 'text-slate-400 group-hover:text-slate-600'}`}>
-              All Channels
+            <span className={`text-xs ${activeSource === '__all__' ? 'text-[#0D4A3E]' : 'text-gray-400'}`}>
+              All channels
             </span>
-            <span className={`text-2xl font-black hl-mono leading-none ${activeSource === '__all__' ? 'text-[#0D4A3E]' : 'text-slate-900'}`}>
+            <span className="text-lg font-semibold text-gray-900 hl-mono leading-none">
               KES {allTotal.toLocaleString()}
             </span>
-            <span className={`text-[10px] font-bold hl-mono ${activeSource === '__all__' ? 'text-emerald-600' : 'text-slate-400'}`}>
+            <span className="text-xs text-gray-400 hl-mono">
               {allTxns} txns
             </span>
           </button>
@@ -289,19 +285,19 @@ export default function SalesHistoryPage() {
             <button
               key={s.source}
               onClick={() => { setActiveSource(s.source); setPage(1); }}
-              className={`group flex-shrink-0 flex flex-col gap-1 px-5 py-4 rounded-[.5rem] border-2 transition-all text-left min-w-[140px] ${
+              className={`flex-shrink-0 flex flex-col gap-1 px-4 py-3 rounded-[.5rem] border text-left min-w-[130px] transition-colors ${
                 activeSource === s.source
-                  ? 'border-[#0D4A3E] bg-emerald-50 shadow-lg shadow-emerald-900/10'
-                  : 'border-slate-100 bg-slate-50/50 hover:bg-white hover:border-slate-200 hover:shadow-md'
+                  ? 'border-[#0D4A3E] bg-gray-50'
+                  : 'border-gray-100 hover:bg-gray-50'
               }`}
             >
-              <span className={`text-[10px] font-black uppercase tracking-widest leading-tight ${activeSource === s.source ? 'text-emerald-700' : 'text-slate-400 group-hover:text-slate-600'}`}>
+              <span className={`text-xs leading-tight ${activeSource === s.source ? 'text-[#0D4A3E]' : 'text-gray-400'}`}>
                 {s.source}
               </span>
-              <span className={`text-2xl font-black hl-mono leading-none ${activeSource === s.source ? 'text-[#0D4A3E]' : 'text-slate-900'}`}>
+              <span className="text-lg font-semibold text-gray-900 hl-mono leading-none">
                 KES {Number(s.totalAmount).toLocaleString()}
               </span>
-              <span className={`text-[10px] font-bold hl-mono ${activeSource === s.source ? 'text-emerald-600' : 'text-slate-400'}`}>
+              <span className="text-xs text-gray-400 hl-mono">
                 {s.transactions} txns
               </span>
             </button>
@@ -309,47 +305,47 @@ export default function SalesHistoryPage() {
         </div>
       </div>
 
-      {/* Sales Table */}
-      <div className="bg-white rounded-[.5rem] border border-gray-100 shadow-xl shadow-gray-900/5 overflow-hidden">
-        <div className="p-6 border-b border-gray-50 flex flex-col md:flex-row gap-4">
+      {/* Sales table */}
+      <div className="bg-white rounded-[.5rem] border border-gray-100">
+        <div className="p-4 border-b border-gray-100 flex flex-col md:flex-row gap-3">
           <div className="relative flex-1">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-300" size={15} />
             <input
               type="text"
-              placeholder="Search customer, payment method..."
+              placeholder="Search customer, payment method…"
               value={search}
               onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-              className="w-full bg-gray-50 border-none rounded-[.5rem] py-3.5 pl-12 pr-4 outline-none focus:ring-4 focus:ring-emerald-500/5 transition-all text-sm font-bold"
+              className="w-full bg-gray-50 border-none rounded-[.5rem] py-2.5 pl-9 pr-3 outline-none focus:ring-2 focus:ring-gray-200 transition-all text-sm"
             />
           </div>
-          <div className="flex items-center gap-2 bg-gray-50 p-1.5 rounded-[.5rem] border border-gray-100">
-            <button onClick={() => shiftDate(-1)} className="p-2 hover:bg-white hover:shadow-sm rounded-[.5rem] transition-all text-gray-400 hover:text-slate-900">
-              <ChevronLeft size={18} />
+          <div className="flex items-center gap-1 bg-gray-50 p-1 rounded-[.5rem]">
+            <button onClick={() => shiftDate(-1)} className="p-1.5 hover:bg-white rounded-[.5rem] transition-colors text-gray-400 hover:text-gray-900">
+              <ChevronLeft size={15} />
             </button>
             <div className="relative">
-              <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-emerald-500" size={16} />
+              <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-300" size={13} />
               <input
                 type="date"
                 value={selectedDate}
                 onChange={(e) => { setSelectedDate(e.target.value); setPage(1); }}
-                className="bg-transparent pl-10 pr-4 py-2 text-sm font-black text-slate-900 outline-none hl-mono"
+                className="bg-transparent pl-8 pr-3 py-1.5 text-sm font-medium text-gray-900 outline-none hl-mono"
               />
             </div>
-            <button onClick={() => shiftDate(1)} className="p-2 hover:bg-white hover:shadow-sm rounded-[.5rem] transition-all text-gray-400 hover:text-slate-900">
-              <ChevronRight size={18} />
+            <button onClick={() => shiftDate(1)} className="p-1.5 hover:bg-white rounded-[.5rem] transition-colors text-gray-400 hover:text-gray-900">
+              <ChevronRight size={15} />
             </button>
           </div>
         </div>
 
         {/* Active filter tag */}
         {activeSource !== '__all__' && (
-          <div className="px-6 py-3 bg-emerald-50 border-b border-emerald-100 flex items-center justify-between">
-            <span className="text-xs font-black text-emerald-700 uppercase tracking-widest">
+          <div className="px-4 py-2.5 bg-gray-50 border-b border-gray-100 flex items-center justify-between">
+            <span className="text-xs text-gray-500">
               Filtering: {activeSource}
             </span>
             <button
               onClick={() => { setActiveSource('__all__'); setPage(1); }}
-              className="text-[10px] font-black text-emerald-600 hover:text-emerald-900 underline uppercase tracking-widest transition-colors"
+              className="text-xs text-gray-400 hover:text-gray-900 underline transition-colors"
             >
               Clear filter
             </button>
@@ -359,46 +355,48 @@ export default function SalesHistoryPage() {
         <div className="overflow-x-auto">
           <table className="w-full text-left">
             <thead>
-              <tr className="bg-gray-50/50">
-                <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest">Receipt #</th>
-                <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest">Time</th>
-                <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest">Customer</th>
-                <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Items</th>
-                <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Channel</th>
-                <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Total</th>
-                <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Status</th>
-                <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Action</th>
+              <tr>
+                <th className="px-5 py-3 text-xs font-medium text-gray-400">Receipt #</th>
+                <th className="px-5 py-3 text-xs font-medium text-gray-400">Time</th>
+                <th className="px-5 py-3 text-xs font-medium text-gray-400">Customer</th>
+                <th className="px-5 py-3 text-xs font-medium text-gray-400 text-center">Items</th>
+                <th className="px-5 py-3 text-xs font-medium text-gray-400 text-center">Channel</th>
+                <th className="px-5 py-3 text-xs font-medium text-gray-400 text-right">Total</th>
+                <th className="px-5 py-3 text-xs font-medium text-gray-400 text-center">Status</th>
+                <th className="px-5 py-3 text-xs font-medium text-gray-400 text-center">Action</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
               {isLoading ? (
-                <tr><td colSpan={8} className="py-20 text-center"><div className="h-10 w-10 animate-spin rounded-full border-4 border-emerald-500 border-t-transparent mx-auto" /></td></tr>
+                <tr><td colSpan={8} className="py-16 text-center text-sm text-gray-400">Loading…</td></tr>
               ) : sales.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="py-20 text-center">
-                    <p className="text-sm font-black text-slate-300 uppercase tracking-widest">No sales for this channel on {selectedDate}</p>
+                  <td colSpan={8} className="py-16 text-center text-sm text-gray-400">
+                    No sales for this channel on {selectedDate}.
                   </td>
                 </tr>
               ) : sales.map((s: any) => (
-                <tr key={s.id} className="hover:bg-emerald-50/30 transition-all group cursor-pointer" onClick={() => setSelectedSale(s)}>
-                  <td className="px-8 py-5 text-sm font-black text-gray-900 hl-mono">#{s.id.slice(-8).toUpperCase()}</td>
-                  <td className="px-8 py-5 text-sm font-bold text-gray-400 hl-mono">{new Date(s.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</td>
-                  <td className="px-8 py-5 text-sm font-bold text-gray-600">{s.customerName || 'Walk-in'}</td>
-                  <td className="px-8 py-5 text-center text-sm font-black hl-mono">{s.items?.length || 0}</td>
-                  <td className="px-8 py-5 text-center">
-                    <span className="text-[10px] font-black text-emerald-700 bg-emerald-50 border border-emerald-100 px-2.5 py-1 rounded-[.5rem] uppercase tracking-widest">
+                <tr key={s.id} className="hover:bg-gray-50/60 transition-colors cursor-pointer" onClick={() => setSelectedSale(s)}>
+                  <td className="px-5 py-3.5 text-sm font-medium text-gray-900 hl-mono whitespace-nowrap">#{s.id.slice(-8).toUpperCase()}</td>
+                  <td className="px-5 py-3.5 text-sm text-gray-400 hl-mono whitespace-nowrap">{new Date(s.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</td>
+                  <td className="px-5 py-3.5 text-sm text-gray-600">{s.customerName || 'Walk-in'}</td>
+                  <td className="px-5 py-3.5 text-center text-sm text-gray-500 hl-mono">{s.items?.length || 0}</td>
+                  <td className="px-5 py-3.5 text-center">
+                    <span className="text-xs text-gray-500 bg-gray-50 border border-gray-100 px-2 py-1 rounded-full">
                       {s.source || 'In-Store'}
                     </span>
                   </td>
-                  <td className="px-8 py-5 text-right font-black text-[#0D4A3E] text-sm hl-mono">KES {Number(s.totalAmount).toLocaleString()}</td>
-                  <td className="px-8 py-5 text-center">
-                    <span className={`text-[10px] font-black px-2.5 py-1 rounded-[.5rem] uppercase tracking-widest ${getStatusColor(s.status)}`}>
+                  <td className="px-5 py-3.5 text-right text-sm font-medium text-gray-900 hl-mono whitespace-nowrap">KES {Number(s.totalAmount).toLocaleString()}</td>
+                  <td className="px-5 py-3.5 text-center">
+                    <span className={`text-xs px-2 py-1 rounded-full ${getStatusColor(s.status)}`}>
                       {getStatusLabel(s.status)}
                     </span>
                   </td>
-                  <td className="px-8 py-5 text-center">
-                    <div className="p-2 bg-slate-50 group-hover:bg-white group-hover:shadow-lg rounded-[.5rem] transition-all text-gray-300 group-hover:text-emerald-600 inline-block">
-                      <Eye size={18} />
+                  <td className="px-5 py-3.5">
+                    <div className="flex items-center justify-center">
+                      <span className="p-1.5 rounded-[.5rem] text-gray-300 hover:text-gray-600 hover:bg-gray-100 transition-colors inline-block">
+                        <Eye size={15} />
+                      </span>
                     </div>
                   </td>
                 </tr>
@@ -418,21 +416,17 @@ export default function SalesHistoryPage() {
   )
 }
 
-function StatCard({ title, value, sub, icon: Icon, variant }: any) {
-  const variants: Record<string, string> = {
-    emerald: 'bg-emerald-50 text-emerald-600 border-emerald-100',
-    blue: 'bg-blue-50 text-blue-600 border-blue-100',
-  }
+// ─── Overview cell ──────────────────────────────────────────────────────────
+
+function StatCell({ icon: Icon, label, value, sub }: { icon: any; label: string; value: string; sub: string }) {
   return (
-    <div className="bg-white p-8 rounded-[.5rem] border border-gray-100 shadow-xl shadow-gray-900/5 flex items-center gap-6 hover:shadow-2xl transition-all border-b-4 group">
-      <div className={`h-16 w-16 rounded-[.5rem] flex items-center justify-center shrink-0 transition-all group-hover:scale-110 ${variants[variant]} border`}>
-        <Icon size={32} />
+    <div className="bg-white p-6">
+      <div className="flex items-center gap-2 mb-2">
+        <Icon size={13} className="text-gray-300" />
+        <p className="text-xs text-gray-400">{label}</p>
       </div>
-      <div>
-        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">{title}</p>
-        <h3 className="text-2xl font-black text-gray-900 hl-mono tracking-tight">{value}</h3>
-        <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest opacity-60">{sub}</p>
-      </div>
+      <p className="text-2xl font-semibold text-gray-900 hl-mono tracking-tight">{value}</p>
+      <p className="text-xs text-gray-400 mt-1">{sub}</p>
     </div>
   )
 }

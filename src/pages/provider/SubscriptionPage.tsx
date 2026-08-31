@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
-import { 
-  Calendar, CreditCard, CheckCircle2, Zap, AlertTriangle, ChevronRight, Loader2, Phone, Star, RefreshCcw, Shield, Smartphone, Eye, Download, Info, Users, Check, TrendingUp, CheckCircle, Smartphone as PhoneIcon, CheckCircle2 as CheckIcon 
+import {
+  Calendar, CreditCard, CheckCircle2, Zap, AlertTriangle, Loader2, Phone, Star, RefreshCcw, Shield, Smartphone, Eye, Download, Info, Users, Check, TrendingUp
 } from 'lucide-react'
 import { subscriptionsApi } from '../../lib/api/providers'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
@@ -8,7 +8,7 @@ import { toast } from 'sonner'
 import { getErrorMessage } from '../../lib/utils/error'
 import { useAuth } from '../../lib/auth/AuthContext'
 import Pagination from '../../components/shared/Pagination'
-import { Filter, Search } from 'lucide-react'
+import { Filter } from 'lucide-react'
 
 const PLANS = [
   {
@@ -49,8 +49,8 @@ import { SubscriptionExpiredBanner } from '../../components/shared/SubscriptionG
 import { ConfirmModal } from '../../components/shared/ConfirmModal'
 
 // Base reward per referral per plan (in KES) & commission rate labels
-const REFERRAL_REWARDS = { lite: 1200, plus: 1200, max: 2300 }
-const REFERRAL_RATES  = { lite: '27%', plus: '27%', max: '28%' }
+const REFERRAL_REWARDS = { starter: 1200, pro: 2300 }
+const REFERRAL_RATES  = { starter: '27%', pro: '28%' }
 
 function ReferralsTab() {
   const { user, refreshUser } = useAuth()
@@ -74,16 +74,14 @@ function ReferralsTab() {
 
   // Each plan shows earnings as if ALL providers join that plan
   const planProjections = {
-    lite: providerCount * REFERRAL_REWARDS.lite,
-    plus: providerCount * REFERRAL_REWARDS.plus,
-    max:  providerCount * REFERRAL_REWARDS.max,
+    starter: providerCount * REFERRAL_REWARDS.starter,
+    pro:     providerCount * REFERRAL_REWARDS.pro,
   }
-  const maxProjected = planProjections.max  // highest plan is always the max
+  const maxProjected = planProjections.pro  // highest plan is always the max
 
   const plans = [
-    { plan: 'Starter',      desc: 'LITE Package',  base: REFERRAL_REWARDS.lite, rate: REFERRAL_RATES.lite, projected: planProjections.lite, color: 'indigo' },
-    { plan: 'Growth',       desc: 'PLUS Package',  base: REFERRAL_REWARDS.plus, rate: REFERRAL_RATES.plus, projected: planProjections.plus, color: 'blue'   },
-    { plan: 'Business Pro', desc: 'MAX Package',   base: REFERRAL_REWARDS.max,  rate: REFERRAL_RATES.max,  projected: planProjections.max,  color: 'violet' },
+    { plan: 'Starter',      desc: 'Starter Plan (PLUS)',      base: REFERRAL_REWARDS.starter, rate: REFERRAL_RATES.starter, projected: planProjections.starter },
+    { plan: 'Business Pro', desc: 'Business Pro Plan (MAX)', base: REFERRAL_REWARDS.pro,     rate: REFERRAL_RATES.pro,     projected: planProjections.pro },
   ]
 
   const { data: referralsRes, isLoading: refsLoading } = useQuery({
@@ -113,144 +111,129 @@ function ReferralsTab() {
     toast.success('Referral link copied to clipboard!')
   }
 
-  const sliderGradient = `linear-gradient(to right, #4f46e5 0%, #4f46e5 ${((providerCount - 1) / 99) * 100}%, #e2e8f0 ${((providerCount - 1) / 99) * 100}%, #e2e8f0 100%)`
+  const sliderGradient = `linear-gradient(to right, #0D4A3E 0%, #0D4A3E ${((providerCount - 1) / 99) * 100}%, #e5e7eb ${((providerCount - 1) / 99) * 100}%, #e5e7eb 100%)`
 
   return (
-    <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
+    <div className="space-y-8">
 
-      {/* ── Hero Banner ── */}
-      <div className="bg-gradient-to-br from-indigo-900 to-slate-900 p-5 sm:p-8 lg:p-10 rounded-2xl text-white shadow-xl relative overflow-hidden">
+      {/* Hero banner */}
+      <div className="bg-gray-900 p-6 sm:p-8 rounded-[.5rem] text-white relative overflow-hidden">
         <div className="relative z-10">
           <div className="flex flex-wrap items-center gap-2 mb-4">
-            <span className="bg-white/10 text-indigo-200 px-3 py-1 rounded-full text-[9px] sm:text-[10px] font-black uppercase tracking-widest">Growth Program</span>
-            <span className="bg-amber-400 text-amber-950 px-3 py-1 rounded-full text-[9px] sm:text-[10px] font-black uppercase tracking-widest">Season Rules Active</span>
+            <span className="bg-white/10 text-gray-300 px-2.5 py-1 rounded-full text-xs">Growth program</span>
+            <span className="bg-amber-400 text-amber-950 px-2.5 py-1 rounded-full text-xs font-medium">Season rules active</span>
           </div>
-          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black mb-3 tracking-tight">Invite Vendors to hlynk</h2>
-          <p className="text-indigo-200/70 text-xs sm:text-sm font-medium leading-relaxed max-w-xl mb-6">
+          <h2 className="text-xl sm:text-2xl font-semibold mb-2">Invite vendors to hlynk</h2>
+          <p className="text-gray-300 text-sm leading-relaxed max-w-xl mb-5">
             Help traditional businesses go digital and earn massive rewards. When a vendor joins via your link, you get a significant share of their first "Season" payment.
           </p>
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 bg-white/5 p-2 rounded-xl border border-white/10 backdrop-blur-md max-w-2xl">
-            <div className="flex-1 px-4 py-2 font-bold text-indigo-100 hl-mono text-xs sm:text-sm truncate uppercase tracking-widest">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 bg-white/5 p-2 rounded-[.5rem] border border-white/10 max-w-2xl">
+            <div className="flex-1 px-3 py-2 font-medium text-gray-100 hl-mono text-xs sm:text-sm truncate">
               {referralLink}
             </div>
             <button
               onClick={copyToClipboard}
-              className="w-full sm:w-auto px-6 py-2.5 bg-white text-indigo-900 rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-indigo-50 transition-all active:scale-95 shadow-md"
+              className="w-full sm:w-auto px-5 py-2.5 bg-white text-gray-900 rounded-[.5rem] text-xs font-medium hover:bg-gray-100 transition-colors"
             >
-              Copy Link
+              Copy link
             </button>
           </div>
         </div>
-        <Star size={160} className="absolute -right-16 -top-16 text-white opacity-5 hidden sm:block" />
       </div>
 
-      {/* ══════════════════════════════════════════════════════════════
-          SECTION 1 — Season Time Progress
-      ══════════════════════════════════════════════════════════════ */}
-      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
-        <div className="p-4 sm:p-6 border-b border-slate-50 flex items-center gap-3">
-          <div className="h-8 w-8 rounded-xl bg-indigo-50 flex items-center justify-center shrink-0">
-            <Calendar size={16} className="text-indigo-500" />
-          </div>
+      {/* Season time progress */}
+      <div className="bg-white rounded-[.5rem] border border-gray-100">
+        <div className="p-4 sm:p-6 border-b border-gray-100 flex items-center gap-3">
+          <Calendar size={15} className="text-gray-300" />
           <div>
-            <h3 className="text-xs font-black uppercase tracking-widest text-slate-800">Season Progress</h3>
-            <p className="text-[10px] sm:text-[11px] text-slate-400 font-medium mt-0.5">Your current 180-day referral season window</p>
+            <h3 className="text-sm font-medium text-gray-900">Season progress</h3>
+            <p className="text-xs text-gray-400 mt-0.5">Your current 180-day referral season window</p>
           </div>
         </div>
 
-        <div className="p-4 sm:p-8 space-y-6">
+        <div className="p-4 sm:p-6 space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-            <div className="flex items-baseline gap-2 sm:gap-3">
-              <span className="text-3xl sm:text-4xl lg:text-5xl font-black text-slate-900 hl-mono">{elapsedDays}</span>
-              <span className="text-xs sm:text-sm font-bold text-slate-400">/ {SEASON_DAYS} days elapsed</span>
+            <div className="flex items-baseline gap-2">
+              <span className="text-3xl font-semibold text-gray-900 hl-mono">{elapsedDays}</span>
+              <span className="text-sm text-gray-400">/ {SEASON_DAYS} days elapsed</span>
             </div>
-            <div className="flex items-center gap-4 sm:gap-8">
+            <div className="flex items-center gap-6">
               <div>
-                <p className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-slate-400 mb-0.5">Season Ends</p>
-                <p className="text-xs sm:text-sm font-black text-slate-800 hl-mono">
+                <p className="text-xs text-gray-400 mb-0.5">Season ends</p>
+                <p className="text-sm font-medium text-gray-900 hl-mono">
                   {seasonEndDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                 </p>
               </div>
               <div>
-                <p className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-slate-400 mb-0.5">Days Remaining</p>
-                <p className="text-xs sm:text-sm font-black text-indigo-600 hl-mono">{remainingDays} days</p>
+                <p className="text-xs text-gray-400 mb-0.5">Days remaining</p>
+                <p className="text-sm font-medium text-[#0D4A3E] hl-mono">{remainingDays} days</p>
               </div>
             </div>
           </div>
 
-          {/* Progress bar */}
-          <div className="h-3 sm:h-4 bg-slate-100 rounded-full overflow-hidden relative">
+          <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
             <div
-              className="h-full rounded-full transition-all duration-700 ease-out relative overflow-hidden"
-              style={{ width: `${progressPct}%`, background: 'linear-gradient(90deg, #4f46e5, #818cf8)' }}
-            >
-              <div className="absolute inset-0 bg-white/20 animate-pulse" />
-            </div>
+              className="h-full rounded-full transition-all duration-700 ease-out bg-[#0D4A3E]"
+              style={{ width: `${progressPct}%` }}
+            />
           </div>
 
-          <div className="flex justify-between items-center text-[9px] sm:text-[10px]">
-            <span className="font-black text-slate-400 uppercase tracking-widest">
+          <div className="flex justify-between items-center text-xs">
+            <span className="text-gray-400">
               {seasonStartDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
             </span>
             <span
-              className="font-black uppercase tracking-widest px-2.5 py-0.5 rounded-full"
+              className="px-2.5 py-0.5 rounded-full"
               style={{
-                background: progressPct >= 80 ? '#fef3c7' : progressPct >= 50 ? '#e0e7ff' : '#f0fdf4',
-                color:      progressPct >= 80 ? '#92400e'  : progressPct >= 50 ? '#3730a3'  : '#166534'
+                background: progressPct >= 80 ? '#fef3c7' : progressPct >= 50 ? '#f3f4f6' : '#f0fdf4',
+                color:      progressPct >= 80 ? '#92400e'  : progressPct >= 50 ? '#4b5563'  : '#166534'
               }}
             >
-              {progressPct >= 80 ? '⚡ Season Ending Soon' : progressPct >= 50 ? '🔥 Season Active' : '✅ Early Season'}
+              {progressPct >= 80 ? 'Season ending soon' : progressPct >= 50 ? 'Season active' : 'Early season'}
             </span>
-            <span className="font-black text-slate-400 uppercase tracking-widest">
+            <span className="text-gray-400">
               {seasonEndDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
             </span>
           </div>
 
           {/* Season milestones */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-px bg-gray-100 rounded-[.5rem] overflow-hidden border border-gray-100">
             {[
               { label: 'Qualify for Renewal Bonus', day: 1, met: elapsedDays >= 1 && providerCount >= 1 },
               { label: 'Mid-Season Check',          day: 90, met: elapsedDays >= 90 },
               { label: 'Season Completion',          day: 180, met: elapsedDays >= 180 },
             ].map((m, i) => (
-              <div
-                key={i}
-                className={`p-3 rounded-xl border text-center transition-all ${m.met ? 'bg-emerald-50 border-emerald-100' : 'bg-slate-50 border-slate-100'}`}
-              >
-                <div className={`text-[10px] font-black uppercase tracking-widest mb-0.5 ${m.met ? 'text-emerald-700' : 'text-slate-400'}`}>
-                  {m.met ? '✔ Achieved' : `Day ${m.day}`}
+              <div key={i} className="bg-white p-3 text-center">
+                <div className={`text-xs mb-0.5 ${m.met ? 'text-[#0D4A3E]' : 'text-gray-400'}`}>
+                  {m.met ? 'Achieved' : `Day ${m.day}`}
                 </div>
-                <p className="text-[10px] font-medium text-slate-600 leading-tight">{m.label}</p>
+                <p className="text-xs text-gray-600 leading-tight">{m.label}</p>
               </div>
             ))}
           </div>
         </div>
       </div>
 
-      {/* ══════════════════════════════════════════════════════════════
-          SECTION 2 — Providers Onboarded Simulator
-      ══════════════════════════════════════════════════════════════ */}
-      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
-        <div className="p-4 sm:p-6 border-b border-slate-50 flex items-center gap-3">
-          <div className="h-8 w-8 rounded-xl bg-violet-50 flex items-center justify-center shrink-0">
-            <TrendingUp size={16} className="text-violet-500" />
-          </div>
+      {/* Earnings simulator */}
+      <div className="bg-white rounded-[.5rem] border border-gray-100">
+        <div className="p-4 sm:p-6 border-b border-gray-100 flex items-center gap-3">
+          <TrendingUp size={15} className="text-gray-300" />
           <div className="flex-1">
-            <h3 className="text-xs font-black uppercase tracking-widest text-slate-800">Earnings Simulator</h3>
-            <p className="text-[10px] sm:text-[11px] text-slate-400 font-medium mt-0.5">Drag the slider to see how much you earn per plan — the higher the plan, the bigger your reward</p>
+            <h3 className="text-sm font-medium text-gray-900">Earnings simulator</h3>
+            <p className="text-xs text-gray-400 mt-0.5">Drag the slider to see how much you earn per plan</p>
           </div>
-          <div className="bg-indigo-50 px-3 py-1.5 rounded-xl border border-indigo-100 text-center shrink-0">
-            <p className="text-[8px] font-black uppercase tracking-widest text-indigo-400 mb-0.5">Providers</p>
-            <p className="text-base sm:text-xl font-black text-indigo-700 hl-mono leading-none">{providerCount}</p>
+          <div className="bg-gray-50 px-3 py-1.5 rounded-[.5rem] border border-gray-100 text-center shrink-0">
+            <p className="text-xs text-gray-400">Providers</p>
+            <p className="text-base font-semibold text-gray-900 hl-mono leading-none">{providerCount}</p>
           </div>
         </div>
 
-        <div className="p-4 sm:p-8 space-y-6">
+        <div className="p-4 sm:p-6 space-y-6">
           {/* Slider */}
           <div className="space-y-3">
-            <div className="flex justify-between text-[9px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest">
-              <span>1 Provider</span>
-              <span>100 Providers</span>
+            <div className="flex justify-between text-xs text-gray-400">
+              <span>1 provider</span>
+              <span>100 providers</span>
             </div>
             <input
               type="range"
@@ -258,7 +241,7 @@ function ReferralsTab() {
               max={100}
               value={providerCount}
               onChange={e => setProviderCount(Number(e.target.value))}
-              className="w-full h-2 rounded-full appearance-none cursor-pointer"
+              className="w-full h-1.5 rounded-full appearance-none cursor-pointer"
               style={{
                 background: sliderGradient,
                 outline: 'none',
@@ -266,13 +249,12 @@ function ReferralsTab() {
               }}
             />
 
-            {/* Tick marks */}
             <div className="flex justify-between px-0.5">
               {[1, 25, 50, 75, 100].map(n => (
                 <button
                   key={n}
                   onClick={() => setProviderCount(n)}
-                  className={`text-[9px] font-black uppercase tracking-widest transition-all ${providerCount === n ? 'text-indigo-600' : 'text-slate-300 hover:text-slate-500'}`}
+                  className={`text-xs transition-colors ${providerCount === n ? 'text-[#0D4A3E] font-medium' : 'text-gray-300 hover:text-gray-500'}`}
                 >
                   {n}
                 </button>
@@ -280,63 +262,57 @@ function ReferralsTab() {
             </div>
           </div>
 
-          {/* Grand Total Banner */}
-          <div className="bg-gradient-to-r from-indigo-900 to-slate-800 p-5 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          {/* Grand total banner */}
+          <div className="bg-gray-900 p-5 rounded-[.5rem] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
-              <p className="text-[9px] font-black uppercase tracking-widest text-indigo-300/60 mb-0.5">Best-Case Earnings</p>
-              <p className="text-xl sm:text-2xl lg:text-3xl font-black text-white hl-mono transition-all">
+              <p className="text-xs text-gray-400 mb-0.5">Best-case earnings</p>
+              <p className="text-xl sm:text-2xl font-semibold text-white hl-mono">
                 KES {maxProjected.toLocaleString()}
               </p>
-              <p className="text-[9px] text-indigo-300/50 font-medium mt-0.5">
+              <p className="text-xs text-gray-400 mt-0.5">
                 If all {providerCount} provider{providerCount !== 1 ? 's' : ''} subscribe to Business Pro
               </p>
             </div>
-            <div className="flex items-center gap-2 bg-white/10 px-4 py-2 rounded-lg border border-white/10 w-fit">
-              <Star size={14} className="text-amber-400" fill="currentColor" />
-              <span className="text-[10px] font-black text-white uppercase tracking-widest">
+            <div className="flex items-center gap-2 bg-white/10 px-3 py-1.5 rounded-[.5rem] w-fit">
+              <Star size={13} className="text-amber-400" fill="currentColor" />
+              <span className="text-xs text-white">
                 {providerCount >= 50 ? 'Elite Referrer' : providerCount >= 20 ? 'Power Referrer' : providerCount >= 5 ? 'Active Referrer' : 'Getting Started'}
               </span>
             </div>
           </div>
 
-          {/* Reward Cards (reactive) */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          {/* Reward cards (reactive) */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-px bg-gray-100 rounded-[.5rem] overflow-hidden border border-gray-100">
             {plans.map((item, i) => {
-              const colorMap: Record<string, { bg: string, text: string, badge: string, bar: string }> = {
-                indigo: { bg: 'bg-indigo-50', text: 'text-indigo-600', badge: 'bg-indigo-100 text-indigo-700', bar: '#4f46e5' },
-                blue:   { bg: 'bg-blue-50',   text: 'text-blue-600',   badge: 'bg-blue-100 text-blue-700',     bar: '#2563eb' },
-                violet: { bg: 'bg-violet-50',  text: 'text-violet-600', badge: 'bg-violet-100 text-violet-700', bar: '#7c3aed' },
-              }
-              const c = colorMap[item.color]
               const barWidth = Math.round((item.projected / maxProjected) * 100)
               return (
-                <div key={i} className="bg-white p-4 sm:p-6 rounded-xl border border-slate-100 shadow-sm hover:border-indigo-200 transition-all space-y-3">
+                <div key={i} className="bg-white p-4 sm:p-5 space-y-3">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-0.5">{item.desc}</p>
-                      <h4 className="text-sm font-black text-slate-900">{item.plan}</h4>
+                      <p className="text-xs text-gray-400 mb-0.5">{item.desc}</p>
+                      <h4 className="text-sm font-medium text-gray-900">{item.plan}</h4>
                     </div>
-                    <span className={`${c.badge} px-2.5 py-0.5 rounded-full text-[8px] font-black uppercase tracking-widest`}>
+                    <span className="bg-gray-50 border border-gray-100 text-gray-500 px-2 py-0.5 rounded-full text-xs">
                       {item.rate}
                     </span>
                   </div>
 
                   <div className="flex items-baseline gap-2">
-                    <span className="text-[10px] font-bold text-slate-400">Per referral:</span>
-                    <span className={`text-xs font-black ${c.text} hl-mono`}>KES {item.base.toLocaleString()}</span>
+                    <span className="text-xs text-gray-400">Per referral:</span>
+                    <span className="text-xs font-medium text-[#0D4A3E] hl-mono">KES {item.base.toLocaleString()}</span>
                   </div>
 
                   <div className="space-y-1.5">
                     <div className="flex justify-between items-baseline">
-                      <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">If all {providerCount} join</span>
-                      <span className={`text-base font-black ${c.text} hl-mono transition-all`}>
+                      <span className="text-xs text-gray-400">If all {providerCount} join</span>
+                      <span className="text-sm font-medium text-[#0D4A3E] hl-mono">
                         KES {item.projected.toLocaleString()}
                       </span>
                     </div>
-                    <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                    <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
                       <div
-                        className="h-full rounded-full transition-all duration-500 ease-out"
-                        style={{ width: `${barWidth}%`, background: c.bar }}
+                        className="h-full rounded-full bg-[#0D4A3E] transition-all duration-500 ease-out"
+                        style={{ width: `${barWidth}%` }}
                       />
                     </div>
                   </div>
@@ -347,97 +323,95 @@ function ReferralsTab() {
         </div>
       </div>
 
-      {/* ── Season Rule Info ── */}
-      <div className="bg-slate-50 p-4 sm:p-6 rounded-2xl border border-slate-100">
+      {/* Season rule info */}
+      <div className="bg-gray-50 p-5 rounded-[.5rem] border border-gray-100">
         <div className="flex items-center gap-2 mb-3">
-          <Info size={16} className="text-slate-400" />
-          <h4 className="text-xs font-black uppercase tracking-widest text-slate-600">The 180-Day Season Rule</h4>
+          <Info size={15} className="text-gray-400" />
+          <h4 className="text-sm font-medium text-gray-700">The 180-day season rule</h4>
         </div>
-        <div className="space-y-2 text-xs text-slate-500 font-medium leading-relaxed">
+        <div className="space-y-2 text-xs text-gray-500 leading-relaxed">
           <p>
-            To keep rewards sustainable, we use the <span className="text-slate-900 font-bold">180-Day Rule</span>:
+            To keep rewards sustainable, we use the <span className="text-gray-900 font-medium">180-day rule</span>:
           </p>
           <ul className="list-disc list-inside space-y-1">
-            <li>You receive rewards automatically for every NEW vendor you refer.</li>
-            <li>For RENEWALS, you only receive a bonus if you have referred <span className="text-indigo-600 font-bold">at least 1 new vendor</span> in the last 6 months (180 days).</li>
+            <li>You receive rewards automatically for every new vendor you refer.</li>
+            <li>For renewals, you only receive a bonus if you have referred <span className="text-[#0D4A3E] font-medium">at least 1 new vendor</span> in the last 6 months (180 days).</li>
           </ul>
         </div>
       </div>
 
-      {/* ── Referral Tracking Table ── */}
-      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
-        <div className="p-4 sm:p-6 border-b border-slate-50 flex items-center justify-between">
+      {/* Referral tracking table */}
+      <div className="bg-white rounded-[.5rem] border border-gray-100">
+        <div className="p-4 sm:p-6 border-b border-gray-100 flex items-center justify-between">
           <div className="flex items-center gap-3">
-             <div className="h-8 w-8 rounded-xl bg-emerald-50 flex items-center justify-center shrink-0">
-               <Users size={16} className="text-emerald-500" />
-             </div>
-             <div>
-               <h3 className="text-xs font-black uppercase tracking-widest text-slate-800">Your Referrals</h3>
-               <p className="text-[10px] sm:text-[11px] text-slate-400 font-medium mt-0.5">Track businesses that joined via your link</p>
-             </div>
+            <Users size={15} className="text-gray-300" />
+            <div>
+              <h3 className="text-sm font-medium text-gray-900">Your referrals</h3>
+              <p className="text-xs text-gray-400 mt-0.5">Track businesses that joined via your link</p>
+            </div>
           </div>
-          <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest hl-mono">
-            {referrals.length} Total
+          <span className="text-xs text-gray-400 hl-mono">
+            {referrals.length} total
           </span>
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
+          <table className="w-full text-left">
             <thead>
-               <tr className="bg-slate-50/50 border-b border-slate-100">
-                 <th className="px-4 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">Biashara</th>
-                 <th className="px-4 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">Joined</th>
-                 <th className="px-4 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">Status</th>
-                 <th className="px-4 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Potential Reward</th>
-               </tr>
+              <tr>
+                <th className="px-4 py-3 text-xs font-medium text-gray-400">Biashara</th>
+                <th className="px-4 py-3 text-xs font-medium text-gray-400">Joined</th>
+                <th className="px-4 py-3 text-xs font-medium text-gray-400">Status</th>
+                <th className="px-4 py-3 text-xs font-medium text-gray-400 text-right">Potential reward</th>
+              </tr>
             </thead>
-            <tbody className="divide-y divide-slate-50">
+            <tbody className="divide-y divide-gray-50">
               {refsLoading ? (
-                <tr><td colSpan={4} className="p-10 text-center animate-pulse text-slate-400 font-medium italic">Loading your referral list...</td></tr>
+                <tr><td colSpan={4} className="py-16 text-center text-sm text-gray-400">Loading your referral list…</td></tr>
               ) : referrals.length === 0 ? (
-                <tr><td colSpan={4} className="p-10 text-center text-slate-400 font-medium italic">You haven't referred any businesses yet. Share your link to start earning!</td></tr>
+                <tr><td colSpan={4} className="py-16 text-center text-sm text-gray-400">You haven't referred any businesses yet. Share your link to start earning!</td></tr>
               ) : (
                 referrals.map((ref: any, i: number) => {
                   const isTrial = ref.subStatus === 2;
-                  const latestPayout = ref.payouts?.[0]; // Usually one primary bonus
+                  const latestPayout = ref.payouts?.[0];
                   const planName = ref.planName === 'MAX' ? 'Business Pro' : ref.planName === 'PLUS' ? 'Growth' : 'Starter';
-                  
+
                   return (
-                    <tr key={i} className="hover:bg-slate-50/50 transition-all group">
-                      <td className="px-4 py-3">
-                         <p className="font-bold text-slate-900 text-xs sm:text-sm">{ref.businessName}</p>
-                         <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-0.5">{planName} Plan</p>
+                    <tr key={i} className="hover:bg-gray-50/60 transition-colors">
+                      <td className="px-4 py-3.5">
+                        <p className="font-medium text-gray-900 text-sm">{ref.businessName}</p>
+                        <p className="text-xs text-gray-400 mt-0.5">{planName} plan</p>
                       </td>
-                      <td className="px-4 py-3 text-slate-500 text-xs font-medium">
+                      <td className="px-4 py-3.5 text-gray-500 text-sm">
                         {new Date(ref.joinedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                       </td>
-                      <td className="px-4 py-3">
+                      <td className="px-4 py-3.5">
                         {isTrial ? (
                           <div className="flex flex-col gap-0.5">
-                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest bg-amber-50 text-amber-700 w-fit">
-                              <Loader2 size={10} className="animate-spin" /> In Trial
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs bg-amber-50 text-amber-700 w-fit">
+                              <Loader2 size={10} className="animate-spin" /> In trial
                             </span>
-                            <p className="text-[8px] text-slate-400 font-bold ml-1">Ends {new Date(ref.trialEndDate).toLocaleDateString()}</p>
+                            <p className="text-xs text-gray-400 ml-1">Ends {new Date(ref.trialEndDate).toLocaleDateString()}</p>
                           </div>
                         ) : (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest bg-emerald-50 text-emerald-700 w-fit">
-                            <Check size={10} /> Plan Paid
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs bg-emerald-50 text-emerald-700 w-fit">
+                            <Check size={10} /> Plan paid
                           </span>
                         )}
                       </td>
-                      <td className="px-4 py-3 text-right">
+                      <td className="px-4 py-3.5 text-right">
                         {latestPayout ? (
                           <div className="flex flex-col items-end gap-0.5">
-                            <p className="text-xs sm:text-sm font-black text-slate-900 hl-mono">KES {Number(latestPayout.amount).toLocaleString()}</p>
-                            <span className={`text-[8px] font-black uppercase tracking-[0.15em] px-1.5 py-0.5 rounded ${latestPayout.status === 'PENDING' ? 'bg-indigo-100 text-indigo-700' : 'bg-emerald-100 text-emerald-700'}`}>
-                              {latestPayout.status === 'PENDING' ? 'Settlement Pending' : 'Paid Out'}
+                            <p className="text-sm font-medium text-gray-900 hl-mono">KES {Number(latestPayout.amount).toLocaleString()}</p>
+                            <span className={`text-xs px-1.5 py-0.5 rounded ${latestPayout.status === 'PENDING' ? 'bg-gray-100 text-gray-600' : 'bg-emerald-50 text-emerald-700'}`}>
+                              {latestPayout.status === 'PENDING' ? 'Settlement pending' : 'Paid out'}
                             </span>
                           </div>
                         ) : (
                           <div className="flex flex-col items-end gap-0.5">
-                            <p className="text-xs font-black text-slate-300 hl-mono">---</p>
-                            <span className="text-[8px] font-black uppercase tracking-[0.15em] text-slate-400">
-                              {isTrial ? 'Awaiting Payment' : 'No payout logged'}
+                            <p className="text-sm text-gray-300 hl-mono">—</p>
+                            <span className="text-xs text-gray-400">
+                              {isTrial ? 'Awaiting payment' : 'No payout logged'}
                             </span>
                           </div>
                         )}
@@ -465,123 +439,117 @@ function PayoutsTab() {
 
   if (isLoading) {
     return (
-      <div className="p-20 text-center animate-pulse text-slate-300 uppercase font-black text-[10px] tracking-widest">
-        Calculating Settlements...
-      </div>
+      <div className="py-16 text-center text-sm text-gray-400">Calculating settlements…</div>
     )
   }
 
   return (
-    <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
-      
-      <div className="bg-[#0D4A3E] p-5 sm:p-8 lg:p-10 rounded-2xl text-white shadow-xl shadow-emerald-900/10 relative overflow-hidden">
-        <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-12 items-center">
+    <div className="space-y-8">
+
+      <div className="bg-[#0D4A3E] p-6 sm:p-8 rounded-[.5rem] text-white relative overflow-hidden">
+        <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-10 items-center">
           <div>
-            <span className="bg-white/10 text-emerald-200 px-3 py-1 rounded-full text-[9px] sm:text-[10px] font-black uppercase tracking-widest mb-3 inline-block">Revenue Share Settlement</span>
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black mb-3 tracking-tight">Your Paybill Earnings</h2>
-            <p className="text-emerald-200/70 text-xs sm:text-sm font-medium leading-relaxed max-w-sm">
+            <span className="bg-white/10 text-emerald-100 px-2.5 py-1 rounded-full text-xs mb-3 inline-block">Revenue share settlement</span>
+            <h2 className="text-xl sm:text-2xl font-semibold mb-2">Your paybill earnings</h2>
+            <p className="text-emerald-100/70 text-sm leading-relaxed max-w-sm">
               Since you're using hlynk's shared Paybill infrastructures, a {((stats?.shareRate || 0) * 100).toFixed(0)}% platform fee is applied. We settle your net earnings every 7 days.
             </p>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="bg-white/5 p-4 sm:p-5 rounded-xl border border-white/10 backdrop-blur-sm">
-              <p className="text-[9px] font-black opacity-60 uppercase tracking-widest mb-1">Unsettled (Net)</p>
-              <p className="text-xl sm:text-2xl font-black hl-mono">KES {Math.floor(stats?.pendingNet || 0).toLocaleString()}</p>
-              <div className="h-1.5 w-full bg-white/10 rounded-full mt-3 overflow-hidden">
-                 <div className="h-full bg-emerald-400 w-[60%] shadow-[0_0_10px_rgba(52,211,153,0.5)]" />
-              </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="bg-white/5 p-4 rounded-[.5rem] border border-white/10">
+              <p className="text-xs opacity-70 mb-1">Unsettled (net)</p>
+              <p className="text-xl font-semibold hl-mono">KES {Math.floor(stats?.pendingNet || 0).toLocaleString()}</p>
             </div>
-            <div className="bg-white/5 p-4 sm:p-5 rounded-xl border border-white/10 backdrop-blur-sm">
-              <p className="text-[9px] font-black opacity-60 uppercase tracking-widest mb-1">Total Settled</p>
-              <p className="text-xl sm:text-2xl font-black hl-mono">KES {Math.floor(stats?.settledNet || 0).toLocaleString()}</p>
-              <div className="flex items-center gap-2 text-[9px] font-black text-emerald-400 uppercase tracking-widest mt-3">
-                 <CheckCircle2 size={12} /> Verified Payments
+            <div className="bg-white/5 p-4 rounded-[.5rem] border border-white/10">
+              <p className="text-xs opacity-70 mb-1">Total settled</p>
+              <p className="text-xl font-semibold hl-mono">KES {Math.floor(stats?.settledNet || 0).toLocaleString()}</p>
+              <div className="flex items-center gap-1.5 text-xs opacity-70 mt-2">
+                <CheckCircle2 size={12} /> Verified payments
               </div>
             </div>
           </div>
         </div>
-        <TrendingUp size={200} className="absolute -right-16 -bottom-16 text-white opacity-5 rotate-12 hidden sm:block" />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-         <div className="lg:col-span-2 space-y-4">
-            <div className="flex justify-between items-center">
-               <h3 className="text-base sm:text-lg font-black text-slate-900 tracking-tight">Settlement History</h3>
-               <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest hl-mono">{history.length} Batches Found</span>
-            </div>
-            
-            <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
-               <div className="overflow-x-auto">
-                 <table className="w-full text-left border-collapse">
-                    <thead>
-                      <tr className="bg-slate-50/50 border-b border-slate-100">
-                        <th className="px-4 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">Period / Batch</th>
-                        <th className="px-4 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Gross Volume</th>
-                        <th className="px-4 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Net Payout</th>
-                        <th className="px-4 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">Status</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-50">
-                      {history.length === 0 ? (
-                        <tr><td colSpan={4} className="p-10 text-center text-slate-400 font-medium italic">No payouts processed yet. settlements occur weekly.</td></tr>
-                      ) : (
-                        history.map((row: any, i: number) => {
-                          const net = row.grossAmount * (1 - (stats?.shareRate || 0));
-                          return (
-                            <tr key={i} className="hover:bg-slate-50/50 transition-all group">
-                              <td className="px-4 py-3">
-                                <p className="font-bold text-slate-900 text-xs sm:text-sm">
-                                  {new Date(row.periodStart).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - {new Date(row.periodEnd).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                                </p>
-                                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-0.5 italic">{row.txCount} payments bundled</p>
-                              </td>
-                              <td className="px-4 py-3 text-right font-black text-slate-400 hl-mono text-xs sm:text-sm">KES {Number(row.grossAmount).toLocaleString()}</td>
-                              <td className="px-4 py-3 text-right font-black text-[#0D4A3E] hl-mono text-xs sm:text-sm">KES {Math.floor(net).toLocaleString()}</td>
-                              <td className="px-4 py-3">
-                                <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${row.payoutStatus === 1 ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700 font-black animate-pulse'}`}>
-                                  {row.payoutStatus === 1 ? 'Settled' : 'Unsettled'}
-                                </span>
-                              </td>
-                            </tr>
-                          );
-                        })
-                      )}
-                    </tbody>
-                 </table>
-               </div>
-            </div>
-         </div>
+        <div className="lg:col-span-2 space-y-3">
+          <div className="flex justify-between items-center">
+            <h3 className="text-sm font-medium text-gray-900">Settlement history</h3>
+            <span className="text-xs text-gray-400 hl-mono">{history.length} batches found</span>
+          </div>
 
-         <div className="space-y-4">
-            <h3 className="text-base sm:text-lg font-black text-slate-900 tracking-tight">Financial Summary</h3>
-            <div className="bg-white p-5 sm:p-6 rounded-2xl border border-slate-100 shadow-sm space-y-6">
-               <div className="space-y-1">
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Gross Platform Intake</p>
-                  <p className="text-xl sm:text-2xl font-black text-slate-900 hl-mono">KES {(Number(stats?.pendingGross || 0) + Number(stats?.settledGross || 0)).toLocaleString()}</p>
-               </div>
-               
-               <div className="space-y-3 pt-4 border-t border-slate-50">
-                  <div className="flex justify-between items-center text-xs">
-                     <span className="font-medium text-slate-500">Platform Share (10%)</span>
-                     <span className="font-black text-red-500 hl-mono">- KES {Math.floor((Number(stats?.pendingGross || 0) + Number(stats?.settledGross || 0)) * 0.10).toLocaleString()}</span>
-                  </div>
-                  <div className="flex justify-between items-center text-xs">
-                     <span className="font-medium text-slate-500">Already Settled</span>
-                     <span className="font-black text-blue-500 hl-mono">KES {Math.floor(stats?.settledNet || 0).toLocaleString()}</span>
-                  </div>
-               </div>
-
-               <div className="bg-emerald-50 p-4 sm:p-5 rounded-xl border border-emerald-100">
-                  <div className="flex items-center gap-2 text-[9px] font-black text-[#0D4A3E] uppercase tracking-widest mb-1.5">
-                    <Smartphone size={14} /> Available for Withdrawal
-                  </div>
-                  <p className="text-2xl sm:text-3xl font-black text-emerald-900 hl-mono">KES {Math.floor(stats?.pendingNet || 0).toLocaleString()}</p>
-                  <p className="text-[10px] font-medium text-emerald-800/60 mt-2 leading-relaxed italic">
-                    Funds are automatically sent to your registered M-Pesa number upon Super Admin approval.
-                  </p>
-               </div>
+          <div className="bg-white rounded-[.5rem] border border-gray-100">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left">
+                <thead>
+                  <tr>
+                    <th className="px-4 py-3 text-xs font-medium text-gray-400">Period / batch</th>
+                    <th className="px-4 py-3 text-xs font-medium text-gray-400 text-right">Gross volume</th>
+                    <th className="px-4 py-3 text-xs font-medium text-gray-400 text-right">Net payout</th>
+                    <th className="px-4 py-3 text-xs font-medium text-gray-400">Status</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-50">
+                  {history.length === 0 ? (
+                    <tr><td colSpan={4} className="py-16 text-center text-sm text-gray-400">No payouts processed yet. Settlements occur weekly.</td></tr>
+                  ) : (
+                    history.map((row: any, i: number) => {
+                      const net = row.grossAmount * (1 - (stats?.shareRate || 0));
+                      return (
+                        <tr key={i} className="hover:bg-gray-50/60 transition-colors">
+                          <td className="px-4 py-3.5">
+                            <p className="font-medium text-gray-900 text-sm">
+                              {new Date(row.periodStart).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - {new Date(row.periodEnd).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                            </p>
+                            <p className="text-xs text-gray-400 mt-0.5">{row.txCount} payments bundled</p>
+                          </td>
+                          <td className="px-4 py-3.5 text-right text-gray-400 hl-mono text-sm">KES {Number(row.grossAmount).toLocaleString()}</td>
+                          <td className="px-4 py-3.5 text-right font-medium text-[#0D4A3E] hl-mono text-sm">KES {Math.floor(net).toLocaleString()}</td>
+                          <td className="px-4 py-3.5">
+                            <span className={`px-2 py-1 rounded-full text-xs ${row.payoutStatus === 1 ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'}`}>
+                              {row.payoutStatus === 1 ? 'Settled' : 'Unsettled'}
+                            </span>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
             </div>
-         </div>
+          </div>
+        </div>
+
+        <div className="space-y-3">
+          <h3 className="text-sm font-medium text-gray-900">Financial summary</h3>
+          <div className="bg-white p-5 rounded-[.5rem] border border-gray-100 space-y-5">
+            <div className="space-y-1">
+              <p className="text-xs text-gray-400">Gross platform intake</p>
+              <p className="text-xl font-semibold text-gray-900 hl-mono">KES {(Number(stats?.pendingGross || 0) + Number(stats?.settledGross || 0)).toLocaleString()}</p>
+            </div>
+
+            <div className="space-y-2.5 pt-3 border-t border-gray-50">
+              <div className="flex justify-between items-center text-xs">
+                <span className="text-gray-500">Platform share (10%)</span>
+                <span className="font-medium text-red-500 hl-mono">− KES {Math.floor((Number(stats?.pendingGross || 0) + Number(stats?.settledGross || 0)) * 0.10).toLocaleString()}</span>
+              </div>
+              <div className="flex justify-between items-center text-xs">
+                <span className="text-gray-500">Already settled</span>
+                <span className="font-medium text-blue-500 hl-mono">KES {Math.floor(stats?.settledNet || 0).toLocaleString()}</span>
+              </div>
+            </div>
+
+            <div className="bg-gray-50 p-4 rounded-[.5rem] border border-gray-100">
+              <div className="flex items-center gap-2 text-xs text-[#0D4A3E] mb-1.5">
+                <Smartphone size={13} /> Available for withdrawal
+              </div>
+              <p className="text-2xl font-semibold text-gray-900 hl-mono">KES {Math.floor(stats?.pendingNet || 0).toLocaleString()}</p>
+              <p className="text-xs text-gray-500 mt-2 leading-relaxed">
+                Funds are automatically sent to your registered M-Pesa number upon Super Admin approval.
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   )
@@ -592,7 +560,6 @@ export default function SubscriptionPage() {
   const { user, refreshUser } = useAuth()
   const [showRenewModal, setShowRenewModal] = useState(false)
   const [showChangeModal, setShowChangeModal] = useState(false)
-  const [showSuccessModal, setShowSuccessModal] = useState(false)
   const [showConfirmChange, setShowConfirmChange] = useState(false)
   const [showConfirmRenew, setShowConfirmRenew] = useState(false)
   const [mpesaPhone, setMpesaPhone] = useState('')
@@ -606,7 +573,7 @@ export default function SubscriptionPage() {
   const [isWaitingForPayment, setIsWaitingForPayment] = useState(false)
   const [waitingPaymentId, setWaitingPaymentId] = useState<string | null>(null)
   const [selectedTransaction, setSelectedTransaction] = useState<any>(null)
-  
+
   // Manual Payment Support
   const [subPaymentMethod, setSubPaymentMethod] = useState<'STK' | 'MANUAL'>('STK')
   const [mpesaCode, setMpesaCode] = useState('')
@@ -615,22 +582,21 @@ export default function SubscriptionPage() {
   // ── STAFF ACCESS LOCK ──
   if (user?.role === 'STAFF') {
     return (
-      <div className="p-20 text-center flex flex-col items-center justify-center space-y-8 animate-in fade-in zoom-in duration-700">
-        <div className="h-24 w-24 bg-red-50 text-red-600 rounded-[32px] flex items-center justify-center shadow-2xl shadow-red-500/10 relative overflow-hidden">
-          <Shield size={48} />
-          <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent" />
+      <div className="p-16 text-center flex flex-col items-center justify-center space-y-6">
+        <div className="h-16 w-16 bg-red-50 text-red-600 rounded-[.5rem] flex items-center justify-center border border-red-100">
+          <Shield size={28} />
         </div>
         <div className="max-w-md">
-          <h2 className="text-4xl font-black text-slate-900 tracking-tighter mb-3">Access Restricted</h2>
-          <p className="text-slate-500 font-medium text-lg leading-relaxed">
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">Access restricted</h2>
+          <p className="text-gray-500 text-sm leading-relaxed">
             Staff accounts are strictly prohibited from viewing or managing business billing plans. Please contact your administrator for assistance.
           </p>
         </div>
-        <button 
-          onClick={() => window.history.back()} 
-          className="px-10 py-4 bg-slate-900 text-white rounded-2xl text-xs font-black uppercase tracking-[0.2em] hover:bg-slate-800 transition-all shadow-xl active:scale-95"
+        <button
+          onClick={() => window.history.back()}
+          className="px-6 py-3 bg-gray-900 text-white rounded-[.5rem] text-sm font-medium hover:bg-black transition-colors"
         >
-          Go Back
+          Go back
         </button>
       </div>
     )
@@ -667,7 +633,7 @@ export default function SubscriptionPage() {
   const pagination = historyResponse?.data?.pagination
 
   const isTrial = subscription?.status === 2
-  const isExpired = subscription?.status === 1 || 
+  const isExpired = subscription?.status === 1 ||
                     (subscription?.endDate && new Date(subscription.endDate) < new Date()) ||
                     (isTrial && subscription?.trialEndDate && new Date(subscription.trialEndDate) < new Date())
   const targetEndDate = isTrial ? subscription?.trialEndDate : subscription?.endDate
@@ -679,57 +645,48 @@ export default function SubscriptionPage() {
     const currentPlan = subResponse?.data?.planName;
     const currentStatus = subResponse?.data?.status;
 
-    // SUCCESS DETECTION 1: History Record updated
     const historyLatest = historyResponse?.data?.payments?.[0];
-    const specificPayment = waitingPaymentId 
+    const specificPayment = waitingPaymentId
       ? historyResponse?.data?.payments?.find((p: any) => p.id === waitingPaymentId)
       : null;
-    
+
     const paymentToTrack = specificPayment || historyLatest;
-    
+
     const isPaid = paymentToTrack?.status === 0;
     const isCancelled = paymentToTrack?.status === 3;
     const isFailed = paymentToTrack?.status === 1 || paymentToTrack?.status === 4;
 
-    // SUCCESS DETECTION 2: Subscription status or plan changed (Fallback)
     const planChanged = initialPlan && currentPlan && initialPlan !== currentPlan;
     const statusActivated = (isExpired || isTrial) && currentStatus === 0;
-    
+
     if (isPaid || planChanged || statusActivated) {
       setWaitingPaymentId(null);
       setIsWaitingForPayment(false);
       setPaymentResultMessage(null);
-      
-      // Force refresh everything
+
       queryClient.invalidateQueries({ queryKey: ['my-subscription'] });
       queryClient.invalidateQueries({ queryKey: ['billing-history'] });
       refreshUser();
-      
-      // Switch back to current plan tab to show the update
+
       setActiveTab('current');
-      
+
       toast.success('Payment Successful', {
         description: `Your ${currentPlan || 'new'} plan is now active. All features are unlocked.`,
         icon: <CheckCircle2 className="text-emerald-500" />
       });
 
-      // Automatically reload the page after a short delay to manifest the changes
-      // This ensures the sidebar, guard, and all other components see the fresh subscription
       setTimeout(() => {
-        window.location.href = '/dashboard'; // Redirect to dashboard to "exit" the lock
+        window.location.href = '/dashboard';
       }, 2000);
       return;
     }
 
-    // FAILURE DETECTION
     if (isCancelled || isFailed) {
-      // console.log('[SUBSCRIPTION] Failure detected:', { isCancelled, isFailed });
-      
       setWaitingPaymentId(null);
       setIsWaitingForPayment(false);
-      
+
       const failureMsg = isCancelled ? 'Transaction Cancelled' : 'Payment Failed';
-      const description = isCancelled 
+      const description = isCancelled
         ? 'The STK push request was cancelled on the phone.'
         : (paymentToTrack?.message || 'M-Pesa could not process the payment. Please try again.');
 
@@ -751,11 +708,9 @@ export default function SubscriptionPage() {
       toast.success(data.message || 'STK Push sent to your phone, Enter your pin to complete the transaction!')
       setShowRenewModal(false)
       setIsWaitingForPayment(true)
-      // Store the specific payment ID if returned, or we'll fallback to latest in history
       if (data.data?.id || data.id) {
         setWaitingPaymentId(data.data?.id || data.id)
       }
-      // Safety timeout: stop waiting if no response after 60 seconds
       setTimeout(() => {
         setIsWaitingForPayment(false)
         setWaitingPaymentId(null)
@@ -774,7 +729,6 @@ export default function SubscriptionPage() {
       if (data.data?.id || data.id) {
         setWaitingPaymentId(data.data?.id || data.id)
       }
-      // Safety timeout: stop waiting if no response after 60 seconds
       setTimeout(() => {
         setIsWaitingForPayment(false)
         setWaitingPaymentId(null)
@@ -786,8 +740,8 @@ export default function SubscriptionPage() {
   const verifyMutation = useMutation({
     mutationFn: (paymentId: string) => subscriptionsApi.verify(paymentId),
     onSuccess: (data) => {
-      setIsWaitingForPayment(false) // Force stop spinner immediately
-      
+      setIsWaitingForPayment(false)
+
       const statusMap: Record<number, string> = { 0: 'PAID', 1: 'FAILED', 2: 'PENDING', 3: 'CANCELLED', 4: 'ERROR' };
       const statusValue = data.data.status;
       const statusStr = typeof statusValue === 'number' ? statusMap[statusValue] || 'UNKNOWN' : statusValue;
@@ -797,7 +751,6 @@ export default function SubscriptionPage() {
         queryClient.clear()
         refreshUser()
 
-        // Automatically reload and return to dashboard
         setTimeout(() => {
           window.location.href = '/dashboard'
         }, 2000)
@@ -828,91 +781,84 @@ export default function SubscriptionPage() {
   })
 
   if (subLoading) return (
-    <div className="p-20 text-center flex flex-col items-center justify-center space-y-4">
-      <div className="h-12 w-12 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center animate-bounce">
-        <Zap size={24} fill="currentColor" />
-      </div>
-      <p className="text-xs font-black text-slate-400 uppercase tracking-widest animate-pulse">Syncing Subscription Status...</p>
+    <div className="flex h-96 items-center justify-center">
+      <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#0D4A3E] border-t-transparent" />
     </div>
   )
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500 pt-6">
+    <div className="space-y-8 pt-4">
 
       {isWaitingForPayment && (
-        <div className="space-y-4">
-          <div className={`${paymentResultMessage ? (paymentResultMessage.includes('Success') || paymentResultMessage.includes('active') ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-red-50 border-red-200 text-red-800') : 'bg-emerald-50 border-emerald-200 text-emerald-800'} border px-6 py-4 rounded-2xl flex items-center justify-between gap-4 shadow-sm ${!paymentResultMessage && 'animate-pulse'}`}>
-            <div className="flex items-center gap-4">
-              {paymentResultMessage ? (
-                (paymentResultMessage.includes('Success') || paymentResultMessage.includes('active') ? <CheckCircle2 size={24} className="text-emerald-600" /> : <AlertTriangle size={24} className="text-red-600" />)
-              ) : (
-                <Loader2 className="animate-spin text-emerald-600" size={24} />
-              )}
-              <div>
-                <h4 className="font-black text-sm tracking-tight">
-                  {paymentResultMessage ? 'Transaction Finalized' : 
-                   (historyResponse?.data?.payments?.[0]?.status === 2 ? 'Awaiting Your PIN...' : 'Waiting for M-Pesa...')}
-                </h4>
-                <p className={`text-xs font-medium ${paymentResultMessage ? '' : 'text-emerald-600/80'}`}>
-                  {paymentResultMessage || 
-                   (historyResponse?.data?.payments?.[0]?.status === 2 
-                     ? "We've sent the prompt. Please enter your M-Pesa PIN on your phone to complete the activation." 
-                     : "Requesting an STK prompt from Safaricom... Please keep your phone unlocked.")
-                  }
-                </p>
-              </div>
-            </div>
-
-            {!paymentResultMessage && historyResponse?.data?.payments?.[0]?.id && (
-              <button
-                onClick={() => verifyMutation.mutate(historyResponse.data.payments[0].id)}
-                disabled={verifyMutation.isPending}
-                className="px-4 py-2 bg-white border border-emerald-100 rounded-xl text-[10px] font-black text-emerald-600 uppercase tracking-widest hover:bg-emerald-50 transition-all flex items-center gap-2 shadow-sm"
-              >
-                {verifyMutation.isPending ? <Loader2 size={12} className="animate-spin" /> : <RefreshCcw size={12} />}
-                Check Status
-              </button>
+        <div className={`${paymentResultMessage ? (paymentResultMessage.includes('Success') || paymentResultMessage.includes('active') ? 'bg-emerald-50 border-emerald-100 text-emerald-800' : 'bg-red-50 border-red-100 text-red-800') : 'bg-emerald-50 border-emerald-100 text-emerald-800'} border px-5 py-4 rounded-[.5rem] flex items-center justify-between gap-4`}>
+          <div className="flex items-center gap-3">
+            {paymentResultMessage ? (
+              (paymentResultMessage.includes('Success') || paymentResultMessage.includes('active') ? <CheckCircle2 size={20} className="text-emerald-600" /> : <AlertTriangle size={20} className="text-red-600" />)
+            ) : (
+              <Loader2 className="animate-spin text-emerald-600" size={20} />
             )}
+            <div>
+              <h4 className="font-medium text-sm">
+                {paymentResultMessage ? 'Transaction finalized' :
+                 (historyResponse?.data?.payments?.[0]?.status === 2 ? 'Awaiting your PIN…' : 'Waiting for M-Pesa…')}
+              </h4>
+              <p className="text-xs mt-0.5">
+                {paymentResultMessage ||
+                 (historyResponse?.data?.payments?.[0]?.status === 2
+                   ? "We've sent the prompt. Please enter your M-Pesa PIN on your phone to complete the activation."
+                   : "Requesting an STK prompt from Safaricom… Please keep your phone unlocked.")
+                }
+              </p>
+            </div>
           </div>
 
+          {!paymentResultMessage && historyResponse?.data?.payments?.[0]?.id && (
+            <button
+              onClick={() => verifyMutation.mutate(historyResponse.data.payments[0].id)}
+              disabled={verifyMutation.isPending}
+              className="px-3 py-2 bg-white border border-emerald-100 rounded-[.5rem] text-xs text-emerald-600 hover:bg-emerald-50 transition-colors flex items-center gap-2"
+            >
+              {verifyMutation.isPending ? <Loader2 size={12} className="animate-spin" /> : <RefreshCcw size={12} />}
+              Check status
+            </button>
+          )}
         </div>
       )}
 
       <SubscriptionExpiredBanner expired={isExpired} />
 
-
-      
+      {/* Page header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl sm:text-2xl lg:text-3xl font-black text-gray-900 tracking-tight">Subscription</h1>
-          <p className="text-xs sm:text-sm text-gray-500 font-medium italic">"Know your real profit. Not just what came in — what stayed."</p>
+          <h1 className="text-xl font-semibold text-gray-900">Subscription</h1>
+          <p className="text-sm text-gray-400">"Know your real profit. Not just what came in — what stayed."</p>
         </div>
 
-        <div className="flex flex-wrap sm:flex-nowrap bg-gray-100 p-1 rounded-xl gap-1 overflow-x-auto custom-scrollbar">
+        <div className="flex flex-wrap sm:flex-nowrap bg-gray-100 p-1 rounded-[.5rem] gap-1 overflow-x-auto">
           <button
             onClick={() => setActiveTab('current')}
-            className={`px-4 sm:px-6 py-2 rounded-lg text-[10px] sm:text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'current' ? 'bg-white text-emerald-600 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
+            className={`px-4 py-2 rounded-[.5rem] text-xs font-medium transition-colors ${activeTab === 'current' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
           >
-            Manage Plan
+            Manage plan
           </button>
           <button
             onClick={() => setActiveTab('history')}
-            className={`px-4 sm:px-6 py-2 rounded-lg text-[10px] sm:text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'history' ? 'bg-white text-emerald-600 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
+            className={`px-4 py-2 rounded-[.5rem] text-xs font-medium transition-colors ${activeTab === 'history' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
           >
-            Billing History
+            Billing history
           </button>
           <button
             onClick={() => setActiveTab('referrals')}
-            className={`px-4 sm:px-6 py-2 rounded-lg text-[10px] sm:text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'referrals' ? 'bg-white text-emerald-600 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
+            className={`px-4 py-2 rounded-[.5rem] text-xs font-medium transition-colors ${activeTab === 'referrals' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
           >
-            Refer & Earn
+            Refer & earn
           </button>
           {user?.isRented === 1 && (
             <button
               onClick={() => setActiveTab('payouts')}
-              className={`px-4 sm:px-6 py-2 rounded-lg text-[10px] sm:text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'payouts' ? 'bg-white text-emerald-600 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
+              className={`px-4 py-2 rounded-[.5rem] text-xs font-medium transition-colors ${activeTab === 'payouts' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
             >
-              Payouts Hub
+              Payouts hub
             </button>
           )}
         </div>
@@ -921,46 +867,46 @@ export default function SubscriptionPage() {
       {activeTab === 'current' ? (
         <>
           {isTrial && !isExpired && (
-             <div className="bg-emerald-900 text-white p-8 rounded-[.5em] shadow-2xl shadow-emerald-900/20 flex flex-col md:flex-row justify-between items-center gap-6">
+             <div className="bg-[#0D4A3E] text-white p-6 rounded-[.5rem] flex flex-col md:flex-row justify-between items-center gap-6">
                <div>
-                 <h3 className="text-xl font-black tracking-tight">You're exploring hlynk on a 14-Day Free Trial</h3>
-                 <p className="text-emerald-200 text-sm font-medium">No payment required. See your real profit before you pay.</p>
+                 <h3 className="text-base font-semibold">You're exploring hlynk on a 14-day free trial</h3>
+                 <p className="text-emerald-100 text-sm">No payment required. See your real profit before you pay.</p>
                </div>
-              <div className="bg-emerald-800 px-6 py-3 rounded-[.5em] border border-emerald-700/50 flex flex-col items-center">
-                <p className="text-[10px] font-black uppercase tracking-widest opacity-60 mb-1">Trial Ends In</p>
-                <p className="text-2xl font-black hl-mono">
-                  {targetEndDate ? Math.ceil((new Date(targetEndDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)) : 0} Days
+              <div className="bg-white/10 px-5 py-3 rounded-[.5rem] border border-white/10 flex flex-col items-center">
+                <p className="text-xs opacity-70 mb-1">Trial ends in</p>
+                <p className="text-xl font-semibold hl-mono">
+                  {targetEndDate ? Math.ceil((new Date(targetEndDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)) : 0} days
                 </p>
               </div>
             </div>
           )}
 
-          <div className="bg-emerald-50 border border-emerald-100 p-8 rounded-[.5em] space-y-8 animate-in slide-in-from-top-4 duration-500">
-            <div className="flex flex-col md:flex-row justify-between items-center gap-8">
-              <div className="flex items-center gap-4">
-                <div className="h-14 w-14 bg-white rounded-2xl flex items-center justify-center text-[#0D4A3E] shadow-sm border border-emerald-100">
-                  <Smartphone size={28} />
+          <div className="bg-gray-50 border border-gray-100 p-6 rounded-[.5rem] space-y-6">
+            <div className="flex flex-col md:flex-row justify-between items-center gap-6">
+              <div className="flex items-center gap-3">
+                <div className="h-11 w-11 bg-white rounded-[.5rem] flex items-center justify-center text-[#0D4A3E] border border-gray-100">
+                  <Smartphone size={20} />
                 </div>
                 <div>
-                  <h3 className="text-sm font-black text-[#0D4A3E] uppercase tracking-widest leading-none mb-2">Billing Cycle</h3>
-                  <p className="text-xs font-medium text-emerald-800/60 leading-relaxed italic">Select your commitment period to unlock bulk savings.</p>
+                  <h3 className="text-sm font-medium text-gray-900">Billing cycle</h3>
+                  <p className="text-xs text-gray-500 mt-0.5">Select your commitment period to unlock bulk savings.</p>
                 </div>
               </div>
 
-              <div className="flex bg-white/50 p-1 rounded-2xl border border-emerald-100 shadow-sm">
+              <div className="flex bg-white p-1 rounded-[.5rem] border border-gray-100">
                 {[
                   { id: '1', label: 'Monthly', days: 28 },
-                  { id: '6', label: 'Half Year', days: 180, promo: 'Save 5%' },
-                  { id: '12', label: 'Full Year', days: 365, promo: 'Save 15%' }
+                  { id: '6', label: 'Half year', days: 180, promo: 'Save 5%' },
+                  { id: '12', label: 'Full year', days: 365, promo: 'Save 15%' }
                 ].map(cycle => (
                   <button
                     key={cycle.id}
                     onClick={() => setBillingCycle(cycle.id as any)}
-                    className={`px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all relative ${billingCycle === cycle.id ? 'bg-[#0D4A3E] text-white shadow-lg' : 'text-[#0D4A3E]/40 hover:text-[#0D4A3E]'}`}
+                    className={`px-5 py-2.5 rounded-[.5rem] text-xs font-medium transition-colors relative ${billingCycle === cycle.id ? 'bg-[#0D4A3E] text-white' : 'text-gray-400 hover:text-gray-600'}`}
                   >
                     {cycle.label}
                     {cycle.promo && (
-                      <span className="absolute -top-2 -right-2 bg-amber-400 text-amber-950 px-2 py-0.5 rounded-full text-[8px] font-black shadow-sm">
+                      <span className="absolute -top-2 -right-2 bg-amber-400 text-amber-950 px-1.5 py-0.5 rounded-full text-[9px] font-medium">
                         {cycle.promo}
                       </span>
                     )}
@@ -969,12 +915,12 @@ export default function SubscriptionPage() {
               </div>
             </div>
 
-            <div className="pt-8 border-t border-emerald-100 group">
-               <div className="flex items-center gap-2 mb-2">
-                 <Zap size={16} className={`${billingCycle !== '1' ? 'text-amber-500 animate-pulse' : 'text-slate-300'}`} />
-                 <span className="text-[10px] font-black uppercase tracking-widest text-[#0D4A3E]">Instant Activation Reward</span>
+            <div className="pt-5 border-t border-gray-100">
+               <div className="flex items-center gap-2 mb-1.5">
+                 <Zap size={14} className={billingCycle !== '1' ? 'text-amber-500' : 'text-gray-300'} />
+                 <span className="text-xs font-medium text-[#0D4A3E]">Instant activation reward</span>
                </div>
-               <p className="text-xs font-medium text-emerald-800/60">
+               <p className="text-xs text-gray-500">
                  {billingCycle === '1' && "Pay per 28-day cycle."}
                  {billingCycle === '6' && "Secure your business for 180 days today."}
                  {billingCycle === '12' && "Full year coverage (365 days) with priority support included."}
@@ -982,38 +928,34 @@ export default function SubscriptionPage() {
             </div>
           </div>
 
-          <div className="bg-white p-5 sm:p-8 lg:p-10 rounded-2xl border border-gray-100 shadow-sm overflow-hidden relative">
-            <div className="absolute top-0 right-0 p-10 opacity-10 hidden sm:block">
-              <Zap size={160} className="text-emerald-900" />
-            </div>
-
-            <div className="max-w-xl relative z-10 space-y-4 sm:space-y-6">
-              <span className={`px-3 py-1 rounded-full text-[9px] sm:text-[10px] font-black uppercase tracking-widest ${isExpired ? 'bg-red-100 text-red-700' : 'bg-emerald-100 text-emerald-700'}`}>
-                {isExpired ? 'EXPIRED' : (isTrial ? 'FREE TRIAL' : 'ACTIVE SUBSCRIPTION')}
+          <div className="bg-white p-6 sm:p-8 rounded-[.5rem] border border-gray-100">
+            <div className="max-w-xl space-y-5">
+              <span className={`px-2.5 py-1 rounded-full text-xs ${isExpired ? 'bg-red-50 text-red-600' : 'bg-emerald-50 text-emerald-700'}`}>
+                {isExpired ? 'Expired' : (isTrial ? 'Free trial' : 'Active subscription')}
               </span>
-              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black text-gray-900 tracking-tight">
+              <h2 className="text-xl sm:text-2xl font-semibold text-gray-900">
                 {isTrial ? "Free Trial (Starter)" : (PLANS.find(p => p.id === subscription?.planName)?.name || 'Custom')}
               </h2>
-              <p className="text-gray-500 font-medium text-xs sm:text-sm lg:text-base leading-relaxed">
-                {isTrial 
+              <p className="text-gray-500 text-sm leading-relaxed">
+                {isTrial
                   ? "Explore all Starter features free for 14 days. Grow your business risk-free."
                   : (PLANS.find(p => p.id === subscription?.planName)?.desc || 'Your current subscription plan details.')}
               </p>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 py-2">
-                <div className="space-y-1 bg-slate-50/60 p-4 rounded-xl border border-slate-100">
-                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-2">
-                    <Calendar size={14} className="text-emerald-500" /> {isTrial ? 'Trial Ends' : 'Next Billing Date'}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 py-1">
+                <div className="space-y-1 bg-gray-50 p-4 rounded-[.5rem] border border-gray-100">
+                  <p className="text-xs text-gray-400 flex items-center gap-1.5">
+                    <Calendar size={13} className="text-gray-300" /> {isTrial ? 'Trial ends' : 'Next billing date'}
                   </p>
-                  <p className="text-base sm:text-lg font-black text-gray-900 hl-mono">
+                  <p className="text-sm font-medium text-gray-900 hl-mono">
                     {targetEndDate ? new Date(targetEndDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : 'N/A'}
                   </p>
                 </div>
-                <div className="space-y-1 bg-slate-50/60 p-4 rounded-xl border border-slate-100">
-                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-2">
-                    <CreditCard size={14} className="text-emerald-500" /> Investment Amount
+                <div className="space-y-1 bg-gray-50 p-4 rounded-[.5rem] border border-gray-100">
+                  <p className="text-xs text-gray-400 flex items-center gap-1.5">
+                    <CreditCard size={13} className="text-gray-300" /> Investment amount
                   </p>
-                  <p className="text-base sm:text-lg font-black text-[#0D4A3E] hl-mono">
+                  <p className="text-sm font-medium text-[#0D4A3E] hl-mono">
                     {isTrial ? "Free (KES 0)" : (
                       (() => {
                         const base = PLANS.find(p => p.id === subscription?.planName)?.price || 0
@@ -1024,68 +966,68 @@ export default function SubscriptionPage() {
                         return `KES ${total.toLocaleString()}`
                       })()
                     )}
-                    <span className="text-[10px] text-emerald-600/60 ml-1 font-sans">
-                       / {billingCycle === '1' ? '28' : billingCycle === '6' ? '180' : '365'} Days
+                    <span className="text-xs text-gray-400 ml-1">
+                       / {billingCycle === '1' ? '28' : billingCycle === '6' ? '180' : '365'} days
                     </span>
                   </p>
                 </div>
               </div>
 
-              <div className="flex flex-col sm:flex-row gap-3 pt-2">
+              <div className="flex flex-col sm:flex-row gap-3 pt-1">
                 <button
                   onClick={() => {
                     setMpesaPhone('')
                     setShowRenewModal(true)
                   }}
-                  className="w-full sm:w-auto px-6 py-3.5 rounded-xl font-black text-xs uppercase tracking-widest transition-all shadow-md active:scale-95 bg-[#0D4A3E] text-white hover:bg-[#0A3D33] shadow-emerald-900/20"
+                  className="w-full sm:w-auto px-5 py-3 rounded-[.5rem] text-sm font-medium transition-colors bg-[#0D4A3E] text-white hover:bg-[#0A3D33]"
                 >
-                  Renew For {billingCycle === '1' ? '1 Month' : billingCycle === '6' ? '6 Months' : '1 Year'}
+                  Renew for {billingCycle === '1' ? '1 month' : billingCycle === '6' ? '6 months' : '1 year'}
                 </button>
                 <button
                   onClick={() => setShowChangeModal(true)}
-                  className="w-full sm:w-auto bg-white text-gray-600 px-6 py-3.5 rounded-xl font-black text-xs uppercase tracking-widest border border-gray-200 hover:bg-gray-50 transition-all active:scale-95"
+                  className="w-full sm:w-auto bg-white text-gray-600 px-5 py-3 rounded-[.5rem] text-sm font-medium border border-gray-200 hover:bg-gray-50 transition-colors"
                 >
-                  Change My Plan
+                  Change my plan
                 </button>
               </div>
             </div>
           </div>
 
-          <div className="bg-white p-5 sm:p-8 lg:p-10 rounded-2xl border border-gray-100 shadow-sm">
-            <div className="mb-6 sm:mb-8">
-              <h3 className="text-lg sm:text-xl font-black text-gray-900 tracking-tight mb-1">Compare hlynk Packages</h3>
-              <p className="text-xs sm:text-sm text-gray-500 font-medium italic">Choose the level of control your business needs.</p>
+          <div className="bg-white p-6 sm:p-8 rounded-[.5rem] border border-gray-100">
+            <div className="mb-6">
+              <h3 className="text-base font-semibold text-gray-900 mb-1">Compare hlynk packages</h3>
+              <p className="text-sm text-gray-400">Choose the level of control your business needs.</p>
             </div>
 
             <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
+              <table className="w-full text-left">
                 <thead>
-                  <tr className="border-b-2 border-gray-50">
-                    <th className="py-3 px-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Feature</th>
-                    <th className="py-3 px-4 text-[10px] font-black text-teal-500 uppercase tracking-widest text-center">Starter</th>
-                    <th className="py-3 px-4 text-[10px] font-black text-purple-500 uppercase tracking-widest text-center">Business Pro</th>
+                  <tr>
+                    <th className="py-3 px-4 text-xs font-medium text-gray-400">Feature</th>
+                    <th className="py-3 px-4 text-xs font-medium text-teal-600 text-center">Starter</th>
+                    <th className="py-3 px-4 text-xs font-medium text-purple-600 text-center">Business Pro</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
                   {FEATURE_COMPARISON.map((f: any, i) => (
-                    <tr key={i} className="hover:bg-slate-50/50 transition-all group">
-                      <td className="py-3.5 px-4 font-bold text-slate-700 text-xs sm:text-sm">{f.name}</td>
+                    <tr key={i} className="hover:bg-gray-50/60 transition-colors">
+                      <td className="py-3.5 px-4 font-medium text-gray-700 text-sm">{f.name}</td>
                       <td className="py-3.5 px-4 text-center">
                         {typeof f.starter === 'string' ? (
-                          <span className="text-xs font-black text-teal-600 hl-mono">{f.starter}</span>
+                          <span className="text-xs font-medium text-teal-600 hl-mono">{f.starter}</span>
                         ) : f.starter ? (
-                          <CheckCircle2 size={18} className="mx-auto text-teal-500" />
+                          <CheckCircle2 size={16} className="mx-auto text-teal-500" />
                         ) : (
-                          <span className="text-slate-200">✕</span>
+                          <span className="text-gray-200">✕</span>
                         )}
                       </td>
                       <td className="py-3.5 px-4 text-center">
                         {typeof f.pro === 'string' ? (
-                          <span className="text-xs font-black text-purple-600 hl-mono">{f.pro}</span>
+                          <span className="text-xs font-medium text-purple-600 hl-mono">{f.pro}</span>
                         ) : f.pro ? (
-                          <CheckCircle2 size={18} className="mx-auto text-purple-500" />
+                          <CheckCircle2 size={16} className="mx-auto text-purple-500" />
                         ) : (
-                          <span className="text-slate-200">✕</span>
+                          <span className="text-gray-200">✕</span>
                         )}
                       </td>
                     </tr>
@@ -1098,19 +1040,19 @@ export default function SubscriptionPage() {
       ) : activeTab === 'history' ? (
         <div className="space-y-6">
           {/* Filters */}
-          <div className="flex flex-wrap gap-4 items-center bg-white p-6 rounded-[.5em] border border-gray-100">
-            <div className="flex items-center gap-2 text-slate-400 mr-2">
-              <Filter size={16} />
-              <span className="text-[10px] font-black uppercase tracking-widest">Filter By:</span>
+          <div className="flex flex-wrap gap-3 items-center bg-white p-4 rounded-[.5rem] border border-gray-100">
+            <div className="flex items-center gap-2 text-gray-400 mr-1">
+              <Filter size={14} />
+              <span className="text-xs">Filter by:</span>
             </div>
 
             <select
               value={statusFilter}
               onChange={(e) => { setStatusFilter(e.target.value); setHistoryPage(1); }}
-              className="bg-slate-50 border-none rounded-[.5em] px-4 py-2 text-xs font-black text-slate-600 outline-none focus:ring-2 focus:ring-emerald-500/10 min-w-[140px]"
+              className="bg-gray-50 border-none rounded-[.5rem] px-3 py-2 text-xs text-gray-600 outline-none focus:ring-2 focus:ring-gray-200 min-w-[130px]"
             >
-              <option value="">All Statuses</option>
-              <option value="PAID">Paid Only</option>
+              <option value="">All statuses</option>
+              <option value="PAID">Paid only</option>
               <option value="PENDING">Pending</option>
               <option value="FAILED">Failed</option>
             </select>
@@ -1118,82 +1060,80 @@ export default function SubscriptionPage() {
             <select
               value={planFilter}
               onChange={(e) => { setPlanFilter(e.target.value); setHistoryPage(1); }}
-              className="bg-slate-50 border-none rounded-xl px-4 py-2 text-xs font-black text-slate-600 outline-none focus:ring-2 focus:ring-emerald-500/10 min-w-[140px]"
+              className="bg-gray-50 border-none rounded-[.5rem] px-3 py-2 text-xs text-gray-600 outline-none focus:ring-2 focus:ring-gray-200 min-w-[130px]"
             >
-              <option value="">All Plans</option>
+              <option value="">All plans</option>
               <option value="PLUS">Starter</option>
               <option value="MAX">Business Pro</option>
             </select>
 
-            <div className="ml-auto text-[10px] font-black text-slate-300 uppercase tracking-widest">
-              Showing {history.length} of {pagination?.total || 0} Records
+            <div className="ml-auto text-xs text-gray-300">
+              Showing {history.length} of {pagination?.total || 0} records
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+          <div className="bg-white rounded-[.5rem] border border-gray-100">
             <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
+              <table className="w-full text-left">
                 <thead>
-                  <tr className="bg-gray-50/50 border-b border-gray-100">
-                    <th className="px-4 py-3 text-[10px] font-black text-gray-400 uppercase tracking-widest">Date</th>
-                    <th className="px-4 py-3 text-[10px] font-black text-gray-400 uppercase tracking-widest">Reference</th>
-                    <th className="px-4 py-3 text-[10px] font-black text-gray-400 uppercase tracking-widest">Receipt</th>
-                    <th className="px-4 py-3 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Amount</th>
-                    <th className="px-4 py-3 text-[10px] font-black text-gray-400 uppercase tracking-widest">Status</th>
+                  <tr>
+                    <th className="px-4 py-3 text-xs font-medium text-gray-400">Date</th>
+                    <th className="px-4 py-3 text-xs font-medium text-gray-400">Reference</th>
+                    <th className="px-4 py-3 text-xs font-medium text-gray-400">Receipt</th>
+                    <th className="px-4 py-3 text-xs font-medium text-gray-400 text-right">Amount</th>
+                    <th className="px-4 py-3 text-xs font-medium text-gray-400">Status</th>
                     <th className="px-4 py-3 text-right"></th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
                   {historyLoading ? (
-                    <tr><td colSpan={6} className="p-10 text-center animate-pulse text-slate-300 uppercase font-black text-[10px] tracking-widest">Loading history...</td></tr>
+                    <tr><td colSpan={6} className="py-16 text-center text-sm text-gray-400">Loading history…</td></tr>
                   ) : history.length === 0 ? (
-                    <tr><td colSpan={6} className="p-10 text-center text-gray-400 font-medium italic">No billing records found matching your filters.</td></tr>
+                    <tr><td colSpan={6} className="py-16 text-center text-sm text-gray-400">No billing records found matching your filters.</td></tr>
                   ) : (
                     history.map((inv: any) => (
-                      <tr key={inv.id} className="hover:bg-gray-50/50 transition-all group">
-                        <td className="px-4 py-3 font-bold text-gray-900 text-xs sm:text-sm">{new Date(inv.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: 'numeric' })}</td>
-                        <td className="px-4 py-3">
-                          <p className="font-medium text-gray-400 text-[10px] hl-mono uppercase tracking-tighter">{inv.reference}</p>
-                          <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-0.5">{inv.plan}</p>
+                      <tr key={inv.id} className="hover:bg-gray-50/60 transition-colors">
+                        <td className="px-4 py-3.5 font-medium text-gray-900 text-sm">{new Date(inv.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: 'numeric' })}</td>
+                        <td className="px-4 py-3.5">
+                          <p className="text-gray-400 text-xs hl-mono">{inv.reference}</p>
+                          <p className="text-xs text-gray-400 mt-0.5">{inv.plan}</p>
                         </td>
-                        <td className="px-4 py-3">
+                        <td className="px-4 py-3.5">
                           {inv.mpesaReceipt ? (
-                            <span className="font-black text-[10px] hl-mono text-emerald-600 bg-emerald-50 px-2 py-1 rounded-lg">{inv.mpesaReceipt}</span>
+                            <span className="text-xs hl-mono text-emerald-700 bg-emerald-50 px-2 py-1 rounded-[.5rem]">{inv.mpesaReceipt}</span>
                           ) : (
-                            <span className="text-[10px] font-medium text-slate-300 italic">No receipt</span>
+                            <span className="text-xs text-gray-300">No receipt</span>
                           )}
                         </td>
-                        <td className="px-4 py-3 font-black text-emerald-800 hl-mono text-right text-xs sm:text-sm">KES {Number(inv.amount).toLocaleString()}</td>
-                        <td className="px-4 py-3">
-                          <div className="flex items-center gap-2">
-                            <span className={`px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${inv.status === 0 ? 'bg-emerald-100 text-emerald-700' :
-                              inv.status === 1 ? 'bg-red-100 text-red-700' :
-                                inv.status === 3 ? 'bg-amber-100 text-amber-700' :
-                                inv.status === 4 ? 'bg-red-100 text-red-700' :
-                                  'bg-gray-100 text-gray-700'
-                              }`}>
-                              {inv.status === 0 ? 'PAID' : inv.status === 1 ? 'FAILED' : inv.status === 3 ? 'CANCELLED' : inv.status === 4 ? 'ERROR' : 'PENDING'}
-                            </span>
-                          </div>
+                        <td className="px-4 py-3.5 font-medium text-gray-900 hl-mono text-right text-sm">KES {Number(inv.amount).toLocaleString()}</td>
+                        <td className="px-4 py-3.5">
+                          <span className={`px-2 py-1 rounded-full text-xs ${inv.status === 0 ? 'bg-emerald-50 text-emerald-700' :
+                            inv.status === 1 ? 'bg-red-50 text-red-700' :
+                              inv.status === 3 ? 'bg-amber-50 text-amber-700' :
+                              inv.status === 4 ? 'bg-red-50 text-red-700' :
+                                'bg-gray-100 text-gray-600'
+                            }`}>
+                            {inv.status === 0 ? 'Paid' : inv.status === 1 ? 'Failed' : inv.status === 3 ? 'Cancelled' : inv.status === 4 ? 'Error' : 'Pending'}
+                          </span>
                         </td>
-                        <td className="px-4 py-3 text-right">
-                          <div className="flex justify-end items-center gap-2">
+                        <td className="px-4 py-3.5 text-right">
+                          <div className="flex justify-end items-center gap-1">
                             {inv.status === 2 && (
                               <button
                                 onClick={() => verifyMutation.mutate(inv.id)}
                                 disabled={verifyMutation.isPending}
-                                title="Verify Payment"
-                                className="h-8 w-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center hover:bg-emerald-100 transition-all"
+                                title="Verify payment"
+                                className="h-7 w-7 rounded-[.5rem] bg-gray-50 text-gray-400 flex items-center justify-center hover:bg-gray-100 hover:text-gray-900 transition-colors"
                               >
-                                {verifyMutation.isPending ? <Loader2 size={14} className="animate-spin" /> : <RefreshCcw size={14} />}
+                                {verifyMutation.isPending ? <Loader2 size={13} className="animate-spin" /> : <RefreshCcw size={13} />}
                               </button>
                             )}
                             <button
                               onClick={() => setSelectedTransaction(inv)}
-                              className="h-8 w-8 rounded-lg bg-slate-50 text-slate-400 flex items-center justify-center hover:bg-slate-100 hover:text-slate-900 transition-all"
-                              title="View Details"
+                              className="h-7 w-7 rounded-[.5rem] bg-gray-50 text-gray-400 flex items-center justify-center hover:bg-gray-100 hover:text-gray-900 transition-colors"
+                              title="View details"
                             >
-                              <Eye size={14} />
+                              <Eye size={13} />
                             </button>
                           </div>
                         </td>
@@ -1205,7 +1145,7 @@ export default function SubscriptionPage() {
             </div>
 
             {pagination && pagination.totalPages > 1 && (
-              <div className="p-4 sm:p-6 bg-gray-50/30 border-t border-gray-50">
+              <div className="p-4 border-t border-gray-100">
                 <Pagination
                   page={historyPage}
                   pages={pagination.totalPages}
@@ -1225,54 +1165,54 @@ export default function SubscriptionPage() {
 
       {/* Renew Modal */}
       {showRenewModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-5 sm:p-8 animate-in zoom-in duration-300">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/40 p-4">
+          <div className="bg-white rounded-[.5rem] shadow-lg w-full max-w-md p-6 sm:p-7">
             <div className="flex justify-between items-start mb-4">
-              <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
-                <CreditCard size={22} />
+              <div className="h-10 w-10 rounded-[.5rem] bg-gray-50 border border-gray-100 text-[#0D4A3E] flex items-center justify-center">
+                <CreditCard size={18} />
               </div>
               <button onClick={() => setShowRenewModal(false)} className="text-gray-400 hover:text-gray-600">✕</button>
             </div>
 
-            <h3 className="text-xl sm:text-2xl font-black text-gray-900 mb-1">Renew Subscription</h3>
-            <p className="text-gray-500 text-xs sm:text-sm mb-5 font-medium">Choose your preferred M-Pesa payment method.</p>
+            <h3 className="text-lg font-semibold text-gray-900 mb-1">Renew subscription</h3>
+            <p className="text-gray-400 text-sm mb-5">Choose your preferred M-Pesa payment method.</p>
 
-            <div className="flex bg-slate-100 p-1 rounded-xl mb-6">
+            <div className="flex bg-gray-100 p-1 rounded-[.5rem] mb-5">
               <button
                 onClick={() => setSubPaymentMethod('STK')}
-                className={`flex-1 py-2.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${subPaymentMethod === 'STK' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                className={`flex-1 py-2 rounded-[.5rem] text-xs font-medium transition-colors ${subPaymentMethod === 'STK' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
               >
                 STK Push
               </button>
               <button
                 onClick={() => setSubPaymentMethod('MANUAL')}
-                className={`flex-1 py-2.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${subPaymentMethod === 'MANUAL' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                className={`flex-1 py-2 rounded-[.5rem] text-xs font-medium transition-colors ${subPaymentMethod === 'MANUAL' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
               >
                 Manual
               </button>
             </div>
 
-            <div className="space-y-4 sm:space-y-6">
+            <div className="space-y-4">
               {subPaymentMethod === 'STK' ? (
                 <div className="space-y-1.5">
-                  <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">M-Pesa Number</label>
+                  <label className="text-xs text-gray-500">M-Pesa number</label>
                   <div className="relative">
-                    <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                    <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-300" size={15} />
                     <input
                       type="text"
                       placeholder="0712345678"
                       value={mpesaPhone}
                       onChange={(e) => setMpesaPhone(e.target.value)}
-                      className="w-full bg-gray-50 border-none rounded-xl py-3.5 pl-12 pr-4 outline-none focus:ring-2 focus:ring-emerald-500/10 text-base font-black hl-mono"
+                      className="w-full bg-gray-50 border-none rounded-[.5rem] py-3 pl-10 pr-3 outline-none focus:ring-2 focus:ring-gray-200 text-sm font-medium hl-mono"
                     />
                   </div>
-                  <p className="text-[10px] font-medium text-slate-400 italic">We will send a prompt to this number.</p>
+                  <p className="text-xs text-gray-400">We will send a prompt to this number.</p>
                 </div>
               ) : (
-                <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
-                  <div className="bg-emerald-50 p-4 rounded-xl border border-emerald-100 space-y-2">
-                    <p className="text-[10px] font-black text-emerald-800 uppercase tracking-widest mb-1">Instructions</p>
-                    <div className="space-y-1 text-xs font-medium text-emerald-700">
+                <div className="space-y-4">
+                  <div className="bg-gray-50 p-4 rounded-[.5rem] border border-gray-100 space-y-1.5">
+                    <p className="text-xs font-medium text-gray-700 mb-1">Instructions</p>
+                    <div className="space-y-1 text-xs text-gray-500">
                       <p>1. Go to M-Pesa &gt; Lipa na M-Pesa</p>
                       <p>2. Paybill: 4003431 </p>
                       <p>3. Account: {user?.phone || 'Your Phone Number'}</p>
@@ -1281,22 +1221,22 @@ export default function SubscriptionPage() {
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Transaction Code</label>
+                    <label className="text-xs text-gray-500">Transaction code</label>
                     <input
                       type="text"
                       placeholder="SFL89H..."
                       value={mpesaCode}
                       onChange={(e) => setMpesaCode(e.target.value.toUpperCase())}
-                      className="w-full bg-gray-50 border-none rounded-xl py-3.5 px-4 outline-none focus:ring-2 focus:ring-emerald-500/10 text-base font-black hl-mono uppercase"
+                      className="w-full bg-gray-50 border-none rounded-[.5rem] py-3 px-3.5 outline-none focus:ring-2 focus:ring-gray-200 text-sm font-medium hl-mono uppercase"
                     />
-                    <p className="text-[10px] font-medium text-slate-400 italic">Paste the M-Pesa confirmation code here.</p>
+                    <p className="text-xs text-gray-400">Paste the M-Pesa confirmation code here.</p>
                   </div>
                 </div>
               )}
 
-              <div className="bg-gray-50 p-4 rounded-xl flex justify-between items-center">
-                <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Amount to Pay</span>
-                <span className="text-lg font-black text-emerald-900 hl-mono">KES {PLANS.find(p => p.id === subscription?.planName)?.price.toLocaleString() || '0'}</span>
+              <div className="bg-gray-50 p-4 rounded-[.5rem] flex justify-between items-center">
+                <span className="text-xs text-gray-400">Amount to pay</span>
+                <span className="text-base font-semibold text-gray-900 hl-mono">KES {PLANS.find(p => p.id === subscription?.planName)?.price.toLocaleString() || '0'}</span>
               </div>
 
               <button
@@ -1313,9 +1253,9 @@ export default function SubscriptionPage() {
                   }
                 }}
                 disabled={renewMutation.isPending || manualPaymentMutation.isPending || (subPaymentMethod === 'STK' ? !mpesaPhone : !mpesaCode)}
-                className="w-full bg-[#0D4A3E] text-white py-3.5 rounded-xl font-black text-xs uppercase tracking-widest hover:bg-[#0A3D33] transition-all flex items-center justify-center gap-2 shadow-lg shadow-emerald-900/20 disabled:opacity-50"
+                className="w-full bg-[#0D4A3E] text-white py-3 rounded-[.5rem] text-sm font-medium hover:bg-[#0A3D33] transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
               >
-                {renewMutation.isPending || manualPaymentMutation.isPending ? <Loader2 className="animate-spin" size={18} /> : (subPaymentMethod === 'STK' ? 'Pay via M-Pesa' : 'Submit Code')}
+                {renewMutation.isPending || manualPaymentMutation.isPending ? <Loader2 className="animate-spin" size={16} /> : (subPaymentMethod === 'STK' ? 'Pay via M-Pesa' : 'Submit code')}
               </button>
             </div>
           </div>
@@ -1324,14 +1264,14 @@ export default function SubscriptionPage() {
 
       {/* Change Plan Modal */}
       {showChangeModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-md p-4">
-          <div className="bg-slate-50 rounded-2xl shadow-2xl w-full max-w-3xl p-5 sm:p-8 lg:p-10 animate-in zoom-in duration-300 max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-start mb-6 sm:mb-8">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/50 p-4">
+          <div className="bg-gray-50 rounded-[.5rem] shadow-lg w-full max-w-3xl p-6 sm:p-8 max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-start mb-6">
               <div>
-                <h3 className="text-xl sm:text-2xl font-black text-slate-900 mb-1">Upgrade Your Business</h3>
-                <p className="text-slate-500 text-xs sm:text-sm font-medium italic">Unlock advanced features and scale your operations.</p>
+                <h3 className="text-lg font-semibold text-gray-900 mb-1">Upgrade your business</h3>
+                <p className="text-gray-400 text-sm">Unlock advanced features and scale your operations.</p>
               </div>
-              <button onClick={() => setShowChangeModal(false)} className="h-10 w-10 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-400 hover:text-slate-900 transition-all">✕</button>
+              <button onClick={() => setShowChangeModal(false)} className="h-8 w-8 rounded-full bg-white border border-gray-200 flex items-center justify-center text-gray-400 hover:text-gray-900 transition-colors">✕</button>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
@@ -1339,71 +1279,68 @@ export default function SubscriptionPage() {
                 <div
                   key={plan.id}
                   onClick={() => setSelectedPlan(plan)}
-                  className={`p-5 rounded-xl cursor-pointer transition-all border-2 flex flex-col ${selectedPlan?.id === plan.id ? 'bg-white border-emerald-500 shadow-xl ring-4 ring-emerald-500/5' : 'bg-white border-white hover:border-slate-200 shadow-sm'}`}
+                  className={`p-5 rounded-[.5rem] cursor-pointer transition-colors border flex flex-col ${selectedPlan?.id === plan.id ? 'bg-white border-[#0D4A3E]' : 'bg-white border-gray-100 hover:border-gray-200'}`}
                 >
-                  <div className={`h-10 w-10 rounded-xl bg-${plan.color}-50 text-${plan.color}-600 flex items-center justify-center mb-4`}>
-                    <Star size={20} />
+                  <div className="h-9 w-9 rounded-[.5rem] bg-gray-50 text-gray-500 border border-gray-100 flex items-center justify-center mb-3">
+                    <Star size={16} />
                   </div>
-                  <h4 className="text-base sm:text-lg font-black text-slate-900 mb-1">{plan.name}</h4>
-                  <div className="flex items-baseline gap-1 mb-3">
-                    <span className="text-lg sm:text-xl font-black text-slate-900 hl-mono">KES {plan.price.toLocaleString()}</span>
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest hl-mono">/28 days</span>
+                  <h4 className="text-base font-semibold text-gray-900 mb-1">{plan.name}</h4>
+                  <div className="flex items-baseline gap-1 mb-2">
+                    <span className="text-lg font-semibold text-gray-900 hl-mono">KES {plan.price.toLocaleString()}</span>
+                    <span className="text-xs text-gray-400 hl-mono">/28 days</span>
                   </div>
-                  <p className="text-xs text-slate-500 font-medium leading-relaxed mb-4 flex-1">{plan.desc}</p>
-                  <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${selectedPlan?.id === plan.id ? 'bg-emerald-500 border-emerald-500 text-white' : 'border-slate-200'}`}>
-                    {selectedPlan?.id === plan.id && <CheckCircle2 size={12} />}
+                  <p className="text-xs text-gray-500 leading-relaxed mb-4 flex-1">{plan.desc}</p>
+                  <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${selectedPlan?.id === plan.id ? 'bg-[#0D4A3E] border-[#0D4A3E] text-white' : 'border-gray-200'}`}>
+                    {selectedPlan?.id === plan.id && <CheckCircle2 size={10} />}
                   </div>
                 </div>
               ))}
             </div>
 
             {selectedPlan && (
-              <div className="bg-white p-5 sm:p-6 rounded-xl border border-slate-100 animate-in slide-in-from-bottom-4">
+              <div className="bg-white p-5 rounded-[.5rem] border border-gray-100">
                 <div className="flex flex-col gap-4">
-                  {/* Payment Method Switcher for upgrade */}
-                  <div className="flex bg-slate-50 p-1 rounded-xl">
+                  <div className="flex bg-gray-50 p-1 rounded-[.5rem]">
                     <button
                       onClick={() => setSubPaymentMethod('STK')}
-                      className={`flex-1 py-2.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${subPaymentMethod === 'STK' ? 'bg-white text-emerald-600 shadow-sm border border-slate-100' : 'text-slate-400 hover:text-slate-600'}`}
+                      className={`flex-1 py-2 rounded-[.5rem] text-xs font-medium transition-colors ${subPaymentMethod === 'STK' ? 'bg-white text-gray-900 shadow-sm border border-gray-100' : 'text-gray-400 hover:text-gray-600'}`}
                     >
-                      Instant STK Push
+                      Instant STK push
                     </button>
                     <button
                       onClick={() => setSubPaymentMethod('MANUAL')}
-                      className={`flex-1 py-2.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${subPaymentMethod === 'MANUAL' ? 'bg-white text-emerald-600 shadow-sm border border-slate-100' : 'text-slate-400 hover:text-slate-600'}`}
+                      className={`flex-1 py-2 rounded-[.5rem] text-xs font-medium transition-colors ${subPaymentMethod === 'MANUAL' ? 'bg-white text-gray-900 shadow-sm border border-gray-100' : 'text-gray-400 hover:text-gray-600'}`}
                     >
                       Manual
                     </button>
                   </div>
 
-                  <div className="flex flex-col sm:flex-row items-stretch sm:items-end gap-4">
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-end gap-3">
                     {subPaymentMethod === 'STK' ? (
                       <div className="flex-1 w-full space-y-1">
-                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">M-Pesa Payment Number</label>
+                        <label className="text-xs text-gray-500">M-Pesa payment number</label>
                         <div className="relative">
-                          <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
+                          <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-300" size={15} />
                           <input
                             type="text"
                             placeholder="0712345678"
                             value={mpesaPhone}
                             onChange={(e) => setMpesaPhone(e.target.value)}
-                            className="w-full bg-slate-50 border-none rounded-xl py-3.5 pl-12 pr-4 outline-none focus:ring-2 focus:ring-emerald-500/10 text-base font-black hl-mono"
+                            className="w-full bg-gray-50 border-none rounded-[.5rem] py-3 pl-10 pr-3 outline-none focus:ring-2 focus:ring-gray-200 text-sm font-medium hl-mono"
                           />
                         </div>
                       </div>
                     ) : (
-                      <div className="flex-1 w-full space-y-1 animate-in fade-in slide-in-from-top-2">
-                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">M-Pesa Transaction Code</label>
-                        <div className="relative">
-                          <input
-                            type="text"
-                            placeholder="SFL89H..."
-                            value={mpesaCode}
-                            onChange={(e) => setMpesaCode(e.target.value.toUpperCase())}
-                            className="w-full bg-slate-50 border-none rounded-xl py-3.5 px-4 outline-none focus:ring-2 focus:ring-emerald-500/10 text-base font-black hl-mono uppercase"
-                          />
-                        </div>
-                        <p className="text-[9px] font-medium text-slate-400">Pay KES {selectedPlan.price.toLocaleString()} to Paybill 4003431 (Account: {user?.phone || 'Your Phone Number'})</p>
+                      <div className="flex-1 w-full space-y-1">
+                        <label className="text-xs text-gray-500">M-Pesa transaction code</label>
+                        <input
+                          type="text"
+                          placeholder="SFL89H..."
+                          value={mpesaCode}
+                          onChange={(e) => setMpesaCode(e.target.value.toUpperCase())}
+                          className="w-full bg-gray-50 border-none rounded-[.5rem] py-3 px-3.5 outline-none focus:ring-2 focus:ring-gray-200 text-sm font-medium hl-mono uppercase"
+                        />
+                        <p className="text-xs text-gray-400">Pay KES {selectedPlan.price.toLocaleString()} to Paybill 4003431 (Account: {user?.phone || 'Your Phone Number'})</p>
                       </div>
                     )}
 
@@ -1421,9 +1358,9 @@ export default function SubscriptionPage() {
                         }
                       }}
                       disabled={changePlanMutation.isPending || manualPaymentMutation.isPending || (subPaymentMethod === 'STK' ? !mpesaPhone : !mpesaCode)}
-                      className="w-full sm:w-auto bg-emerald-600 text-white px-6 py-3.5 rounded-xl font-black text-xs uppercase tracking-widest hover:bg-emerald-700 transition-all flex items-center justify-center gap-2 shadow-lg shadow-emerald-900/20 disabled:opacity-50"
+                      className="w-full sm:w-auto bg-[#0D4A3E] text-white px-5 py-3 rounded-[.5rem] text-sm font-medium hover:bg-[#0A3D33] transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
                     >
-                      {changePlanMutation.isPending || manualPaymentMutation.isPending ? <Loader2 className="animate-spin" size={18} /> : (subPaymentMethod === 'STK' ? `Upgrade to ${selectedPlan.name}` : 'Verify & Upgrade')}
+                      {changePlanMutation.isPending || manualPaymentMutation.isPending ? <Loader2 className="animate-spin" size={16} /> : (subPaymentMethod === 'STK' ? `Upgrade to ${selectedPlan.name}` : 'Verify & upgrade')}
                     </button>
                   </div>
                 </div>
@@ -1435,9 +1372,9 @@ export default function SubscriptionPage() {
 
       <ConfirmModal
         isOpen={showConfirmChange}
-        title="Override Existing Days?"
+        title="Override existing days?"
         message={`You currently have ${subscription?.endDate ? Math.ceil((new Date(subscription.endDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)) : 0} days left. Upgrading now will instantly unlock your new plan and apply a 28-day cycle starting today. Your existing days will be replaced and will not stack.`}
-        confirmText="Upgrade Anyway"
+        confirmText="Upgrade anyway"
         cancelText="Cancel"
         isDestructive={false}
         onConfirm={() => {
@@ -1448,9 +1385,9 @@ export default function SubscriptionPage() {
 
       <ConfirmModal
         isOpen={showConfirmRenew}
-        title="Override Existing Days?"
+        title="Override existing days?"
         message={`You currently have ${subscription?.endDate ? Math.ceil((new Date(subscription.endDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)) : 0} days left. Renewing early will simply apply 28 days to your plan starting today. Your existing days will be replaced and will not stack.`}
-        confirmText="Renew Anyway"
+        confirmText="Renew anyway"
         cancelText="Cancel"
         isDestructive={false}
         onConfirm={() => {
@@ -1459,101 +1396,100 @@ export default function SubscriptionPage() {
         onCancel={() => setShowConfirmRenew(false)}
       />
 
-      {/* ── TRANSACTION DETAIL MODAL ── */}
+      {/* Transaction detail modal */}
       {selectedTransaction && (
-        <div className="fixed inset-0 z-[120] flex items-center justify-center bg-slate-900/60 backdrop-blur-md p-4 animate-in fade-in duration-300">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden animate-in zoom-in-95 duration-300 max-h-[90vh] overflow-y-auto">
-            <div className="bg-slate-50 p-4 sm:p-6 flex justify-between items-center border-b border-slate-100">
+        <div className="fixed inset-0 z-[120] flex items-center justify-center bg-gray-900/50 p-4">
+          <div className="bg-white rounded-[.5rem] shadow-lg w-full max-w-2xl overflow-hidden max-h-[90vh] overflow-y-auto">
+            <div className="bg-gray-50 p-5 sm:p-6 flex justify-between items-center border-b border-gray-100">
               <div className="flex items-center gap-3">
-                <div className={`h-10 w-10 rounded-xl flex items-center justify-center shadow-sm ${
-                  selectedTransaction.status === 0 ? 'bg-emerald-50 text-emerald-600' :
-                  selectedTransaction.status === 1 ? 'bg-red-50 text-red-600' : 'bg-amber-50 text-amber-600'
+                <div className={`h-9 w-9 rounded-[.5rem] flex items-center justify-center border ${
+                  selectedTransaction.status === 0 ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
+                  selectedTransaction.status === 1 ? 'bg-red-50 text-red-600 border-red-100' : 'bg-amber-50 text-amber-600 border-amber-100'
                 }`}>
-                  <CreditCard size={20} />
+                  <CreditCard size={17} />
                 </div>
                 <div>
-                  <h3 className="text-base sm:text-lg font-black text-slate-900 tracking-tight">Transaction Details</h3>
-                  <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">View comprehensive billing data</p>
+                  <h3 className="text-base font-semibold text-gray-900">Transaction details</h3>
+                  <p className="text-xs text-gray-400">View comprehensive billing data</p>
                 </div>
               </div>
-              <button 
+              <button
                 onClick={() => setSelectedTransaction(null)}
-                className="h-8 w-8 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-400 hover:text-slate-900 transition-all shadow-sm"
+                className="h-8 w-8 rounded-full bg-white border border-gray-200 flex items-center justify-center text-gray-400 hover:text-gray-900 transition-colors"
               >
                 ✕
               </button>
             </div>
 
-            <div className="p-4 sm:p-8 space-y-6">
+            <div className="p-5 sm:p-6 space-y-5">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1">
-                  <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Date & Time</p>
-                  <p className="text-xs sm:text-sm font-bold text-slate-900">{new Date(selectedTransaction.createdAt).toLocaleString()}</p>
+                  <p className="text-xs text-gray-400">Date & time</p>
+                  <p className="text-sm font-medium text-gray-900">{new Date(selectedTransaction.createdAt).toLocaleString()}</p>
                 </div>
                 <div className="space-y-1">
-                  <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Internal Reference</p>
-                  <p className="text-xs sm:text-sm font-black text-emerald-600 hl-mono">{selectedTransaction.reference}</p>
+                  <p className="text-xs text-gray-400">Internal reference</p>
+                  <p className="text-sm font-medium text-[#0D4A3E] hl-mono">{selectedTransaction.reference}</p>
                 </div>
                 <div className="space-y-1">
-                  <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">M-Pesa Receipt</p>
-                  <p className="text-xs sm:text-sm font-black text-slate-900 hl-mono">{selectedTransaction.mpesaReceipt || 'N/A'}</p>
+                  <p className="text-xs text-gray-400">M-Pesa receipt</p>
+                  <p className="text-sm font-medium text-gray-900 hl-mono">{selectedTransaction.mpesaReceipt || 'N/A'}</p>
                 </div>
                 <div className="space-y-1">
-                  <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">M-Pesa Number</p>
-                  <p className="text-xs sm:text-sm font-black text-slate-900 hl-mono">{selectedTransaction.phone || 'N/A'}</p>
+                  <p className="text-xs text-gray-400">M-Pesa number</p>
+                  <p className="text-sm font-medium text-gray-900 hl-mono">{selectedTransaction.phone || 'N/A'}</p>
                 </div>
               </div>
 
-              <div className="bg-slate-50 rounded-xl p-4 sm:p-6 border border-slate-100 flex justify-between items-center">
+              <div className="bg-gray-50 rounded-[.5rem] p-4 sm:p-5 border border-gray-100 flex justify-between items-center">
                 <div>
-                  <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Subscription Plan</p>
-                  <p className="text-base font-black text-slate-900">{selectedTransaction.plan} Tier</p>
+                  <p className="text-xs text-gray-400 mb-0.5">Subscription plan</p>
+                  <p className="text-sm font-medium text-gray-900">{selectedTransaction.plan} tier</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Amount Paid</p>
-                  <p className="text-xl font-black text-emerald-900 hl-mono">KES {Number(selectedTransaction.amount).toLocaleString()}</p>
+                  <p className="text-xs text-gray-400 mb-0.5">Amount paid</p>
+                  <p className="text-lg font-semibold text-gray-900 hl-mono">KES {Number(selectedTransaction.amount).toLocaleString()}</p>
                 </div>
               </div>
 
               <div className="space-y-3">
                 <div className="flex items-center gap-3">
-                  <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${
-                    selectedTransaction.status === 0 ? 'bg-emerald-100 text-emerald-700' :
-                    selectedTransaction.status === 1 ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'
+                  <span className={`px-2.5 py-1 rounded-full text-xs ${
+                    selectedTransaction.status === 0 ? 'bg-emerald-50 text-emerald-700' :
+                    selectedTransaction.status === 1 ? 'bg-red-50 text-red-700' : 'bg-amber-50 text-amber-700'
                   }`}>
-                    {selectedTransaction.status === 0 ? 'Transaction Successful' : 
-                     selectedTransaction.status === 1 ? 'Transaction Failed' : 
-                     selectedTransaction.status === 3 ? 'Transaction Cancelled' : 'Payment Pending'}
+                    {selectedTransaction.status === 0 ? 'Transaction successful' :
+                     selectedTransaction.status === 1 ? 'Transaction failed' :
+                     selectedTransaction.status === 3 ? 'Transaction cancelled' : 'Payment pending'}
                   </span>
                 </div>
-                
+
                 {selectedTransaction.message && (
-                  <div className="bg-slate-50/50 p-3 rounded-xl border border-dashed border-slate-200">
-                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 flex items-center gap-2">
-                      <Info size={12} /> Gateway Response
+                  <div className="bg-gray-50 p-3 rounded-[.5rem] border border-dashed border-gray-200">
+                    <p className="text-xs text-gray-400 mb-1 flex items-center gap-1.5">
+                      <Info size={12} /> Gateway response
                     </p>
-                    <p className="text-xs font-medium text-slate-600 leading-relaxed italic">
+                    <p className="text-xs text-gray-600 leading-relaxed italic">
                       "{selectedTransaction.message}"
                     </p>
                   </div>
                 )}
 
-                {/* RAW SAFARICOM JSON AUDIT */}
                 {(selectedTransaction.rawPayload || selectedTransaction.rawResponse) && (
-                  <div className="bg-slate-900 rounded-xl p-4 shadow-inner overflow-hidden border border-slate-800">
+                  <div className="bg-gray-900 rounded-[.5rem] p-4 overflow-hidden border border-gray-800">
                     <div className="flex justify-between items-center mb-2">
-                      <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-2">
-                        <Zap size={12} className="text-amber-400" /> Technical Conversation
+                      <p className="text-xs text-gray-500 flex items-center gap-1.5">
+                        <Zap size={12} className="text-amber-400" /> Technical conversation
                       </p>
-                      <span className="text-[9px] font-black text-slate-600 uppercase tracking-widest hl-mono">Forensic Audit</span>
+                      <span className="text-xs text-gray-600 hl-mono">Forensic audit</span>
                     </div>
-                    <div className="max-h-40 overflow-y-auto custom-scrollbar">
-                      <pre className="text-[10px] font-medium text-emerald-400/90 hl-mono leading-relaxed whitespace-pre-wrap">
+                    <div className="max-h-40 overflow-y-auto">
+                      <pre className="text-xs text-emerald-400/90 hl-mono leading-relaxed whitespace-pre-wrap">
                         {(() => {
                           try {
                             const payload = selectedTransaction.rawPayload || selectedTransaction.rawResponse;
-                            const parsed = typeof payload === 'string' 
-                              ? JSON.parse(payload) 
+                            const parsed = typeof payload === 'string'
+                              ? JSON.parse(payload)
                               : payload;
                             return JSON.stringify(parsed, null, 2);
                           } catch (e) {
@@ -1566,16 +1502,16 @@ export default function SubscriptionPage() {
                 )}
               </div>
 
-              <div className="flex flex-col sm:flex-row gap-3 pt-2">
+              <div className="flex flex-col sm:flex-row gap-3 pt-1">
                 <button
                   onClick={() => window.print()}
-                  className="flex-1 py-3 bg-slate-900 text-white rounded-xl font-black text-xs uppercase tracking-widest hover:bg-black transition-all flex items-center justify-center gap-2"
+                  className="flex-1 py-2.5 bg-gray-900 text-white rounded-[.5rem] text-sm font-medium hover:bg-black transition-colors flex items-center justify-center gap-2"
                 >
-                  <Download size={14} /> Download Receipt
+                  <Download size={14} /> Download receipt
                 </button>
                 <button
                   onClick={() => setSelectedTransaction(null)}
-                  className="flex-1 py-3 bg-white border border-slate-200 text-slate-500 rounded-xl font-black text-xs uppercase tracking-widest hover:bg-slate-50 transition-all"
+                  className="flex-1 py-2.5 bg-white border border-gray-200 text-gray-500 rounded-[.5rem] text-sm font-medium hover:bg-gray-50 transition-colors"
                 >
                   Close
                 </button>

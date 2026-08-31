@@ -101,6 +101,10 @@ export const requestsApi = {
     api.get('/requests', { params }).then(r => r.data),
   updateStatus: (id: string, status: string) =>
     api.put(`/requests/${id}/status`, { status }).then(r => r.data),
+  delete: (id: string) =>
+    api.delete(`/requests/${id}`).then(r => r.data),
+  clear: (status: 'COMPLETED' | 'ALL' = 'ALL') =>
+    api.post('/requests/clear', { status }).then(r => r.data),
 }
 
 export const paymentsApi = {
