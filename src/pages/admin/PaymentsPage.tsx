@@ -4,6 +4,7 @@ import { adminApi } from '../../lib/api/providers'
 import { toast } from 'sonner'
 import { Clock, XCircle, Save, CreditCard, ArrowUpRight, Search, Filter, Landmark, CheckCircle2, ChevronLeft, ChevronRight, ArrowUpDown } from 'lucide-react'
 import { AdminStats } from '../../lib/types/api'
+import Pagination from '../../components/shared/Pagination'
 
 type SortField = 'id' | 'createdAt' | 'businessName' | 'amount' | 'type' | 'status'
 type SortDirection = 'asc' | 'desc'
@@ -102,9 +103,9 @@ export default function PaymentsPage() {
   }
 
   const formatStatus = (status: any) => {
-    if (status === 0 || status === 'Completed' || status === 'Success') return { label: 'Completed', class: 'bg-emerald-100 text-emerald-700' }
-    if (status === 1 || status === 'Processing' || status === 'Pending') return { label: 'Processing', class: 'bg-blue-100 text-blue-700' }
-    return { label: 'Failed', class: 'bg-red-100 text-red-700' }
+    if (status === 0 || status === 'Completed' || status === 'Success') return { label: 'Completed', class: 'bg-emerald-50 text-emerald-600 border-emerald-100' }
+    if (status === 1 || status === 'Processing' || status === 'Pending') return { label: 'Processing', class: 'bg-blue-50 text-blue-600 border-blue-100' }
+    return { label: 'Failed', class: 'bg-red-50 text-red-600 border-red-100' }
   }
 
   const formatDate = (dateStr: string) => {
@@ -121,52 +122,52 @@ export default function PaymentsPage() {
   return (
     <div className="space-y-8 animate-in fade-in duration-500 pt-4">
       
-      <div className="flex justify-between items-end">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-xl font-semibold text-gray-900">Financial Treasury</h1>
-          <p className="text-gray-500 font-medium">Manage platform revenue and vendor settlements</p>
+          <p className="text-gray-400 text-sm mt-0.5">Manage platform revenue and vendor settlements</p>
         </div>
-        <div className="flex gap-4">
-          <div className="bg-white p-1 rounded-xl border border-gray-100 shadow-sm flex">
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 bg-slate-50 p-1.5 rounded-md border border-slate-100">
             <button 
               onClick={() => setActiveTab('ledger')}
-              className={`px-6 py-2.5 rounded-lg text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'ledger' ? 'bg-emerald-900 text-white shadow-lg' : 'text-gray-400 hover:text-gray-600'}`}
+              className={`px-4 py-2 rounded text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'ledger' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-400 hover:text-slate-900'}`}
             >
               Master Ledger
             </button>
             <button 
               onClick={() => setActiveTab('payouts')}
-              className={`px-6 py-2.5 rounded-lg text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'payouts' ? 'bg-emerald-900 text-white shadow-lg' : 'text-gray-400 hover:text-gray-600'}`}
+              className={`px-4 py-2 rounded text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'payouts' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-400 hover:text-slate-900'}`}
             >
               Payouts Manager
             </button>
           </div>
-          <button className="bg-white border border-gray-100 text-gray-600 h-12 px-6 rounded-xl font-bold text-sm hover:bg-gray-50 transition-all flex items-center gap-2 shadow-sm">
-            <Save size={18} /> CSV
+          <button className="bg-white border border-gray-100 text-gray-600 h-10 px-4 rounded-md font-bold text-xs hover:bg-gray-50 transition-all flex items-center gap-2">
+            <Save size={14} /> CSV
           </button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <StatCard title="Total Volume" value={`KES ${(stats?.totalVolume24h || 0).toLocaleString()}`} sub="Last 24h Global" icon={CreditCard} variant="emerald" />
-        <StatCard title="Success Rate" value={`${stats?.successRate || 0}%`} sub="Payment Reliability" icon={ArrowUpRight} variant="blue" />
-        <StatCard title="Pending Settlements" value={`KES ${(stats?.pendingPayoutsAmount || 0).toLocaleString()}`} sub={`${stats?.pendingPayoutsCount || '0'} Transfers Required`} icon={Clock} variant="amber" />
-        <StatCard title="Platform Intake" value={`KES ${(stats?.overview?.revenueThisMonth || 0).toLocaleString()}`} sub="Revenue After Payouts" icon={Landmark} variant="purple" />
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-px bg-gray-100 rounded-[.5rem] overflow-hidden border border-gray-100">
+        <StatCard title="Total Volume" value={`KES ${(stats?.totalVolume24h || 0).toLocaleString()}`} sub="Last 24h Global" icon={CreditCard} color="emerald" />
+        <StatCard title="Success Rate" value={`${stats?.successRate || 0}%`} sub="Payment Reliability" icon={ArrowUpRight} color="blue" />
+        <StatCard title="Pending Settlements" value={`KES ${(stats?.pendingPayoutsAmount || 0).toLocaleString()}`} sub={`${stats?.pendingPayoutsCount || '0'} Transfers Required`} icon={Clock} color="amber" />
+        <StatCard title="Platform Intake" value={`KES ${(stats?.overview?.revenueThisMonth || 0).toLocaleString()}`} sub="Revenue After Payouts" icon={Landmark} color="purple" />
       </div>
 
       {activeTab === 'ledger' ? (
-        <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden text-slate-900">
-          <div className="p-8 border-b border-gray-50 flex gap-4 bg-gray-50/30">
+        <div className="bg-white rounded-[.5rem] border border-gray-100 overflow-hidden text-slate-900">
+          <div className="p-6 border-b border-gray-50 flex gap-4 bg-gray-50/30">
             <div className="relative flex-1">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
               <input 
                 type="text" 
                 placeholder="Search master ledger..." 
-                className="w-full bg-white border border-gray-100 rounded-xl py-3.5 pl-12 pr-4 outline-none focus:ring-2 focus:ring-emerald-500/10 transition-all text-sm font-bold shadow-sm" 
+                className="w-full bg-white border border-gray-100 rounded-md py-2.5 pl-11 pr-4 outline-none focus:ring-2 focus:ring-emerald-500/10 transition-all text-xs font-bold" 
               />
             </div>
-            <button className="bg-white text-gray-500 h-12 px-4 rounded-xl flex items-center gap-2 font-bold text-xs hover:bg-gray-100 transition-all border border-gray-100 shadow-sm">
-              <Filter size={16} /> Filters
+            <button className="bg-white text-gray-500 h-10 px-4 rounded-md flex items-center gap-2 font-bold text-xs hover:bg-gray-100 transition-all border border-gray-100">
+              <Filter size={14} /> Filters
             </button>
           </div>
 
@@ -212,22 +213,22 @@ export default function PaymentsPage() {
                 ) : paginatedTransactions.length > 0 ? paginatedTransactions.map((t: any, i: number) => {
                   const statusInfo = formatStatus(t.status)
                   return (
-                    <tr key={i} className="hover:bg-gray-50/50 transition-all group">
-                      <td className="px-8 py-5 text-sm font-black text-gray-900 hl-mono">{t.id?.toString().slice(-8).toUpperCase() || 'N/A'}</td>
-                      <td className="px-8 py-5 text-sm font-bold text-gray-400 hl-mono">{formatDate(t.createdAt)}</td>
-                      <td className="px-8 py-5 text-sm font-bold text-gray-700">{t.businessName || 'System'}</td>
-                      <td className="px-8 py-5">
-                          <span className={`px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider ${
-                             t.type === 'SALE' ? 'bg-amber-100 text-amber-700' : 'bg-purple-100 text-purple-700'
+                    <tr key={i} className="hover:bg-gray-50/30 transition-all group">
+                      <td className="px-8 py-6 text-xs font-black text-gray-900 hl-mono">{t.id?.toString().slice(-8).toUpperCase() || 'N/A'}</td>
+                      <td className="px-8 py-6 text-[10px] font-black text-gray-400 hl-mono uppercase">{formatDate(t.createdAt)}</td>
+                      <td className="px-8 py-6 text-sm font-black text-gray-900">{t.businessName || 'System'}</td>
+                      <td className="px-8 py-6">
+                          <span className={`px-3 py-1 rounded-md text-[9px] font-black uppercase tracking-widest ${
+                             t.type === 'SALE' ? 'bg-amber-50 text-amber-600' : 'bg-purple-50 text-purple-600'
                           }`}>
                             {t.type || 'PAYMENT'}
                           </span>
                       </td>
-                      <td className={`px-8 py-5 text-right font-black text-sm hl-mono ${t.amount > 0 ? 'text-emerald-600' : 'text-red-600'}`}>
+                      <td className={`px-8 py-6 text-right font-black text-sm hl-mono ${t.amount > 0 ? 'text-emerald-600' : 'text-red-600'}`}>
                         {t.amount > 0 ? '+' : ''}KES {(t.amount || 0).toLocaleString()}
                       </td>
-                      <td className="px-8 py-5 text-center">
-                        <span className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wider ${statusInfo.class}`}>
+                      <td className="px-8 py-6 text-center">
+                        <span className={`inline-flex px-3 py-1 rounded-md border text-[9px] font-black uppercase tracking-widest ${statusInfo.class}`}>
                           {statusInfo.label}
                         </span>
                       </td>
@@ -243,43 +244,28 @@ export default function PaymentsPage() {
           </div>
 
           {totalLedgerPages > 1 && (
-            <div className="p-6 border-t border-gray-50 flex items-center justify-between bg-gray-50/10">
-              <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">
-                Showing {Math.min(sortedTransactions.length, (ledgerPage - 1) * PAGE_SIZE + 1)} - {Math.min(sortedTransactions.length, ledgerPage * PAGE_SIZE)} of {sortedTransactions.length}
-              </p>
-              <div className="flex gap-2">
-                <button 
-                  onClick={() => setLedgerPage(p => Math.max(1, p - 1))}
-                  disabled={ledgerPage === 1}
-                  className="h-10 w-10 rounded-lg border border-gray-100 flex items-center justify-center text-gray-500 disabled:opacity-30 bg-white shadow-sm"
-                >
-                  <ChevronLeft size={18} />
-                </button>
-                <div className="h-10 px-4 rounded-lg flex items-center justify-center text-xs font-black bg-emerald-900 text-white">
-                  {ledgerPage}
-                </div>
-                <button 
-                  onClick={() => setLedgerPage(p => Math.min(totalLedgerPages, p + 1))}
-                  disabled={ledgerPage === totalLedgerPages}
-                  className="h-10 w-10 rounded-lg border border-gray-100 flex items-center justify-center text-gray-500 disabled:opacity-30 bg-white shadow-sm"
-                >
-                  <ChevronRight size={18} />
-                </button>
-              </div>
+            <div className="p-6 border-t border-gray-50">
+              <Pagination
+                page={ledgerPage}
+                pages={totalLedgerPages}
+                total={sortedTransactions.length}
+                onPageChange={setLedgerPage}
+                label="Transaction"
+              />
             </div>
           )}
         </div>
       ) : (
         <div className="space-y-6">
-           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               <div className="lg:col-span-2 space-y-6">
-                 <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+                 <div className="bg-white rounded-[.5rem] border border-gray-100 overflow-hidden">
                     <table className="w-full text-left">
                        <thead className="bg-gray-50/50 border-b border-gray-50 text-slate-900">
                           <tr>
-                             <th className="px-8 py-6 text-[10px] font-black text-gray-400 uppercase tracking-widest">Vendor & Transfer Details</th>
-                             <th className="px-8 py-6 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Settlement Amount</th>
-                             <th className="px-8 py-6 text-right"></th>
+                             <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest">Vendor & Transfer Details</th>
+                             <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Settlement Amount</th>
+                             <th className="px-8 py-5 text-right"></th>
                           </tr>
                        </thead>
                        <tbody className="divide-y divide-gray-50">
@@ -288,33 +274,33 @@ export default function PaymentsPage() {
                           ) : paginatedPayouts.length === 0 ? (
                              <tr><td colSpan={3} className="py-20 text-center text-gray-300 font-black text-xs uppercase tracking-widest italic">No pending settlements found. All vendors are cleared.</td></tr>
                           ) : paginatedPayouts.map((p: any) => (
-                             <tr key={p.tenantId} className="hover:bg-amber-50/30 transition-all group">
-                                <td className="px-8 py-8">
+                             <tr key={p.tenantId} className="hover:bg-amber-50/20 transition-all group">
+                                <td className="px-8 py-6">
                                    <div className="flex items-center gap-4">
-                                      <div className="h-12 w-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shadow-sm">
-                                         <Clock size={24} />
+                                      <div className="h-10 w-10 rounded-md bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
+                                         <Clock size={18} />
                                       </div>
                                       <div>
-                                         <p className="font-black text-slate-900 text-lg tracking-tight mb-1">{p.businessName}</p>
-                                         <div className="flex items-center gap-3 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                                            <span className="flex items-center gap-1"><Landmark size={12} /> {p.transactionCount} TXNs Bundled</span>
+                                         <p className="font-black text-slate-900 text-sm mb-0.5">{p.businessName}</p>
+                                         <div className="flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                                            <span className="flex items-center gap-1"><Landmark size={11} /> {p.transactionCount} TXNs Bundled</span>
                                             <span className="h-1 w-1 rounded-full bg-slate-200"></span>
-                                            <span className="flex items-center gap-1 italic">Updated {formatDate(p.latestTransaction)}</span>
+                                            <span className="italic">Updated {formatDate(p.latestTransaction)}</span>
                                          </div>
                                       </div>
                                    </div>
                                 </td>
-                                <td className="px-8 py-8 text-right">
+                                <td className="px-8 py-6 text-right">
                                    <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest mb-1 line-through">Gross KES {(p.totalGross || 0).toLocaleString()}</p>
-                                   <p className="text-2xl font-black text-emerald-900 hl-mono tracking-tighter">KES {(p.netSettlement || 0).toLocaleString()}</p>
+                                   <p className="text-xl font-semibold text-emerald-900 hl-mono tracking-tight">KES {(p.netSettlement || 0).toLocaleString()}</p>
                                 </td>
-                                <td className="px-8 py-8 text-right">
+                                <td className="px-8 py-6 text-right">
                                    <button 
                                      onClick={() => markPaidMutation.mutate(p.tenantId)}
                                      disabled={markPaidMutation.isPending}
-                                     className="bg-emerald-600 text-white h-12 px-6 rounded-xl font-bold text-sm hover:bg-emerald-700 transition-all flex items-center gap-2 ml-auto shadow-lg shadow-emerald-600/10 active:scale-95"
+                                     className="bg-emerald-600 text-white h-10 px-4 rounded-md font-bold text-xs hover:bg-emerald-700 transition-all flex items-center gap-2 ml-auto"
                                    >
-                                      {markPaidMutation.isPending ? <Landmark className="animate-spin" /> : <CheckCircle2 size={18} />}
+                                      {markPaidMutation.isPending ? <Landmark className="animate-spin" size={16} /> : <CheckCircle2 size={16} />}
                                       Mark as Settled
                                    </button>
                                 </td>
@@ -324,39 +310,24 @@ export default function PaymentsPage() {
                     </table>
 
                     {totalPayoutPages > 1 && (
-                      <div className="p-6 border-t border-gray-50 flex items-center justify-between bg-gray-50/10">
-                        <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">
-                          Showing {Math.min(payouts.length, (payoutsPage - 1) * PAGE_SIZE + 1)} - {Math.min(payouts.length, payoutsPage * PAGE_SIZE)} of {payouts.length}
-                        </p>
-                        <div className="flex gap-2">
-                          <button 
-                            onClick={() => setPayoutsPage(p => Math.max(1, p - 1))}
-                            disabled={payoutsPage === 1}
-                            className="h-10 w-10 rounded-lg border border-gray-100 flex items-center justify-center text-gray-500 disabled:opacity-30 bg-white shadow-sm"
-                          >
-                            <ChevronLeft size={18} />
-                          </button>
-                          <div className="h-10 px-4 rounded-lg flex items-center justify-center text-xs font-black bg-emerald-900 text-white">
-                            {payoutsPage}
-                          </div>
-                          <button 
-                            onClick={() => setPayoutsPage(p => Math.min(totalPayoutPages, p + 1))}
-                            disabled={payoutsPage === totalPayoutPages}
-                            className="h-10 w-10 rounded-lg border border-gray-100 flex items-center justify-center text-gray-500 disabled:opacity-30 bg-white shadow-sm"
-                          >
-                            <ChevronRight size={18} />
-                          </button>
-                        </div>
+                      <div className="p-6 border-t border-gray-50">
+                        <Pagination
+                          page={payoutsPage}
+                          pages={totalPayoutPages}
+                          total={payouts.length}
+                          onPageChange={setPayoutsPage}
+                          label="Payout"
+                        />
                       </div>
                     )}
                  </div>
               </div>
 
               <div className="space-y-6">
-                 <div className="bg-emerald-900 p-8 rounded-xl text-white shadow-2xl relative overflow-hidden">
+                 <div className="bg-emerald-900 p-6 rounded-[.5rem] text-white relative overflow-hidden">
                     <div className="relative z-10">
-                       <h3 className="text-lg font-black mb-2 uppercase tracking-widest opacity-60">Revenue Retention</h3>
-                       <p className="text-4xl font-black hl-mono mb-8">KES {Number(stats?.totalPlatformShare || 0).toLocaleString()}</p>
+                       <h3 className="text-xs font-black mb-2 uppercase tracking-widest opacity-60">Revenue Retention</h3>
+                       <p className="text-2xl font-semibold hl-mono mb-8">KES {Number(stats?.totalPlatformShare || 0).toLocaleString()}</p>
                        <div className="space-y-4 pt-6 border-t border-white/10">
                           <div className="flex justify-between items-center text-sm">
                              <span className="opacity-60 font-bold">Total Gross Collections</span>
@@ -371,7 +342,7 @@ export default function PaymentsPage() {
                     <Landmark size={180} className="absolute -bottom-10 -right-10 opacity-10 rotate-12" />
                  </div>
 
-                 <div className="bg-white p-8 rounded-xl border border-gray-100 shadow-sm">
+                 <div className="bg-white p-6 rounded-[.5rem] border border-gray-100">
                     <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-6">Settlement Checklist</h3>
                     <ul className="space-y-4">
                        <li className="flex gap-4 items-start">
@@ -408,25 +379,23 @@ export default function PaymentsPage() {
   )
 }
 
-function StatCard({ title, value, sub, icon: Icon, variant }: any) {
-  const variants = {
-    emerald: 'bg-emerald-50 text-emerald-600',
-    blue: 'bg-blue-50 text-blue-600',
-    amber: 'bg-amber-50 text-amber-600',
-    red: 'bg-red-50 text-red-600',
-    purple: 'bg-purple-50 text-purple-600',
+function StatCard({ title, value, sub, icon: Icon, color }: any) {
+  const colorMap = {
+    emerald: 'text-emerald-600 bg-emerald-50',
+    blue: 'text-blue-600 bg-blue-50',
+    amber: 'text-amber-600 bg-amber-50',
+    red: 'text-red-600 bg-red-50',
+    purple: 'text-purple-600 bg-purple-50',
   }
 
   return (
-    <div className="bg-white p-6 rounded-lg border border-gray-100 shadow-sm flex items-center gap-5 hover:shadow-md transition-all">
-      <div className={`h-12 w-12 rounded-md flex items-center justify-center shrink-0 ${variants[variant as keyof typeof variants]}`}>
-        <Icon size={24} />
+    <div className="bg-white p-5 sm:p-6">
+      <div className="flex items-center gap-2 mb-2">
+        <Icon size={13} className="text-gray-300" />
+        <p className="text-xs text-gray-400">{title}</p>
       </div>
-      <div>
-        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-0.5">{title}</p>
-        <h3 className="text-xl font-black text-gray-900 hl-mono">{value}</h3>
-        <p className="text-[10px] text-gray-500 font-bold">{sub}</p>
-      </div>
+      <p className="text-xl sm:text-2xl font-semibold hl-mono tracking-tight text-gray-900">{value}</p>
+      <p className="text-xs text-gray-400 mt-1">{sub}</p>
     </div>
   )
 }

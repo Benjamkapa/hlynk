@@ -131,7 +131,7 @@ export default function AdminLayout() {
                 <span className="text-sm font-bold text-[#00694B] truncate tracking-tight leading-none">
                   {user?.businessName}
                 </span>
-                <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-0.5">Admin Console</span>
+                <span className="text-[10px] font-semibold text-slate-400 mt-0.5">Admin console</span>
               </div>
             </motion.div>
           ) : (
@@ -160,7 +160,7 @@ export default function AdminLayout() {
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0 }}
                   transition={{ duration: 0.15 }}
-                  className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400 px-3 mb-2 whitespace-nowrap"
+                  className="text-[10px] font-semibold text-slate-400 px-3 mb-2 whitespace-nowrap"
                 >
                   {group.label}
                 </motion.p>
@@ -186,13 +186,13 @@ export default function AdminLayout() {
                 )
 
                 const tooltip = !sidebarExpanded && isDesktop && (
-                  <div className="absolute left-[calc(100%+10px)] bg-slate-900 text-white px-3 py-1.5 rounded-[.4rem] text-[10px] font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 invisible group-hover:visible translate-x-2 group-hover:translate-x-0 transition-all pointer-events-none whitespace-nowrap z-[200] shadow-2xl">
+                  <div className="absolute left-[calc(100%+10px)] bg-slate-900 text-white px-3 py-1.5 rounded-md text-xs font-semibold opacity-0 group-hover:opacity-100 invisible group-hover:visible translate-x-2 group-hover:translate-x-0 transition-all pointer-events-none whitespace-nowrap z-[200] shadow-sm">
                     {item.label}
                     <div className="absolute top-1/2 -left-1 -translate-y-1/2 border-y-4 border-y-transparent border-r-4 border-r-slate-900" />
                   </div>
                 )
 
-                const baseClass = `group relative flex items-center rounded-[.45rem] transition-all duration-150 ${sidebarExpanded ? 'px-3 py-2.5' : 'justify-center py-2.5 px-0'}`
+                const baseClass = `group relative flex items-center rounded-md transition-all duration-150 ${sidebarExpanded ? 'px-3 py-2.5' : 'justify-center py-2.5 px-0'}`
 
                 return (
                   <NavLink
@@ -226,15 +226,15 @@ export default function AdminLayout() {
             >
               <Link
                 to="/admin/help"
-                className="block bg-slate-900 rounded-[.5rem] p-3 hover:bg-slate-800 transition-colors shadow-lg group"
+                className="block bg-slate-900 rounded-[.5rem] p-3 hover:bg-slate-800 transition-colors group"
               >
                 <div className="flex items-center gap-3">
                   <div className="h-8 w-8 rounded-md bg-white/10 flex items-center justify-center flex-shrink-0">
                     <HelpCircle size={16} className="text-slate-300" />
                   </div>
                   <div className="min-w-0">
-                    <p className="text-[9px] text-slate-400 font-black uppercase tracking-widest leading-none mb-0.5">Help Center</p>
-                    <p className="text-xs font-bold text-white truncate">Docs &amp; Guides</p>
+                    <p className="text-[10px] text-slate-400 font-semibold leading-none mb-0.5">Help center</p>
+                    <p className="text-xs font-bold text-white truncate">Docs &amp; guides</p>
                   </div>
                 </div>
               </Link>
@@ -244,7 +244,7 @@ export default function AdminLayout() {
 
         <NavLink
           to="/admin/settings"
-          className={`h-10 bg-slate-50 rounded-[.45rem] flex items-center justify-center text-slate-400 hover:bg-emerald-50 hover:text-emerald-600 transition-all border border-slate-100 ${sidebarExpanded ? 'w-full' : 'w-10'}`}
+          className={`h-10 bg-slate-50 rounded-md flex items-center justify-center text-slate-400 hover:bg-emerald-50 hover:text-emerald-600 transition-all border border-slate-100 ${sidebarExpanded ? 'w-full' : 'w-10'}`}
         >
           <Settings size={18} />
         </NavLink>
@@ -285,7 +285,7 @@ export default function AdminLayout() {
           <motion.div
             animate={{ width: sidebarExpanded ? FULL_W : RAIL_W }}
             transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
-            className={`absolute inset-y-0 left-0 bg-white overflow-hidden ${isCollapsed && isHovered ? 'shadow-2xl shadow-slate-200 border-r border-slate-100' : ''}`}
+            className={`absolute inset-y-0 left-0 bg-white overflow-hidden ${isCollapsed && isHovered ? 'shadow-sm border-r border-slate-100' : ''}`}
           >
             {sidebarContent}
           </motion.div>
@@ -300,7 +300,7 @@ export default function AdminLayout() {
               animate={{ x: 0 }}
               exit={{ x: -FULL_W }}
               transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
-              className="fixed top-0 left-0 h-full bg-white z-[70] shadow-2xl"
+              className="fixed top-0 left-0 h-full bg-white z-[70] shadow-sm"
               style={{ width: FULL_W }}
             >
               {sidebarContent}
@@ -323,12 +323,12 @@ export default function AdminLayout() {
             >
               <div className="max-w-screen-2xl mx-auto px-4 sm:px-8 py-3 flex items-center justify-between gap-4">
                 <div className="flex items-center gap-3 overflow-hidden">
-                  <div className="bg-emerald-800 p-2 rounded-lg flex-shrink-0 animate-pulse">
+                  <div className="bg-emerald-800 p-2 rounded-md flex-shrink-0">
                     <Bell size={16} className="text-emerald-300" />
                   </div>
                   <div className="min-w-0">
-                    <p className="text-[11px] font-black tracking-widest text-emerald-300 leading-none mb-1">
-                      {pushStatus === 'ios_browser' ? 'Action Required' : 'Mandatory Security Requirement'}
+                    <p className="text-[11px] font-semibold text-emerald-300 leading-none mb-1">
+                      {pushStatus === 'ios_browser' ? 'Action required' : 'Security recommendation'}
                     </p>
                     <p className="text-sm font-bold truncate">
                       {pushStatus === 'ios_browser'
@@ -341,10 +341,10 @@ export default function AdminLayout() {
                   <button
                     onClick={handleEnablePush}
                     disabled={isPushLoading}
-                    className="bg-emerald-500 hover:bg-emerald-400 text-white px-6 py-2 rounded-full text-xs font-black uppercase tracking-widest shadow-xl shadow-emerald-900/40 transition-all flex items-center gap-2 flex-shrink-0 disabled:opacity-50"
+                    className="bg-emerald-500 hover:bg-emerald-400 text-white px-4 py-2 rounded-md text-xs font-semibold transition-all flex items-center gap-2 flex-shrink-0 disabled:opacity-50"
                   >
                     {isPushLoading ? <Loader2 size={14} className="animate-spin" /> : <ShieldCheck size={14} strokeWidth={2} />}
-                    Activate Alerts
+                    Activate alerts
                   </button>
                 )}
               </div>
@@ -371,22 +371,28 @@ export default function AdminLayout() {
 }
 
 // ─── Mobile Bottom Navigation ────────────────────────────────────────────────
+// Symmetric layout: 3 items — center (primary) — 3 items = 7 buttons total.
+// The last slot on the right opens the "More" sheet with everything else.
 function MobileBottomAdminNav() {
   const location = useLocation()
   const [showMoreSheet, setShowMoreSheet] = useState(false)
 
   useEffect(() => { setShowMoreSheet(false) }, [location.pathname])
 
-  const primaryItems = [
+  const leftItems = [
     { to: '/admin', label: 'Home', icon: LayoutDashboard, end: true },
     { to: '/admin/businesses', label: 'Business', icon: Briefcase, end: false },
-    { to: '/admin/financials', label: 'Finance', icon: DollarSign, end: false, isCenter: true },
     { to: '/admin/user-operations', label: 'Users', icon: Users, end: false },
+  ]
+
+  const centerItem = { to: '/admin/financials', label: 'Finance', icon: DollarSign, end: false }
+
+  const rightItems = [
     { to: '/admin/subscriptions', label: 'Subs', icon: CreditCard, end: false },
+    { to: '/admin/payments', label: 'Payments', icon: Landmark, end: false },
   ]
 
   const overflowItems = [
-    { to: '/admin/payments', label: 'Payments', icon: Landmark },
     { to: '/admin/community-reviews', label: 'Reviews', icon: MessageSquare },
     { to: '/admin/forensic-audit', label: 'Forensic Audit', icon: ShieldCheck },
     { to: '/admin/reports', label: 'Reports', icon: BarChart2 },
@@ -398,54 +404,50 @@ function MobileBottomAdminNav() {
     location.pathname === item.to || location.pathname.startsWith(item.to + '/')
   )
 
-  const renderNavItem = (item: any) => {
-    if (item.isCenter) {
-      return (
-        <NavLink
-          key={item.label}
-          to={item.to}
-          end={item.end}
-          className="flex-1 min-w-0 flex flex-col items-center gap-0.5 py-1 no-tap-highlight"
-        >
-          {({ isActive }) => (
-            <>
-              <div className={`w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 active:scale-95
-                ${isActive ? 'bg-emerald-500 shadow-lg shadow-emerald-500/30' : 'bg-[#0D4A3E] shadow-lg shadow-[#0D4A3E]/25'}`}
-              >
-                <item.icon className="w-5 h-5 text-white" strokeWidth={2.5} />
-              </div>
-              <span className={`text-[9px] font-medium transition-all truncate w-full text-center ${isActive ? 'text-emerald-600' : 'text-[#0D4A3E] opacity-50'}`}>
-                {item.label}
-              </span>
-            </>
-          )}
-        </NavLink>
-      )
-    }
+  const renderNavItem = (item: any) => (
+    <NavLink
+      key={item.label}
+      to={item.to}
+      end={item.end}
+      className="flex-1 min-w-0 flex flex-col items-center gap-0.5 py-1 no-tap-highlight"
+    >
+      {({ isActive }) => (
+        <>
+          <div className={`w-9 h-9 rounded-full flex items-center justify-center transition-all duration-200 ${isActive ? 'bg-emerald-50' : 'bg-transparent'}`}>
+            <item.icon
+              className={`w-[18px] h-[18px] transition-colors ${isActive ? 'text-[#0D4A3E]' : 'text-[#0D4A3E] opacity-35'}`}
+              strokeWidth={isActive ? 2.5 : 2}
+            />
+          </div>
+          <span className={`text-[9px] font-medium transition-all truncate w-full text-center ${isActive ? 'text-[#0D4A3E]' : 'text-[#0D4A3E] opacity-35'}`}>
+            {item.label}
+          </span>
+        </>
+      )}
+    </NavLink>
+  )
 
-    return (
-      <NavLink
-        key={item.label}
-        to={item.to}
-        end={item.end}
-        className="flex-1 min-w-0 flex flex-col items-center gap-0.5 py-1 no-tap-highlight"
-      >
-        {({ isActive }) => (
-          <>
-            <div className={`w-9 h-9 rounded-full flex items-center justify-center transition-all duration-200 ${isActive ? 'bg-emerald-50 shadow-sm' : 'bg-transparent'}`}>
-              <item.icon
-                className={`w-[18px] h-[18px] transition-colors ${isActive ? 'text-[#0D4A3E]' : 'text-[#0D4A3E] opacity-35'}`}
-                strokeWidth={isActive ? 2.5 : 2}
-              />
-            </div>
-            <span className={`text-[9px] font-medium transition-all truncate w-full text-center ${isActive ? 'text-[#0D4A3E]' : 'text-[#0D4A3E] opacity-35'}`}>
-              {item.label}
-            </span>
-          </>
-        )}
-      </NavLink>
-    )
-  }
+  const renderCenterItem = (item: any) => (
+    <NavLink
+      key={item.label}
+      to={item.to}
+      end={item.end}
+      className="flex-1 min-w-0 flex flex-col items-center gap-0.5 py-1 no-tap-highlight"
+    >
+      {({ isActive }) => (
+        <>
+          <div className={`w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 active:scale-95 -mt-4
+            ${isActive ? 'bg-emerald-500 shadow-sm' : 'bg-[#0D4A3E] shadow-sm'}`}
+          >
+            <item.icon className="w-5 h-5 text-white" strokeWidth={2.5} />
+          </div>
+          <span className={`text-[9px] font-medium transition-all truncate w-full text-center ${isActive ? 'text-emerald-600' : 'text-[#0D4A3E] opacity-50'}`}>
+            {item.label}
+          </span>
+        </>
+      )}
+    </NavLink>
+  )
 
   return (
     <>
@@ -475,9 +477,9 @@ function MobileBottomAdminNav() {
             transition={{ duration: 0.22, ease: [0.32, 0.72, 0, 1] }}
             className="fixed inset-x-3 z-[94] lg:hidden bottom-[calc(5.5rem+0.25rem+env(safe-area-inset-bottom,0px))]"
           >
-            <div className="bg-white rounded-[1.5rem] shadow-[0_20px_60px_rgba(0,0,0,0.14)] overflow-hidden border border-slate-100">
+            <div className="bg-white rounded-[.75rem] shadow-sm overflow-hidden border border-slate-100">
               <div className="flex items-center justify-between px-5 pt-4 pb-3 border-b border-slate-50">
-                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">More Options</p>
+                <p className="text-xs font-semibold text-slate-400">More options</p>
                 <button
                   onClick={() => setShowMoreSheet(false)}
                   className="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 hover:bg-slate-200 transition-colors"
@@ -491,7 +493,7 @@ function MobileBottomAdminNav() {
                     key={item.label}
                     to={item.to}
                     className={({ isActive }) =>
-                      `flex items-center gap-3 px-4 py-3.5 rounded-[.9rem] transition-all no-tap-highlight ${isActive ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-50 text-slate-600 hover:bg-emerald-50 hover:text-emerald-700'}`
+                      `flex items-center gap-3 px-4 py-3.5 rounded-md transition-all no-tap-highlight ${isActive ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-50 text-slate-600 hover:bg-emerald-50 hover:text-emerald-700'}`
                     }
                   >
                     <item.icon className="w-[18px] h-[18px] flex-shrink-0" strokeWidth={2} />
@@ -505,11 +507,13 @@ function MobileBottomAdminNav() {
         )}
       </AnimatePresence>
 
-      {/* Floating Nav Bar */}
+      {/* Floating Nav Bar — 3 left, 1 center, 3 right (last = More) */}
       <div className="fixed inset-x-0 bottom-[env(safe-area-inset-bottom,0px)] z-[95] lg:hidden flex flex-col items-center pointer-events-none">
         <div className="w-full px-3 pointer-events-auto">
-          <div className="relative py-2 bg-white/95 backdrop-blur-xl rounded-[2rem] shadow-[0_8px_30px_rgba(0,0,0,0.08)] flex items-end justify-between px-2">
-            {primaryItems.map(renderNavItem)}
+          <div className="relative py-2 bg-white/95 backdrop-blur-xl rounded-[1.5rem] shadow-sm flex items-end justify-between px-2">
+            {leftItems.map(renderNavItem)}
+            {renderCenterItem(centerItem)}
+            {rightItems.map(renderNavItem)}
 
             {/* More button */}
             <button
@@ -517,7 +521,7 @@ function MobileBottomAdminNav() {
               onClick={() => setShowMoreSheet(v => !v)}
               className="flex-1 min-w-0 flex flex-col items-center gap-0.5 py-1 no-tap-highlight"
             >
-              <div className={`w-9 h-9 rounded-full flex items-center justify-center transition-all duration-200 ${(showMoreSheet || isOverflowActive) ? 'bg-emerald-50 shadow-sm' : 'bg-transparent'}`}>
+              <div className={`w-9 h-9 rounded-full flex items-center justify-center transition-all duration-200 ${(showMoreSheet || isOverflowActive) ? 'bg-emerald-50' : 'bg-transparent'}`}>
                 <Settings
                   className={`w-[18px] h-[18px] transition-colors ${(showMoreSheet || isOverflowActive) ? 'text-[#0D4A3E]' : 'text-[#0D4A3E] opacity-35'}`}
                   strokeWidth={(showMoreSheet || isOverflowActive) ? 2.5 : 2}
@@ -533,5 +537,3 @@ function MobileBottomAdminNav() {
     </>
   )
 }
-
-

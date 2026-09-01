@@ -15,6 +15,7 @@ interface TopNavProps {
   onMobileMenuToggle?: () => void
   isCollapsed?: boolean
   onToggleCollapse?: () => void
+  showMail?: boolean
   extraActions?: React.ReactNode
 }
 

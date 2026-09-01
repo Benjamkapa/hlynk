@@ -7,6 +7,7 @@ import { AdminStats } from '../../lib/types/api'
 import { exportToCSV } from '../../lib/utils/export'
 import CountUp from '../../components/shared/CountUp'
 import { formatDate } from '../../lib/utils/date'
+import Pagination from '../../components/shared/Pagination'
 
 export default function AuditSecurityPage() {
   const [logPage, setLogPage] = useState(1)
@@ -111,16 +112,16 @@ export default function AuditSecurityPage() {
   return (
     <div className="space-y-8 animate-in fade-in duration-500 pt-4">
       
-      <div className="flex justify-between items-end">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-xl font-semibold text-gray-900">Audit & Security</h1>
-          <p className="text-gray-500 font-medium">Global security monitoring, compliance tracking and threat mitigation</p>
+          <p className="text-gray-400 text-sm mt-0.5">Global security monitoring, compliance tracking and threat mitigation</p>
         </div>
         <div className="flex gap-3">
           <button 
             onClick={handleBackupDownload}
             disabled={isBackingUp}
-            className="relative overflow-hidden bg-emerald-600 text-white h-12 px-6 rounded-xl font-bold text-sm hover:bg-emerald-700 transition-all flex items-center gap-2 shadow-lg shadow-emerald-900/15 disabled:opacity-90"
+            className="relative overflow-hidden bg-emerald-600 text-white h-10 px-4 rounded-md font-bold text-xs hover:bg-emerald-700 transition-all flex items-center gap-2 disabled:opacity-90"
           >
             {isBackingUp && (
               <div 
@@ -131,12 +132,12 @@ export default function AuditSecurityPage() {
             <div className="relative z-10 flex items-center gap-2">
               {isBackingUp ? (
                 <>
-                  <Loader2 size={18} className="animate-spin" />
+                  <Loader2 size={14} className="animate-spin" />
                   <span>{backupProgress > 0 ? `Downloading ${backupProgress}%` : 'Preparing DB...'}</span>
                 </>
               ) : (
                 <>
-                  <Download size={18} />
+                  <Download size={14} />
                   <span>DB Backup</span>
                 </>
               )}
@@ -153,45 +154,45 @@ export default function AuditSecurityPage() {
             />
             <button 
               disabled={isRestoring}
-              className="bg-slate-800 text-white h-12 px-6 rounded-xl font-bold text-sm hover:bg-slate-900 transition-all flex items-center gap-2 shadow-lg disabled:opacity-50"
+              className="bg-slate-800 text-white h-10 px-4 rounded-md font-bold text-xs hover:bg-slate-900 transition-all flex items-center gap-2 disabled:opacity-50"
             >
-              {isRestoring ? <Loader2 size={18} className="animate-spin" /> : <RefreshCcw size={18} />}
+              {isRestoring ? <Loader2 size={14} className="animate-spin" /> : <RefreshCcw size={14} />}
               Restore DB (.sql)
             </button>
           </div>
 
           <button 
             onClick={handleIncidentReport}
-            className="bg-red-600 text-white h-12 px-6 rounded-xl font-bold text-sm hover:bg-red-700 transition-all flex items-center gap-2 shadow-lg shadow-red-900/20"
+            className="bg-red-50 text-red-600 h-10 px-4 rounded-md font-bold text-xs hover:bg-red-100 transition-all flex items-center gap-2"
           >
-            <ShieldAlert size={18} /> Incident Report
+            <ShieldAlert size={14} /> Incident Report
           </button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-3 md:grid-cols-3 gap-px bg-gray-100 rounded-[.5rem] overflow-hidden border border-gray-100">
         <SecurityCard title="Security Alerts" value={<CountUp end={Number(stats?.securityAlertsCount || 0)} />} sub={(stats?.securityAlertsCount || 0) > 0 ? 'Urgent attention' : 'All clear today'} icon={ShieldCheck} status={(stats?.securityAlertsCount || 0) > 0 ? 'danger' : 'safe'} />
         <SecurityCard title="Failed Logins" value={<CountUp end={Number(stats?.failedLoginsCount || 0)} />} sub="Last 24 hours" icon={UserX} status={(stats?.failedLoginsCount || 0) > 5 ? 'warning' : 'safe'} />
         <SecurityCard title="Active Protocols" value={<CountUp end={Number(stats?.activeProtocolsCount || 0)} />} sub="Encryption Active" icon={Key} status="safe" />
       </div>
 
-      <div className="bg-white rounded-[.5rem] border border-gray-100 shadow-sm overflow-hidden">
-        <div className="p-8 border-b border-gray-50 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+      <div className="bg-white rounded-[.5rem] border border-gray-100 overflow-hidden">
+        <div className="p-6 border-b border-gray-50 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
           <div>
-             <h3 className="text-xl font-black text-gray-900 mb-1">Global System Logs</h3>
-             <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">{logsData?.pagination?.total || 0} total actions tracked</p>
+             <h3 className="text-sm font-medium text-gray-900">Global system logs</h3>
+             <p className="text-xs text-gray-400 mt-0.5">{logsData?.pagination?.total || 0} total actions tracked</p>
           </div>
-          <div className="flex items-center gap-3">
-             <button onClick={() => refetchLogs()} className="h-10 px-4 bg-gray-50 text-gray-600 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 hover:bg-gray-100 transition-all border border-gray-100">
-                <RefreshCcw size={14} /> Refresh
+          <div className="flex items-center gap-2">
+             <button onClick={() => refetchLogs()} className="h-9 px-4 bg-gray-50 text-gray-600 rounded-md text-[10px] font-black uppercase tracking-widest flex items-center gap-2 hover:bg-gray-100 transition-all border border-gray-100">
+                <RefreshCcw size={12} /> Refresh
              </button>
-             <button onClick={handleLogExport} className="h-10 px-4 bg-gray-50 text-gray-600 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 hover:bg-gray-100 transition-all border border-gray-100">
-                <FileText size={14} /> CSV
+             <button onClick={handleLogExport} className="h-9 px-4 bg-gray-50 text-gray-600 rounded-md text-[10px] font-black uppercase tracking-widest flex items-center gap-2 hover:bg-gray-100 transition-all border border-gray-100">
+                <FileText size={12} /> CSV
              </button>
           </div>
         </div>
         
-        <div className="px-8 py-4 bg-slate-50/30 border-b border-gray-50 flex flex-wrap gap-4">
+        <div className="px-6 py-4 bg-slate-50/30 border-b border-gray-50 flex flex-wrap gap-3">
            <div className="flex-1 relative min-w-[200px]">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
               <input 
@@ -199,13 +200,13 @@ export default function AuditSecurityPage() {
                 placeholder="Search by user, business or action..." 
                 value={search}
                 onChange={(e) => handleFilterChange(setSearch, e.target.value)}
-                className="w-full bg-white border border-gray-100 rounded-xl py-2.5 pl-12 pr-4 outline-none focus:ring-2 focus:ring-emerald-500/10 text-sm font-medium" 
+                className="w-full bg-white border border-gray-100 rounded-md py-2.5 pl-11 pr-4 outline-none focus:ring-2 focus:ring-emerald-500/10 text-xs font-medium" 
               />
            </div>
            <select 
              value={category} 
              onChange={(e) => handleFilterChange(setCategory, e.target.value)}
-             className="bg-white border border-gray-100 rounded-xl px-6 py-2.5 text-xs font-black uppercase tracking-widest outline-none focus:ring-2 focus:ring-emerald-500/10 min-w-[180px]"
+             className="bg-white border border-gray-100 rounded-md px-4 py-2.5 text-[10px] font-black uppercase tracking-widest outline-none focus:ring-2 focus:ring-emerald-500/10 min-w-[180px]"
            >
              <option value="">All Categories</option>
              <option value="LOGIN">Auth Events</option>
@@ -230,9 +231,9 @@ export default function AuditSecurityPage() {
             </thead>
             <tbody className="divide-y divide-gray-50">
               {logsLoading ? (
-                <tr><td colSpan={6} className="py-24 text-center"><Loader2 size={32} className="animate-spin text-emerald-600 mx-auto" /></td></tr>
+                <tr><td colSpan={6} className="py-20 text-center"><Loader2 size={28} className="animate-spin text-emerald-600 mx-auto" /></td></tr>
               ) : logsData?.items?.length === 0 ? (
-                <tr><td colSpan={6} className="py-24 text-center text-gray-400 italic font-black text-xs uppercase tracking-widest">No activity logs found</td></tr>
+                <tr><td colSpan={6} className="py-20 text-center text-gray-400 italic font-black text-xs uppercase tracking-widest">No activity logs found</td></tr>
               ) : logsData?.items.map((log: any) => (
                 <tr key={log.id} className="hover:bg-gray-50/50 transition-all group cursor-pointer">
                   <td className="p-6">
@@ -241,7 +242,7 @@ export default function AuditSecurityPage() {
                   </td>
                   <td className="p-6">
                     <div className="flex items-center gap-3">
-                      <div className="h-10 w-10 rounded-xl bg-slate-100 flex items-center justify-center overflow-hidden border border-slate-200">
+                      <div className="h-9 w-9 rounded-md bg-slate-100 flex items-center justify-center overflow-hidden border border-slate-200">
                          {log.user?.photoUrl ? (
                            <img src={log.user.photoUrl} alt="" className="h-full w-full object-cover" />
                          ) : (
@@ -258,7 +259,7 @@ export default function AuditSecurityPage() {
                     <p className="text-xs font-black text-emerald-700 uppercase tracking-wider">{log.tenant?.businessName || 'GLOBAL'}</p>
                   </td>
                   <td className="p-6">
-                    <span className="px-3 py-1 bg-gray-100 text-gray-700 rounded-lg text-[10px] font-black uppercase tracking-widest border border-gray-200 mb-2 inline-block">
+                    <span className="px-3 py-1 bg-gray-100 text-gray-700 rounded-md text-[10px] font-black uppercase tracking-widest border border-gray-200 mb-2 inline-block">
                       {log.logName || log.action}
                     </span>
                     <p className="text-[10px] font-bold text-gray-500 max-w-[200px] truncate">{log.details}</p>
@@ -274,40 +275,25 @@ export default function AuditSecurityPage() {
         </div>
 
         {/* Pagination */}
-        <div className="p-8 border-t border-gray-50 flex items-center justify-between bg-slate-50/20">
-           <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
-              Showing {logsData?.items?.length || 0} of {logsData?.pagination?.total || 0} global records
-           </p>
-           <div className="flex items-center gap-2">
-              <button 
-                onClick={() => setLogPage(p => Math.max(1, p - 1))}
-                disabled={logPage === 1}
-                className="h-12 w-12 flex items-center justify-center rounded-2xl border border-gray-100 bg-white text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 transition-all disabled:opacity-50"
-              >
-                <ChevronLeft size={18} />
-              </button>
-              <div className="px-6 h-12 flex items-center justify-center rounded-2xl bg-white border border-gray-100 text-xs font-black hl-mono">
-                 {logPage} / {logsData?.pagination?.pages || 1}
-              </div>
-              <button 
-                onClick={() => setLogPage(p => Math.min(logsData?.pagination?.pages || 1, p + 1))}
-                disabled={logPage === (logsData?.pagination?.pages || 1)}
-                className="h-12 w-12 flex items-center justify-center rounded-2xl border border-gray-100 bg-white text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 transition-all disabled:opacity-50"
-              >
-                <ChevronRight size={18} />
-              </button>
-           </div>
+        <div className="p-6 border-t border-gray-50">
+          <Pagination
+            page={logPage}
+            pages={logsData?.pagination?.pages || 1}
+            total={logsData?.pagination?.total || 0}
+            onPageChange={setLogPage}
+            label="Log"
+          />
         </div>
       </div>
 
       {/* Custom Restore Confirmation Modal */}
       {restoreFile && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-white rounded-[.5rem] p-8 max-w-md w-full shadow-2xl animate-in zoom-in-95 duration-200">
-            <div className="h-16 w-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mb-6 mx-auto">
-              <ShieldAlert size={32} />
+          <div className="bg-white rounded-[.5rem] p-8 max-w-md w-full shadow-sm animate-in zoom-in-95 duration-200">
+            <div className="h-14 w-14 bg-red-50 text-red-600 rounded-full flex items-center justify-center mb-6 mx-auto">
+              <ShieldAlert size={28} />
             </div>
-            <h3 className="text-2xl font-black text-center text-gray-900 mb-2">Are you absolutely sure?</h3>
+            <h3 className="text-xl font-semibold text-center text-gray-900 mb-2">Are you absolutely sure?</h3>
             <p className="text-sm text-gray-500 text-center font-medium mb-8">
               Restoring from <strong className="text-gray-900">{restoreFile.name}</strong> will completely overwrite the <strong>entire global database</strong>. This action cannot be undone.
             </p>
@@ -315,16 +301,16 @@ export default function AuditSecurityPage() {
               <button 
                 onClick={() => setRestoreFile(null)}
                 disabled={isRestoring}
-                className="flex-1 h-12 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200 transition-all disabled:opacity-50"
+                className="flex-1 h-11 bg-gray-50 text-gray-700 font-bold text-sm rounded-md hover:bg-gray-100 transition-all disabled:opacity-50 border border-gray-100"
               >
                 Cancel
               </button>
               <button 
                 onClick={handleRestoreConfirm}
                 disabled={isRestoring}
-                className="flex-1 h-12 bg-red-600 text-white font-bold rounded-xl shadow-lg shadow-red-900/20 hover:bg-red-700 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                className="flex-1 h-11 bg-red-600 text-white font-bold text-sm rounded-md hover:bg-red-700 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
               >
-                {isRestoring ? <Loader2 size={18} className="animate-spin" /> : 'Yes, Overwrite DB'}
+                {isRestoring ? <Loader2 size={16} className="animate-spin" /> : 'Yes, Overwrite DB'}
               </button>
             </div>
           </div>
@@ -342,13 +328,15 @@ function SecurityCard({ title, value, sub, icon: Icon, status }: any) {
   }
 
   return (
-    <div className="bg-white p-6 rounded-[.5rem] border border-gray-100 shadow-sm hover:shadow-xl transition-all group hover:-translate-y-0.5">
-      <div className={`h-12 w-12 rounded-xl flex items-center justify-center mb-4 transition-all group-hover:scale-110 shadow-sm ${statusColors[status as keyof typeof statusColors]}`}>
-        <Icon size={28} />
+    <div className="bg-white p-5 sm:p-6">
+      <div className="flex items-center gap-2 mb-2">
+        <div className={`h-7 w-7 rounded-md flex items-center justify-center ${statusColors[status as keyof typeof statusColors]}`}>
+          <Icon size={14} />
+        </div>
+        <p className="text-xs text-gray-400">{title}</p>
       </div>
-      <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5">{title}</p>
-      <h2 className="text-3xl font-black text-gray-900 mb-1 hl-mono">{value}</h2>
-      <p className="text-[10px] text-gray-500 font-bold hl-mono uppercase tracking-widest">{sub}</p>
+      <p className="text-xl sm:text-2xl font-semibold hl-mono tracking-tight text-gray-900">{value}</p>
+      <p className="text-xs text-gray-400 mt-1">{sub}</p>
     </div>
   )
 }

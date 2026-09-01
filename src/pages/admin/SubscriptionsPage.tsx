@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react'
+  import { useState, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { adminApi } from '../../lib/api/providers'
 import { toast } from 'sonner'
-import { Search, Filter, CreditCard, CheckCircle2, Clock, ArrowUpCircle, Wallet } from 'lucide-react'
+import { Search, CreditCard, CheckCircle2, Clock, Wallet } from 'lucide-react'
 import Pagination from '../../components/shared/Pagination'
 import { ConfirmModal } from '../../components/shared/ConfirmModal'
 import { AdminStats } from '../../lib/types/api'
@@ -47,7 +47,6 @@ export default function SubscriptionsPage() {
     }
   })
 
-  // Reset page when filters change
   const handleFilterChange = (setter: any, val: string) => {
     setter(val)
     setPage(1)
@@ -55,60 +54,58 @@ export default function SubscriptionsPage() {
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500 pt-4">
-      
-      <div className="flex justify-between items-end">
-        <div>
-          <h1 className="text-xl font-semibold text-gray-900">Subscriptions</h1>
-          <p className="text-gray-500 font-medium">Manage platform revenue plans and business tiers</p>
-        </div>
+
+      <div>
+        <h1 className="text-xl font-semibold text-gray-900">Subscriptions</h1>
+        <p className="text-gray-400 text-sm mt-0.5">Manage platform revenue plans and business tiers</p>
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <StatCard title="Active Subs" value={stats?.overview?.payingProviders || '0'} sub="Businesses" icon={CheckCircle2} variant="emerald" />
-        <StatCard title="MRR" value={`KES ${(stats?.overview?.revenueThisMonth || 0).toLocaleString()}`} sub="Monthly Revenue" icon={CreditCard} variant="blue" />
-        <StatCard title="Expiring Soon" value={stats?.overview?.expiringSoon || '0'} sub="Next 14 days" icon={Clock} variant="amber" />
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-px bg-gray-100 rounded-[.5rem] overflow-hidden border border-gray-100">
+        <StatCell icon={CheckCircle2} label="Active subs" value={String(stats?.overview?.payingProviders || 0)} sub="Businesses" />
+        <StatCell icon={CreditCard} label="MRR" value={`KES ${(stats?.overview?.revenueThisMonth || 0).toLocaleString()}`} sub="Monthly revenue" />
+        <StatCell icon={Clock} label="Expiring soon" value={String(stats?.overview?.expiringSoon || 0)} sub="Next 14 days" />
       </div>
 
-      <div className="bg-white rounded-lg border border-gray-100 shadow-sm overflow-hidden">
-        <div className="p-8 border-b border-gray-50 flex flex-wrap items-center justify-between gap-6 bg-white">
+      <div className="bg-white rounded-[.5rem] border border-gray-100 overflow-hidden">
+        <div className="px-6 py-4 border-b border-gray-50 flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-             <div className="h-10 w-10 rounded-xl bg-purple-600 text-white flex items-center justify-center shadow-lg">
-                <Wallet size={20} />
-             </div>
-             <div>
-                <h3 className="text-lg font-black text-slate-900">Revenue Ledger</h3>
-                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Active Billing Cycles</p>
-             </div>
+            <div className="h-8 w-8 rounded-md bg-slate-50 flex items-center justify-center text-purple-600">
+              <Wallet size={15} />
+            </div>
+            <div>
+              <h3 className="text-sm font-medium text-gray-900">Revenue ledger</h3>
+              <p className="text-xs text-gray-400 mt-0.5">Active billing cycles</p>
+            </div>
           </div>
-          <div className="flex flex-wrap gap-4 flex-1 justify-end">
-            <div className="relative w-full md:w-80">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-              <input 
-                type="text" 
-                placeholder="Search by business name..." 
+          <div className="flex flex-wrap gap-3">
+            <div className="relative w-full md:w-72">
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-300" size={16} />
+              <input
+                type="text"
+                placeholder="Search by business name..."
                 value={search}
                 onChange={(e) => handleFilterChange(setSearch, e.target.value)}
-                className="w-full bg-slate-50 border-none rounded-xl py-3.5 pl-12 pr-4 outline-none focus:ring-2 focus:ring-emerald-500/10 transition-all text-sm font-bold" 
+                className="w-full bg-slate-50 border-none rounded-md py-2.5 pl-10 pr-4 outline-none focus:ring-2 focus:ring-emerald-500/10 transition-all text-sm"
               />
             </div>
-            <select 
-              value={status} 
+            <select
+              value={status}
               onChange={(e) => handleFilterChange(setStatus, e.target.value)}
-              className="bg-slate-50 border-none rounded-xl px-4 py-3.5 text-sm font-bold outline-none focus:ring-2 focus:ring-emerald-500/10 min-w-[140px] transition-all"
+              className="bg-slate-50 border-none rounded-md px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-emerald-500/10 min-w-[130px] transition-all"
             >
-              <option value="">All Statuses</option>
+              <option value="">All statuses</option>
               <option value="ACTIVE">Active</option>
               <option value="TRIAL">Trial</option>
               <option value="EXPIRED">Expired</option>
               <option value="SUSPENDED">Suspended</option>
             </select>
-            <select 
-              value={planName} 
+            <select
+              value={planName}
               onChange={(e) => handleFilterChange(setPlanName, e.target.value)}
-              className="bg-slate-50 border-none rounded-xl px-4 py-3.5 text-sm font-bold outline-none focus:ring-2 focus:ring-emerald-500/10 min-w-[140px] transition-all"
+              className="bg-slate-50 border-none rounded-md px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-emerald-500/10 min-w-[130px] transition-all"
             >
-              <option value="">All Plans</option>
+              <option value="">All plans</option>
               <option value="PLUS">Starter</option>
               <option value="MAX">Business Pro</option>
             </select>
@@ -118,7 +115,7 @@ export default function SubscriptionsPage() {
         <div className="overflow-x-auto">
           <table className="w-full text-left">
             <thead>
-              <tr className="bg-gray-50/50">
+              <tr className="bg-slate-50/50">
                 <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest">Subscription ID</th>
                 <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest">Business</th>
                 <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest">Plan</th>
@@ -127,7 +124,7 @@ export default function SubscriptionsPage() {
                 <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Action</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-50">
+            <tbody className="divide-y divide-slate-50">
               {isLoading ? (
                 <tr>
                   <td colSpan={6} className="py-20 text-center">
@@ -135,11 +132,11 @@ export default function SubscriptionsPage() {
                   </td>
                 </tr>
               ) : subscriptions.length > 0 ? subscriptions.map((s: any) => (
-                <tr key={s.id} className="hover:bg-gray-50/50 transition-all">
-                  <td className="px-8 py-5 text-sm font-black text-gray-900 hl-mono">{s.id.slice(-8).toUpperCase()}</td>
-                  <td className="px-8 py-5 text-sm font-bold text-gray-600">
+                <tr key={s.id} className="hover:bg-slate-50/30 transition-all">
+                  <td className="px-8 py-5 text-sm font-medium text-gray-900 hl-mono">{s.id.slice(-8).toUpperCase()}</td>
+                  <td className="px-8 py-5 text-sm text-gray-700">
                     {s.tenant?.businessName}
-                    <div className="text-[10px] text-gray-400 font-normal hl-mono">/{s.tenant?.slug}</div>
+                    <div className="text-[10px] text-gray-400 hl-mono">/{s.tenant?.slug}</div>
                   </td>
                   <td className="px-8 py-5">
                     <span className={`text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-md ${s.planName === 'MAX' ? 'bg-purple-50 text-purple-600' : s.planName === 'PLUS' ? 'bg-blue-50 text-blue-600' : 'bg-gray-100 text-gray-600'}`}>
@@ -153,17 +150,17 @@ export default function SubscriptionsPage() {
                       {s.status}
                     </span>
                   </td>
-                  <td className="px-8 py-5 text-right text-sm font-bold text-gray-400 hl-mono">
+                  <td className="px-8 py-5 text-right text-sm text-gray-400 hl-mono">
                     {s.status === 'TRIAL' ? new Date(s.trialEndDate).toLocaleDateString() : (s.endDate ? new Date(s.endDate).toLocaleDateString() : 'Lifetime')}
                   </td>
                   <td className="px-8 py-5 text-right">
                     <div className="flex justify-end gap-2">
                        {['PLUS', 'MAX'].filter(p => p !== s.planName).map(p => (
-                         <button 
+                         <button
                            key={p}
                            disabled={upgradeMutation.isPending}
-                           onClick={() => setConfirmUpgradePayload({ id: s.tenantId, plan: p }) } 
-                           className="text-[9px] font-black uppercase tracking-widest hover:bg-slate-50 px-2 py-1.5 rounded border border-slate-100 transition-all"
+                           onClick={() => setConfirmUpgradePayload({ id: s.tenantId, plan: p }) }
+                           className="text-[9px] font-black uppercase tracking-widest hover:bg-slate-50 px-2 py-1.5 rounded-md border border-slate-100 transition-all"
                          >
                            {p === 'MAX' ? 'Business Pro' : 'Starter'}
                          </button>
@@ -180,13 +177,15 @@ export default function SubscriptionsPage() {
           </table>
         </div>
 
-        <Pagination 
-          page={page} 
-          pages={pagination.pages} 
-          total={pagination.total} 
-          onPageChange={setPage}
-          label="Subscription"
-        />
+        <div className="border-t border-slate-50 p-6">
+          <Pagination
+            page={page}
+            pages={pagination.pages}
+            total={pagination.total}
+            onPageChange={setPage}
+            label="Subscription"
+          />
+        </div>
       </div>
 
       <ConfirmModal
@@ -203,28 +202,15 @@ export default function SubscriptionsPage() {
   )
 }
 
-function StatCard({ title, value, sub, icon: Icon, variant }: any) {
-  const variants = {
-    emerald: 'bg-emerald-50 text-emerald-600',
-    blue: 'bg-blue-50 text-blue-600',
-    amber: 'bg-amber-50 text-amber-600',
-  }
-
+function StatCell({ icon: Icon, label, value, sub }: { icon: any, label: string, value: string, sub: string }) {
   return (
-    <div className="bg-white p-6 rounded-lg border border-gray-100 shadow-sm flex items-center gap-5 hover:shadow-md transition-all">
-      <div className={`h-12 w-12 rounded-md flex items-center justify-center shrink-0 ${variants[variant as keyof typeof variants]}`}>
-        <Icon size={24} />
+    <div className="bg-white p-5 sm:p-6">
+      <div className="flex items-center gap-2 mb-2">
+        <Icon size={13} className="text-gray-300" />
+        <p className="text-xs text-gray-400">{label}</p>
       </div>
-      <div>
-
-
-
-
-        
-        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-0.5">{title}</p>
-        <h3 className="text-xl font-black text-gray-900 hl-mono">{value}</h3>
-        <p className="text-[10px] text-gray-500 font-bold">{sub}</p>
-      </div>
+      <p className="text-xl sm:text-2xl font-semibold hl-mono tracking-tight text-gray-900">{value}</p>
+      <p className="text-xs text-gray-400 mt-1">{sub}</p>
     </div>
   )
 }

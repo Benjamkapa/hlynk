@@ -5,6 +5,7 @@ import { getErrorMessage } from '../../lib/utils/error'
 import { DollarSign, TrendingUp, PieChart, ArrowUpRight, Download, Search, Filter, CheckCircle2, Clock, CreditCard, Activity, Landmark, Wallet, AlertTriangle, ExternalLink, Smartphone, Banknote, ChevronLeft, ChevronRight, X, Trash2, ShieldAlert } from 'lucide-react'
 import PayoutsManager from '../../components/admin/PayoutsManager'
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, BarChart, Bar } from 'recharts'
+import Pagination from '../../components/shared/Pagination'
 
 import { useEffect, useState } from 'react'
 import { AdminStats } from '../../lib/types/api'
@@ -86,25 +87,25 @@ export default function FinancialsPage() {
   return (
     <div className="space-y-8 pt-4 animate-in fade-in duration-700">
       
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-xl font-semibold text-gray-900">Finance Hub</h1>
           <p className="text-gray-400 text-sm mt-0.5">Global revenue orchestration and payout monitoring</p>
         </div>
-        <div className="flex bg-slate-100 p-1 rounded-xl">
+        <div className="flex items-center gap-2 bg-slate-50 p-1.5 rounded-md border border-slate-100">
            <button 
              onClick={() => setActiveTab('LEDGER')}
-             className={`px-8 py-3 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'LEDGER' ? 'bg-white text-slate-900 shadow-xl shadow-slate-200' : 'text-slate-400 hover:text-slate-600'}`}
+             className={`px-4 py-2 rounded text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'LEDGER' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-400 hover:text-slate-900'}`}
            >
              Master Ledger
            </button>
            <button 
              onClick={() => setActiveTab('PAYOUTS')}
-             className={`px-8 py-3 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all relative flex items-center gap-2 ${activeTab === 'PAYOUTS' ? 'bg-white text-slate-900 shadow-xl shadow-slate-200' : 'text-slate-400 hover:text-slate-600'}`}
+             className={`px-4 py-2 rounded text-[10px] font-black uppercase tracking-widest transition-all relative flex items-center gap-2 ${activeTab === 'PAYOUTS' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-400 hover:text-slate-900'}`}
            >
              Pending Payouts
              {hasPendingPayoutDues && (
-               <span className="h-2 w-2 rounded-full bg-red-500 animate-ping" />
+               <span className="h-1.5 w-1.5 rounded-full bg-red-500 animate-pulse" />
              )}
            </button>
         </div>
@@ -114,19 +115,19 @@ export default function FinancialsPage() {
         <PayoutsManager />
       ) : (
         <>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-2 xl:grid-cols-4 gap-px bg-gray-100 rounded-[.5rem] overflow-hidden border border-gray-100">
             <FinancialStatCard title="Vault Balance" value={`KES ${(vault?.vaultBalance || 0).toLocaleString()}`} sub="Current available in Paybill" icon={Landmark} color="emerald" />
             <FinancialStatCard title="Platform Fees" value={`KES ${(vault?.platformNetPotential || 0).toLocaleString()}`} sub="Net potential (15% share)" icon={DollarSign} color="blue" />
             <FinancialStatCard title="Vendor Dues" value={`KES ${(vault?.pendingVendor || 0).toLocaleString()}`} sub="Unsettled rented volume" icon={CreditCard} color="purple" />
             <FinancialStatCard title="Referral Dues" value={`KES ${(vault?.pendingReferral || 0).toLocaleString()}`} sub="Claimable commission" icon={PieChart} color="amber" />
           </div>
 
-          <div className="grid grid-cols-1 xl:grid-cols-3 gap-10">
-            <div className="xl:col-span-2 bg-white p-6 rounded-[.5rem] border border-slate-100 shadow-sm relative overflow-hidden">
+          <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+            <div className="xl:col-span-2 bg-white p-6 rounded-[.5rem] border border-gray-100 relative overflow-hidden">
               <div className="flex justify-between items-center mb-6 relative z-10">
                 <div>
-                  <h3 className="text-sm font-medium text-slate-900">Revenue Performance</h3>
-                  <p className="text-xs text-slate-400 mt-0.5">Platform gross vs net income</p>
+                  <h3 className="text-sm font-medium text-gray-900">Revenue performance</h3>
+                  <p className="text-xs text-gray-400 mt-0.5">Platform gross vs net income</p>
                 </div>
                 <div className="flex gap-6">
                   <div className="flex items-center gap-2">
@@ -158,40 +159,38 @@ export default function FinancialsPage() {
               <div className="absolute bottom-0 right-0 h-64 w-64 bg-slate-50 rounded-full blur-[100px] -mr-32 -mb-32 opacity-50" />
             </div>
 
-                <div className="space-y-6">
-                    <div className="bg-emerald-900 rounded-[.5rem] p-6 text-white shadow-2xl shadow-emerald-900/20 relative overflow-hidden h-full">
-                  <div className="relative z-10">
-                    <PieChart size={40} className="text-emerald-400 mb-6" />
-                    <h4 className="text-xl font-black mb-2">Payout Health</h4>
-                    <p className="text-emerald-200/80 text-sm font-medium leading-relaxed mb-8">
-                      Platform fee collection is active. Settlements are calculated based on the last 48 hours of transaction volume.
-                    </p>
-                    <div className="space-y-4">
-                        <div className="flex justify-between items-center text-xs font-bold border-b border-white/10 pb-4">
-                          <span className="text-emerald-400">Vendor Liability</span>
-                          <span className="hl-mono">KES {(vault?.pendingVendor || 0).toLocaleString()}</span>
-                        </div>
-                        <div className="flex justify-between items-center text-xs font-bold border-b border-white/10 pb-4 pt-4">
-                          <span className="text-emerald-400">Referral Liability</span>
-                          <span className="hl-mono">KES {(vault?.pendingReferral || 0).toLocaleString()}</span>
-                        </div>
-                        <div className="flex justify-between items-center text-xs font-bold pt-4">
-                          <span className="text-emerald-400">Net Retained Fees</span>
-                          <span className="hl-mono font-black text-xl">KES {(vault?.platformNetPotential || 0).toLocaleString()}</span>
-                        </div>
+            <div className="bg-emerald-900 rounded-[.5rem] p-6 text-white relative overflow-hidden h-full">
+              <div className="relative z-10">
+                <PieChart size={32} className="text-emerald-400 mb-6" />
+                <h4 className="text-lg font-semibold mb-2">Payout Health</h4>
+                <p className="text-emerald-200/80 text-xs font-medium leading-relaxed mb-8">
+                  Platform fee collection is active. Settlements are calculated based on the last 48 hours of transaction volume.
+                </p>
+                <div className="space-y-4">
+                    <div className="flex justify-between items-center text-xs font-bold border-b border-white/10 pb-4">
+                      <span className="text-emerald-400">Vendor Liability</span>
+                      <span className="hl-mono">KES {(vault?.pendingVendor || 0).toLocaleString()}</span>
                     </div>
-                  </div>
-                  <Landmark size={180} className="absolute -right-10 -bottom-10 text-white opacity-5 rotate-12" />
+                    <div className="flex justify-between items-center text-xs font-bold border-b border-white/10 pb-4 pt-4">
+                      <span className="text-emerald-400">Referral Liability</span>
+                      <span className="hl-mono">KES {(vault?.pendingReferral || 0).toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between items-center text-xs font-bold pt-4">
+                      <span className="text-emerald-400">Net Retained Fees</span>
+                      <span className="hl-mono font-semibold text-xl">KES {(vault?.platformNetPotential || 0).toLocaleString()}</span>
+                    </div>
                 </div>
+              </div>
+              <Landmark size={180} className="absolute -right-10 -bottom-10 text-white opacity-5 rotate-12" />
             </div>
           </div>
 
-          <div className="bg-white rounded-lg border border-slate-100 shadow-sm overflow-hidden">
-            <div className="p-8 border-b border-slate-50 flex flex-col xl:flex-row gap-6 justify-between items-start xl:items-center">
+          <div className="bg-white rounded-[.5rem] border border-gray-100 overflow-hidden">
+            <div className="p-6 border-b border-gray-50 flex flex-col xl:flex-row gap-6 justify-between items-start xl:items-center">
               <div className="flex justify-between items-center w-full xl:w-auto gap-4">
                 <div>
-                  <h3 className="text-xl font-black text-slate-900 tracking-tight">Active Payments Log</h3>
-                  <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mt-1">Unified view of all platform transactions</p>
+                  <h3 className="text-sm font-medium text-gray-900">Active payments log</h3>
+                  <p className="text-xs text-gray-400 mt-0.5">Unified view of all platform transactions</p>
                 </div>
                 <button
                   disabled={clearLedgerMutation.isPending}
@@ -200,13 +199,13 @@ export default function FinancialsPage() {
                       clearLedgerMutation.mutate()
                     }
                   }}
-                  className="px-4 py-2 bg-red-50 text-red-600 hover:bg-red-100 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2"
+                  className="px-4 py-2 bg-red-50 text-red-600 hover:bg-red-100 rounded-md text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2"
                 >
                   <Trash2 size={12} /> Purge Ledger
                 </button>
               </div>
               
-              <div className="flex flex-wrap gap-4 w-full xl:w-auto">
+              <div className="flex flex-wrap gap-3 w-full xl:w-auto">
                 <div className="relative flex-1 xl:w-64 min-w-[200px]">
                   <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={16} />
                   <input 
@@ -214,14 +213,14 @@ export default function FinancialsPage() {
                     placeholder="Search Reference, ID, Business..."
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
-                    className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-lg text-xs font-bold focus:ring-4 focus:ring-emerald-500/5 transition-all outline-none"
+                    className="w-full pl-11 pr-4 py-2.5 bg-slate-50 border border-slate-100 rounded-md text-xs font-bold focus:ring-4 focus:ring-emerald-500/5 transition-all outline-none"
                   />
                 </div>
                 
                 <select 
                   value={method}
                   onChange={(e) => setMethod(e.target.value)}
-                  className="bg-slate-50 border border-slate-100 rounded-lg px-4 py-3 text-[10px] font-black uppercase tracking-widest text-slate-500 outline-none"
+                  className="bg-slate-50 border border-slate-100 rounded-md px-4 py-2.5 text-[10px] font-black uppercase tracking-widest text-slate-500 outline-none"
                 >
                   <option value="">All Methods</option>
                   <option value="MPESA">M-Pesa</option>
@@ -231,7 +230,7 @@ export default function FinancialsPage() {
                 <select 
                   value={status}
                   onChange={(e) => setStatus(e.target.value)}
-                  className="bg-slate-50 border border-slate-100 rounded-lg px-4 py-3 text-[10px] font-black uppercase tracking-widest text-slate-500 outline-none"
+                  className="bg-slate-50 border border-slate-100 rounded-md px-4 py-2.5 text-[10px] font-black uppercase tracking-widest text-slate-500 outline-none"
                 >
                   <option value="">All Statuses</option>
                   <option value="0">Paid/Success</option>
@@ -268,14 +267,16 @@ export default function FinancialsPage() {
                       <td colSpan={8} className="px-8 py-20 text-center text-sm font-bold text-slate-400 italic">No transactions found</td>
                     </tr>
                   ) : txData?.data?.items?.map((tx: any) => (
-                    <tr key={tx.id} className="hover:bg-slate-50/50 transition-colors group">
+                    <tr key={tx.id} className="hover:bg-slate-50/30 transition-all group">
                       <td className="px-8 py-6">
                         <span className="text-xs font-black hl-mono text-slate-900">#{tx.id.slice(0, 12)}</span>
                       </td>
                       <td className="px-8 py-6">
                         <div>
-                          <p className="text-xs font-black text-slate-900 capitalize">{tx.businessName}</p>
-                          <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">{tx.tenantSlug}</p>
+                          <p className="text-sm font-black text-slate-900 capitalize">{tx.businessName}</p>
+                          <div className="flex items-center gap-2 mt-0.5">
+                            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">{tx.tenantSlug}</p>
+                          </div>
                         </div>
                       </td>
                       <td className="px-8 py-6">
@@ -338,30 +339,17 @@ export default function FinancialsPage() {
               </table>
             </div>
 
-            <div className="p-8 border-t border-slate-50 flex items-center justify-between">
-              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                Showing <span className="text-slate-900">{txData?.data?.items?.length || 0}</span> of <span className="text-slate-900">{txData?.data?.pagination?.total || 0}</span> records
-              </p>
-              <div className="flex items-center gap-4">
-                <button 
-                  disabled={page === 1}
-                  onClick={() => setPage(p => p - 1)}
-                  className="h-10 w-10 flex items-center justify-center rounded-lg border border-slate-100 text-slate-400 hover:text-emerald-600 disabled:opacity-30 transition-all"
-                >
-                  <ChevronLeft size={18} />
-                </button>
-                <span className="text-xs font-black hl-mono text-slate-900 bg-slate-50 px-3 py-2 rounded-lg border border-slate-100">
-                  {page}
-                </span>
-                <button 
-                  disabled={page >= (txData?.data?.pagination?.pages || 1)}
-                  onClick={() => setPage(p => p + 1)}
-                  className="h-10 w-10 flex items-center justify-center rounded-lg border border-slate-100 text-slate-400 hover:text-emerald-600 disabled:opacity-30 transition-all"
-                >
-                  <ChevronRight size={18} />
-                </button>
+            {(txData?.data?.pagination?.pages || 1) > 1 && (
+              <div className="border-t border-slate-50 p-6">
+                <Pagination 
+                  page={page}
+                  pages={txData?.data?.pagination?.pages || 1}
+                  total={txData?.data?.pagination?.total || 0}
+                  onPageChange={setPage}
+                  label="Transaction"
+                />
               </div>
-            </div>
+            )}
           </div>
         </>
       )}
@@ -369,7 +357,7 @@ export default function FinancialsPage() {
       {selectedTxId && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => setSelectedTxId(null)} />
-          <div className="relative bg-white w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
+          <div className="relative bg-white w-full max-w-2xl rounded-[.5rem] shadow-sm overflow-hidden animate-in zoom-in-95 duration-200">
             {!selectedTxData ? (
               <div className="p-20 flex flex-col items-center justify-center gap-4">
                 <Activity className="animate-spin text-emerald-500" size={32} />
@@ -377,17 +365,17 @@ export default function FinancialsPage() {
               </div>
             ) : (
               <div className="p-0">
-                <div className="p-8 bg-[#0D4A3E] text-white flex justify-between items-start">
+                <div className="p-6 bg-emerald-900 text-white flex justify-between items-start">
                   <div>
                     <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-60 mb-2">Transaction Detail</p>
-                    <h3 className="text-3xl font-black hl-mono">#{selectedTxData.data.id.slice(0, 16)}</h3>
+                    <h3 className="text-2xl font-semibold hl-mono">#{selectedTxData.data.id.slice(0, 16)}</h3>
                   </div>
                   <button onClick={() => setSelectedTxId(null)} className="p-2 hover:bg-white/10 rounded-full transition-all">
                     <X size={20} />
                   </button>
                 </div>
 
-                <div className="p-10 space-y-10 max-h-[70vh] overflow-y-auto">
+                <div className="p-6 space-y-8 max-h-[70vh] overflow-y-auto">
                   <div className="grid grid-cols-2 gap-8">
                     <div>
                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Entity / Business</label>
@@ -396,11 +384,11 @@ export default function FinancialsPage() {
                     </div>
                     <div className="text-right">
                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Amount</label>
-                        <p className="text-2xl font-black text-slate-900 hl-mono">KES {Number(selectedTxData.data.amount).toLocaleString()}</p>
+                        <p className="text-2xl font-semibold text-slate-900 hl-mono">KES {Number(selectedTxData.data.amount).toLocaleString()}</p>
                     </div>
                   </div>
 
-                  <div className="p-6 bg-slate-50 rounded-xl space-y-4">
+                  <div className="p-6 bg-slate-50 rounded-[.5rem] space-y-4">
                     <h4 className="text-[10px] font-black text-slate-900 uppercase tracking-widest border-b border-white pb-2 flex items-center gap-2">
                        <CreditCard size={12} /> Execution Details
                     </h4>
@@ -427,7 +415,7 @@ export default function FinancialsPage() {
                        <h4 className="text-[10px] font-black text-slate-900 uppercase tracking-widest flex items-center gap-2">
                           <Activity size={12} /> M-Pesa Interaction Logs
                        </h4>
-                       <div className="divide-y divide-slate-50 border border-slate-100 rounded-xl">
+                       <div className="divide-y divide-slate-50 border border-slate-100 rounded-[.5rem]">
                           {selectedTxData.data.mpesaLogs.map((log: any, i: number) => (
                             <div key={i} className="p-4 flex justify-between items-start gap-4">
                                <div>
@@ -447,7 +435,7 @@ export default function FinancialsPage() {
                   )}
 
                   {selectedTxData.data.context && (
-                    <div className="p-6 border border-emerald-100 bg-emerald-50/30 rounded-xl">
+                    <div className="p-6 border border-emerald-100 bg-emerald-50/30 rounded-[.5rem]">
                        <p className="text-[10px] font-black text-emerald-800 uppercase tracking-widest mb-3">Linked Context Information</p>
                        <pre className="text-[9px] hl-mono text-slate-600 overflow-x-auto">
                           {JSON.stringify(selectedTxData.data.context.data, null, 2)}
@@ -456,10 +444,10 @@ export default function FinancialsPage() {
                   )}
                 </div>
 
-                <div className="p-8 border-t border-slate-100 bg-slate-50/50 flex justify-end">
+                <div className="p-6 border-t border-slate-100 bg-slate-50/50 flex justify-end">
                    <button 
                      onClick={() => setSelectedTxId(null)}
-                     className="px-8 py-3 bg-white border border-slate-200 rounded-lg text-[10px] font-black uppercase tracking-widest text-slate-600 hover:bg-white active:scale-95 transition-all"
+                     className="px-6 py-2.5 bg-white border border-slate-200 rounded-md text-[10px] font-black uppercase tracking-widest text-slate-600 hover:bg-slate-50 transition-all"
                    >
                      Close Ledger
                    </button>
@@ -476,52 +464,50 @@ export default function FinancialsPage() {
 
 function FinancialStatCard({ title, value, sub, icon: Icon, color }: any) {
   const colorMap = {
-    emerald: 'text-emerald-600 bg-emerald-50 border-emerald-100',
-    blue: 'text-blue-600 bg-blue-50 border-blue-100',
-    purple: 'text-purple-600 bg-purple-50 border-purple-100',
-    amber: 'text-amber-600 bg-amber-50 border-amber-100',
+    emerald: 'text-emerald-600 bg-emerald-50',
+    blue: 'text-blue-600 bg-blue-50',
+    purple: 'text-purple-600 bg-purple-50',
+    amber: 'text-amber-600 bg-amber-50',
   }
 
   return (
-    <div className="bg-white p-8 rounded-lg border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all group cursor-pointer">
-      <div className={`h-14 w-14 rounded-md flex items-center justify-center mb-6 transition-transform group-hover:scale-110 ${colorMap[color as keyof typeof colorMap]}`}>
-        <Icon size={28} />
+    <div className="bg-white p-5 sm:p-6">
+      <div className="flex items-center gap-2 mb-2">
+        <Icon size={13} className="text-gray-300" />
+        <p className="text-xs text-gray-400">{title}</p>
       </div>
-      <div>
-        <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-1.5">{title}</p>
-        <div className="flex items-baseline gap-3">
-           <h2 className="text-3xl font-black text-slate-900 hl-mono tracking-tighter">{value}</h2>
-           <span className="flex items-center gap-1 text-[10px] font-black text-emerald-600 hl-mono">
-              <TrendingUp size={12} /> 8.4%
-           </span>
-        </div>
-        <p className="text-xs text-gray-500 font-bold mt-2">{sub}</p>
+      <div className="flex items-baseline gap-2">
+        <p className="text-xl sm:text-2xl font-semibold hl-mono tracking-tight text-gray-900">{value}</p>
+        <span className="flex items-center gap-1 text-[10px] font-bold text-emerald-600 hl-mono">
+          <TrendingUp size={11} /> 8.4%
+        </span>
       </div>
+      <p className="text-xs text-gray-400 mt-1">{sub}</p>
     </div>
   )
 }
 
 function StatusBadge({ status, resultCode }: { status: number, resultCode?: number }) {
   if (status === 0) return (
-    <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-emerald-50 text-emerald-600 rounded-full border border-emerald-100">
+    <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-emerald-50 text-emerald-600 rounded-md border border-emerald-100">
       <CheckCircle2 size={10} />
       <span className="text-[10px] font-black uppercase tracking-widest">Successful</span>
     </div>
   )
   if (status === 2) return (
-    <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-amber-50 text-amber-600 rounded-full border border-amber-100">
-      <Clock size={10} className="animate-spin-slow" />
+    <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-amber-50 text-amber-600 rounded-md border border-amber-100">
+      <Clock size={10} />
       <span className="text-[10px] font-black uppercase tracking-widest">Pending</span>
     </div>
   )
   if (status === 3) return (
-    <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-slate-100 text-slate-400 rounded-full border border-slate-200">
+    <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-slate-100 text-slate-400 rounded-md border border-slate-200">
       <X size={10} />
       <span className="text-[10px] font-black uppercase tracking-widest">Cancelled</span>
     </div>
   )
   return (
-    <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-red-50 text-red-600 rounded-full border border-red-100">
+    <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-red-50 text-red-600 rounded-md border border-red-100">
       <AlertTriangle size={10} />
       <span className="text-[10px] font-black uppercase tracking-widest">Failed {resultCode ? `(${resultCode})` : ''}</span>
     </div>

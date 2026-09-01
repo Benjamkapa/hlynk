@@ -502,7 +502,6 @@ export default function ProviderLayout() {
           onMobileMenuToggle={() => setMobileOpen(v => !v)}
           isCollapsed={isCollapsed}
           onToggleCollapse={() => { setIsCollapsed(v => !v); setIsHovered(false); }}
-          showMail={true}
           extraActions={
             <Link
               to="/dashboard/sales/new"
