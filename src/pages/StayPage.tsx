@@ -5,7 +5,7 @@ import {
   MapPin, Star, Wifi, CheckCircle2, Phone, ChevronLeft, ChevronRight,
   BedDouble, Car, Building2, Sparkles, ExternalLink, Coffee, Shield,
   Calendar, BadgeCheck, AlertTriangle, ShoppingBag, Plus, Minus, Trash2,
-  X, Send, Check, MessageSquare, Tag, Package, Search, LayoutGrid, List
+  X, Send, Check, MessageSquare, Tag, Package, Search, LayoutGrid, List, Lock
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
@@ -328,15 +328,39 @@ export default function StayPage({ isShopMode }: { isShopMode?: boolean }) {
   }
 
   if (error || !listing) {
+    const isLockedError = error?.toLowerCase().includes("business pro") || error?.toLowerCase().includes("trial");
+
     return (
       <div className="min-h-screen bg-[#030A07] flex items-center justify-center p-6">
-        <div className="text-center max-w-sm">
-          <AlertTriangle size={48} className="text-amber-500 mx-auto mb-4" />
-          <h1 className="text-white text-xl font-black mb-2">Listing Not Found</h1>
-          <p className="text-slate-400 text-sm font-medium">{error || "This store or listing does not exist."}</p>
-          <a href="/" className="mt-6 inline-flex items-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black uppercase tracking-widest rounded-xl transition-all">
-            ← Back to Hlynk
-          </a>
+        <div className="bg-[#0A1410] border border-white/10 p-8 rounded-3xl max-w-md w-full text-center space-y-5 shadow-2xl">
+          <div className="h-16 w-16 bg-amber-500/10 text-amber-400 rounded-2xl flex items-center justify-center mx-auto border border-amber-500/20">
+            {isLockedError ? <Lock size={32} /> : <AlertTriangle size={32} />}
+          </div>
+          <div>
+            <h1 className="text-white text-xl font-black mb-2">
+              {isLockedError ? "Business Pro Subscription Required" : "Listing Unavailable"}
+            </h1>
+            <p className="text-slate-400 text-xs font-medium leading-relaxed">
+              {error || "This store or listing does not exist."}
+            </p>
+          </div>
+
+          <div className="pt-2 flex flex-col gap-2.5">
+            {isLockedError ? (
+              <a
+                href="/login"
+                className="w-full py-3 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs uppercase tracking-wider rounded-xl transition-all flex items-center justify-center gap-2"
+              >
+                Log In & Upgrade Plan
+              </a>
+            ) : null}
+            <a
+              href="/"
+              className="w-full py-2.5 bg-white/10 hover:bg-white/20 text-slate-300 font-medium text-xs rounded-xl transition-all flex items-center justify-center gap-2"
+            >
+              ← Back to Hlynk Home
+            </a>
+          </div>
         </div>
       </div>
     );

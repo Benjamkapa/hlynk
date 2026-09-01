@@ -10,6 +10,7 @@ type Feature =
   | 'customer_tracking'
   | 'staff_accounts'
   | 'advanced_reports'
+  | 'stay_page'
   | 'audit_logs'
   | 'kcb_settlement'
 
@@ -29,6 +30,7 @@ export const FEATURE_PLANS: Record<Feature, string[]> = {
   customer_tracking: ['PLUS', 'MAX'],
   staff_accounts: ['PLUS', 'MAX'],
   advanced_reports: ['PLUS', 'MAX'],
+  stay_page: ['MAX'],
   audit_logs: ['MAX'],
   kcb_settlement: ['MAX'],
 }

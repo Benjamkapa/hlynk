@@ -8,17 +8,18 @@ const pricingPlans = [
     id: "PLUS",
     name: "Starter Plan",
     monthlyPrice: "4,450",
-    desc: "Perfect for growing businesses that want automatic M-Pesa checkout, rich reports, and team delegation.",
+    desc: "Perfect for growing businesses that want automatic M-Pesa checkout, store pages, rich reports, and team delegation.",
     color: "teal",
     borderColor: "border-teal-400",
     accentColor: "text-teal-600",
     btnClass: "bg-teal-500 hover:bg-teal-600 text-white shadow-teal-100",
     features: [
       "Manage up to 100 items in inventory",
-      "Record sales and expenses",
-      "Detailed store reports and graphs",
-      "Send M-Pesa payment prompts to customers",
-      "1 staff account to enter transactions",
+      "Record POS sales and expenses",
+      "Send M-Pesa STK Push prompts directly",
+      "Public Store & Shop Page (/store)",
+      "Profit analytics & revenue reports",
+      "1 staff account to record transactions",
       "Priority customer support"
     ],
     buttonText: "Choose Starter"
@@ -28,7 +29,7 @@ const pricingPlans = [
     name: "Business Pro",
     badge: "Best Value",
     monthlyPrice: "8,200",
-    desc: "For larger businesses that need full team permissions, direct bank settlements, and audit logs.",
+    desc: "For hotels, BnBs, rentals, and businesses requiring public stay booking, direct bank settlements, and full audit logs.",
     color: "indigo",
     borderColor: "border-indigo-600",
     accentColor: "text-indigo-600",
@@ -36,10 +37,11 @@ const pricingPlans = [
     features: [
       "Everything in Starter Plan",
       "Unlimited items in inventory",
+      "Public Stay Booking Page (/stay)",
       "Direct bank deposits via KCB Buni",
       "Unlimited staff accounts",
-      "Track every action your staff makes (Audit Logs)",
-      "Set custom access for cashiers/mechanics",
+      "Staff activity tracking & audit logs",
+      "Custom roles & permission controls",
       "Dedicated manager support"
     ],
     buttonText: "Choose Business Pro"

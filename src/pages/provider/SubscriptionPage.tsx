@@ -15,34 +15,34 @@ const PLANS = [
     id: 'PLUS',
     name: 'Starter',
     price: 4450,
-    desc: 'For businesses that want automatic M-Pesa checkout, detailed reports, and team delegation.',
+    desc: 'For growing businesses needing inventory management, sales recording, automated M-Pesa payments, and basic team delegation.',
     color: 'teal',
-    features: ['Manage up to 100 items', 'Record Sales & Expenses', 'Profit Analytics & Reports', 'M-Pesa Express Automation', '1 Staff Account', 'Priority Support'],
-    notIncluded: ['KCB Buni Settlement', 'Unlimited Staff Accounts']
+    features: ['Manage up to 100 items', 'Record Sales & Expenses', 'M-Pesa STK Push Automation', 'Profit Analytics & Reports', 'Public Store Page (/store/:slug)', 'Customer Tracking', '1 Staff Account', 'Priority Support'],
+    notIncluded: ['Public Stay Booking (/stay/:slug)', 'KCB Buni Direct Settlement', 'Unlimited Staff Accounts', 'Staff Audit Logs & Activity Tracking', 'Custom Roles & Permissions']
   },
   {
     id: 'MAX',
     name: 'Business Pro',
     price: 8200,
-    desc: 'For businesses that need complete team management, audit logs, and direct bank settlements.',
+    desc: 'For larger businesses, hotels, BnBs, and teams requiring public stay booking, full audit logs, and direct bank settlements.',
     color: 'purple',
-    features: ['Everything in Starter', 'Unlimited Inventory Items', 'KCB Buni Settlement', 'Unlimited Staff Accounts', 'Staff Activity Tracking (Audit Logs)', 'Roles & Permissions', 'Advanced Business Controls'],
+    features: ['Everything in Starter Plan', 'Unlimited Inventory Items', 'Public Stay Booking (/stay/:slug)', 'KCB Buni Settlement Gateway', 'Unlimited Staff Accounts', 'Staff Audit Logs & Activity Tracking', 'Custom Roles & Permissions', 'Dedicated Manager Support'],
     notIncluded: []
   },
 ]
 
 const FEATURE_COMPARISON = [
   { name: 'Inventory Management (Items)', starter: 'Up to 100', pro: 'Unlimited' },
-  { name: 'Record & View Sales', starter: true, pro: true },
-  { name: 'Track Daily Expenses', starter: true, pro: true },
+  { name: 'POS Sales & Expense Recording', starter: true, pro: true },
+  { name: 'M-Pesa STK Push Automation', starter: true, pro: true },
   { name: 'Profit Analytics & Reports', starter: true, pro: true },
-  { name: 'Priority Support', starter: true, pro: true },
-  { name: 'M-Pesa Express Automation', starter: true, pro: true },
-  { name: '1 Staff Account', starter: true, pro: true },
-  { name: 'KCB Buni Settlement', starter: false, pro: true },
-  { name: 'Unlimited Staff Accounts', starter: false, pro: true },
-  { name: 'Staff Activity Tracking (Audit Logs)', starter: false, pro: true },
+  { name: 'Public Store / Shop Page (/store)', starter: true, pro: true },
+  { name: 'Public Stay Booking Page (/stay)', starter: false, pro: true },
+  { name: 'Staff Accounts', starter: '1 Account', pro: 'Unlimited' },
+  { name: 'KCB Buni Direct Settlement', starter: false, pro: true },
+  { name: 'Staff Audit Logs & Activity Tracking', starter: false, pro: true },
   { name: 'Roles & Permissions', starter: false, pro: true },
+  { name: 'Support Level', starter: 'Priority', pro: 'Dedicated Manager' },
 ]
 
 import { SubscriptionExpiredBanner } from '../../components/shared/SubscriptionGuard'

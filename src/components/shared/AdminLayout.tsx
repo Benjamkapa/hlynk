@@ -61,7 +61,14 @@ export default function AdminLayout() {
   }, [mobileOpen, isDesktop])
 
   useEffect(() => {
-    getPushSubscriptionState().then(setPushStatus)
+    getPushSubscriptionState().then(status => {
+      setPushStatus(status)
+      if ('Notification' in window && (Notification.permission === 'granted' || Notification.permission === 'default')) {
+        subscribeToPushNotifications()
+          .then(() => setPushStatus('subscribed'))
+          .catch(err => console.warn('[AdminPush] Auto-subscribe notice:', err?.message))
+      }
+    })
   }, [])
 
   const handleEnablePush = async () => {

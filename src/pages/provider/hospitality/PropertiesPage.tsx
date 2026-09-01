@@ -44,7 +44,7 @@ export default function PropertiesPage() {
     queryFn: providersApi.getMyProfile
   });
   const slug = (profile as any)?.data?.slug;
-  const publicListingUrl = slug ? `${window.location.origin}/store/${slug}` : null;
+  const publicListingUrl = slug ? `${window.location.origin}/stay/${slug}` : null;
 
   const handleShareListing = () => {
     if (isProfileLoading) {
