@@ -31,7 +31,7 @@ export default function RecordSalePage() {
   })
 
   const slug = profile?.data?.slug;
-  const publicStoreUrl = slug ? `${window.location.origin}/shop/${slug}` : null;
+  const publicStoreUrl = slug ? `${window.location.origin}/store/${slug}` : null;
 
   const handleShareStore = () => {
     if (!publicStoreUrl) return toast.error('Your store link is not ready yet');
@@ -1036,26 +1036,35 @@ export default function RecordSalePage() {
       {/* ── Mobile Cart Floating Bar ── */}
       {cart.length > 0 && activeTab === 'products' && (
         <div className="fixed bottom-28 left-6 right-6 z-[100] xl:hidden animate-in slide-in-from-bottom-8 duration-500">
-          <button
-            onClick={() => setActiveTab('cart')}
-            className="w-full bg-[#0D4A3E] text-white p-5 rounded-[.5rem] shadow-2xl shadow-emerald-900/40 flex items-center justify-between border-4 border-white/10 backdrop-blur-md"
-          >
-            <div className="flex items-center gap-4">
-              <div className="h-10 w-10 bg-white/20 rounded-[.5rem] flex items-center justify-center relative">
-                <ShoppingCart size={20} />
-                <span className="absolute -top-2 -right-2 h-5 w-5 bg-red-500 text-white text-[10px] font-black rounded-full flex items-center justify-center border-2 border-[#0D4A3E]">
-                  {cart.reduce((sum, item) => sum + item.quantity, 0)}
-                </span>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setActiveTab('cart')}
+              className="flex-1 bg-[#0D4A3E] text-white p-5 rounded-[.5rem] shadow-2xl shadow-emerald-900/40 flex items-center justify-between border-4 border-white/10 backdrop-blur-md"
+            >
+              <div className="flex items-center gap-4">
+                <div className="h-10 w-10 bg-white/20 rounded-[.5rem] flex items-center justify-center relative">
+                  <ShoppingCart size={20} />
+                  <span className="absolute -top-2 -right-2 h-5 w-5 bg-red-500 text-white text-[10px] font-black rounded-full flex items-center justify-center border-2 border-[#0D4A3E]">
+                    {cart.reduce((sum, item) => sum + item.quantity, 0)}
+                  </span>
+                </div>
+                <div className="text-left">
+                  <p className="text-[9px] font-black uppercase tracking-[0.2em] opacity-60">Ready to Checkout</p>
+                  <p className="text-lg font-black hl-mono leading-none">KES {total.toLocaleString()}</p>
+                </div>
               </div>
-              <div className="text-left">
-                <p className="text-[9px] font-black uppercase tracking-[0.2em] opacity-60">Ready to Checkout</p>
-                <p className="text-lg font-black hl-mono leading-none">KES {total.toLocaleString()}</p>
+              <div className="h-10 w-10 bg-white text-[#0D4A3E] rounded-[.5rem] flex items-center justify-center">
+                <ArrowRight size={20} />
               </div>
-            </div>
-            <div className="h-10 w-10 bg-white text-[#0D4A3E] rounded-[.5rem] flex items-center justify-center">
-              <ArrowRight size={20} />
-            </div>
-          </button>
+            </button>
+            <button
+              onClick={() => { setCart([]); localStorage.removeItem('hlynk_pos_cart'); }}
+              className="bg-red-500 text-white p-5 rounded-[.5rem] shadow-2xl shadow-red-900/40 flex items-center justify-center border-4 border-white/10 backdrop-blur-md hover:bg-red-600 transition-colors shrink-0"
+              title="Clear Cart"
+            >
+              <X size={24} />
+            </button>
+          </div>
         </div>
       )}
 

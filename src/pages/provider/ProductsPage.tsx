@@ -65,7 +65,7 @@ export default function ProductsPage() {
 
   const threshold = profile?.data?.operationalSettings?.lowStockThreshold || 10;
   const slug = profile?.data?.slug;
-  const publicStoreUrl = slug ? `${window.location.origin}/shop/${slug}` : null;
+  const publicStoreUrl = slug ? `${window.location.origin}/store/${slug}` : null;
 
   const [isOrdersOpen, setIsOrdersOpen] = useState(false)
 

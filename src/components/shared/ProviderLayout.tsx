@@ -217,7 +217,7 @@ export default function ProviderLayout() {
             >
               <img src="/fav.png" alt="hlynk" className="h-8 w-8 lg:h-9 lg:w-9 object-contain" />
               <div className="flex flex-col min-w-0">
-                <span className="text-sm text-emerald-900 font-bold truncate tracking-tight leading-none">
+                <span className="text-sm text-emerald-900 font-bold text-[#00694B] truncate tracking-tight leading-none">
                   {user?.businessName}
                 </span>
               </div>

@@ -109,11 +109,11 @@ export default function AuditSecurityPage() {
   }
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500 pt-6">
+    <div className="space-y-8 animate-in fade-in duration-500 pt-4">
       
       <div className="flex justify-between items-end">
         <div>
-          <h1 className="text-3xl font-black text-gray-900 tracking-tight">Audit & Security</h1>
+          <h1 className="text-xl font-semibold text-gray-900">Audit & Security</h1>
           <p className="text-gray-500 font-medium">Global security monitoring, compliance tracking and threat mitigation</p>
         </div>
         <div className="flex gap-3">
@@ -175,7 +175,7 @@ export default function AuditSecurityPage() {
         <SecurityCard title="Active Protocols" value={<CountUp end={Number(stats?.activeProtocolsCount || 0)} />} sub="Encryption Active" icon={Key} status="safe" />
       </div>
 
-      <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
+      <div className="bg-white rounded-[.5rem] border border-gray-100 shadow-sm overflow-hidden">
         <div className="p-8 border-b border-gray-50 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
           <div>
              <h3 className="text-xl font-black text-gray-900 mb-1">Global System Logs</h3>
@@ -303,7 +303,7 @@ export default function AuditSecurityPage() {
       {/* Custom Restore Confirmation Modal */}
       {restoreFile && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl animate-in zoom-in-95 duration-200">
+          <div className="bg-white rounded-[.5rem] p-8 max-w-md w-full shadow-2xl animate-in zoom-in-95 duration-200">
             <div className="h-16 w-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mb-6 mx-auto">
               <ShieldAlert size={32} />
             </div>
@@ -342,8 +342,8 @@ function SecurityCard({ title, value, sub, icon: Icon, status }: any) {
   }
 
   return (
-    <div className="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm hover:shadow-xl transition-all group hover:-translate-y-1">
-      <div className={`h-14 w-14 rounded-2xl flex items-center justify-center mb-6 transition-all group-hover:scale-110 shadow-sm ${statusColors[status as keyof typeof statusColors]}`}>
+    <div className="bg-white p-6 rounded-[.5rem] border border-gray-100 shadow-sm hover:shadow-xl transition-all group hover:-translate-y-0.5">
+      <div className={`h-12 w-12 rounded-xl flex items-center justify-center mb-4 transition-all group-hover:scale-110 shadow-sm ${statusColors[status as keyof typeof statusColors]}`}>
         <Icon size={28} />
       </div>
       <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5">{title}</p>

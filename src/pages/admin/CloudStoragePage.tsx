@@ -51,7 +51,7 @@ export default function CloudStoragePage() {
   const totalSize = media.reduce((acc: number, curr: any) => acc + (curr.size || 0), 0)
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500 pt-6 pb-20">
+    <div className="space-y-8 animate-in fade-in duration-500 pt-4 pb-20">
       
       {/* Header */}
       <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
@@ -60,7 +60,7 @@ export default function CloudStoragePage() {
              <Shield size={14} />
              <span className="text-[10px] font-black uppercase tracking-widest">Platform Integrity</span>
           </div>
-          <h1 className="text-3xl font-black text-gray-900 tracking-tight">Cloud Infrastructure Storage</h1>
+          <h1 className="text-xl font-semibold text-gray-900">Cloud Infrastructure Storage</h1>
           <p className="text-gray-500 font-medium max-w-xl">Centralized media management for identity certificates, product catalogs, and user profiles across the Hlynk ecosystem.</p>
         </div>
         

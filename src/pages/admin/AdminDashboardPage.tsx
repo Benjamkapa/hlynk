@@ -1,9 +1,8 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
   Users, Bell, Activity, 
   DollarSign, Landmark, 
-  Zap, AlertTriangle, CheckCircle2,
-  AlertCircle, TrendingUp, ArrowUpRight
+  AlertCircle
 } from 'lucide-react'
 import {
   ResponsiveContainer, Tooltip, AreaChart, Area,
@@ -14,11 +13,6 @@ import { adminApi } from '../../lib/api/providers'
 import { toast } from 'sonner'
 import { Link } from 'react-router-dom'
 import Pagination from '../../components/shared/Pagination'
-import CountUp from '../../components/shared/CountUp'
-
-
-import { useEffect } from 'react'
-import { AdminStats } from '../../lib/types/api'
 
 export default function AdminDashboardPage() {
   const [timeframe, setTimeframe] = useState<'HOURLY' | 'DAILY'>('HOURLY')
@@ -60,13 +54,13 @@ export default function AdminDashboardPage() {
   )
 
   return (
-    <div className="max-w-[1600px] mx-auto space-y-12 animate-in fade-in duration-700">
+    <div className="space-y-8 pt-4 animate-in fade-in duration-700">
       
       {/* Welcome Section */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
-        <div className="space-y-2">
-          <h1 className="text-5xl font-black text-slate-900 tracking-tighter">System Overview</h1>
-          <p className="text-slate-500 font-medium text-xl">Operational intelligence for hlynk platform</p>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h1 className="text-xl font-semibold text-gray-900">System Overview</h1>
+          <p className="text-gray-400 text-sm mt-0.5">Operational intelligence for hlynk platform</p>
         </div>
         <div className="flex items-center gap-4 bg-white p-2 rounded-lg border border-slate-100 shadow-sm">
             <div className="flex -space-x-3 pr-2">
@@ -101,21 +95,21 @@ export default function AdminDashboardPage() {
       </div>
 
       {/* KPI Section */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-8 mb-8">
-        <KpiCard title="Platform Revenue" value={<CountUp end={Number(stats?.revenue?.total || 0)} formatter={(v: number) => `KES ${v.toLocaleString()}`} />} sub="Subscription Income" icon={DollarSign} trend="up" color="emerald" />
-        <KpiCard title="Gross Volume (GMV)" value={<CountUp end={Number(stats?.revenue?.platformVolume || 0)} formatter={(v: number) => `KES ${v.toLocaleString()}`} />} sub="Total sales processed" icon={Activity} trend="up" color="purple" />
-        <KpiCard title="Paybill Collections" value={<CountUp end={Number(stats?.revenue?.mpesaCollections || 0)} formatter={(v: number) => `KES ${v.toLocaleString()}`} />} sub="M-Pesa system flow" icon={Landmark} trend="up" color="blue" />
-        <KpiCard title="Active Business" value={<CountUp end={Number(stats?.overview?.totalProviders || 0)} />} sub={`${stats?.overview?.payingProviders || 0} Paying Subs`} icon={Users} trend="up" color="emerald" />
+      <div className="grid grid-cols-2 xl:grid-cols-4 gap-px bg-gray-100 rounded-[.5rem] overflow-hidden border border-gray-100">
+        <SummaryCell icon={DollarSign} label="Platform Revenue" value={`KES ${Number(stats?.revenue?.total || 0).toLocaleString()}`} sub="Subscription income" />
+        <SummaryCell icon={Activity} label="Gross Volume (GMV)" value={`KES ${Number(stats?.revenue?.platformVolume || 0).toLocaleString()}`} sub="Total sales processed" />
+        <SummaryCell icon={Landmark} label="Paybill Collections" value={`KES ${Number(stats?.revenue?.mpesaCollections || 0).toLocaleString()}`} sub="M-Pesa system flow" />
+        <SummaryCell icon={Users} label="Active Businesses" value={String(stats?.overview?.totalProviders || 0)} sub={`${stats?.overview?.payingProviders || 0} paying subs`} />
       </div>
 
 
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-10">
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
         {/* Main Chart */}
-        <div className="xl:col-span-2 bg-white p-10 rounded-lg border border-slate-100 shadow-sm relative overflow-hidden">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-12 relative z-10">
+        <div className="xl:col-span-2 bg-white rounded-[.5rem] border border-gray-100 p-6 relative overflow-hidden">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 relative z-10">
             <div>
-              <h3 className="text-2xl font-black text-slate-900">Revenue Trajectory</h3>
-              <p className="text-sm text-slate-400 font-bold uppercase tracking-widest mt-1">Global platform income over 24h</p>
+              <h3 className="text-sm font-medium text-gray-900">Revenue trajectory</h3>
+              <p className="text-xs text-gray-400 mt-0.5">Global platform income over 24h</p>
             </div>
             <div className="flex items-center gap-2 bg-slate-50 p-1.5 rounded-md border border-slate-100">
               <button 
@@ -168,45 +162,44 @@ export default function AdminDashboardPage() {
         </div>
 
         {/* Side Panel: Intelligence */}
-        <div className="space-y-10">
-          <div className="bg-slate-900 rounded-lg p-10 text-white relative overflow-hidden shadow-2xl shadow-slate-900/20">
+        <div className="space-y-6">
+          <div className="bg-white rounded-[.5rem] border border-gray-100 p-6">
              <div className="relative z-10">
-               <h4 className="text-xl font-black mb-2">Live Intelligence</h4>
-               <p className="text-slate-400 text-sm font-medium leading-relaxed">
+               <h4 className="text-sm font-medium text-gray-900 mb-1">Live Intelligence</h4>
+               <p className="text-gray-400 text-xs mt-0.5 mb-4">
                  {health?.database === 'up' 
-                   ? 'Systems are operational. Cloud infrastructure is performing at peak efficiency.' 
-                   : 'Attention: Database connectivity is experiencing high latency.'}
+                   ? 'Systems operational. Infrastructure at peak efficiency.' 
+                   : 'Attention: Database connectivity experiencing high latency.'}
                </p>
-               <div className="mt-8 space-y-4">
-                  <div className="flex items-center justify-between p-4 bg-white/5 rounded-md border border-white/10">
-                     <span className="text-xs font-bold text-slate-400">Database Status</span>
-                     <span className={`text-xs font-black uppercase ${health?.database === 'up' ? 'text-emerald-400' : 'text-red-400'}`}>
+               <div className="divide-y divide-gray-50">
+                  <div className="flex items-center justify-between py-3">
+                     <span className="text-xs text-gray-400">Database Status</span>
+                     <span className={`text-xs font-medium ${health?.database === 'up' ? 'text-emerald-600' : 'text-red-500'}`}>
                         {health?.database === 'up' ? 'Online' : 'Degraded'}
                      </span>
                   </div>
-                  <div className="flex items-center justify-between p-4 bg-white/5 rounded-md border border-white/10">
-                     <span className="text-xs font-bold text-slate-400">Memory Cluster</span>
-                     <span className="text-xs font-black text-blue-400 hl-mono">{health?.memoryUsage || 'Calculating...'}</span>
+                  <div className="flex items-center justify-between py-3">
+                     <span className="text-xs text-gray-400">Memory Cluster</span>
+                     <span className="text-xs font-medium text-gray-900 hl-mono">{health?.memoryUsage || 'Calculating...'}</span>
                   </div>
-                  <div className="flex items-center justify-between p-4 bg-white/5 rounded-md border border-white/10">
-                     <span className="text-xs font-bold text-slate-400">DB Intelligence</span>
-                     <span className="text-xs font-black text-emerald-400 hl-mono">{health?.dbLatency || '0ms'} Pulse</span>
+                  <div className="flex items-center justify-between py-3">
+                     <span className="text-xs text-gray-400">DB Latency</span>
+                     <span className="text-xs font-medium text-[#0D4A3E] hl-mono">{health?.dbLatency || '0ms'}</span>
                   </div>
-                  <div className="flex items-center justify-between p-4 bg-white/5 rounded-md border border-white/10">
-                     <span className="text-xs font-bold text-slate-400">Errors (24h)</span>
-                     <span className={`text-xs font-black hl-mono ${health?.errorsLast24h > 0 ? 'text-amber-400' : 'text-slate-400'}`}>
+                  <div className="flex items-center justify-between py-3">
+                     <span className="text-xs text-gray-400">Errors (24h)</span>
+                     <span className={`text-xs font-medium hl-mono ${health?.errorsLast24h > 0 ? 'text-amber-600' : 'text-gray-900'}`}>
                         {health?.errorsLast24h || 0} Events
                      </span>
                   </div>
                </div>
              </div>
-             <Activity size={180} className="absolute -right-10 -bottom-10 text-white opacity-5 rotate-12" />
           </div>
 
-          <div className="bg-white p-8 rounded-lg border border-slate-100 shadow-sm">
-             <h4 className="text-lg font-black text-slate-900 mb-6 flex items-center justify-between">
-                Critical Events
-                <span className="bg-red-50 text-red-600 text-[9px] font-black px-2 py-1 rounded-md uppercase tracking-widest">Live Audit</span>
+          <div className="bg-white rounded-[.5rem] border border-gray-100 p-6">
+             <h4 className="text-sm font-medium text-gray-900 mb-4 flex items-center justify-between">
+                Critical events
+                <span className="bg-red-50 text-red-600 text-[9px] font-black px-2 py-0.5 rounded-md uppercase tracking-widest">Live</span>
              </h4>
              <div className="space-y-6">
                 {recentEvents.length > 0 ? recentEvents.slice(0, 3).map((ev: any, i: number) => (
@@ -233,14 +226,14 @@ export default function AdminDashboardPage() {
       </div>
 
       {/* Global Ledger Section */}
-      <div className="bg-white rounded-lg border border-slate-100 shadow-sm overflow-hidden">
-        <div className="p-10 border-b border-slate-50 flex justify-between items-center">
+      <div className="bg-white rounded-[.5rem] border border-gray-100 overflow-hidden">
+        <div className="px-6 py-4 border-b border-gray-50 flex justify-between items-center">
           <div>
-            <h3 className="text-2xl font-black text-slate-900">Financial Ledger</h3>
-            <p className="text-sm text-slate-400 font-medium">Real-time platform-wide transaction flow</p>
+            <h3 className="text-sm font-medium text-gray-900">Financial ledger</h3>
+            <p className="text-xs text-gray-400 mt-0.5">Real-time platform-wide transaction flow</p>
           </div>
-          <Link to="/admin/audit" className="px-6 py-3 bg-slate-50 text-slate-600 rounded-md text-xs font-black hover:bg-slate-100 transition-all uppercase tracking-widest flex items-center gap-2">
-            Global Audit
+          <Link to="/admin/forensic-audit" className="text-xs text-gray-400 hover:text-gray-900 transition-colors flex items-center gap-1">
+            Full audit →
           </Link>
         </div>
         <div className="overflow-x-auto">
@@ -307,30 +300,20 @@ export default function AdminDashboardPage() {
   )
 }
 
-function KpiCard({ title, value, sub, icon: Icon, color }: any) {
-  const colorMap = {
-    emerald: 'text-emerald-600 bg-emerald-50 border-emerald-100',
-    blue: 'text-blue-600 bg-blue-50 border-blue-100',
-    purple: 'text-purple-600 bg-purple-50 border-purple-100',
-    red: 'text-red-600 bg-red-50 border-red-100',
-  }
-
+function SummaryCell({ icon: Icon, label, value, sub }: {
+  icon: any
+  label: string
+  value: string
+  sub: string
+}) {
   return (
-    <div className="bg-white p-8 rounded-lg border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all group cursor-pointer relative overflow-hidden">
-      <div className={`h-14 w-14 rounded-md flex items-center justify-center mb-6 transition-transform group-hover:scale-110 ${colorMap[color as keyof typeof colorMap]}`}>
-        <Icon size={28} />
+    <div className="bg-white p-5 sm:p-6">
+      <div className="flex items-center gap-2 mb-2">
+        <Icon size={13} className="text-gray-300" />
+        <p className="text-xs text-gray-400">{label}</p>
       </div>
-      <div>
-        <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-1.5">{title}</p>
-        <div className="flex items-baseline gap-3">
-           <h2 className="text-3xl font-black text-slate-900 hl-mono tracking-tighter">{value}</h2>
-           <span className="flex items-center gap-1 text-[10px] font-black text-emerald-600 hl-mono">
-              <TrendingUp size={12} /> 12%
-           </span>
-        </div>
-        <p className="text-xs text-slate-400 font-bold mt-2">{sub}</p>
-      </div>
-      <div className="absolute -right-2 -bottom-2 h-16 w-16 bg-slate-50 rounded-full opacity-50 transition-all group-hover:scale-150" />
+      <p className="text-xl sm:text-2xl font-semibold hl-mono tracking-tight text-gray-900">{value}</p>
+      <p className="text-xs text-gray-400 mt-1">{sub}</p>
     </div>
   )
 }

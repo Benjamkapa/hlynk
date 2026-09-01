@@ -40,11 +40,11 @@ export default function ReportsPage() {
   })
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500 pt-6">
+    <div className="space-y-8 animate-in fade-in duration-500 pt-4">
       
       <div className="flex justify-between items-end">
         <div>
-          <h1 className="text-3xl font-black text-slate-900 tracking-tight">Reports & Exports</h1>
+          <h1 className="text-xl font-semibold text-gray-900">Reports & Exports</h1>
           <p className="text-slate-500 font-medium">Generate, schedule and export platform-wide analytical data</p>
         </div>
       </div>

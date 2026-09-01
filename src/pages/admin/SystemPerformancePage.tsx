@@ -32,12 +32,12 @@ export default function SystemPerformancePage() {
   const performanceData = health?.performanceData || []
   const clusterNodes = health?.nodes || []
   return (
-    <div className="max-w-[1600px] mx-auto space-y-12 animate-in fade-in duration-700">
+    <div className="space-y-8 pt-4 animate-in fade-in duration-700">
       
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
-        <div className="space-y-2">
-          <h1 className="text-5xl font-black text-slate-900 tracking-tighter">System Health</h1>
-          <p className="text-slate-500 font-medium text-xl">Real-time infrastructure telemetry & global cluster status</p>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h1 className="text-xl font-semibold text-gray-900">System Health</h1>
+          <p className="text-gray-400 text-sm mt-0.5">Real-time infrastructure telemetry &amp; global cluster status</p>
         </div>
         <div className="flex items-center gap-4 bg-white p-3 rounded-lg border border-slate-100 shadow-sm">
            <div className="flex items-center gap-2 px-4 py-2 bg-emerald-50 text-emerald-700 rounded-md border border-emerald-100">
@@ -50,7 +50,7 @@ export default function SystemPerformancePage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+      <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-8">
         <MetricCard title="API Response" value={health?.apiLatency || '0ms'} sub="Avg last 5m" icon={Globe} trend="up" color="blue" />
         <MetricCard title="DB Query Time" value={health?.dbLatency || '0ms'} sub="Node-01 Cluster" icon={Database} trend="down" color="emerald" />
         <MetricCard title="CPU Saturation" value={health?.cpuLoad || '0%'} sub="Global Avg" icon={Cpu} trend="up" color="amber" />
@@ -58,14 +58,14 @@ export default function SystemPerformancePage() {
       </div>
 
       {/* Infrastructure Capacity */}
-      <div className="bg-white p-10 rounded-lg border border-slate-100 shadow-sm">
+      <div className="bg-white p-6 rounded-[.5rem] border border-slate-100 shadow-sm">
          <div className="flex items-center gap-3 mb-8">
             <div className="h-10 w-10 rounded-md bg-slate-900 text-white flex items-center justify-center">
                <Server size={20} />
             </div>
             <div>
-               <h3 className="text-xl font-black text-slate-900">Infrastructure Capacity</h3>
-               <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Real-time Resource Allocation & Cluster Availability</p>
+             <h3 className="text-sm font-medium text-slate-900">Infrastructure Capacity</h3>
+               <p className="text-xs text-slate-400 mt-0.5">Real-time resource allocation &amp; cluster availability</p>
             </div>
          </div>
          
@@ -123,12 +123,12 @@ export default function SystemPerformancePage() {
          </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-        <div className="bg-white p-10 rounded-lg border border-slate-100 shadow-sm relative overflow-hidden">
-          <div className="flex justify-between items-center mb-10">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="bg-white p-6 rounded-[.5rem] border border-slate-100 shadow-sm relative overflow-hidden">
+          <div className="flex justify-between items-center mb-6">
             <div>
-               <h3 className="text-2xl font-black text-slate-900">API Velocity</h3>
-               <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mt-1">Platform Distribution Latency</p>
+               <h3 className="text-sm font-medium text-slate-900">API Velocity</h3>
+               <p className="text-xs text-slate-400 mt-0.5">Platform distribution latency</p>
             </div>
             <div className="h-10 w-10 rounded-md bg-slate-50 flex items-center justify-center text-slate-400">
                <Activity size={20} />
@@ -146,11 +146,11 @@ export default function SystemPerformancePage() {
           <div className="absolute top-0 right-0 h-32 w-32 bg-blue-50 rounded-full blur-[60px] -mr-16 -mt-16 opacity-50" />
         </div>
 
-        <div className="bg-white p-10 rounded-lg border border-slate-100 shadow-sm relative overflow-hidden">
-          <div className="flex justify-between items-center mb-10">
+        <div className="bg-white p-6 rounded-[.5rem] border border-slate-100 shadow-sm relative overflow-hidden">
+          <div className="flex justify-between items-center mb-6">
             <div>
-               <h3 className="text-2xl font-black text-slate-900 text-emerald-600">Safaricom G2</h3>
-               <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mt-1">M-Pesa Webhook & SDK Pulse</p>
+               <h3 className="text-sm font-medium text-slate-900">Safaricom G2</h3>
+               <p className="text-xs text-slate-400 mt-0.5">M-Pesa Webhook &amp; SDK Pulse</p>
             </div>
             <div className={`h-10 w-10 rounded-full flex items-center justify-center text-white shadow-lg ${health?.safaricomStatus === 'Healthy' ? 'bg-emerald-500' : 'bg-amber-500'}`}>
                <Globe size={20} />
@@ -168,11 +168,11 @@ export default function SystemPerformancePage() {
           <div className={`absolute top-0 right-0 h-32 w-32 rounded-full blur-[60px] -mr-16 -mt-16 opacity-30 ${health?.safaricomStatus === 'Healthy' ? 'bg-emerald-100' : 'bg-amber-100'}`} />
         </div>
 
-        <div className="bg-white p-10 rounded-lg border border-slate-100 shadow-sm relative overflow-hidden">
-          <div className="flex justify-between items-center mb-10">
+        <div className="bg-white p-6 rounded-[.5rem] border border-slate-100 shadow-sm relative overflow-hidden">
+          <div className="flex justify-between items-center mb-6">
             <div>
-               <h3 className="text-2xl font-black text-slate-900">Cluster Load</h3>
-               <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mt-1">CPU & Memory Saturation</p>
+               <h3 className="text-sm font-medium text-slate-900">Cluster Load</h3>
+               <p className="text-xs text-slate-400 mt-0.5">CPU &amp; Memory saturation</p>
             </div>
             <div className="h-10 w-10 rounded-md bg-slate-50 flex items-center justify-center text-slate-400">
                <Server size={20} />
@@ -249,8 +249,8 @@ function MetricCard({ title, value, sub, icon: Icon, trend, color }: any) {
   }
 
   return (
-    <div className="bg-white p-8 rounded-lg border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all group cursor-pointer relative overflow-hidden">
-      <div className={`h-14 w-14 rounded-md flex items-center justify-center mb-6 transition-transform group-hover:scale-110 ${colorMap[color as keyof typeof colorMap]}`}>
+    <div className="bg-white p-6 rounded-[.5rem] border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-0.5 transition-all group cursor-pointer relative overflow-hidden">
+      <div className={`h-12 w-12 rounded-md flex items-center justify-center mb-4 transition-transform group-hover:scale-110 ${colorMap[color as keyof typeof colorMap]}`}>
         <Icon size={28} />
       </div>
       <div>

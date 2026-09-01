@@ -137,6 +137,7 @@ export default function App() {
         <Route path="/partners" element={<Partners />} />
         <Route path="/stay/:slug" element={<StayPage />} />
         <Route path="/shop/:slug" element={<StayPage isShopMode={true} />} />
+        <Route path="/store/:slug" element={<StayPage />} />
 
         {/* Provider Portal */}
         <Route path="/dashboard" element={<ProtectedRoute><SubscriptionGuard><ProviderLayout /></SubscriptionGuard></ProtectedRoute>}>

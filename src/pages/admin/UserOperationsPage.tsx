@@ -85,11 +85,11 @@ export default function UserOperationsPage() {
   }
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500 pt-6">
+    <div className="space-y-8 animate-in fade-in duration-500 pt-4">
       
       <div className="flex justify-between items-end">
         <div>
-          <h1 className="text-3xl font-black text-gray-900 tracking-tight">User Operations</h1>
+          <h1 className="text-xl font-semibold text-gray-900">User Operations</h1>
           <p className="text-gray-500 font-medium">Manage platform users, security sessions, and deep activity audits</p>
         </div>
       </div>

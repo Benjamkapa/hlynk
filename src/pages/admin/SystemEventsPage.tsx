@@ -34,11 +34,11 @@ export default function SystemEventsPage() {
   })
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500 pt-6">
+    <div className="space-y-8 animate-in fade-in duration-500 pt-4">
 
       <div className="flex justify-between items-end gap-4">
         <div>
-          <h1 className="text-3xl font-black text-gray-900 tracking-tight">System Events</h1>
+          <h1 className="text-xl font-semibold text-gray-900">System Events</h1>
           <p className="text-gray-500 font-medium">Structured telemetry for debugging, reliability and research</p>
         </div>
         <div className="flex gap-3">

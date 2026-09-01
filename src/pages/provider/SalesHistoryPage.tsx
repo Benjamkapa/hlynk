@@ -235,7 +235,7 @@ export default function SalesHistoryPage() {
       </SlideOver>
 
       {/* Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-px bg-gray-100 rounded-[.5rem] overflow-hidden border border-gray-100">
+      <div className="grid grid-cols-2 md:grid-cols-2 gap-px bg-gray-100 rounded-[.5rem] overflow-hidden border border-gray-100">
         <StatCell
           icon={Receipt}
           label={selectedDate === getLocalDateString() ? 'Total today' : `Total (${selectedDate})`}

@@ -84,12 +84,12 @@ export default function FinancialsPage() {
   })) || []
 
   return (
-    <div className="max-w-[1600px] mx-auto space-y-12 animate-in fade-in duration-700">
+    <div className="space-y-8 pt-4 animate-in fade-in duration-700">
       
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
-        <div className="space-y-2">
-          <h1 className="text-5xl font-black text-slate-900 tracking-tighter">Finance Hub</h1>
-          <p className="text-slate-500 font-medium text-xl">Global revenue orchestration and payout monitoring</p>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
+        <div>
+          <h1 className="text-xl font-semibold text-gray-900">Finance Hub</h1>
+          <p className="text-gray-400 text-sm mt-0.5">Global revenue orchestration and payout monitoring</p>
         </div>
         <div className="flex bg-slate-100 p-1 rounded-xl">
            <button 
@@ -122,11 +122,11 @@ export default function FinancialsPage() {
           </div>
 
           <div className="grid grid-cols-1 xl:grid-cols-3 gap-10">
-            <div className="xl:col-span-2 bg-white p-10 rounded-lg border border-slate-100 shadow-sm relative overflow-hidden">
-              <div className="flex justify-between items-center mb-12 relative z-10">
+            <div className="xl:col-span-2 bg-white p-6 rounded-[.5rem] border border-slate-100 shadow-sm relative overflow-hidden">
+              <div className="flex justify-between items-center mb-6 relative z-10">
                 <div>
-                  <h3 className="text-2xl font-black text-slate-900">Revenue Performance</h3>
-                  <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mt-1">Comparing Platform Gross vs Net Income</p>
+                  <h3 className="text-sm font-medium text-slate-900">Revenue Performance</h3>
+                  <p className="text-xs text-slate-400 mt-0.5">Platform gross vs net income</p>
                 </div>
                 <div className="flex gap-6">
                   <div className="flex items-center gap-2">
@@ -139,7 +139,7 @@ export default function FinancialsPage() {
                   </div>
                 </div>
               </div>
-              <div className="h-[400px] relative z-10">
+              <div className="h-[300px] relative z-10">
                 <ResponsiveContainer width="100%" height="100%" minWidth={0} debounce={100}>
                   <BarChart data={revenueData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                     <CartesianGrid strokeDasharray="0" vertical={false} stroke="#F8FAFC" />
@@ -158,8 +158,8 @@ export default function FinancialsPage() {
               <div className="absolute bottom-0 right-0 h-64 w-64 bg-slate-50 rounded-full blur-[100px] -mr-32 -mb-32 opacity-50" />
             </div>
 
-            <div className="space-y-10">
-                <div className="bg-emerald-900 rounded-lg p-10 text-white shadow-2xl shadow-emerald-900/20 relative overflow-hidden h-full">
+                <div className="space-y-6">
+                    <div className="bg-emerald-900 rounded-[.5rem] p-6 text-white shadow-2xl shadow-emerald-900/20 relative overflow-hidden h-full">
                   <div className="relative z-10">
                     <PieChart size={40} className="text-emerald-400 mb-6" />
                     <h4 className="text-xl font-black mb-2">Payout Health</h4>
