@@ -5,7 +5,7 @@ import {
   MapPin, Star, Wifi, CheckCircle2, Phone, ChevronLeft, ChevronRight,
   BedDouble, Car, Building2, Sparkles, ExternalLink, Coffee, Shield,
   Calendar, BadgeCheck, AlertTriangle, ShoppingBag, Plus, Minus, Trash2,
-  X, Send, Check, MessageSquare, Tag, Package
+  X, Send, Check, MessageSquare, Tag, Package, Search, LayoutGrid, List
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
@@ -72,6 +72,8 @@ interface GalleryState {
   title: string;
 }
 
+type ViewMode = "grid" | "list";
+
 function AmenityIcon({ name }: { name: string }) {
   const n = name.toLowerCase();
   if (n.includes("wifi") || n.includes("internet")) return <Wifi size={11} />;
@@ -81,6 +83,60 @@ function AmenityIcon({ name }: { name: string }) {
   return <CheckCircle2 size={11} />;
 }
 
+function ViewToggle({ viewMode, setViewMode }: { viewMode: ViewMode; setViewMode: (v: ViewMode) => void }) {
+  return (
+    <div className="flex items-center bg-white/5 border border-white/10 rounded-full p-1 shrink-0">
+      <button
+        type="button"
+        onClick={() => setViewMode("grid")}
+        aria-label="Grid view"
+        aria-pressed={viewMode === "grid"}
+        className={`p-1.5 sm:p-2 rounded-full transition-all ${
+          viewMode === "grid" ? "bg-emerald-500 text-slate-950" : "text-slate-400 hover:text-white"
+        }`}
+      >
+        <LayoutGrid size={14} />
+      </button>
+      <button
+        type="button"
+        onClick={() => setViewMode("list")}
+        aria-label="List view"
+        aria-pressed={viewMode === "list"}
+        className={`p-1.5 sm:p-2 rounded-full transition-all ${
+          viewMode === "list" ? "bg-emerald-500 text-slate-950" : "text-slate-400 hover:text-white"
+        }`}
+      >
+        <List size={14} />
+      </button>
+    </div>
+  );
+}
+
+function SearchBar({ value, onChange, placeholder }: { value: string; onChange: (v: string) => void; placeholder: string }) {
+  return (
+    <div className="relative flex-1 min-w-0">
+      <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" />
+      <input
+        type="text"
+        value={value}
+        onChange={e => onChange(e.target.value)}
+        placeholder={placeholder}
+        className="w-full bg-white/5 border border-white/10 rounded-full pl-9 pr-3.5 py-2 sm:py-2.5 text-xs text-white placeholder:text-slate-600 focus:outline-none focus:border-emerald-500 transition-colors"
+      />
+      {value && (
+        <button
+          type="button"
+          onClick={() => onChange("")}
+          aria-label="Clear search"
+          className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white p-1"
+        >
+          <X size={12} />
+        </button>
+      )}
+    </div>
+  );
+}
+
 function GalleryModal({ images, title, onClose }: { images: string[]; title: string; onClose: () => void }) {
   const [idx, setIdx] = useState(0);
   return (
@@ -88,7 +144,7 @@ function GalleryModal({ images, title, onClose }: { images: string[]; title: str
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[200] bg-black/95 flex flex-col items-center justify-center p-4"
+      className="fixed inset-0 z-[200] bg-black/95 flex flex-col items-center justify-center p-4 pt-[calc(env(safe-area-inset-top)+1rem)] pb-[calc(env(safe-area-inset-bottom)+1rem)]"
       onClick={onClose}
     >
       <div className="relative w-full max-w-3xl" onClick={(e) => e.stopPropagation()}>
@@ -96,7 +152,7 @@ function GalleryModal({ images, title, onClose }: { images: string[]; title: str
           <img
             src={images[idx]}
             alt={`${title} - photo ${idx + 1}`}
-            className="w-full max-h-[70vh] sm:max-h-[75vh] object-contain rounded-2xl"
+            className="w-full max-h-[65vh] sm:max-h-[75vh] object-contain rounded-2xl"
           />
           {images.length > 1 && (
             <>
@@ -151,6 +207,10 @@ export default function StayPage({ isShopMode }: { isShopMode?: boolean }) {
   const [filter, setFilter] = useState("all");
   const [categoryFilter, setCategoryFilter] = useState("all");
 
+  // View & search state
+  const [viewMode, setViewMode] = useState<ViewMode>("grid");
+  const [searchQuery, setSearchQuery] = useState("");
+
   // Cart & Order State
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
@@ -184,6 +244,11 @@ export default function StayPage({ isShopMode }: { isShopMode?: boolean }) {
       .catch(err => setError(err.response?.data?.message || "Listing not found"))
       .finally(() => setLoading(false));
   }, [slug, isShopPath]);
+
+  const switchTab = (tab: "rooms" | "products") => {
+    setActiveTab(tab);
+    setSearchQuery("");
+  };
 
   const addToCart = (item: { id: string; name: string; price: number; type: "ROOM" | "PRODUCT"; imageUrl?: string }) => {
     setCart(prev => {
@@ -282,19 +347,26 @@ export default function StayPage({ isShopMode }: { isShopMode?: boolean }) {
   const roomTypes = [...new Set(allRooms.map(r => r.type))];
   const productCategories = [...new Set(allProducts.map(p => p.category || "General"))];
 
-  const filteredRooms = filter === "all" ? allRooms : allRooms.filter(r => r.type === filter);
-  const filteredProducts = categoryFilter === "all" ? allProducts : allProducts.filter(p => (p.category || "General") === categoryFilter);
+  const normalizedQuery = searchQuery.trim().toLowerCase();
+
+  const filteredRooms = allRooms
+    .filter(r => filter === "all" || r.type === filter)
+    .filter(r => !normalizedQuery || r.title.toLowerCase().includes(normalizedQuery));
+
+  const filteredProducts = allProducts
+    .filter(p => categoryFilter === "all" || (p.category || "General") === categoryFilter)
+    .filter(p => !normalizedQuery || p.name.toLowerCase().includes(normalizedQuery));
 
   const cartItemCount = cart.reduce((a, c) => a + c.quantity, 0);
 
   return (
     <div className="min-h-screen bg-[#030A07] text-white pb-28 sm:pb-24">
       {/* Hero Header */}
-      <div className="relative overflow-hidden">
+      <div className="relative overflow-hidden pt-10">
         <div className="absolute inset-0 bg-gradient-to-br from-emerald-950/50 via-[#030A07] to-slate-950 pointer-events-none" />
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-emerald-800/10 blur-[120px] pointer-events-none" />
 
-        <div className="relative max-w-5xl mx-auto px-4 sm:px-5 pt-6 sm:pt-12 pb-8">
+        <div className="relative max-w-5xl mx-auto px-4 sm:px-5 pt-[calc(env(safe-area-inset-top)+1.25rem)] sm:pt-[calc(env(safe-area-inset-top)+3rem)] pb-8">
           <div className="flex flex-wrap justify-between items-center gap-2 mb-6 sm:mb-8">
             <div className="flex items-center gap-2">
               <button
@@ -335,7 +407,7 @@ export default function StayPage({ isShopMode }: { isShopMode?: boolean }) {
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-3">
             <div className="flex items-center gap-2">
               <BadgeCheck size={18} className="text-emerald-400 shrink-0" />
-              <span className="text-[10px] font-black text-emerald-400 uppercas`e tracking-[0.2em]">Verified Business</span>
+              <span className="text-[10px] font-black text-emerald-400 uppercase tracking-[0.2em]">Verified Business</span>
             </div>
 
             <h1 className="text-2xl sm:text-4xl md:text-5xl font-black tracking-tight leading-tight break-words">
@@ -371,7 +443,7 @@ export default function StayPage({ isShopMode }: { isShopMode?: boolean }) {
         <div className="max-w-5xl mx-auto px-4 sm:px-5 mb-6">
           <div className="flex bg-white/5 border border-white/10 p-1 rounded-2xl w-full max-w-md">
             <button
-              onClick={() => setActiveTab("rooms")}
+              onClick={() => switchTab("rooms")}
               className={`flex-1 py-2.5 rounded-xl text-[10px] sm:text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 sm:gap-2 ${
                 activeTab === "rooms" ? "bg-emerald-500 text-slate-950 shadow" : "text-slate-400 hover:text-white"
               }`}
@@ -379,7 +451,7 @@ export default function StayPage({ isShopMode }: { isShopMode?: boolean }) {
               <BedDouble size={14} className="shrink-0" /> <span className="truncate">Rooms & Spaces ({allRooms.length})</span>
             </button>
             <button
-              onClick={() => setActiveTab("products")}
+              onClick={() => switchTab("products")}
               className={`flex-1 py-2.5 rounded-xl text-[10px] sm:text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 sm:gap-2 ${
                 activeTab === "products" ? "bg-emerald-500 text-slate-950 shadow" : "text-slate-400 hover:text-white"
               }`}
@@ -392,7 +464,12 @@ export default function StayPage({ isShopMode }: { isShopMode?: boolean }) {
 
       {/* SECTION: ROOMS / SPACES */}
       {activeTab === "rooms" && allRooms.length > 0 && (
-        <div className="max-w-5xl mx-auto px-4 sm:px-5 space-y-6">
+        <div className="max-w-5xl mx-auto px-4 sm:px-5 space-y-5">
+          <div className="flex items-center gap-2">
+            <SearchBar value={searchQuery} onChange={setSearchQuery} placeholder="Search rooms & spaces..." />
+            <ViewToggle viewMode={viewMode} setViewMode={setViewMode} />
+          </div>
+
           {roomTypes.length > 1 && (
             <div className="flex flex-wrap gap-2">
               <button
@@ -417,67 +494,107 @@ export default function StayPage({ isShopMode }: { isShopMode?: boolean }) {
             </div>
           )}
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
-            {filteredRooms.map(room => {
-              const imgList = room.meta.images && room.meta.images.length > 0
-                ? room.meta.images
-                : (room.meta.imageUrl ? [room.meta.imageUrl] : []);
-              const img = imgList[0];
-              return (
-                <div key={room.id} className="bg-white/5 border border-white/10 rounded-3xl overflow-hidden flex flex-col justify-between">
-                  <button
-                    type="button"
-                    onClick={() => img && setGallery({ images: imgList, title: room.title })}
-                    disabled={!img}
-                    className="relative h-44 sm:h-48 bg-slate-900 overflow-hidden w-full text-left disabled:cursor-default"
+          {filteredRooms.length === 0 ? (
+            <div className="py-12 text-center">
+              <Search size={28} className="mx-auto text-slate-600 mb-3" />
+              <p className="text-sm font-bold text-slate-300">No rooms match "{searchQuery}"</p>
+              <p className="text-xs text-slate-500 mt-1">Try a different search term.</p>
+            </div>
+          ) : (
+            <div className={viewMode === "grid"
+              ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5"
+              : "flex flex-col gap-3"
+            }>
+              {filteredRooms.map(room => {
+                const imgList = room.meta.images && room.meta.images.length > 0
+                  ? room.meta.images
+                  : (room.meta.imageUrl ? [room.meta.imageUrl] : []);
+                const img = imgList[0];
+                const isList = viewMode === "list";
+                return (
+                  <div
+                    key={room.id}
+                    className={`bg-white/5 border border-white/10 rounded-3xl overflow-hidden ${
+                      isList ? "flex flex-row items-stretch" : "flex flex-col justify-between"
+                    }`}
                   >
-                    {img ? (
-                      <img src={img} alt={room.title} className="w-full h-full object-cover" />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center bg-slate-800/50">
-                        <BedDouble size={36} className="text-slate-600" />
-                      </div>
-                    )}
-                    <div className="absolute top-3 left-3 bg-emerald-500 text-slate-950 font-black text-[9px] uppercase tracking-wider px-2.5 py-1 rounded-full">
-                      Available
-                    </div>
-                    {imgList.length > 1 && (
-                      <div className="absolute bottom-3 right-3 bg-black/60 backdrop-blur-md text-white font-bold text-[9px] px-2 py-1 rounded-full">
-                        +{imgList.length - 1} photos
-                      </div>
-                    )}
-                  </button>
+                    <button
+                      type="button"
+                      onClick={() => img && setGallery({ images: imgList, title: room.title })}
+                      disabled={!img}
+                      className={`relative bg-slate-900 overflow-hidden text-left disabled:cursor-default shrink-0 ${
+                        isList ? "w-28 sm:w-40" : "h-44 sm:h-48 w-full"
+                      }`}
+                    >
+                      {img ? (
+                        <img src={img} alt={room.title} className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center bg-slate-800/50">
+                          <BedDouble size={isList ? 22 : 36} className="text-slate-600" />
+                        </div>
+                      )}
+                      {!isList && (
+                        <div className="absolute top-3 left-3 bg-emerald-500 text-slate-950 font-black text-[9px] uppercase tracking-wider px-2.5 py-1 rounded-full">
+                          Available
+                        </div>
+                      )}
+                      {imgList.length > 1 && (
+                        <div className={`absolute bg-black/60 backdrop-blur-md text-white font-bold px-2 py-1 rounded-full ${
+                          isList ? "bottom-1.5 right-1.5 text-[8px]" : "bottom-3 right-3 text-[9px]"
+                        }`}>
+                          +{imgList.length - 1}
+                        </div>
+                      )}
+                    </button>
 
-                  <div className="p-4 sm:p-5 space-y-3 flex-1 flex flex-col justify-between">
-                    <div>
-                      <h3 className="font-black text-base sm:text-lg text-white">{room.title}</h3>
-                      {room.meta.description && <p className="text-xs text-slate-400 line-clamp-2 mt-1">{room.meta.description}</p>}
-                    </div>
-
-                    <div className="flex items-center justify-between gap-3 pt-3 border-t border-white/10">
-                      <div className="min-w-0">
-                        <span className="text-[9px] font-bold text-slate-500 uppercase block">Rate</span>
-                        <span className="text-base sm:text-lg font-black text-emerald-400 truncate block">KES {Number(room.basePrice).toLocaleString()}</span>
+                    <div className={isList
+                      ? "p-3 sm:p-4 flex-1 min-w-0 flex flex-col justify-center gap-2"
+                      : "p-4 sm:p-5 space-y-3 flex-1 flex flex-col justify-between"
+                    }>
+                      <div className={isList ? "min-w-0" : ""}>
+                        <h3 className={`font-black text-white ${isList ? "text-sm truncate" : "text-base sm:text-lg"}`}>{room.title}</h3>
+                        {room.meta.description && !isList && (
+                          <p className="text-xs text-slate-400 line-clamp-2 mt-1">{room.meta.description}</p>
+                        )}
                       </div>
 
-                      <button
-                        onClick={() => addToCart({ id: room.id, name: room.title, price: Number(room.basePrice), type: "ROOM", imageUrl: img })}
-                        className="shrink-0 px-3.5 sm:px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-black text-[11px] sm:text-xs rounded-xl flex items-center gap-1.5 transition-all whitespace-nowrap"
-                      >
-                        <Plus size={14} /> Book
-                      </button>
+                      <div className={isList
+                        ? "flex items-center justify-between gap-2"
+                        : "flex items-center justify-between gap-3 pt-3 border-t border-white/10"
+                      }>
+                        <div className="min-w-0">
+                          {!isList && <span className="text-[9px] font-bold text-slate-500 uppercase block">Rate</span>}
+                          <span className={`font-black text-emerald-400 truncate block ${isList ? "text-sm" : "text-base sm:text-lg"}`}>
+                            KES {Number(room.basePrice).toLocaleString()}
+                          </span>
+                        </div>
+
+                        <button
+                          onClick={() => addToCart({ id: room.id, name: room.title, price: Number(room.basePrice), type: "ROOM", imageUrl: img })}
+                          className={`shrink-0 bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-black rounded-xl flex items-center gap-1.5 transition-all whitespace-nowrap ${
+                            isList ? "px-3 py-1.5 text-[10px]" : "px-3.5 sm:px-4 py-2 text-[11px] sm:text-xs"
+                          }`}
+                        >
+                          <Plus size={isList ? 12 : 14} /> Book
+                        </button>
+                      </div>
                     </div>
                   </div>
-                </div>
-              );
-            })}
-          </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       )}
 
       {/* SECTION: PRODUCTS / SHOP */}
       {(activeTab === "products" || allRooms.length === 0) && allProducts.length > 0 && (
-        <div className="max-w-5xl mx-auto px-4 sm:px-5 space-y-6">
+        <div className="max-w-5xl mx-auto px-4 sm:px-5 space-y-5">
+          <div className="flex items-center gap-2">
+            <SearchBar value={searchQuery} onChange={setSearchQuery} placeholder="Search products..." />
+            <ViewToggle viewMode={viewMode} setViewMode={setViewMode} />
+          </div>
+
           {productCategories.length > 1 && (
             <div className="flex items-center gap-1.5">
               <button
@@ -524,52 +641,85 @@ export default function StayPage({ isShopMode }: { isShopMode?: boolean }) {
             </div>
           )}
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
-            {filteredProducts.map(prod => (
-              <div key={prod.id} className="bg-white/5 border border-white/10 rounded-3xl overflow-hidden flex flex-col justify-between">
-                <button
-                  type="button"
-                  onClick={() => prod.imageUrl && setGallery({ images: [prod.imageUrl], title: prod.name })}
-                  disabled={!prod.imageUrl}
-                  className="relative h-40 sm:h-44 bg-slate-900 overflow-hidden w-full text-left disabled:cursor-default"
-                >
-                  {prod.imageUrl ? (
-                    <img src={prod.imageUrl} alt={prod.name} className="w-full h-full object-cover" />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-slate-800/50">
-                      <Package size={36} className="text-slate-600" />
-                    </div>
-                  )}
-                  {prod.category && (
-                    <div className="absolute top-3 left-3 bg-black/60 backdrop-blur-md text-white font-bold text-[9px] uppercase tracking-wider px-2.5 py-1 rounded-full">
-                      {prod.category}
-                    </div>
-                  )}
-                </button>
-
-                <div className="p-4 sm:p-5 space-y-3 flex-1 flex flex-col justify-between">
-                  <div>
-                    <h3 className="font-black text-sm sm:text-base text-white">{prod.name}</h3>
-                    {prod.description && <p className="text-xs text-slate-400 line-clamp-2 mt-1">{prod.description}</p>}
-                  </div>
-
-                  <div className="flex items-center justify-between gap-3 pt-3 border-t border-white/10">
-                    <div className="min-w-0">
-                      <span className="text-[9px] font-bold text-slate-500 uppercase block">Price</span>
-                      <span className="text-base sm:text-lg font-black text-emerald-400 truncate block">KES {Number(prod.price).toLocaleString()}</span>
-                    </div>
-
+          {filteredProducts.length === 0 ? (
+            <div className="py-12 text-center">
+              <Search size={28} className="mx-auto text-slate-600 mb-3" />
+              <p className="text-sm font-bold text-slate-300">No products match "{searchQuery}"</p>
+              <p className="text-xs text-slate-500 mt-1">Try a different search term.</p>
+            </div>
+          ) : (
+            <div className={viewMode === "grid"
+              ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5"
+              : "flex flex-col gap-3"
+            }>
+              {filteredProducts.map(prod => {
+                const isList = viewMode === "list";
+                return (
+                  <div
+                    key={prod.id}
+                    className={`bg-white/5 border border-white/10 rounded-3xl overflow-hidden ${
+                      isList ? "flex flex-row items-stretch" : "flex flex-col justify-between"
+                    }`}
+                  >
                     <button
-                      onClick={() => addToCart({ id: prod.id, name: prod.name, price: Number(prod.price), type: "PRODUCT", imageUrl: prod.imageUrl })}
-                      className="shrink-0 px-3.5 sm:px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-[11px] sm:text-xs rounded-xl flex items-center gap-1.5 transition-all whitespace-nowrap"
+                      type="button"
+                      onClick={() => prod.imageUrl && setGallery({ images: [prod.imageUrl], title: prod.name })}
+                      disabled={!prod.imageUrl}
+                      className={`relative bg-slate-900 overflow-hidden text-left disabled:cursor-default shrink-0 ${
+                        isList ? "w-24 sm:w-32" : "h-40 sm:h-44 w-full"
+                      }`}
                     >
-                      <Plus size={14} /> Add
+                      {prod.imageUrl ? (
+                        <img src={prod.imageUrl} alt={prod.name} className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center bg-slate-800/50">
+                          <Package size={isList ? 20 : 36} className="text-slate-600" />
+                        </div>
+                      )}
+                      {prod.category && !isList && (
+                        <div className="absolute top-3 left-3 bg-black/60 backdrop-blur-md text-white font-bold text-[9px] uppercase tracking-wider px-2.5 py-1 rounded-full">
+                          {prod.category}
+                        </div>
+                      )}
                     </button>
+
+                    <div className={isList
+                      ? "p-3 sm:p-4 flex-1 min-w-0 flex flex-col justify-center gap-2"
+                      : "p-4 sm:p-5 space-y-3 flex-1 flex flex-col justify-between"
+                    }>
+                      <div className={isList ? "min-w-0" : ""}>
+                        <h3 className={`font-black text-white ${isList ? "text-sm truncate" : "text-sm sm:text-base"}`}>{prod.name}</h3>
+                        {prod.description && !isList && (
+                          <p className="text-xs text-slate-400 line-clamp-2 mt-1">{prod.description}</p>
+                        )}
+                      </div>
+
+                      <div className={isList
+                        ? "flex items-center justify-between gap-2"
+                        : "flex items-center justify-between gap-3 pt-3 border-t border-white/10"
+                      }>
+                        <div className="min-w-0">
+                          {!isList && <span className="text-[9px] font-bold text-slate-500 uppercase block">Price</span>}
+                          <span className={`font-black text-emerald-400 truncate block ${isList ? "text-sm" : "text-base sm:text-lg"}`}>
+                            KES {Number(prod.price).toLocaleString()}
+                          </span>
+                        </div>
+
+                        <button
+                          onClick={() => addToCart({ id: prod.id, name: prod.name, price: Number(prod.price), type: "PRODUCT", imageUrl: prod.imageUrl })}
+                          className={`shrink-0 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black rounded-xl flex items-center gap-1.5 transition-all whitespace-nowrap ${
+                            isList ? "px-3 py-1.5 text-[10px]" : "px-3.5 sm:px-4 py-2 text-[11px] sm:text-xs"
+                          }`}
+                        >
+                          <Plus size={isList ? 12 : 14} /> Add
+                        </button>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </div>
-            ))}
-          </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       )}
 
@@ -625,7 +775,7 @@ export default function StayPage({ isShopMode }: { isShopMode?: boolean }) {
           >
             <motion.div
               initial={{ y: 50 }} animate={{ y: 0 }} exit={{ y: 50 }}
-              className="bg-[#0A1410] border border-white/10 w-full max-w-md rounded-t-3xl sm:rounded-3xl p-5 sm:p-6 space-y-5 sm:space-y-6 max-h-[92vh] sm:max-h-[90vh] overflow-y-auto text-white"
+              className="bg-[#0A1410] border border-white/10 w-full max-w-md rounded-t-3xl sm:rounded-3xl p-5 sm:p-6 space-y-5 sm:space-y-6 max-h-[92vh] sm:max-h-[90vh] overflow-y-auto text-white pb-[calc(env(safe-area-inset-bottom)+1.25rem)] sm:pb-6"
             >
               <div className="flex items-center justify-between border-b border-white/10 pb-4 sticky -top-5 sm:-top-6 bg-[#0A1410] pt-1 -mx-5 sm:-mx-6 px-5 sm:px-6 z-10">
                 <div className="flex items-center gap-2">
@@ -676,8 +826,8 @@ export default function StayPage({ isShopMode }: { isShopMode?: boolean }) {
                 <div>
                   <label className="text-[10px] font-black uppercase text-slate-400 block mb-1">Your Phone Number *</label>
                   <input
-                    type="tel" required value={customerPhone} onChange={e => setCustomerPhone(e.target.value)}
-                    placeholder="e.g. 0712 345 678"
+                    type="number" required value={customerPhone} onChange={e => setCustomerPhone(e.target.value)}
+                    placeholder="e.g. 0712345678"
                     className="w-full bg-white/5 border border-white/10 rounded-xl px-3.5 py-2.5 text-sm sm:text-xs text-white placeholder:text-slate-600 focus:outline-none focus:border-emerald-500"
                   />
                 </div>

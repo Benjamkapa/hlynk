@@ -43,7 +43,6 @@ export default function DashboardPage() {
   const { data: profile } = useQuery({
     queryKey: ['my-profile'],
     queryFn: providersApi.getMyProfile,
-    staleTime: Infinity
   })
 
   const threshold = profile?.data?.operationalSettings?.lowStockThreshold || 5;

@@ -633,8 +633,8 @@ export default function LoginPage() {
                   <div className="flex flex-col mt-auto pb-8 z-10 px-6 gap-4">
 
                     {/* EULA card */}
-                    <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/10 w-full">
-                      <label className="flex items-start gap-3 cursor-pointer group">
+                    <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 flex items-center justify-center border border-white/10 w-full">
+                      <label className="flex items-center gap-3 cursor-pointer group">
                         <input
                           type="checkbox"
                           className="mt-1 accent-[#0D4A3E] w-5 h-5 cursor-pointer rounded-md border-white/20 flex-shrink-0 bg-white/20"
@@ -717,7 +717,7 @@ export default function LoginPage() {
                           <input type="text" value={formData.location} onChange={e => setFormData({ ...formData, location: e.target.value })} className={inputCls} placeholder="e.g. Utoma, Beirut" required />
                         </Field>
                         <Field label="M-Pesa Number" icon={Phone}>
-                          <input type="tel" value={formData.phone} onChange={e => setFormData({ ...formData, phone: e.target.value })} className={inputCls} placeholder="07xx xxx xxx" required />
+                          <input type="number" value={formData.phone} onChange={e => setFormData({ ...formData, phone: e.target.value })} className={inputCls} placeholder="07xx xxx xxx" required />
                         </Field>
 
 

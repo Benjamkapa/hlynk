@@ -43,7 +43,6 @@ export default function SalesHistoryPage() {
   const { data: allData } = useQuery<PaginatedResponse<any> & { stats: any }>({
     queryKey: ['sales-history-all-sources'],
     queryFn: () => salesApi.list({ limit: 1, includeStats: true }),
-    staleTime: 60_000,
   })
 
   // Main fetch: filtered by selected source
@@ -60,8 +59,6 @@ export default function SalesHistoryPage() {
       includeStats: true,
       source: activeSource === '__all__' ? undefined : activeSource
     }),
-    refetchInterval: 15_000,
-    staleTime: 10_000,
   })
 
   const voidMutation = useMutation({

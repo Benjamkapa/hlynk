@@ -32,6 +32,7 @@ export default function TopNav({ isMobileOpen, onMobileMenuToggle, isCollapsed, 
 
   // Use a ref so we can track seen IDs without triggering re-renders or dep-array loops
   const toastedIds = useRef<Set<string>>(new Set())
+  const isInitialized = useRef(false)
 
   const handleEnablePush = async () => {
     try {
@@ -58,7 +59,8 @@ export default function TopNav({ isMobileOpen, onMobileMenuToggle, isCollapsed, 
     queryKey: ['notifications'],
     queryFn: () => platformApi.getNotifications(),
     enabled: !!user,
-    refetchInterval: 15000
+    refetchInterval: 6000,
+    refetchOnWindowFocus: true
   })
 
   // Listen for real-time messages from Service Worker (Push Notifications)
@@ -80,21 +82,22 @@ export default function TopNav({ isMobileOpen, onMobileMenuToggle, isCollapsed, 
   }, [queryClient])
 
   // Monitor polled notifications and toast any unread ones we haven't seen yet.
-  // Uses a ref so this effect never re-runs due to its own state change.
   useEffect(() => {
     if (!notifyRes?.data) return
 
     const unread: any[] = notifyRes.data.filter((n: any) => !n.isRead)
-    const isFirstLoad = toastedIds.current.size === 0
+
+    if (!isInitialized.current) {
+      unread.forEach((n: any) => toastedIds.current.add(n.id))
+      isInitialized.current = true
+      return
+    }
 
     unread.forEach((n: any) => {
       if (!toastedIds.current.has(n.id)) {
-        // On first load, silently seed the set so we don't toast-bomb on page load
-        if (!isFirstLoad) {
-          if (n.type === 'success') toast.success(n.title, { description: n.message })
-          else if (n.type === 'warning' || n.type === 'error') toast.error(n.title, { description: n.message })
-          else toast(n.title, { description: n.message })
-        }
+        if (n.type === 'success') toast.success(n.title, { description: n.message })
+        else if (n.type === 'warning' || n.type === 'error') toast.error(n.title, { description: n.message })
+        else toast(n.title, { description: n.message })
         toastedIds.current.add(n.id)
       }
     })
