@@ -3,45 +3,29 @@ import { Plus, Minus } from 'lucide-react'
 import { FadeUp } from './Animations'
 
 const faqs = [
-  // {
-  //   question: "Is Hlynk legally compliant with KRA eTIMS?",
-  //   answer: "Yes. Hlynk connects directly with KRA. When you sell, the receipt is sent to the eTIMS system automatically. You don't need to log in to another website or type anything manually."
-  // },
   {
-    question: "Do I need my own Paybill or Till Number?",
-    answer: "No, you don't need your own. Small businesses can use Hlynk's shared Till to receive payments, and we will send the money straight to your phone or bank. If you already have your own Paybill or Till, you can easily link it so customers pay you directly."
+    question: "How do M-Pesa payments and bank payouts work?",
+    answer: "Hlynk supports instant M-Pesa STK Push checkout and automated KCB bank settlements. Customers receive direct prompts on their phone, and sales are automatically reconciled in your portal."
   },
   {
-    question: "What happens if my shop has no internet?",
-    answer: "Hlynk works even without internet. You can continue recording sales and printing receipts when your connection is down. Once your internet comes back, Hlynk will automatically upload all records to the secure cloud."
+    question: "What is the difference between Starter and Business Pro (MAX)?",
+    answer: "Starter covers single-store POS operations, up to 100 inventory items, and M-Pesa STK payments. Business Pro unlocks unlimited inventory, public stay/BnB booking pages, direct bank payouts, and full audit logs."
   },
   {
-    question: "I have multiple shops of different types. Can I manage them all?",
-    answer: "Yes. You can manage multiple shop branches from one phone. You will see which shop makes the most profit, check stock values, and track staff performance from anywhere."
+    question: "Can I manage stay or BnB bookings on Hlynk?",
+    answer: "Yes. Business Pro subscribers and trial users get a dedicated public stay listing page (/stay/your-property) to showcase rooms, check availability, and accept direct guest bookings."
   },
   {
-    question: "How do I ensure my staff aren't stealing from me?",
-    answer: "Hlynk tracks every transaction. You can give each worker their own login with limited access. You'll see exactly who made each sale, deleted any item, or logged an expense, preventing loss."
+    question: "Does Hlynk work offline when my internet connection drops?",
+    answer: "Yes. You can record sales and issue receipts without internet. All offline records automatically synchronize to the secure cloud as soon as your device reconnects."
   },
   {
-    question: "How does the bank deposit integration work?",
-    answer: "All customer payments can go straight into your bank account automatically. This gives you a clean statement of your business income, which makes it much easier to get a business loan when you need one."
+    question: "How does Hlynk protect my business from staff theft or unauthorized changes?",
+    answer: "You can create individual staff accounts with restricted permission roles. Every sale, item edit, discount, or deletion is tracked in real-time audit logs tagged to the active worker."
   },
   {
-    question: "Can I use Hlynk for a hardware shop, salon, or pharmacy?",
-    answer: "Yes. We support kiosks, hardware shops, pharmacies, beauty salons, rental cars, BnBs, and garages. If you sell items in pieces, kilograms, packages, or services by the hour, Hlynk handles it."
-  },
-  {
-    question: "What if I lose my phone? Will my records disappear?",
-    answer: "Never. Your records are saved securely in the cloud every second. If your phone gets lost or damaged, simply log in on a new device and all your stock, sales, and money history will be there."
-  },
-  {
-    question: "Do you offer training for my workers?",
-    answer: "Yes. Hlynk is simple to use. We provide short tutorial videos in English and Swahili. Plus, our support team is always a call or text away to guide you and your workers."
-  },
-  {
-    question: "Is there a long-term contract or can I pay as I go?",
-    answer: "No long contracts. You pay month-to-month and can pause or switch plans at any time. If you decide to pay for 6 or 12 months in advance, you get a discount."
+    question: "Is there a free trial or binding contract?",
+    answer: "Every new account gets a 14-day free trial with no credit card required. Subscriptions are billed flexibly month-to-month, or discounted for 6-month (-5%) and 1-year (-15%) billing cycles."
   }
 ]
 
@@ -61,7 +45,7 @@ export default function FAQ() {
               Frequently Asked Questions
             </h2>
             <p className="text-slate-400 font-medium max-w-2xl mx-auto">
-              Got questions? We've got answers. Here is what other Kenyan business owners ask us the most.
+              Everything you need to know about Hlynk's POS, stay bookings, payments, and plans.
             </p>
           </FadeUp>
         </div>
@@ -76,7 +60,7 @@ export default function FAQ() {
                   onClick={() => toggle(i)}
                 >
                   <div className="p-6 md:p-8 flex items-center justify-between gap-6">
-                    <h3 className={`text-lg md:text-xl font-bold transition-colors ${isOpen ? 'text-emerald-400' : 'text-slate-100'}`}>
+                    <h3 className={`text-md md:text-lg font-thin transition-colors ${isOpen ? 'text-emerald-400' : 'text-slate-100'}`}>
                       {faq.question}
                     </h3>
                     <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-colors ${isOpen ? 'bg-emerald-500/10 text-emerald-400' : 'bg-slate-800 text-slate-400'}`}>

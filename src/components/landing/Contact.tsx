@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Phone, Mail, MessageSquare, Check, ArrowRight, Loader2, AlertCircle, X } from 'lucide-react'
+import { Phone, Mail, Check, ArrowRight, Loader2, AlertCircle, X } from 'lucide-react'
 import { FadeUp } from './Animations'
 import emailjs from '@emailjs/browser'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -48,10 +48,10 @@ export default function Contact() {
   }
 
   return (
-    <section id="contact" className="py-24 bg-transparent relative overflow-hidden">
+    <section id="contact" className="py-24 bg-[#14181A] relative overflow-hidden">
       {/* Decorative patterns */}
-      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-emerald-500/5 blur-[120px] rounded-full -translate-y-1/2 translate-x-1/2" />
-      <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-blue-500/5 blur-[120px] rounded-full translate-y-1/2 -translate-x-1/2" />
+      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[#064E3B]/5 blur-[120px] rounded-full -translate-y-1/2 translate-x-1/2" />
+      <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-[#7C93B0]/10 blur-[120px] rounded-full translate-y-1/2 -translate-x-1/2" />
 
       <div className="max-w-7xl mx-auto px-6 md:px-12 relative z-10">
         <div className="grid lg:grid-cols-2 gap-24 items-center">
@@ -59,34 +59,34 @@ export default function Contact() {
           <FadeUp>
             <div className="space-y-8">
               <div className="space-y-4">
-                <span className="text-[10px] font-black text-emerald-500 uppercase tracking-[0.2em] block">Get in Touch</span>
-                <h2 className="text-4xl md:text-6xl font-black font-thin text-white tracking-tighter leading-[0.9] font-ubuntu">
+                <span className="text-[10px] font-black text-[#064E3B] uppercase tracking-[0.2em] block">Get in Touch</span>
+                <h2 className="text-4xl md:text-6xl font-black text-white tracking-tighter leading-[0.9] font-ubuntu">
                   Need help?<br />
-                  <span className="text-emerald-500 font-ubuntu">We're here.</span>
+                  <span className="text-[#064E3B] font-ubuntu">We're here.</span>
                 </h2>
-                <p className="text-lg text-emerald-100/50 font-medium leading-relaxed max-w-md">
-                  Have a question about hlynk or need help setting up your account? Our team is ready to support your business growth.
+                <p className="text-lg text-white/45 font-medium leading-relaxed max-w-md">
+                  Have a question about Hlynk or need help setting up your account? Our team is ready to support your business growth.
                 </p>
               </div>
 
-              <div className="space-y-6 pt-8">
-                <div className="flex items-center gap-6 group">
-                  <div className="h-14 w-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-emerald-500 group-hover:bg-emerald-500 group-hover:text-white transition-all duration-300">
-                    <Phone size={24} />
+              <div className="space-y-4 pt-4">
+                <div className="flex items-center gap-5 group">
+                  <div className="h-13 w-13 rounded-2xl flex items-center justify-center shrink-0">
+                    <Phone size={20} />
                   </div>
-                  <div className="space-y-1">
+                  <div className="space-y-0.5">
                     <div className="text-[10px] font-black text-white/30 uppercase tracking-widest">Call or WhatsApp</div>
-                    <div className="text-xl font-black text-white hl-mono tracking-tight font-thin">+254 790 590 653</div>
+                    <div className="text-lg font-black text-white tracking-tight">+254 790 590 653</div>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-6 group">
-                  <div className="h-14 w-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-emerald-500 group-hover:bg-emerald-500 group-hover:text-white transition-all duration-300">
-                    <Mail size={24} />
+                <div className="flex items-center gap-5 group">
+                  <div className="h-13 w-13 rounded-2xl flex items-center justify-center shrink-0">
+                    <Mail size={20} />
                   </div>
-                  <div className="space-y-1">
+                  <div className="space-y-0.5">
                     <div className="text-[10px] font-black text-white/30 uppercase tracking-widest">Email Us</div>
-                    <div className="text-xl font-black text-white hl-mono tracking-tight font-thin">info@hlynk.co.ke</div>
+                    <div className="text-lg font-black text-white tracking-tight">info@hlynk.co.ke</div>
                   </div>
                 </div>
               </div>
@@ -94,7 +94,7 @@ export default function Contact() {
           </FadeUp>
 
           <FadeUp delay={0.2}>
-            <div className="bg-white/5 backdrop-blur-2xl p-10 md:p-12 rounded-2xl border border-white/10 shadow-2xl">
+            <div className="bg-[#1B212B] p-8 md:p-10 rounded-[28px] border border-white/5">
               <AnimatePresence>
                 {error && (
                   <motion.div
@@ -116,22 +116,22 @@ export default function Contact() {
 
               {sent ? (
                 <div className="text-center py-12 space-y-6">
-                  <div className="w-20 h-20 bg-emerald-500/10 rounded-full flex items-center justify-center mx-auto text-emerald-500 border border-emerald-500/20">
-                    <Check size={40} />
+                  <div className="w-16 h-16 bg-[#7FB89C] rounded-full flex items-center justify-center mx-auto text-[#14181A]">
+                    <Check size={32} />
                   </div>
                   <div className="space-y-2">
-                    <h3 className="text-2xl font-black text-white tracking-tight font-ubuntu">Message Sent!</h3>
-                    <p className="text-emerald-100/50 font-medium">We'll get back to you within 24 hours.</p>
+                    <h3 className="text-2xl font-black text-white tracking-tight font-ubuntu">Message sent!</h3>
+                    <p className="text-white/45 font-medium">We'll get back to you within 24 hours.</p>
                   </div>
                   <button
                     onClick={() => setSent(false)}
-                    className="text-emerald-500 text-xs font-black uppercase tracking-widest hover:text-emerald-400 transition-colors"
+                    className="text-[#064E3B] text-xs font-black uppercase tracking-widest hover:opacity-80 transition-colors"
                   >
                     Send another message
                   </button>
                 </div>
               ) : (
-                <form onSubmit={handleSubmit} className="space-y-6">
+                <form onSubmit={handleSubmit} className="space-y-5">
                   <div className="space-y-2">
                     <label className="text-[10px] font-black text-white/30 uppercase tracking-widest px-1">Full Name</label>
                     <input
@@ -140,7 +140,7 @@ export default function Contact() {
                       placeholder="Okombe Mabenjo"
                       value={form.name}
                       onChange={e => setForm({ ...form, name: e.target.value })}
-                      className="w-full bg-white/5 border border-white/10 focus:bg-white/10 focus:border-emerald-500/50 focus:ring-4 focus:ring-emerald-500/5 rounded-xl py-4 px-6 text-white text-sm outline-none transition-all font-bold placeholder:text-white/20"
+                      className="w-full bg-white/5 border border-white/10 focus:bg-white/10 focus:border-[#064E3B]/50 rounded-2xl py-3.5 px-5 text-white text-sm outline-none transition-all font-bold placeholder:text-white/20"
                     />
                   </div>
 
@@ -152,7 +152,7 @@ export default function Contact() {
                       placeholder="Email"
                       value={form.contact}
                       onChange={e => setForm({ ...form, contact: e.target.value })}
-                      className="w-full bg-white/5 border border-white/10 focus:bg-white/10 focus:border-emerald-500/50 focus:ring-4 focus:ring-emerald-500/5 rounded-xl py-4 px-6 text-white text-sm outline-none transition-all font-bold placeholder:text-white/20"
+                      className="w-full bg-white/5 border border-white/10 focus:bg-white/10 focus:border-[#064E3B]/50 rounded-2xl py-3.5 px-5 text-white text-sm outline-none transition-all font-bold placeholder:text-white/20"
                     />
                   </div>
 
@@ -164,16 +164,16 @@ export default function Contact() {
                       placeholder="Tell us about your business..."
                       value={form.message}
                       onChange={e => setForm({ ...form, message: e.target.value })}
-                      className="w-full bg-white/5 border border-white/10 focus:bg-white/10 focus:border-emerald-500/50 focus:ring-4 focus:ring-emerald-500/5 rounded-xl py-4 px-6 text-white text-sm outline-none transition-all font-bold placeholder:text-white/20 resize-none"
+                      className="w-full bg-white/5 border border-white/10 focus:bg-white/10 focus:border-[#064E3B]/50 rounded-2xl py-3.5 px-5 text-white text-sm outline-none transition-all font-bold placeholder:text-white/20 resize-none"
                     />
                   </div>
 
                   <button
                     type="submit"
                     disabled={loading}
-                    className="w-full py-5 bg-emerald-600 text-white rounded-xl font-black text-xs uppercase tracking-widest hover:bg-emerald-500 transition-all shadow-xl shadow-emerald-900/20 flex items-center justify-center gap-2 group disabled:opacity-50"
+                    className="w-full py-4 bg-[#064E3B] text-[#14181A] rounded-full font-bold text-sm hover:opacity-85 transition-all flex items-center justify-center gap-2 group disabled:opacity-50"
                   >
-                    {loading ? <Loader2 size={16} className="animate-spin" /> : 'Send Message'}
+                    {loading ? <Loader2 size={16} className="animate-spin" /> : 'Send message'}
                     {!loading && <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />}
                   </button>
                 </form>

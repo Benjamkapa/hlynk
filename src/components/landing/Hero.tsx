@@ -24,34 +24,34 @@ const TRADES = [
     swatch: '#E3A23C',
     metricLabel: "Today's Sales",
     metric: 'KES 48,250',
-    tag: '+18.4% margin',
+    tag: '+18.4%',
     rows: ['Barcode scan-out', 'Low-stock alert · Sugar 2kg'],
   },
   {
     id: 'lodging',
     label: 'BnB & Lodges',
     icon: Hotel,
-    swatch: '#35897B',
+    swatch: '#7FB89C',
     metricLabel: 'Occupancy Tonight',
     metric: '82%',
-    tag: '14 rooms filled',
+    tag: '14 filled',
     rows: ['Guest check-in · Rm 4', 'Housekeeping queue · 3 units'],
   },
   {
     id: 'rentals',
     label: 'Car Rentals',
     icon: Car,
-    swatch: '#4C7FE3',
+    swatch: '#7C93B0',
     metricLabel: 'Fleet Out Today',
     metric: '9 / 12',
-    tag: '3 returns due 6pm',
+    tag: '3 due 6pm',
     rows: ['KDA 214B · due in 2h', 'Mileage log pending · 1'],
   },
   {
     id: 'garage',
     label: 'Garage & Workshop',
     icon: Wrench,
-    swatch: '#C4573D',
+    swatch: '#D98B72',
     metricLabel: 'Jobs In Bay',
     metric: '5 active',
     tag: '2 awaiting parts',
@@ -61,10 +61,10 @@ const TRADES = [
     id: 'carwash',
     label: 'Car Wash',
     icon: Droplets,
-    swatch: '#3FA0C9',
+    swatch: '#6FADC7',
     metricLabel: 'Vehicles Today',
     metric: '31 washed',
-    tag: 'KES 15,500 taken',
+    tag: 'KES 15,500',
     rows: ['Bay 1 · full valet, 12min', 'Loyalty punch · 4 issued'],
   },
 ]
@@ -75,7 +75,7 @@ export default function Hero() {
   const ActiveIcon = active.icon
 
   return (
-    <section className="relative pt-36 sm:pt-40 md:pt-44 pb-32 bg-[#12161C] text-[#F3EFE6] overflow-hidden">
+    <section className="relative pt-36 sm:pt-40 md:pt-44 pb-32 bg-[#14181A] text-[#F3EFE6] overflow-hidden">
       <div
         className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-96 blur-3xl pointer-events-none rounded-full opacity-40"
         style={{ background: 'radial-gradient(circle, rgba(227,162,60,0.12), transparent 70%)' }}
@@ -86,66 +86,47 @@ export default function Hero() {
 
           {/* Left Column */}
           <div className="lg:col-span-7 space-y-7 py-5">
-            {/* <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-[#E3A23C]/25 bg-[#E3A23C]/[0.06] text-[#E3A23C] text-[11px] font-bold uppercase tracking-[0.14em]">
-              Built for every kind of Kenyan business
-            </div> */}
-
             <h1 className="text-4xl sm:text-5xl lg:text-[3.4rem] font-black pt-5 font-ubuntu tracking-tight leading-[1.06]">
               Duka, lodge, fleet, or workshop —
               <br className="hidden sm:block" />
               <span className="text-[#E3A23C]"> run it all</span> from one board.
             </h1>
 
-            {/* <p className="text-[#AAB0BC] text-base sm:text-lg leading-relaxed max-w-2xl">
-              Hlynk isn't built for one trade — it's built for how business actually
-              happens in Kenya. Ring up sales, take bookings, dispatch a fleet, or
-              track a job card, all with the same clean dashboard and the same
-              M-Pesa till underneath.
-            </p> */}
-
-            <div className="flex flex-wrap items-center gap-4 pt-1">
+            <div className="flex flex-wrap items-center gap-3 pt-1">
               <a
                 href="/register"
-                className="px-7 py-4 rounded-xl bg-[#E3A23C] hover:bg-[#EFAF4A] text-[#12161C] font-black text-xs uppercase tracking-wider transition-all flex items-center gap-2.5 shadow-lg shadow-black/30 active:scale-95"
+                className="px-7 py-3.5 rounded-full bg-[#E3A23C] hover:opacity-85 text-[#14181A] font-bold text-sm transition-all flex items-center gap-2.5 active:scale-95"
               >
-                Start Free Trial <ArrowRight size={16} />
+                Start free trial <ArrowRight size={16} />
               </a>
 
               <a
                 href="/login"
-                className="px-6 py-4 rounded-xl bg-[#1B212B] border border-[#2A3240] hover:border-[#3A4456] font-bold text-xs uppercase tracking-wider transition-all flex items-center gap-2.5 active:scale-95"
+                className="px-6 py-3.5 rounded-full bg-white/5 hover:bg-white/10 font-bold text-sm text-white/80 transition-all flex items-center gap-2.5 active:scale-95"
               >
-                <GoogleG /> Sign In with Google
+                <GoogleG /> Sign in with Google
               </a>
             </div>
 
-            <div className="flex flex-wrap items-center gap-x-6 gap-y-2 pt-3 text-xs font-semibold text-[#8B93A3]">
-              <span className="flex items-center gap-1.5">
-                <ShieldCheck size={15} className="text-[#35897B]" /> One-click Google login
+            <div className="flex flex-wrap items-center gap-2 pt-3">
+              <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 text-[11px] font-semibold text-white/50">
+                <ShieldCheck size={13} className="text-[#7FB89C]" /> Google login
               </span>
-              <span className="flex items-center gap-1.5">
-                <Zap size={15} className="text-[#35897B]" /> Real-time M-Pesa & KCB sync
+              <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 text-[11px] font-semibold text-white/50">
+                <Zap size={13} className="text-[#7FB89C]" /> M-Pesa & KCB sync
               </span>
-              <span className="flex items-center gap-1.5">
-                <Building2 size={15} className="text-[#35897B]" /> Switch trades anytime
+              <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 text-[11px] font-semibold text-white/50">
+                <Building2 size={13} className="text-[#7FB89C]" /> Switch trades anytime
               </span>
             </div>
           </div>
 
           {/* Right Column: Trade Board */}
           <div className="lg:col-span-5">
-            <div className="bg-[#1B212B] border border-[#2A3240] rounded-2xl overflow-hidden shadow-2xl">
+            <div className="relative bg-[#1B212B] border border-white/5 rounded-[28px] overflow-hidden">
 
-              {/* Board header, styled like a route/destination sign */}
-              <div className="px-5 py-3 bg-[#12161C] border-b border-[#2A3240] flex items-center justify-between">
-                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#8B93A3]">
-                  Live on Hlynk right now
-                </span>
-                <span className="w-2 h-2 rounded-full bg-[#35897B] animate-pulse" />
-              </div>
-
-              {/* Trade tabs, destination-board style */}
-              <div className="flex overflow-x-auto no-scrollbar border-b border-[#2A3240]">
+              {/* Trade tabs, pill style matching the billing toggle */}
+              <div className="flex flex-wrap gap-1.5 p-4 pt-7">
                 {TRADES.map((t) => {
                   const Icon = t.icon
                   const isActive = t.id === activeId
@@ -153,57 +134,53 @@ export default function Hero() {
                     <button
                       key={t.id}
                       onClick={() => setActiveId(t.id)}
-                      className={`flex-shrink-0 flex flex-col items-center gap-1.5 px-4 py-3.5 border-b-2 transition-colors ${
-                        isActive ? 'border-current' : 'border-transparent opacity-45 hover:opacity-75'
+                      className={`flex items-center gap-1.5 px-3 py-2 rounded-full text-[11px] font-bold transition-all ${
+                        isActive ? 'text-[#14181A]' : 'bg-white/5 text-white/40 hover:bg-white/10'
                       }`}
-                      style={{ color: isActive ? t.swatch : undefined }}
+                      style={isActive ? { backgroundColor: t.swatch } : undefined}
                     >
-                      <Icon size={17} strokeWidth={2.25} />
-                      <span className="text-[9.5px] font-bold uppercase tracking-wider whitespace-nowrap text-[#DDE1E8]">
-                        {t.label}
-                      </span>
+                      <Icon size={13} strokeWidth={2.5} />
+                      {t.label}
                     </button>
                   )
                 })}
               </div>
 
-              {/* Active panel */}
-              <div className="p-5 space-y-4">
-                <div className="flex items-center justify-between p-4 rounded-xl border border-[#2A3240]" style={{ background: `${active.swatch}0D` }}>
-                  <div className="flex items-center gap-3">
-                    <span
-                      className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
-                      style={{ background: `${active.swatch}22`, color: active.swatch }}
-                    >
-                      <ActiveIcon size={17} />
+              {/* Active panel — flat solid color, same treatment as the pricing cards */}
+              <div className="px-4 pb-4">
+                <div
+                  style={{ backgroundColor: active.swatch }}
+                  className="rounded-3xl p-5 flex flex-col gap-4"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <span className="w-9 h-9 rounded-full bg-[#14181A]/12 flex items-center justify-center flex-shrink-0 text-[#14181A]">
+                        <ActiveIcon size={17} />
+                      </span>
+                      <div>
+                        <p className="text-[10px] font-bold text-[#14181A]/55 uppercase tracking-widest">{active.metricLabel}</p>
+                        <p className="text-xl font-black text-[#14181A] hl-mono">{active.metric}</p>
+                      </div>
+                    </div>
+                    <span className="px-2.5 py-1 rounded-full bg-[#14181A]/12 text-[10px] font-bold text-[#14181A] whitespace-nowrap">
+                      {active.tag}
                     </span>
-                    <div>
-                      <p className="text-[10px] font-bold text-[#8B93A3] uppercase tracking-widest">{active.metricLabel}</p>
-                      <p className="text-xl font-black hl-mono">{active.metric}</p>
-                    </div>
                   </div>
-                  <span
-                    className="px-2.5 py-1 rounded-md text-[10px] font-black uppercase whitespace-nowrap"
-                    style={{ background: `${active.swatch}22`, color: active.swatch }}
-                  >
-                    {active.tag}
-                  </span>
-                </div>
 
-                <div className="space-y-2">
-                  <p className="text-[10px] font-bold text-[#8B93A3] uppercase tracking-widest">On the board</p>
-                  {active.rows.map((row, i) => (
-                    <div key={i} className="flex items-center gap-2.5 p-3 bg-[#12161C] rounded-lg border border-[#2A3240]/80 text-xs font-semibold text-[#DDE1E8]">
-                      <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: active.swatch }} />
-                      {row}
-                    </div>
-                  ))}
+                  <div className="space-y-1.5">
+                    {active.rows.map((row, i) => (
+                      <div key={i} className="flex items-center gap-2.5 px-3.5 py-2.5 bg-[#14181A]/10 rounded-xl text-[11px] font-semibold text-[#14181A]">
+                        <span className="w-1.5 h-1.5 rounded-full flex-shrink-0 bg-[#14181A]/50" />
+                        {row}
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
 
-              <div className="px-5 py-3 border-t border-[#2A3240]/80 flex items-center justify-between text-[11px] text-[#8B93A3]">
-                <span className="font-medium">5 trades shown · more in settings</span>
-                <span className="text-[#E3A23C] font-bold">Included free</span>
+              <div className="px-6 pb-5 flex items-center justify-between text-[11px] text-white/40">
+                <span className="font-medium">5 trades · more in settings</span>
+                <span className="px-2.5 py-1 rounded-full bg-white/5 text-[#E3A23C] font-bold">Included free</span>
               </div>
             </div>
           </div>
