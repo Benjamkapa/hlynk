@@ -706,7 +706,7 @@ export default function LoginPage() {
                       <p style={{ fontSize: 13, fontWeight: 300, color: 'rgba(255,255,255,0.5)' }}>Tell us about your biashara to get started.</p>
                     </div>
 
-                    <form onSubmit={handleRegistrationSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 0 }} className="innerSection">
+                    <form onSubmit={handleRegistrationSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 0, backgroundColor: 'transparent' }} className="innerSection">
                       <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginBottom: 28 }}>
                         <Field label="Biashara Name" icon={Building2}>
                           <input type="text" value={formData.businessName} onChange={e => setFormData({ ...formData, businessName: e.target.value })} className={inputCls} placeholder="e.g. John's Shop" required />
