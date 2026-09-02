@@ -192,7 +192,7 @@ export default function Navbar() {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          height: '96px',
+          height: '70px',
           padding: '0 clamp(20px, 5vw, 64px)',
           maxWidth: '1280px',
           margin: '0 auto',

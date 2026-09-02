@@ -8,7 +8,7 @@ const faqs = [
     answer: "Hlynk supports instant M-Pesa STK Push checkout and automated KCB bank settlements. Customers receive direct prompts on their phone, and sales are automatically reconciled in your portal."
   },
   {
-    question: "What is the difference between Starter and Business Pro (MAX)?",
+    question: "What is the difference between Starter and Business Pro?",
     answer: "Starter covers single-store POS operations, up to 100 inventory items, and M-Pesa STK payments. Business Pro unlocks unlimited inventory, public stay/BnB booking pages, direct bank payouts, and full audit logs."
   },
   {
@@ -26,6 +26,14 @@ const faqs = [
   {
     question: "Is there a free trial or binding contract?",
     answer: "Every new account gets a 14-day free trial with no credit card required. Subscriptions are billed flexibly month-to-month, or discounted for 6-month (-5%) and 1-year (-15%) billing cycles."
+  },
+  {
+    question: "How do I get started with Hlynk?",
+    answer: "Every new account gets a 14-day free trial with no credit card required. Subscriptions are billed flexibly month-to-month, or discounted for 6-month (-5%) and 1-year (-15%) billing cycles."
+  },
+  {
+    question: "Can I install Hlynk as an app on my iPhone or Android device?",
+    answer: "Yes. Hlynk is a Progressive Web App (PWA) that can be installed on your iPhone or Android device. Simply tap the 'Add to Home Screen' option in your browser to install Hlynk as an app on your device."
   }
 ]
 
