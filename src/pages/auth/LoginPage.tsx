@@ -259,7 +259,7 @@ function MobileReviewStrip() {
                 <Star
                   key={s}
                   size={12}
-                  className={review.rating >= s ? 'text-amber-400 fill-amber-400' : 'text-white/20'}
+                  className={review.rating >= s ? 'text-[#E3A23C] fill-[#E3A23C]' : 'text-white/20'}
                 />
               ))}
             </div>
@@ -298,9 +298,9 @@ function MobileReviewStrip() {
 function Field({ label, icon: Icon, children }: { label: string; icon: any; children: React.ReactNode }) {
   return (
     <div className="flex flex-col gap-1.5 group">
-      <label className="text-[12px] font-semibold text-[#64748b] ml-1 transition-colors group-focus-within:text-black">{label}</label>
+      <label className="text-[12px] font-semibold text-white/35 lg:text-[#64748b] ml-1 transition-colors group-focus-within:text-[#E3A23C] lg:group-focus-within:text-black">{label}</label>
       <div className="relative">
-        <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#94a3b8] pointer-events-none transition-colors group-focus-within:text-black">
+        <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/30 lg:text-[#94a3b8] pointer-events-none transition-colors group-focus-within:text-[#E3A23C] lg:group-focus-within:text-black">
           <Icon size={14} />
         </div>
         {children}
@@ -309,7 +309,9 @@ function Field({ label, icon: Icon, children }: { label: string; icon: any; chil
   )
 }
 
-const inputCls = "w-full h-12 pl-[42px] pr-4 bg-[#f8fafc] border border-[#f1f5f9] rounded-xl outline-none focus:bg-white focus:border-black transition-all text-[14px] font-[inherit] appearance-none"
+// Dark styling applies on small screens; from the lg breakpoint up it reverts to the
+// original light field treatment used on desktop.
+const inputCls = "w-full h-12 pl-[42px] pr-4 bg-white/5 lg:bg-[#f8fafc] border border-white/10 lg:border-[#f1f5f9] rounded-xl outline-none focus:bg-white/10 lg:focus:bg-white focus:border-[#E3A23C]/50 lg:focus:border-black transition-all text-[14px] font-[inherit] appearance-none text-white lg:text-black placeholder:text-white/25 lg:placeholder:text-slate-400"
 
 export default function LoginPage() {
   const navigate = useNavigate()
@@ -486,11 +488,11 @@ export default function LoginPage() {
             content: ''; position: fixed; inset: 0;
             background: linear-gradient(
               to bottom,
-              rgba(13, 74, 62, 0.38) 0%, 
-              rgba(13, 74, 62, 0.15) 30%,
-              rgba(13, 74, 62, 0.7) 60%, 
-              rgba(13, 74, 62, 0.98) 75%,
-              rgba(13, 74, 62, 1) 100%
+              rgba(20, 24, 26, 0.38) 0%, 
+              rgba(20, 24, 26, 0.15) 30%,
+              rgba(20, 24, 26, 0.75) 60%, 
+              rgba(20, 24, 26, 0.98) 75%,
+              rgba(20, 24, 26, 1) 100%
             );
             -webkit-backdrop-filter: blur(2px);
             pointer-events: none; z-index: 0;
@@ -524,9 +526,22 @@ export default function LoginPage() {
           .lp-right .desktop-only     { display: none !important; }
 
           .lp-right .innerSection {
-            background: rgba(255, 255, 255, 0.7);
+            background: rgba(20, 24, 26, 0.85);
             backdrop-filter: blur(12px);
-            flex: 1; border-radius: 1rem; padding: 32px 24px;
+            flex: 1; border-radius: 1.5rem; padding: 32px 24px;
+            border: 1px solid rgba(255,255,255,0.06);
+          }
+
+          /* Mobile-only button treatment — desktop keeps the original black box above */
+          .lp-btn-submit {
+            background: #E3A23C; color: #14181A; border-radius: 9999px;
+            box-shadow: 0 10px 30px rgba(227,162,60,0.15);
+          }
+          .lp-btn-submit:hover:not(:disabled) { box-shadow: 0 15px 40px rgba(227,162,60,0.25); opacity: 0.92; }
+
+          /* Mobile-only dark fields — desktop keeps the original light fields via lg: classes */
+          .lp-right select option {
+            background: #14181A;
           }
         }
 
@@ -598,7 +613,7 @@ export default function LoginPage() {
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                       <img src={hlynk} alt="hlynk" style={{ height: 32, objectFit: 'contain' }} />
                     </div>
-                    <a href="/" style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, fontWeight: 700, color: '#0c3d2eff', textDecoration: 'none', letterSpacing: '0.14em' }}>
+                    <a href="/" style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.85)', textDecoration: 'none', letterSpacing: '0.14em' }}>
                       <ArrowLeft size={10} /> Website
                     </a>
                   </nav>
@@ -615,7 +630,7 @@ export default function LoginPage() {
                         'Instant Setup, No Fees to Start',
                       ].map((item) => (
                         <div key={item} className="flex items-center gap-3 text-white">
-                          <div className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center">
+                          <div className="w-5 h-5 rounded-full bg-[#E3A23C] flex items-center justify-center text-[#14181A]">
                             <Check size={10} strokeWidth={4} />
                           </div>
                           <span className="text-[12px] font-medium tracking-wide">{item}</span>
@@ -637,7 +652,7 @@ export default function LoginPage() {
                       <label className="flex items-center gap-3 cursor-pointer group">
                         <input
                           type="checkbox"
-                          className="mt-1 accent-[#0D4A3E] w-5 h-5 cursor-pointer rounded-md border-white/20 flex-shrink-0 bg-white/20"
+                          className="mt-1 accent-[#000] w-5 h-5 cursor-pointer rounded-md border-white/20 flex-shrink-0 bg-white/20"
                           checked={acceptedEula}
                           onChange={e => {
                             setAcceptedEula(e.target.checked)
@@ -647,12 +662,9 @@ export default function LoginPage() {
                         />
                         <span className="text-[11px] px-1 py-1.5 font-light text-white/90 leading-relaxed">
                           I agree to the{' '}
-                          <a href="/terms-conditions" className="text-white hover:text-emerald-300 font-medium underline transition-colors">Terms of Service</a>
+                          <a href="/terms-conditions" className="text-white hover:text-[#E3A23C] font-medium underline transition-colors">Terms of Service</a>
                           ,{' and '}
-                          <a href="/privacy-policy" className="text-white hover:text-emerald-300 font-medium underline transition-colors">Privacy Policy</a>
-                          {/* , <a href="/google/terms" className="text-white hover:text-emerald-300 font-medium underline transition-colors">Google Terms</a>
-                          {' '}and{' '}
-                          <a href="/google/privacy" className="text-white hover:text-emerald-300 font-medium underline transition-colors">Notice</a>. */}
+                          <a href="/privacy-policy" className="text-white hover:text-[#E3A23C] font-medium underline transition-colors">Privacy Policy</a>
                         </span>
                       </label>
                     </div>
@@ -680,7 +692,7 @@ export default function LoginPage() {
                     <img src={hlynk} alt="hlynk" style={{ height: 32, objectFit: 'contain' }} />
                     <button
                       onClick={() => { setRequiresRegistration(false); setGoogleCredential('') }}
-                      style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, fontWeight: 700, background: 'none', border: 'none', textTransform: 'capitalize', letterSpacing: '0.14em', cursor: 'pointer' }}
+                      style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, fontWeight: 700, background: 'none', border: 'none', color: 'rgba(255,255,255,0.85)', textTransform: 'capitalize', letterSpacing: '0.14em', cursor: 'pointer' }}
                     >
                       <ArrowLeft size={10} /> Back
                     </button>
@@ -688,10 +700,10 @@ export default function LoginPage() {
 
                   <div className="mob-form-wrap">
                     <div style={{ marginBottom: 28 }}>
-                      <h2 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 40, fontWeight: 400, color: '#111', lineHeight: 1.05, marginBottom: 8 }}>
+                      <h2 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 40, fontWeight: 400, color: '#F3EFE6', lineHeight: 1.05, marginBottom: 8 }}>
                         Setup<br /><em style={{ fontStyle: 'italic', fontWeight: 300 }}>Your Shop</em>
                       </h2>
-                      <p style={{ fontSize: 13, fontWeight: 300 }}>Tell us about your biashara to get started.</p>
+                      <p style={{ fontSize: 13, fontWeight: 300, color: 'rgba(255,255,255,0.5)' }}>Tell us about your biashara to get started.</p>
                     </div>
 
                     <form onSubmit={handleRegistrationSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 0 }} className="innerSection">
@@ -702,14 +714,14 @@ export default function LoginPage() {
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                           <Field label="County" icon={MapPin}>
                             <select value={formData.county} onChange={e => setFormData({ ...formData, county: e.target.value })} className={inputCls} required>
-                              <option value="">County?</option>
-                              {COUNTIES.map(c => <option key={c}>{c}</option>)}
+                              <option value="" className="bg-[#14181A] lg:bg-white">County?</option>
+                              {COUNTIES.map(c => <option key={c} className="bg-[#14181A] lg:bg-white">{c}</option>)}
                             </select>
                           </Field>
                           <Field label="Category" icon={Tag}>
                             <select value={formData.category} onChange={e => setFormData({ ...formData, category: e.target.value })} className={inputCls} required>
-                              <option value="">Type?</option>
-                              {CATEGORIES.map(c => <option key={c}>{c}</option>)}
+                              <option value="" className="bg-[#14181A] lg:bg-white">Type?</option>
+                              {CATEGORIES.map(c => <option key={c} className="bg-[#14181A] lg:bg-white">{c}</option>)}
                             </select>
                           </Field>
                         </div>
@@ -821,14 +833,14 @@ export default function LoginPage() {
                         <div className="grid grid-cols-2 gap-4">
                           <Field label="County Location" icon={MapPin}>
                             <select value={formData.county} onChange={e => setFormData({ ...formData, county: e.target.value })} className={inputCls} required>
-                              <option value="">Where is your shop?</option>
-                              {COUNTIES.map(c => <option key={c}>{c}</option>)}
+                              <option value="" className="bg-[#14181A] lg:bg-white">Where is your shop?</option>
+                              {COUNTIES.map(c => <option key={c} className="bg-[#14181A] lg:bg-white">{c}</option>)}
                             </select>
                           </Field>
                           <Field label="Biashara Category" icon={Tag}>
                             <select value={formData.category} onChange={e => setFormData({ ...formData, category: e.target.value })} className={inputCls} required>
-                              <option value="">What do you do?</option>
-                              {CATEGORIES.map(c => <option key={c}>{c}</option>)}
+                              <option value="" className="bg-[#14181A] lg:bg-white">What do you do?</option>
+                              {CATEGORIES.map(c => <option key={c} className="bg-[#14181A] lg:bg-white">{c}</option>)}
                             </select>
                           </Field>
                         </div>
