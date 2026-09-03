@@ -24,7 +24,7 @@ export default function Footer() {
 
           <div className="flex flex-col items-center md:items-end gap-3">
             <div className="text-[13px] font-black font-thin tracking-[0.2em] text-white">
-              © {new Date().getFullYear()} hlynk Portal
+              © {new Date().getFullYear()} hlynk 
             </div>
             <div className="flex gap-4 text-[9px] font-bold uppercase tracking-widest text-slate-400">
               {/* <Link to="/partners" className="hover:text-emerald-500 transition-colors">Partners</Link> */}
