@@ -228,7 +228,7 @@ export default function ProductsPage() {
           isOpen={isOrdersOpen}
           onClose={() => setIsOrdersOpen(false)}
           title={`Incoming client orders (${incomingOrders.length})`}
-        >
+         >
           <div className="space-y-4">
             {incomingOrders.length > 0 && (
               <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-gray-100 mb-2">
@@ -1032,7 +1032,7 @@ function EditProductForm({ product, onClose }: { product: any; onClose: () => vo
   })
 
   return (
-    <div className="space-y-5 pb-16">
+    <div className="space-y-5 pb-16 ">
       <div className="flex flex-col items-center gap-4">
         <div
           className="h-28 w-28 rounded-[.5rem] bg-gray-50 border border-dashed border-gray-200 flex items-center justify-center overflow-hidden cursor-pointer hover:border-gray-300 transition-colors group relative"

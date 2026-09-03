@@ -31,13 +31,13 @@ export function SlideOver({ isOpen, onClose, title, children }: SlideOverProps) 
 
       {/* Panel */}
       <div 
-        className={`relative w-full max-w-lg bg-white h-full shadow-2xl flex flex-col transition-transform duration-300 ease-out ${
+        className={`relative w-full max-w-lg bg-white pt-5 shadow-2xl flex flex-col transition-transform duration-300 ease-out ${
           isOpen ? 'translate-x-0' : 'translate-x-full'
         }`}
         style={{ borderRadius: 'var(--radius-lg) 0 0 var(--radius-lg)' }}
       >
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-100">
+        <div className="flex items-center justify-between pb-6 px-6 pt-[max(1.5rem,env(safe-area-inset-top))] border-b border-gray-100">
           <h3 style={{ fontSize: '1.25rem', fontWeight: 600, fontFamily: 'Ubuntu' }}>{title}</h3>
           <button 
             onClick={onClose}

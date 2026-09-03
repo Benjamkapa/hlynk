@@ -33,13 +33,13 @@ export default function PartnerProgram() {
 
   return (
     <section id="partner" className="py-24 bg-slate-905 relative overflow-hidden border-t border-slate-100 bg-[#FAFBFB]">
-      
+
       {/* Background Graphic Accents */}
       <div className="absolute top-1/2 left-0 w-72 h-72 bg-emerald-50 rounded-full blur-3xl opacity-60 -z-10" />
       <div className="absolute top-10 right-0 w-96 h-96 bg-purple-50 rounded-full blur-3xl opacity-50 -z-10" />
 
       <div className="max-w-7xl mx-auto px-6 md:px-12 relative z-10">
-        
+
         {/* Header Block */}
         <div className="text-center mb-16">
           <FadeUp delay={0.1}>
@@ -54,7 +54,7 @@ export default function PartnerProgram() {
 
         {/* Feature Split Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-          
+
           {/* Left Column: Portfolio & Offerings (5 columns) */}
           <div className="lg:col-span-6 space-y-8">
             <FadeUp delay={0.2}>
@@ -108,7 +108,7 @@ export default function PartnerProgram() {
           <div className="lg:col-span-6">
             <FadeUp delay={0.3}>
               <div className="bg-white rounded-3xl border border-slate-100 shadow-2xl p-6 md:p-8 relative overflow-hidden">
-                
+
                 {/* Decorative background circle */}
                 <div className="absolute -top-10 -right-10 w-40 h-40 bg-emerald-50 rounded-full blur-2xl opacity-70 -z-10" />
 
@@ -119,7 +119,7 @@ export default function PartnerProgram() {
 
                 {/* Sliders Grid */}
                 <div className="space-y-6">
-                  
+
                   {/* Slider 1: Starter */}
                   <div className="space-y-2">
                     <div className="flex justify-between items-center">
@@ -144,7 +144,7 @@ export default function PartnerProgram() {
                     </div>
                   </div>
 
-                  {/* Slider 2: Business Pro (MAX) */}
+                  {/* Slider 2: Business Pro */}
                   <div className="space-y-2">
                     <div className="flex justify-between items-center">
                       <label className="text-sm font-black text-[#818CF8] uppercase tracking-wider flex items-center gap-1.5">
@@ -172,9 +172,9 @@ export default function PartnerProgram() {
 
                 {/* Simulation Output Card */}
                 <div className="mt-8 p-6 bg-slate-50 rounded-2xl border border-slate-100 relative overflow-hidden">
-                  
+
                   <div className="grid grid-cols-2 gap-4 text-center">
-                    
+
                     {/* Monthly Sum */}
                     <div className="border-r border-slate-200 pr-2">
                       <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Monthly Payout</span>
@@ -209,7 +209,7 @@ export default function PartnerProgram() {
                   >
                     Become Partner Now <ArrowRight size={14} />
                   </Link>
-                  
+
                   <a
                     href="https://wa.me/254790590653?text=Hi%20Hlynk%2C%20I%20want%20to%20know%20more%20about%20the%20Partner%20Program."
                     target="_blank"

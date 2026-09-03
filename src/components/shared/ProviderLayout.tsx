@@ -599,25 +599,31 @@ function MobileBottomNav({ user, targetEndDate }: {
     if (hasHosp && !hasPos) {
       // Hospitality-only overflow
       return [
-        { to: '/dashboard/sales/new',  label: 'New Booking',      icon: CalendarCheck },
-        { to: '/dashboard/settings',   label: 'Settings & Tools', icon: Settings },
-        { to: '/dashboard/subscription', label: 'My Plan',        icon: Calendar },
+        { to: '/dashboard/sales/new',    label: 'New Booking',       icon: CalendarCheck },
+        { to: '/dashboard/customers',    label: 'Customers',         icon: Users },
+        { to: '/dashboard/developer',    label: 'Payment Gateway',   icon: CreditCard },
+        { to: '/dashboard/settings',     label: 'Settings & Tools',  icon: Settings },
+        { to: '/dashboard/subscription', label: 'My Plan',           icon: Calendar },
       ];
     }
     if (hasHosp && hasPos) {
       // Both-modules overflow
       return [
-        { to: '/dashboard/sales',        label: 'Sales History',    icon: Clock },
-        { to: '/dashboard/products',     label: 'Items & Pricing',  icon: Package },
-        { to: '/dashboard/expenses',     label: 'Expenses',         icon: ShoppingCart },
-        { to: '/dashboard/settings',     label: 'Settings & Tools', icon: Settings },
-        { to: '/dashboard/subscription', label: 'My Plan',          icon: Calendar },
+        { to: '/dashboard/sales',        label: 'Sales History',     icon: Clock },
+        { to: '/dashboard/products',     label: 'Items & Pricing',   icon: Package },
+        { to: '/dashboard/expenses',     label: 'Expenses',          icon: ShoppingCart },
+        { to: '/dashboard/customers',    label: 'Customers',         icon: Users },
+        { to: '/dashboard/developer',    label: 'Payment Gateway',   icon: CreditCard },
+        { to: '/dashboard/settings',     label: 'Settings & Tools',  icon: Settings },
+        { to: '/dashboard/subscription', label: 'My Plan',           icon: Calendar },
       ];
     }
-    // POS only — settings + subscription
+    // POS only — settings + subscription + customers + payment gateway
     return [
-      { to: '/dashboard/settings',     label: 'Settings & Tools', icon: Settings },
-      { to: '/dashboard/subscription', label: 'My Plan',          icon: Calendar },
+      { to: '/dashboard/customers',    label: 'Customers',         icon: Users },
+      { to: '/dashboard/developer',    label: 'Payment Gateway',   icon: CreditCard },
+      { to: '/dashboard/settings',     label: 'Settings & Tools',  icon: Settings },
+      { to: '/dashboard/subscription', label: 'My Plan',           icon: Calendar },
     ];
   }, [hasPos, hasHosp]);
 
@@ -659,7 +665,6 @@ function MobileBottomNav({ user, targetEndDate }: {
           key={item.label}
           to={item.to}
           className="flex-1 min-w-0 flex flex-col items-center gap-0.5 py-1 no-tap-highlight"
-          onTouchStart={() => setShowBanner(true)}
         >
           {({ isActive }) => (
             <>
@@ -679,7 +684,6 @@ function MobileBottomNav({ user, targetEndDate }: {
         to={item.to}
         end={item.end}
         className="flex-1 min-w-0 flex flex-col items-center gap-0.5 py-1 no-tap-highlight"
-        onTouchStart={() => setShowBanner(true)}
       >
         {({ isActive }) => (
           <>
@@ -757,9 +761,24 @@ function MobileBottomNav({ user, targetEndDate }: {
         )}
       </AnimatePresence>
 
+      {/* ── Floating countdown toggle button (right side, above bottom nav) ── */}
+      {targetEndDate && (
+        <div className="fixed right-3 z-[94] lg:hidden pointer-events-none"
+          style={{ bottom: `calc(6.5rem + env(safe-area-inset-bottom, 0px))` }}
+        >
+          <button
+            onClick={() => setShowBanner(v => !v)}
+            className="pointer-events-auto flex flex-col items-center justify-center h-10 w-10 rounded-full bg-[#0D4A3E] shadow-lg shadow-[#0D4A3E]/30 active:scale-95 transition-all no-tap-highlight border border-white/10"
+            aria-label="Toggle subscription countdown"
+          >
+            <Clock className="w-4 h-4 text-white" strokeWidth={2.5} />
+          </button>
+        </div>
+      )}
+
       <div className="fixed inset-x-0 bottom-[env(safe-area-inset-bottom,0px)] z-[95] lg:hidden flex flex-col items-center pointer-events-none">
 
-        {/* Subscription status banner */}
+        {/* Subscription status banner — toggled by the floating clock button */}
         <AnimatePresence>
           {targetEndDate && showBanner && (
             <motion.div

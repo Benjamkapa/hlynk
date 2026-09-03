@@ -201,11 +201,11 @@ export default function SettingsPage() {
     { name: 'Platform Hub', icon: Sparkles, mobileOnly: true }, // NEW: Mini Bar for all hidden features
     { name: 'Profile', icon: User },
     { name: 'Business', icon: Store, role: ['PROVIDER', 'SUPER_ADMIN'] },
-    { name: 'Customers', icon: Users, role: ['PROVIDER'], mobileOnly: true },
+    // { name: 'Customers', icon: Users, role: ['PROVIDER'], mobileOnly: true },
     { name: 'Notifications', icon: Bell },
-    { name: 'Payment Gateway', icon: CreditCard, role: ['PROVIDER'], plan: 'PLUS', mobileOnly: true },
+    // { name: 'Payment Gateway', icon: CreditCard, role: ['PROVIDER'], mobileOnly: true },
     // { name: 'KRA eTIMS', icon: EtimsIcon, role: ['PROVIDER'], mobileOnly: true },
-    { name: 'My Plan', icon: Sparkles, role: ['PROVIDER', 'SUPER_ADMIN'], mobileOnly: true },
+    // { name: 'My Plan', icon: Sparkles, role: ['PROVIDER', 'SUPER_ADMIN'], mobileOnly: true },
     { name: 'Data Management', icon: Trash2, role: ['PROVIDER', 'SUPER_ADMIN'] },
     { name: 'Security', icon: Lock },
   ]
@@ -305,19 +305,6 @@ export default function SettingsPage() {
                     <p className="text-emerald-200 text-[10px] md:text-sm font-medium">Quick access to all system features</p>
                   </div>
                   <Sparkles className="absolute -right-4 -bottom-4 text-white/10" size={100} />
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <ModuleTile icon={FileText} label="Inventory" sub="Products & Stock" link="/dashboard/products" color="bg-blue-50 text-blue-600" />
-                  <ModuleTile icon={RefreshCcw} label="Sales" sub="History & Records" link="/dashboard/sales" color="bg-emerald-50 text-emerald-600" />
-                  {/* <ModuleTile icon={EtimsIcon} label="KRA eTIMS" sub="Compliance" link="/dashboard/etims" color="bg-red-50 text-red-600" isImg isComingSoon /> */}
-                  <ModuleTile icon={Users} label="Customers" sub="CRM Database" link="/dashboard/customers" color="bg-amber-50 text-amber-600" />
-                  <ModuleTile icon={CreditCard} label="Gateways" sub="Direct Payouts" link="/dashboard/developer" color="bg-emerald-50 text-emerald-600" />
-                  <ModuleTile icon={Trash2} label="Expenses" sub="Cost Tracking" link="/dashboard/expenses" color="bg-purple-50 text-purple-600" />
-                  <ModuleTile icon={Shield} label="Security" sub="Activity Logs" link="/dashboard/logs" color="bg-slate-100 text-slate-600" />
-                  {/* <ModuleTile icon={Plus} label="New Sale" sub="Terminal" link="/dashboard/sales/new" color="bg-rose-50 text-rose-600" /> */}
-                  <ModuleTile icon={Users} label="Staff" sub="Team Control" link="/dashboard/staff" color="bg-indigo-50 text-indigo-600" />
-                  <ModuleTile icon={Mail} label="Help Desk" sub="Support Center" link="/dashboard/help" color="bg-cyan-50 text-cyan-600" />
                 </div>
               </div>
             )}
