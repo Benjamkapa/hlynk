@@ -329,7 +329,7 @@ export default function StayPage({ isShopMode }: { isShopMode?: boolean }) {
   const isShopPath =
     isShopMode ||
     (typeof window !== "undefined" &&
-      window.location.pathname.startsWith("/shop"));
+      (window.location.pathname.startsWith("/shop") || window.location.pathname.startsWith("/store")));
 
   const [listing, setListing] = useState<Listing | null>(null);
   const [loading, setLoading] = useState(true);

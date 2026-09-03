@@ -17,28 +17,28 @@ const PLANS = [
     price: 4450,
     desc: 'For growing businesses needing inventory management, sales recording, automated M-Pesa payments, and basic team delegation.',
     color: 'teal',
-    features: ['Manage up to 100 items', 'Record Sales & Expenses', 'M-Pesa STK Push Automation', 'Profit Analytics & Reports', 'Public Store Page (/store/:slug)', 'Customer Tracking', '1 Staff Account', 'Priority Support'],
-    notIncluded: ['Public Stay Booking (/stay/:slug)', 'KCB Buni Direct Settlement', 'Unlimited Staff Accounts', 'Staff Audit Logs & Activity Tracking', 'Custom Roles & Permissions']
+    features: ['Manage up to 60 items', 'Record Sales & Expenses', 'M-Pesa STK Push Automation', 'Profit Analytics & Reports', 'Customer Tracking', '1 Staff Account', 'Priority Support'],
+    notIncluded: ['Public Store / Shop Page (/store, /shop)', 'Public Stay Booking (/stay/:slug)', 'KCB Buni Direct Settlement', 'Unlimited Staff Accounts', 'Staff Audit Logs & Activity Tracking', 'Custom Roles & Permissions']
   },
   {
     id: 'MAX',
     name: 'Business Pro',
     price: 8200,
-    desc: 'For larger businesses, hotels, BnBs, and teams requiring public stay booking, full audit logs, and direct bank settlements.',
+    desc: 'For larger businesses, hotels, BnBs, and teams requiring public store/shop pages, public stay booking, full audit logs, and direct bank settlements.',
     color: 'purple',
-    features: ['Everything in Starter Plan', 'Unlimited Inventory Items', 'Public Stay Booking (/stay/:slug)', 'KCB Buni Settlement Gateway', 'Unlimited Staff Accounts', 'Staff Audit Logs & Activity Tracking', 'Custom Roles & Permissions', 'Dedicated Manager Support'],
+    features: ['Everything in Starter Plan', 'Unlimited Inventory Items', 'Public Store / Shop Page (/store, /shop)', 'Public Stay Booking (/stay/:slug)', 'KCB Buni Settlement Gateway', 'Unlimited Staff Accounts', 'Staff Audit Logs & Activity Tracking', 'Custom Roles & Permissions', 'Dedicated Manager Support'],
     notIncluded: []
   },
 ]
 
 const FEATURE_COMPARISON = [
-  { name: 'Inventory Management (Items)', starter: 'Up to 100', pro: 'Unlimited' },
+  { name: 'Inventory Management (Items)', starter: 'Up to 60', pro: 'Unlimited' },
+  { name: 'Staff Accounts', starter: '1 Account', pro: 'Unlimited' },
   { name: 'POS Sales & Expense Recording', starter: true, pro: true },
   { name: 'M-Pesa STK Push Automation', starter: true, pro: true },
   { name: 'Profit Analytics & Reports', starter: true, pro: true },
-  { name: 'Public Store / Shop Page (/store)', starter: true, pro: true },
+  { name: 'Public Store / Shop Page (/store, /shop)', starter: false, pro: true },
   { name: 'Public Stay Booking Page (/stay)', starter: false, pro: true },
-  { name: 'Staff Accounts', starter: '1 Account', pro: 'Unlimited' },
   { name: 'KCB Buni Direct Settlement', starter: false, pro: true },
   { name: 'Staff Audit Logs & Activity Tracking', starter: false, pro: true },
   { name: 'Roles & Permissions', starter: false, pro: true },

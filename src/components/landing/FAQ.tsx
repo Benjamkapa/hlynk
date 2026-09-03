@@ -9,11 +9,11 @@ const faqs = [
   },
   {
     question: "What is the difference between Starter and Business Pro?",
-    answer: "Starter covers single-store POS operations, up to 100 inventory items, and M-Pesa STK payments. Business Pro unlocks unlimited inventory, public stay/BnB booking pages, direct bank payouts, and full audit logs."
+    answer: "Starter covers single-store POS operations, up to 60 inventory items, and M-Pesa STK payments. Business Pro unlocks unlimited inventory, public store/shop & stay booking pages, direct bank payouts, and full audit logs."
   },
   {
-    question: "Can I manage stay or BnB bookings on Hlynk?",
-    answer: "Yes. Business Pro subscribers and trial users get a dedicated public stay listing page (/stay/your-property) to showcase rooms, check availability, and accept direct guest bookings."
+    question: "Can I manage public store listings and stay bookings on Hlynk?",
+    answer: "Yes. Business Pro subscribers and trial users get dedicated public store (/store/your-slug) and stay booking pages (/stay/your-property) to showcase products & rooms, check availability, and accept direct client orders and guest bookings."
   },
   {
     question: "Does Hlynk work offline when my internet connection drops?",

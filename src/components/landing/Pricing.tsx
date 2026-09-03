@@ -12,9 +12,9 @@ const pricingPlans = [
     cardColor: "#D98B72",
     buttonText: "Get started",
     features: [
-      "Up to 100 items in inventory",
+      "Up to 60 items in inventory",
       "M-Pesa STK Push checkout",
-      "Public store page",
+      "Profit analytics & reporting",
       "1 staff account"
     ]
   },
@@ -29,7 +29,7 @@ const pricingPlans = [
     features: [
       "Everything in Starter",
       "Unlimited items & staff",
-      "Public stay booking page",
+      "Public store & stay booking pages",
       "Direct bank settlements",
       "Audit logs & permissions"
     ]

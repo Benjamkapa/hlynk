@@ -11,6 +11,8 @@ type Feature =
   | 'staff_accounts'
   | 'advanced_reports'
   | 'stay_page'
+  | 'store_page'
+  | 'public_store'
   | 'audit_logs'
   | 'kcb_settlement'
 
@@ -31,6 +33,8 @@ export const FEATURE_PLANS: Record<Feature, string[]> = {
   staff_accounts: ['PLUS', 'MAX'],
   advanced_reports: ['PLUS', 'MAX'],
   stay_page: ['MAX'],
+  store_page: ['MAX'],
+  public_store: ['MAX'],
   audit_logs: ['MAX'],
   kcb_settlement: ['MAX'],
 }
