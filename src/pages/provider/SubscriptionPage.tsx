@@ -42,7 +42,7 @@ const FEATURE_COMPARISON = [
   { name: 'KCB Buni Direct Settlement', starter: false, pro: true },
   { name: 'Staff Audit Logs & Activity Tracking', starter: false, pro: true },
   { name: 'Roles & Permissions', starter: false, pro: true },
-  { name: 'Support Level', starter: 'Priority', pro: 'Dedicated Manager' },
+  // { name: 'Support Level', starter: 'Priority', pro: 'Dedicated Manager' },
 ]
 
 import { SubscriptionExpiredBanner } from '../../components/shared/SubscriptionGuard'
