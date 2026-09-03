@@ -936,7 +936,7 @@ export default function RecordSalePage() {
                   <div className="space-y-2">
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1 block mb-2">Customer M-Pesa Number</label>
                     <input
-                      type="text"
+                      type="number"
                       placeholder="07..."
                       value={mpesaPhone}
                       onChange={(e) => setMpesaPhone(e.target.value)}
@@ -1039,7 +1039,7 @@ export default function RecordSalePage() {
           <div className="flex items-center gap-2">
             <button
               onClick={() => setActiveTab('cart')}
-              className="flex-1 bg-[#0D4A3E] text-white p-5 rounded-[.5rem] shadow-2xl shadow-emerald-900/40 flex items-center justify-between border-4 border-white/10 backdrop-blur-md"
+              className="flex-1 bg-[#0D4A3E] text-white p-3 rounded-[.5rem] shadow-2xl shadow-emerald-900/40 flex items-center justify-between backdrop-blur-md"
             >
               <div className="flex items-center gap-4">
                 <div className="h-10 w-10 bg-white/20 rounded-[.5rem] flex items-center justify-center relative">
@@ -1059,7 +1059,7 @@ export default function RecordSalePage() {
             </button>
             <button
               onClick={() => { setCart([]); localStorage.removeItem('hlynk_pos_cart'); }}
-              className="bg-red-500 text-white p-5 rounded-[.5rem] shadow-2xl shadow-red-900/40 flex items-center justify-center border-4 border-white/10 backdrop-blur-md hover:bg-red-600 transition-colors shrink-0"
+              className="bg-red-500 text-white p-3 rounded-full shadow-2xl shadow-red-900/40 flex items-center justify-center backdrop-blur-md hover:bg-red-600 transition-colors shrink-0"
               title="Clear Cart"
             >
               <X size={24} />

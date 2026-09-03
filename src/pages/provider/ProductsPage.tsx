@@ -944,7 +944,7 @@ function ProductForm({ onClose }: { onClose: () => void }) {
       </div>
 
       {form.type === 'GOOD' && (
-        <InputGroup label="Initial stock" placeholder="0" mono value={form.stock} onChange={(v: string) => setForm({ ...form, stock: v })} />
+        <InputGroup label="Initial stock" placeholder="0" mono value={form.stock} inputType="number" onChange={(v: string) => setForm({ ...form, stock: v })} />
       )}
 
       {form.type === 'GOOD' && (
@@ -1158,9 +1158,9 @@ function EditProductForm({ product, onClose }: { product: any; onClose: () => vo
 
       <div className={`grid ${form.type === 'GOOD' ? 'grid-cols-2' : 'grid-cols-1'} gap-4`}>
         {form.type === 'GOOD' && (
-          <InputGroup label="Buying price" placeholder="0.00" mono value={form.buyingPrice} onChange={(v: string) => setForm({ ...form, buyingPrice: v })} />
+          <InputGroup label="Buying price" inputType="number" placeholder="0.00" mono value={form.buyingPrice} onChange={(v: string) => setForm({ ...form, buyingPrice: v })} />
         )}
-        <InputGroup label="Selling price" placeholder="0.00" mono value={form.price} onChange={(v: string) => setForm({ ...form, price: v })} />
+        <InputGroup label="Selling price" inputType="number" placeholder="0.00" mono value={form.price} onChange={(v: string) => setForm({ ...form, price: v })} />
       </div>
 
       {form.type === 'GOOD' && (
