@@ -326,7 +326,7 @@ export default function AdminLayout() {
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: 'auto', opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
-              className="bg-emerald-900 text-white z-[100] border-b border-white/10 flex-shrink-0"
+              className="bg-emerald-900 text-white z-[100] border-b pt-5 border-white/10 flex-shrink-0"
             >
               <div className="max-w-screen-2xl mx-auto px-4 sm:px-8 py-3 flex items-center justify-between gap-4">
                 <div className="flex items-center gap-3 overflow-hidden">
