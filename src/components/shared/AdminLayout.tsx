@@ -94,6 +94,7 @@ export default function AdminLayout() {
         { to: '/admin/system-performance', label: 'Performance', icon: Activity },
         { to: '/admin/financials', label: 'Financials', icon: DollarSign },
         { to: '/admin/payments', label: 'Payments', icon: Landmark },
+        { to: '/admin/notifications', label: 'Notifications', icon: Bell },
       ],
     },
     {
@@ -400,6 +401,7 @@ function MobileBottomAdminNav() {
   ]
 
   const overflowItems = [
+    { to: '/admin/notifications', label: 'Notifications', icon: Bell },
     { to: '/admin/community-reviews', label: 'Reviews', icon: MessageSquare },
     { to: '/admin/forensic-audit', label: 'Forensic Audit', icon: ShieldCheck },
     { to: '/admin/reports', label: 'Reports', icon: BarChart2 },

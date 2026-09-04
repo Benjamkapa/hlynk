@@ -508,46 +508,6 @@ export default function SettingsPage() {
                     />
                   </div>
                 </div>
-
-                {/* <div className="pt-6 border-t border-gray-50 mt-6">
-                  <h4 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-6">Operational Settings</h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <ToggleItem
-                      title="Tax Inclusive Pricing"
-                      desc="All product prices include 16% VAT"
-                      active={formData.operationalSettings?.taxInclusive}
-                      onToggle={(v: boolean) => setFormData({
-                        ...formData,
-                        operationalSettings: { ...formData.operationalSettings, taxInclusive: v }
-                      })}
-                    />
-                    <ToggleItem
-                      title="Auto-Print Receipts"
-                      desc="Automatically print receipt after each sale"
-                      active={formData.operationalSettings?.autoPrint}
-                      onToggle={(v: boolean) => setFormData({
-                        ...formData,
-                        operationalSettings: { ...formData.operationalSettings, autoPrint: v }
-                      })}
-                    />
-                    <InputGroup
-                      label="Low Stock Threshold"
-                      placeholder="e.g. 5"
-                      type="number"
-                      value={formData.operationalSettings?.lowStockThreshold || ''}
-                      onChange={(v: string) => setFormData({
-                        ...formData,
-                        operationalSettings: { ...formData.operationalSettings, lowStockThreshold: parseInt(v) || 0 }
-                      })}
-                    />
-                    <div className="mt-4 p-4 bg-emerald-50 rounded-[.5rem] border border-emerald-100">
-                      <p className="text-[10px] text-emerald-800 font-bold uppercase tracking-widest leading-relaxed">
-                        <Sparkles size={12} className="inline mr-1" />
-                        Smart Tuning: Setting this to <span className="text-emerald-900 font-black">{formData.operationalSettings?.lowStockThreshold || 0}</span> means we will flag items in your inventory as "Low Stock" when their quantity drops below this number.
-                      </p>
-                    </div>
-                  </div>
-                </div> */}
               </div>
             )}
 
@@ -588,7 +548,6 @@ export default function SettingsPage() {
                     </div>
                   </div>
                 </div>
-
                 <div className="p-5 lg:p-8 bg-blue-50 border border-blue-100 rounded-[.5rem] flex flex-col sm:flex-row items-start gap-5">
                   <RefreshCcw className="text-blue-600 shrink-0 mt-1" size={24} />
                   <div className="w-full">

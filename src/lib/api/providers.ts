@@ -140,6 +140,8 @@ export const adminApi = {
   restartCluster: () => api.post('/admin/system/restart').then(r => r.data),
   getSystemEvents: (params?: any) => api.get('/admin/system-events', { params }).then(r => r.data),
   pruneSystemEvents: (days: number) => api.post('/admin/system-events/prune', { days }).then(r => r.data),
+  getNotifications: (params?: { search?: string, page?: number, limit?: number }) => api.get('/admin/notifications', { params }).then(r => r.data),
+  deleteNotification: (id: string) => api.delete(`/admin/notifications/${id}`).then(r => r.data),
   runReportQuery: (data: any) => api.post('/admin/reports/query', data).then(r => r.data),
   getSchedules: () => api.get('/admin/schedules').then(r => r.data),
   getSettings: () => api.get('/admin/settings').then(r => r.data),

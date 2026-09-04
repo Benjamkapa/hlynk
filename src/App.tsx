@@ -45,6 +45,7 @@ const SettingsPageAdmin = lazy(() => import('./pages/admin/SettingsPage'))
 const HelpPageAdmin = lazy(() => import('./pages/admin/HelpPage'))
 const ReviewsPageAdmin = lazy(() => import('./pages/admin/ReviewsPage'))
 const CloudStoragePage = lazy(() => import('./pages/admin/CloudStoragePage'))
+const SystemNotificationsPage = lazy(() => import('./pages/admin/SystemNotificationsPage'))
 
 // Provider Pages
 import RecordSalePage from './pages/provider/RecordSalePage'
@@ -174,6 +175,7 @@ export default function App() {
           <Route path="forensic-audit" element={<AuditSecurityPage />} />
           <Route path="community-reviews" element={<ReviewsPageAdmin />} />
           <Route path="reports" element={<ReportsPageAdmin />} />
+          <Route path="notifications" element={<SystemNotificationsPage />} />
           <Route path="settings" element={<SettingsPageAdmin />} />
           <Route path="help" element={<HelpPageAdmin />} />
         </Route>
