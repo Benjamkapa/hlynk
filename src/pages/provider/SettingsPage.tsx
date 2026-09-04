@@ -509,7 +509,7 @@ export default function SettingsPage() {
                   </div>
                 </div>
 
-                <div className="pt-6 border-t border-gray-50 mt-6">
+                {/* <div className="pt-6 border-t border-gray-50 mt-6">
                   <h4 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-6">Operational Settings</h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <ToggleItem
@@ -547,7 +547,7 @@ export default function SettingsPage() {
                       </p>
                     </div>
                   </div>
-                </div>
+                </div> */}
               </div>
             )}
 
