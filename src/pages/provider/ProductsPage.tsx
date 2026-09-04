@@ -261,7 +261,10 @@ export default function ProductsPage() {
                 let msgData: any = null;
                 try { msgData = JSON.parse(req.message); } catch (_) {}
 
-                const cleanPhone = (req.customerPhone || '').replace(/[^0-9]/g, '');
+                let cleanPhone = (req.customerPhone || '').replace(/[^0-9]/g, '');
+                if (cleanPhone.startsWith('0') && (cleanPhone.length === 10 || cleanPhone.length === 9)) {
+                  cleanPhone = '254' + cleanPhone.slice(1);
+                }
 
                 return (
                   <div key={req.id} className="bg-gray-50 border border-gray-100 rounded-[.5rem] p-4 space-y-3 relative group">

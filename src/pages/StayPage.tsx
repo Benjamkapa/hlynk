@@ -121,6 +121,15 @@ function formatPrice(price: number) {
   return `KES ${Number(price || 0).toLocaleString()}`;
 }
 
+function formatWhatsAppNumber(phone?: string): string {
+  if (!phone) return "";
+  let cleaned = phone.replace(/[^0-9]/g, "");
+  if (cleaned.startsWith("0") && (cleaned.length === 10 || cleaned.length === 9)) {
+    cleaned = "254" + cleaned.slice(1);
+  }
+  return cleaned;
+}
+
 function getItemImages(item: Room | Product): string[] {
   if ("meta" in item) {
     if (item.meta?.images?.length) return item.meta.images.filter(Boolean);
@@ -1532,10 +1541,7 @@ export default function StayPage({ isShopMode }: { isShopMode?: boolean }) {
               <div className="mt-6 grid gap-2">
                 {listing?.phone && (
                   <a
-                    href={`https://wa.me/${listing.phone.replace(
-                      /[^0-9]/g,
-                      ""
-                    )}?text=${encodeURIComponent(
+                    href={`https://wa.me/${formatWhatsAppNumber(listing.phone)}?text=${encodeURIComponent(
                       `Hi ${listing.businessName}, I just placed an order (${orderSuccess.paymentOption === "PAY_UPFRONT" ? "Paid Upfront via M-Pesa" : "Pay on Delivery"}). My name is ${orderSuccess.orderedByName}.`
                     )}`}
                     target="_blank"
