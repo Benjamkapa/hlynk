@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { Camera, RefreshCw, X, Circle } from 'lucide-react';
+import { Camera, RefreshCw, X } from 'lucide-react';
 
 interface CameraCaptureProps {
   onCapture: (file: File) => void;
@@ -9,27 +9,25 @@ interface CameraCaptureProps {
 export const CameraCapture: React.FC<CameraCaptureProps> = ({ onCapture, onClose }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [stream, setStream] = useState<MediaStream | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
   const [facingMode, setFacingMode] = useState<'user' | 'environment'>('environment');
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    startCamera();
-    return () => {
-      stopCamera();
-    };
-  }, [facingMode]);
+  const stopCamera = () => {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => track.stop());
+      streamRef.current = null;
+    }
+  };
 
   const startCamera = async () => {
     try {
-      if (stream) {
-        stopCamera();
-      }
+      stopCamera();
       const newStream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: facingMode, width: { ideal: 1920 }, height: { ideal: 1080 } },
         audio: false
       });
-      setStream(newStream);
+      streamRef.current = newStream;
       if (videoRef.current) {
         videoRef.current.srcObject = newStream;
       }
@@ -39,11 +37,12 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ onCapture, onClose
     }
   };
 
-  const stopCamera = () => {
-    if (stream) {
-      stream.getTracks().forEach(track => track.stop());
-    }
-  };
+  useEffect(() => {
+    startCamera();
+    return () => {
+      stopCamera();
+    };
+  }, [facingMode]);
 
   const handleCapture = () => {
     if (videoRef.current && canvasRef.current) {
@@ -57,6 +56,7 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ onCapture, onClose
         canvas.toBlob((blob) => {
           if (blob) {
             const file = new File([blob], `capture_${Date.now()}.jpg`, { type: 'image/jpeg' });
+            stopCamera();
             onCapture(file);
             onClose();
           }
@@ -75,7 +75,7 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ onCapture, onClose
         <div className="text-white text-center p-6 bg-red-900/20 rounded-xl border border-red-500/50">
           <p className="font-bold mb-4">{error}</p>
           <button 
-            onClick={onClose}
+            onClick={() => { stopCamera(); onClose(); }}
             className="px-6 py-2 bg-white text-black rounded-lg font-bold"
           >
             Go Back
@@ -95,7 +95,7 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ onCapture, onClose
             <div className="absolute inset-0 flex flex-col justify-between p-6">
               <div className="flex justify-between items-center">
                 <button 
-                  onClick={onClose}
+                  onClick={() => { stopCamera(); onClose(); }}
                   className="p-3 bg-black/40 backdrop-blur-md rounded-full text-white hover:bg-black/60 transition-all"
                 >
                   <X size={24} />

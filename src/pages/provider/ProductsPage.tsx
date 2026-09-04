@@ -212,7 +212,7 @@ export default function ProductsPage() {
       </div>
 
       {/* Summary strip */}
-      <div className="grid grid-cols-4 sm:grid-cols-2 lg:grid-cols-4 gap-px bg-gray-100 rounded-[.5rem] overflow-hidden border border-gray-100">
+      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-px bg-gray-100 rounded-[.5rem] overflow-hidden border border-gray-100">
         <SummaryCell title="Total items" value={stats.totalItems.toLocaleString()} sub="Unique SKUs" />
         <FeatureGate feature="low_stock_alerts" variant="tease">
           <SummaryCell title="Low stock" value={`${stats.lowStock}`} sub="Requires attention" tone={stats.lowStock > 0 ? 'red' : undefined} />
