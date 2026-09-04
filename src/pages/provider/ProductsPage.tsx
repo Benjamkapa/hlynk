@@ -1167,7 +1167,7 @@ function EditProductForm({ product, onClose }: { product: any; onClose: () => vo
       </div>
 
       {form.type === 'GOOD' && (
-        <InputGroup label="Current stock" placeholder="0" mono value={form.stock} onChange={(v: string) => setForm({ ...form, stock: v })} />
+        <InputGroup label="Current stock" inputType="number" placeholder="0" mono value={form.stock} onChange={(v: string) => setForm({ ...form, stock: v })} />
       )}
 
       {form.type === 'GOOD' && (
@@ -1215,14 +1215,25 @@ function EditProductForm({ product, onClose }: { product: any; onClose: () => vo
   )
 }
 
-function InputGroup({ label, placeholder, mono = false, value, onChange }: any) {
+function InputGroup({ label, placeholder, mono = false, value, onChange, inputType = 'text' }: any) {
   return (
     <div className="space-y-1.5">
       <label className="text-xs text-gray-500">{label}</label>
       <input
-        type="text"
+        type={inputType}
+        min={inputType === 'number' ? '0' : undefined}
+        step={inputType === 'number' ? 'any' : undefined}
         value={value}
-        onChange={(e) => onChange(e.target.value)}
+        onChange={(e) => {
+          const val = e.target.value;
+          if (inputType === 'number') {
+            if (val === '' || /^\d*\.?\d*$/.test(val)) {
+              onChange(val);
+            }
+          } else {
+            onChange(val);
+          }
+        }}
         placeholder={placeholder}
         className={`w-full bg-gray-50 border-none rounded-[.5rem] py-3 px-3.5 outline-none focus:ring-2 focus:ring-gray-200 transition-all text-sm ${mono ? 'hl-mono' : ''}`}
       />
