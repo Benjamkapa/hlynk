@@ -148,7 +148,7 @@ export default function PaymentsPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-px bg-gray-100 rounded-[.5rem] overflow-hidden border border-gray-100">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-gray-100 rounded-[.5rem] overflow-hidden border border-gray-100">
         <StatCard title="Total Volume" value={`KES ${(stats?.totalVolume24h || 0).toLocaleString()}`} sub="Last 24h Global" icon={CreditCard} color="emerald" />
         <StatCard title="Success Rate" value={`${stats?.successRate || 0}%`} sub="Payment Reliability" icon={ArrowUpRight} color="blue" />
         <StatCard title="Pending Settlements" value={`KES ${(stats?.pendingPayoutsAmount || 0).toLocaleString()}`} sub={`${stats?.pendingPayoutsCount || '0'} Transfers Required`} icon={Clock} color="amber" />

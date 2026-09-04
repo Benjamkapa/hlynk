@@ -49,11 +49,11 @@ export default function SettingsPage() {
       let mods: string[] = [];
       if (Array.isArray(d.activeModules) && d.activeModules.length > 0) mods = d.activeModules;
       else if (typeof d.activeModules === 'string') {
-        try { mods = JSON.parse(d.activeModules); } catch (_) {}
+        try { mods = JSON.parse(d.activeModules); } catch (_) { }
       }
       if (!mods.length && Array.isArray(user?.activeModules)) mods = user.activeModules;
       else if (!mods.length && typeof user?.activeModules === 'string') {
-        try { mods = JSON.parse(user.activeModules); } catch (_) {}
+        try { mods = JSON.parse(user.activeModules); } catch (_) { }
       }
       if (!mods.length) mods = ['POS'];
 
@@ -264,11 +264,10 @@ export default function SettingsPage() {
             <button
               key={tab.name}
               onClick={() => setActiveTab(tab.name)}
-              className={`flex flex-col items-center justify-center gap-1.5 py-3 px-1.5 rounded-[.5rem] text-center transition-all ${
-                activeTab === tab.name
+              className={`flex flex-col items-center justify-center gap-1.5 py-3 px-1.5 rounded-[.5rem] text-center transition-all ${activeTab === tab.name
                   ? 'bg-[#0D4A3E] text-white'
                   : 'bg-gray-50 text-gray-500 hover:bg-gray-100'
-              }`}
+                }`}
             >
               <tab.icon size={18} />
               <span className="text-[10px] font-semibold leading-tight">{tab.name}</span>
@@ -281,11 +280,10 @@ export default function SettingsPage() {
             <button
               key={tab.name}
               onClick={() => setActiveTab(tab.name)}
-              className={`w-full flex items-center gap-3 px-6 py-4 rounded-[.5rem] font-bold text-sm transition-all ${
-                activeTab === tab.name
+              className={`w-full flex items-center gap-3 px-6 py-4 rounded-[.5rem] font-bold text-sm transition-all ${activeTab === tab.name
                   ? 'bg-white text-emerald-600 shadow-sm'
                   : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'
-              }`}
+                }`}
             >
               <tab.icon size={18} />
               {tab.name}
@@ -475,20 +473,20 @@ export default function SettingsPage() {
                 />
 
                 <div className="space-y-2 mt-6">
-                   <label className="text-xs font-black text-gray-400 uppercase tracking-widest">Sales Channels / Sources</label>
-                   <input
-                      type="text"
-                      placeholder="e.g. Walk-in, Uber Eats, Glovo (comma separated)"
-                      value={(formData.operationalSettings?.saleSources || ['In-Store', 'Walk-in']).join(', ')}
-                      onChange={(e) => {
-                         const raw = e.target.value.split(',').map(s => s.trimStart()).filter(Boolean);
-                         setFormData({
-                            ...formData,
-                            operationalSettings: { ...formData.operationalSettings, saleSources: raw }
-                         })
-                      }}
-                      className="w-full bg-gray-50 border-none rounded-[.5rem] py-3.5 px-4 outline-none focus:ring-2 focus:ring-emerald-500/10 transition-all text-sm font-bold"
-                   />
+                  <label className="text-xs font-black text-gray-400 uppercase tracking-widest">Sales Channels / Sources</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Walk-in, Uber Eats, Glovo (comma separated)"
+                    value={(formData.operationalSettings?.saleSources || ['In-Store', 'Walk-in']).join(', ')}
+                    onChange={(e) => {
+                      const raw = e.target.value.split(',').map(s => s.trimStart()).filter(Boolean);
+                      setFormData({
+                        ...formData,
+                        operationalSettings: { ...formData.operationalSettings, saleSources: raw }
+                      })
+                    }}
+                    className="w-full bg-gray-50 border-none rounded-[.5rem] py-3.5 px-4 outline-none focus:ring-2 focus:ring-emerald-500/10 transition-all text-sm font-bold"
+                  />
                 </div>
 
                 <div className="pt-6 border-t border-gray-50 mt-6">
@@ -668,8 +666,8 @@ export default function SettingsPage() {
                     <h4 className="text-xs font-black text-slate-700 uppercase tracking-widest">Offline PIN</h4>
                   </div>
                   <div className={`p-5 lg:p-6 rounded-[.5rem] border flex flex-col sm:flex-row sm:items-center justify-between gap-4 ${pinHasPin
-                      ? 'bg-emerald-50 border-emerald-100'
-                      : 'bg-amber-50 border-amber-100'
+                    ? 'bg-emerald-50 border-emerald-100'
+                    : 'bg-amber-50 border-amber-100'
                     }`}>
                     <div>
                       <p className={`text-sm font-black mb-1 ${pinHasPin ? 'text-emerald-900' : 'text-amber-900'
@@ -750,15 +748,15 @@ export default function SettingsPage() {
           confirmDeleteId === 'delete-profile-facility'
             ? 'PERMANENTLY DELETE PROFILE & FACILITY?'
             : confirmDeleteId === 'deactivate'
-            ? 'Deactivate Account?'
-            : 'Reset Business Data?'
+              ? 'Deactivate Account?'
+              : 'Reset Business Data?'
         }
         message={
           confirmDeleteId === 'delete-profile-facility'
             ? 'CRITICAL WARNING: This will permanently erase your user profile, all staff logins, inventory, sales, financial records, and your facility tenant from HudumaLynk. THIS CANNOT BE UNDONE. Are you absolutely sure?'
             : confirmDeleteId === 'deactivate'
-            ? 'Are you sure you want to deactivate your account? This action will disable access for you and your staff.'
-            : 'Are you sure you want to reset workshop data? All sales and product data will be cleared.'
+              ? 'Are you sure you want to deactivate your account? This action will disable access for you and your staff.'
+              : 'Are you sure you want to reset workshop data? All sales and product data will be cleared.'
         }
         confirmText={confirmDeleteId === 'delete-profile-facility' ? 'Yes, Delete Everything' : 'Confirm'}
         onConfirm={() => {

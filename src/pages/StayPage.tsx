@@ -26,6 +26,9 @@ import {
   AlertTriangle,
   Lock,
   SlidersHorizontal,
+  Truck,
+  Smartphone,
+  Loader2,
 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { toast } from "sonner";
@@ -93,6 +96,7 @@ interface Listing {
   phone?: string;
   slug: string;
   businessType?: string;
+  hasMpesaGateway?: boolean;
   properties: Property[];
   rooms: Room[];
   products: Product[];
@@ -250,17 +254,15 @@ function CatalogCard({
 
   return (
     <article
-      className={`group overflow-hidden rounded-[18px] border border-slate-200 bg-white transition duration-300 hover:-translate-y-0.5 hover:shadow-[0_18px_45px_rgba(15,23,42,0.08)] ${
-        isList ? "flex min-h-[82px] sm:min-h-[94px]" : "flex flex-col"
-      }`}
+      className={`group overflow-hidden rounded-[18px] border border-slate-200 bg-white transition duration-300 hover:-translate-y-0.5 hover:shadow-[0_18px_45px_rgba(15,23,42,0.08)] ${isList ? "flex min-h-[82px] sm:min-h-[94px]" : "flex flex-col"
+        }`}
     >
       <button
         type="button"
         disabled={!image}
         onClick={onImageClick}
-        className={`relative overflow-hidden bg-[#f3f1ec] text-left disabled:cursor-default ${
-          isList ? "w-[82px] min-w-[82px] sm:w-[96px]" : "aspect-square w-full"
-        }`}
+        className={`relative overflow-hidden bg-[#f3f1ec] text-left disabled:cursor-default ${isList ? "w-[82px] min-w-[82px] sm:w-[96px]" : "aspect-square w-full"
+          }`}
       >
         {image ? (
           <img
@@ -356,6 +358,124 @@ export default function StayPage({ isShopMode }: { isShopMode?: boolean }) {
   const [notes, setNotes] = useState("");
   const [submittingOrder, setSubmittingOrder] = useState(false);
 
+  const [paymentOption, setPaymentOption] = useState<"PAY_ON_DELIVERY" | "PAY_UPFRONT">("PAY_ON_DELIVERY");
+  const [mpesaPhone, setMpesaPhone] = useState("");
+  const [stkStatus, setStkStatus] = useState<"IDLE" | "SENDING" | "SENT" | "FAILED">("IDLE");
+  const [checkoutRequestId, setCheckoutRequestId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (listing && listing.hasMpesaGateway === false && paymentOption === "PAY_UPFRONT") {
+      setPaymentOption("PAY_ON_DELIVERY");
+    }
+  }, [listing, paymentOption]);
+
+  const handleInitiateStkPush = async (): Promise<string | null> => {
+    const phoneToUse = (mpesaPhone.trim() || customerPhone.trim());
+    if (!phoneToUse) {
+      toast.error("Please enter your M-Pesa phone number");
+      return null;
+    }
+    if (!totalCartAmount || totalCartAmount <= 0) {
+      toast.error("Cart total is zero");
+      return null;
+    }
+
+    setStkStatus("SENDING");
+    try {
+      const res = await axios.post(`${API_URL}/api/v1/public/mpesa-push`, {
+        slug,
+        phone: phoneToUse,
+        amount: totalCartAmount,
+        customerName: customerName.trim() || "Customer",
+      });
+
+      if (res.data.success) {
+        const reqId = res.data.data?.CheckoutRequestID || null;
+        setCheckoutRequestId(reqId);
+        setStkStatus("SENT");
+        toast.success("M-Pesa STK Push prompt sent to your phone!");
+        return reqId;
+      } else {
+        setStkStatus("FAILED");
+        toast.error(res.data.message || "Failed to send M-Pesa prompt");
+        return null;
+      }
+    } catch (err: any) {
+      setStkStatus("FAILED");
+      toast.error(err.response?.data?.message || "Failed to send M-Pesa prompt");
+      return null;
+    }
+  };
+
+  const handleOrderSubmit = async (event: FormEvent) => {
+    event.preventDefault();
+
+    if (!customerName.trim() || !customerPhone.trim()) {
+      toast.error("Please enter your name and phone number");
+      return;
+    }
+
+    if (!cart.length) {
+      toast.error("Your cart is empty");
+      return;
+    }
+
+    if (paymentOption === "PAY_UPFRONT" && listing?.hasMpesaGateway === false) {
+      toast.error("M-Pesa payment gateway is not configured by this merchant.");
+      return;
+    }
+
+    setSubmittingOrder(true);
+    let activeReqId = checkoutRequestId;
+
+    try {
+      if (paymentOption === "PAY_UPFRONT" && !activeReqId) {
+        activeReqId = await handleInitiateStkPush();
+        if (!activeReqId) {
+          setSubmittingOrder(false);
+          return;
+        }
+      }
+
+      const response = await axios.post(`${API_URL}/api/v1/public/order`, {
+        slug,
+        customerName,
+        customerPhone,
+        deliveryAddress,
+        notes,
+        items: cart,
+        paymentOption,
+        checkoutRequestId: activeReqId,
+      });
+
+      setOrderSuccess({
+        ...response.data.data,
+        orderedByName: customerName,
+        paymentOption,
+      });
+
+      setCart([]);
+      setCustomerName("");
+      setCustomerPhone("");
+      setDeliveryAddress("");
+      setNotes("");
+      setMpesaPhone("");
+      setCheckoutRequestId(null);
+      setStkStatus("IDLE");
+      setIsOrdering(false);
+      setIsCartOpen(false);
+
+      toast.success("Order submitted successfully");
+    } catch (err: any) {
+      toast.error(
+        err.response?.data?.message ||
+        "Failed to submit order. Please try again."
+      );
+    } finally {
+      setSubmittingOrder(false);
+    }
+  };
+
   useEffect(() => {
     if (!slug) return;
 
@@ -446,54 +566,7 @@ export default function StayPage({ isShopMode }: { isShopMode?: boolean }) {
     [cart]
   );
 
-  const handleOrderSubmit = async (event: FormEvent) => {
-    event.preventDefault();
 
-    if (!customerName.trim() || !customerPhone.trim()) {
-      toast.error("Please enter your name and phone number");
-      return;
-    }
-
-    if (!cart.length) {
-      toast.error("Your cart is empty");
-      return;
-    }
-
-    setSubmittingOrder(true);
-
-    try {
-      const response = await axios.post(`${API_URL}/api/v1/public/order`, {
-        slug,
-        customerName,
-        customerPhone,
-        deliveryAddress,
-        notes,
-        items: cart,
-      });
-
-      setOrderSuccess({
-        ...response.data.data,
-        orderedByName: customerName,
-      });
-
-      setCart([]);
-      setCustomerName("");
-      setCustomerPhone("");
-      setDeliveryAddress("");
-      setNotes("");
-      setIsOrdering(false);
-      setIsCartOpen(false);
-
-      toast.success("Order submitted successfully");
-    } catch (err: any) {
-      toast.error(
-        err.response?.data?.message ||
-          "Failed to submit order. Please try again."
-      );
-    } finally {
-      setSubmittingOrder(false);
-    }
-  };
 
   if (loading) {
     return (
@@ -754,11 +827,10 @@ export default function StayPage({ isShopMode }: { isShopMode?: boolean }) {
               <button
                 type="button"
                 onClick={() => switchTab("rooms")}
-                className={`relative px-4 py-3 text-sm font-semibold transition ${
-                  activeTab === "rooms"
+                className={`relative px-4 py-3 text-sm font-semibold transition ${activeTab === "rooms"
                     ? "text-slate-950"
                     : "text-slate-400 hover:text-slate-700"
-                }`}
+                  }`}
               >
                 <span className="inline-flex items-center gap-2">
                   <BedDouble size={16} /> Rooms & spaces
@@ -771,11 +843,10 @@ export default function StayPage({ isShopMode }: { isShopMode?: boolean }) {
               <button
                 type="button"
                 onClick={() => switchTab("products")}
-                className={`relative px-4 py-3 text-sm font-semibold transition ${
-                  activeTab === "products"
+                className={`relative px-4 py-3 text-sm font-semibold transition ${activeTab === "products"
                     ? "text-slate-950"
                     : "text-slate-400 hover:text-slate-700"
-                }`}
+                  }`}
               >
                 <span className="inline-flex items-center gap-2">
                   <Package size={16} /> Products
@@ -827,11 +898,10 @@ export default function StayPage({ isShopMode }: { isShopMode?: boolean }) {
                 <button
                   type="button"
                   onClick={() => setViewMode("grid")}
-                  className={`grid h-9 w-9 place-items-center rounded-full transition ${
-                    viewMode === "grid"
+                  className={`grid h-9 w-9 place-items-center rounded-full transition ${viewMode === "grid"
                       ? "bg-slate-950 text-white"
                       : "text-slate-400 hover:text-slate-700"
-                  }`}
+                    }`}
                   aria-label="Grid view"
                 >
                   <LayoutGrid size={16} />
@@ -839,11 +909,10 @@ export default function StayPage({ isShopMode }: { isShopMode?: boolean }) {
                 <button
                   type="button"
                   onClick={() => setViewMode("list")}
-                  className={`grid h-9 w-9 place-items-center rounded-full transition ${
-                    viewMode === "list"
+                  className={`grid h-9 w-9 place-items-center rounded-full transition ${viewMode === "list"
                       ? "bg-slate-950 text-white"
                       : "text-slate-400 hover:text-slate-700"
-                  }`}
+                    }`}
                   aria-label="List view"
                 >
                   <List size={16} />
@@ -863,11 +932,10 @@ export default function StayPage({ isShopMode }: { isShopMode?: boolean }) {
               <button
                 type="button"
                 onClick={() => setActiveCategory("all")}
-                className={`whitespace-nowrap rounded-full border px-4 py-2 text-xs font-semibold transition ${
-                  currentFilter === "all"
+                className={`whitespace-nowrap rounded-full border px-4 py-2 text-xs font-semibold transition ${currentFilter === "all"
                     ? "border-slate-950 bg-slate-950 text-white"
                     : "border-slate-200 bg-white text-slate-600 hover:border-slate-400"
-                }`}
+                  }`}
               >
                 All
               </button>
@@ -877,11 +945,10 @@ export default function StayPage({ isShopMode }: { isShopMode?: boolean }) {
                   key={category}
                   type="button"
                   onClick={() => setActiveCategory(category)}
-                  className={`whitespace-nowrap rounded-full border px-4 py-2 text-xs font-semibold transition ${
-                    currentFilter === category
+                  className={`whitespace-nowrap rounded-full border px-4 py-2 text-xs font-semibold transition ${currentFilter === category
                       ? "border-slate-950 bg-slate-950 text-white"
                       : "border-slate-200 bg-white text-slate-600 hover:border-slate-400"
-                  }`}
+                    }`}
                 >
                   {category}
                 </button>
@@ -1244,13 +1311,103 @@ export default function StayPage({ isShopMode }: { isShopMode?: boolean }) {
                                 Special instructions
                               </label>
                               <textarea
-                                rows={3}
+                                rows={2}
                                 value={notes}
                                 onChange={(event) => setNotes(event.target.value)}
                                 placeholder="Any specific requests?"
                                 className="w-full resize-none rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition placeholder:text-slate-400 focus:border-slate-400"
                               />
                             </div>
+
+                            {/* PAYMENT METHOD SELECTION */}
+                            <div>
+                              <label className="mb-2 block text-[11px] font-bold uppercase tracking-[0.12em] text-slate-400">
+                                Payment Method
+                              </label>
+                              <div className="grid grid-cols-2 gap-2">
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setPaymentOption("PAY_ON_DELIVERY");
+                                    setStkStatus("IDLE");
+                                    setCheckoutRequestId(null);
+                                  }}
+                                  className={`flex flex-col justify-between rounded-2xl border p-3.5 text-left transition ${
+                                    paymentOption === "PAY_ON_DELIVERY"
+                                      ? "border-slate-950 bg-slate-950 text-white shadow-sm"
+                                      : "border-slate-200 bg-white text-slate-700 hover:border-slate-300"
+                                  }`}
+                                >
+                                  <div className="flex items-center gap-2">
+                                    <Truck size={15} className={paymentOption === "PAY_ON_DELIVERY" ? "text-white" : "text-slate-500"} />
+                                    <span className="text-xs font-bold">Pay on Delivery</span>
+                                  </div>
+                                  <span className={`mt-2 text-[11px] leading-tight ${paymentOption === "PAY_ON_DELIVERY" ? "text-slate-300" : "text-slate-500"}`}>
+                                    Pay cash or transfer upon receiving
+                                  </span>
+                                </button>
+
+                                <button
+                                  type="button"
+                                  disabled={listing?.hasMpesaGateway === false}
+                                  onClick={() => {
+                                    if (listing?.hasMpesaGateway !== false) {
+                                      setPaymentOption("PAY_UPFRONT");
+                                    }
+                                  }}
+                                  className={`flex flex-col justify-between rounded-2xl border p-3.5 text-left transition ${
+                                    listing?.hasMpesaGateway === false
+                                      ? "cursor-not-allowed border-slate-100 bg-slate-50 opacity-60 text-slate-400"
+                                      : paymentOption === "PAY_UPFRONT"
+                                      ? "border-slate-950 bg-slate-950 text-white shadow-sm"
+                                      : "border-slate-200 bg-white text-slate-700 hover:border-slate-300"
+                                  }`}
+                                >
+                                  <div className="flex items-center gap-2">
+                                    <Smartphone size={15} className={paymentOption === "PAY_UPFRONT" && listing?.hasMpesaGateway !== false ? "text-white" : "text-slate-400"} />
+                                    <span className="text-xs font-bold">Pay Upfront</span>
+                                  </div>
+                                  <span className={`mt-2 text-[11px] leading-tight ${
+                                    listing?.hasMpesaGateway === false
+                                      ? "text-slate-400 font-medium"
+                                      : paymentOption === "PAY_UPFRONT"
+                                      ? "text-slate-300"
+                                      : "text-slate-500"
+                                  }`}>
+                                    {listing?.hasMpesaGateway === false ? "Not configured by vendor" : "M-Pesa STK push prompt"}
+                                  </span>
+                                </button>
+                              </div>
+                            </div>
+
+                            {/* MPESA STK PUSH DETAILS (UPFRONT PAYMENT) */}
+                            {paymentOption === "PAY_UPFRONT" && (
+                              <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-3.5 space-y-3">
+                                <Field
+                                  label="M-Pesa Phone Number"
+                                  value={mpesaPhone || customerPhone}
+                                  onChange={setMpesaPhone}
+                                  placeholder="e.g. 0712345678"
+                                  type="tel"
+                                />
+
+                                {stkStatus === "SENT" ? (
+                                  <div className="rounded-xl border border-emerald-200 bg-emerald-50/80 p-3 flex items-start gap-2.5 text-emerald-900">
+                                    <CheckCircle2 size={16} className="mt-0.5 shrink-0 text-emerald-600" />
+                                    <p className="text-xs font-medium leading-relaxed">
+                                      STK push prompt sent to <span className="font-bold">{mpesaPhone || customerPhone}</span>. Enter your M-Pesa PIN on your phone to complete payment.
+                                    </p>
+                                  </div>
+                                ) : (
+                                  <div className="rounded-xl border border-slate-200 bg-white p-3 flex items-start gap-2 text-slate-600">
+                                    <Smartphone size={15} className="mt-0.5 shrink-0 text-slate-500" />
+                                    <p className="text-xs leading-relaxed">
+                                      An M-Pesa PIN prompt will be sent to <span className="font-semibold text-slate-900">{mpesaPhone || customerPhone || "your phone"}</span> when you click submit below.
+                                    </p>
+                                  </div>
+                                )}
+                              </div>
+                            )}
                           </div>
 
                           <div className="rounded-[20px] bg-slate-950 p-5 text-white">
@@ -1264,8 +1421,17 @@ export default function StayPage({ isShopMode }: { isShopMode?: boolean }) {
                               disabled={submittingOrder}
                               className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-white px-5 py-3.5 text-sm font-bold text-slate-950 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60"
                             >
-                              {submittingOrder ? "Submitting..." : "Confirm order"}
-                              <Check size={16} />
+                              {submittingOrder ? (
+                                <>
+                                  <Loader2 size={16} className="animate-spin" />
+                                  {paymentOption === "PAY_UPFRONT" ? "Initiating STK Push..." : "Submitting Order..."}
+                                </>
+                              ) : paymentOption === "PAY_UPFRONT" ? (
+                                stkStatus === "SENT" ? "Confirm & Complete Order" : "Pay with M-Pesa & Submit Order"
+                              ) : (
+                                "Confirm Order (Pay on Delivery)"
+                              )}
+                              {!submittingOrder && <Check size={16} />}
                             </button>
                           </div>
                         </form>
@@ -1304,21 +1470,33 @@ export default function StayPage({ isShopMode }: { isShopMode?: boolean }) {
 
               <p className="mt-3 text-sm leading-6 text-slate-500">
                 Thank you, <span className="font-semibold text-slate-800">{orderSuccess.orderedByName}</span>.
-                Your order has been sent to {listing.businessName}.
+                Your order has been sent to {listing?.businessName || "the business owner"}.
               </p>
 
+              {orderSuccess.paymentOption === "PAY_UPFRONT" ? (
+                <div className="mt-4 rounded-2xl border border-emerald-100 bg-emerald-50/60 p-4 text-left text-xs leading-relaxed text-emerald-950">
+                  <p className="font-bold text-emerald-900 mb-1">M-Pesa Prompt Triggered 📲</p>
+                  If you entered your PIN, retain the M-Pesa confirmation message to show upon delivery or check-in if needed.
+                </div>
+              ) : (
+                <div className="mt-4 rounded-2xl border border-slate-100 bg-slate-50/80 p-4 text-left text-xs leading-relaxed text-slate-700">
+                  <p className="font-bold text-slate-900 mb-1">Pay on Delivery Selected 🚚</p>
+                  You can pay cash or make a mobile transfer directly to the business owner upon delivery or arrival.
+                </div>
+              )}
+
               <div className="mt-6 grid gap-2">
-                {listing.phone && (
+                {listing?.phone && (
                   <a
                     href={`https://wa.me/${listing.phone.replace(
                       /[^0-9]/g,
                       ""
                     )}?text=${encodeURIComponent(
-                      `Hi ${listing.businessName}, I just placed an order. My name is ${orderSuccess.orderedByName}.`
+                      `Hi ${listing.businessName}, I just placed an order (${orderSuccess.paymentOption === "PAY_UPFRONT" ? "Paid Upfront via M-Pesa" : "Pay on Delivery"}). My name is ${orderSuccess.orderedByName}.`
                     )}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center justify-center gap-2 rounded-full bg-slate-950 px-5 py-3.5 text-sm font-bold text-white"
+                    className="flex items-center justify-center gap-2 rounded-full bg-slate-950 px-5 py-3.5 text-sm font-bold text-white transition hover:bg-slate-800"
                   >
                     <MessageCircle size={17} />
                     Chat on WhatsApp
@@ -1328,7 +1506,7 @@ export default function StayPage({ isShopMode }: { isShopMode?: boolean }) {
                 <button
                   type="button"
                   onClick={() => setOrderSuccess(null)}
-                  className="rounded-full border border-slate-200 px-5 py-3 text-sm font-semibold text-slate-600"
+                  className="rounded-full border border-slate-200 px-5 py-3 text-sm font-semibold text-slate-600 transition hover:bg-slate-50"
                 >
                   Done
                 </button>
