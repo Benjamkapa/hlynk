@@ -549,7 +549,7 @@ export default function ProductsPage() {
                       </div>
                     </td>
                     <td className="px-5 py-3.5 text-center">
-                      <span className={`text-sm font-medium hl-mono ${p.stockLevel < threshold ? 'text-red-600' : 'text-gray-900'}`}>{p.stockLevel}</span>
+                      <span className={`text-sm font-medium hl-mono ${p.stockLevel <= (p.minLevel ?? threshold) ? 'text-red-600 font-bold' : 'text-gray-900'}`}>{p.stockLevel}</span>
                     </td>
                     <td className="px-5 py-3.5 text-right text-gray-400 text-sm hl-mono">KES {Number(p.buyingPrice || 0).toLocaleString()}</td>
                     <td className="px-5 py-3.5 text-right font-medium text-gray-900 text-sm hl-mono">KES {Number(p.price).toLocaleString()}</td>
@@ -622,7 +622,7 @@ export default function ProductsPage() {
                       </div>
                       <div className="flex items-end justify-between">
                         <p className="text-xs font-semibold text-[#0D4A3E] hl-mono">KES {Number(p.price).toLocaleString()}</p>
-                        <span className={`text-[10px] hl-mono ${p.stockLevel < threshold ? 'text-red-500' : 'text-gray-400'}`}>{p.stockLevel} in stock</span>
+                        <span className={`text-[10px] hl-mono ${p.stockLevel <= (p.minLevel ?? threshold) ? 'text-red-500 font-bold' : 'text-gray-400'}`}>{p.stockLevel} in stock</span>
                       </div>
                     </div>
                   </div>
@@ -708,7 +708,7 @@ function SummaryCell({ title, value, sub, tone }: { title: string; value: string
 function ProductForm({ onClose }: { onClose: () => void }) {
   const queryClient = useQueryClient()
   const [form, setForm] = useState({
-    name: '', category: 'Groceries', buyingPrice: '', price: '', stock: '',
+    name: '', category: 'Groceries', buyingPrice: '', price: '', stock: '', minLevel: '5',
     imageUrl: '', file: null as File | null, isPerishable: false, expiryDate: '', type: 'GOOD'
   })
   const [isCameraOpen, setIsCameraOpen] = useState(false)
@@ -947,7 +947,10 @@ function ProductForm({ onClose }: { onClose: () => void }) {
       </div>
 
       {form.type === 'GOOD' && (
-        <InputGroup label="Initial stock" inputType="number" placeholder="0" mono value={form.stock} onChange={(v: string) => setForm({ ...form, stock: v })} />
+        <div className="grid grid-cols-2 gap-4">
+          <InputGroup label="Initial stock" inputType="number" placeholder="0" mono value={form.stock} onChange={(v: string) => setForm({ ...form, stock: v })} />
+          <InputGroup label="Low stock alert level" inputType="number" placeholder="5" mono value={form.minLevel} onChange={(v: string) => setForm({ ...form, minLevel: v })} />
+        </div>
       )}
 
       {form.type === 'GOOD' && (
@@ -983,6 +986,7 @@ function ProductForm({ onClose }: { onClose: () => void }) {
             price: parseFloat(form.price) || 0,
             buyingPrice: parseFloat(form.buyingPrice) || 0,
             stock: parseInt(form.stock) || 0,
+            minLevel: parseInt(form.minLevel) || 5,
             isPerishable: form.isPerishable,
             expiryDate: form.expiryDate || undefined
           })
@@ -1006,6 +1010,7 @@ function EditProductForm({ product, onClose }: { product: any; onClose: () => vo
     buyingPrice: product.buyingPrice?.toString() || '',
     price: product.price?.toString() || '',
     stock: product.stockLevel?.toString() || '',
+    minLevel: (product.minLevel ?? 5).toString(),
     imageUrl: product.imageUrl || '',
     file: null as File | null,
     isPerishable: !!product.isPerishable,
@@ -1167,7 +1172,10 @@ function EditProductForm({ product, onClose }: { product: any; onClose: () => vo
       </div>
 
       {form.type === 'GOOD' && (
-        <InputGroup label="Current stock" inputType="number" placeholder="0" mono value={form.stock} onChange={(v: string) => setForm({ ...form, stock: v })} />
+        <div className="grid grid-cols-2 gap-4">
+          <InputGroup label="Current stock" inputType="number" placeholder="0" mono value={form.stock} onChange={(v: string) => setForm({ ...form, stock: v })} />
+          <InputGroup label="Low stock alert level" inputType="number" placeholder="5" mono value={form.minLevel} onChange={(v: string) => setForm({ ...form, minLevel: v })} />
+        </div>
       )}
 
       {form.type === 'GOOD' && (
@@ -1202,6 +1210,7 @@ function EditProductForm({ product, onClose }: { product: any; onClose: () => vo
             price: parseFloat(form.price) || 0,
             buyingPrice: parseFloat(form.buyingPrice) || 0,
             stock: parseInt(form.stock) || 0,
+            minLevel: parseInt(form.minLevel) || 5,
             isPerishable: form.isPerishable,
             expiryDate: form.expiryDate || undefined
           })
