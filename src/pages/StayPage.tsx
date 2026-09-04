@@ -1,4 +1,3 @@
-
 import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from "react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
@@ -122,13 +121,6 @@ function formatPrice(price: number) {
   return `KES ${Number(price || 0).toLocaleString()}`;
 }
 
-function getItemImage(item: Room | Product): string | undefined {
-  if ("meta" in item) {
-    return item.meta?.imageUrl || item.meta?.images?.[0];
-  }
-  return item.imageUrl;
-}
-
 function getItemImages(item: Room | Product): string[] {
   if ("meta" in item) {
     if (item.meta?.images?.length) return item.meta.images.filter(Boolean);
@@ -249,20 +241,77 @@ function CatalogCard({
   const description =
     "title" in item ? item.meta?.description : item.description;
   const price = "title" in item ? Number(item.basePrice) : Number(item.price);
+  const fallback = "title" in item ? <BedDouble size={24} /> : <Package size={24} />;
 
-  const fallback = "title" in item ? <BedDouble size={30} /> : <Package size={30} />;
+  if (isList) {
+    return (
+      <article className="group flex min-h-[68px] w-full overflow-hidden rounded-xl border border-slate-200 bg-white transition hover:border-slate-300 hover:shadow-sm">
+        <button
+          type="button"
+          disabled={!image}
+          onClick={onImageClick}
+          className="relative h-[68px] w-[68px] min-w-[68px] overflow-hidden bg-[#f3f1ec] text-left disabled:cursor-default sm:h-[76px] sm:w-[76px] sm:min-w-[76px]"
+          aria-label={image ? `View photos of ${title}` : undefined}
+        >
+          {image ? (
+            <img
+              src={image}
+              alt={title}
+              className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.03]"
+            />
+          ) : (
+            <div className="grid h-full place-items-center text-slate-400">{fallback}</div>
+          )}
+          {imageCount > 1 && (
+            <span className="absolute bottom-1 right-1 rounded-full bg-slate-950/70 px-1.5 py-0.5 text-[8px] font-semibold text-white">
+              +{imageCount - 1}
+            </span>
+          )}
+        </button>
+
+        <div className="flex min-w-0 flex-1 items-center gap-3 px-3 py-2 sm:px-3.5">
+          <div className="min-w-0 flex-1">
+            <div className="flex min-w-0 items-center gap-2">
+              <h3 className="truncate text-[13px] font-semibold tracking-tight text-slate-950">{title}</h3>
+              {category && (
+                <span className="hidden shrink-0 rounded-full bg-slate-100 px-2 py-0.5 text-[8px] font-bold uppercase tracking-[0.08em] text-slate-500 sm:inline-flex">
+                  {category}
+                </span>
+              )}
+            </div>
+            {description && (
+              <p className="mt-0.5 line-clamp-1 text-[10px] leading-4 text-slate-500">
+                {description}
+              </p>
+            )}
+          </div>
+
+          <div className="flex shrink-0 items-center gap-2 sm:gap-3">
+            <span className="whitespace-nowrap text-xs font-bold tracking-tight text-slate-950 sm:text-[13px]">
+              {formatPrice(price)}
+            </span>
+            <button
+              type="button"
+              onClick={onAdd}
+              className="inline-flex h-8 items-center gap-1 rounded-full bg-slate-950 px-2.5 text-[10px] font-semibold text-white transition hover:bg-slate-800 active:scale-95 sm:px-3"
+            >
+              <Plus size={12} />
+              <span className="hidden xs:inline">{ctaLabel}</span>
+            </button>
+          </div>
+        </div>
+      </article>
+    );
+  }
 
   return (
-    <article
-      className={`group overflow-hidden rounded-[18px] border border-slate-200 bg-white transition duration-300 hover:-translate-y-0.5 hover:shadow-[0_18px_45px_rgba(15,23,42,0.08)] ${isList ? "flex min-h-[82px] sm:min-h-[94px]" : "flex flex-col"
-        }`}
-    >
+    <article className="group flex min-w-0 flex-col overflow-hidden rounded-[16px] border border-slate-200 bg-white transition duration-300 hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-[0_14px_32px_rgba(15,23,42,0.07)]">
       <button
         type="button"
         disabled={!image}
         onClick={onImageClick}
-        className={`relative overflow-hidden bg-[#f3f1ec] text-left disabled:cursor-default ${isList ? "w-[82px] min-w-[82px] sm:w-[96px]" : "aspect-square w-full"
-          }`}
+        className="relative aspect-[1.12/1] w-full overflow-hidden bg-[#f3f1ec] text-left disabled:cursor-default"
+        aria-label={image ? `View photos of ${title}` : undefined}
       >
         {image ? (
           <img
@@ -271,41 +320,36 @@ function CatalogCard({
             className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.035]"
           />
         ) : (
-          <div className="grid h-full min-h-[180px] place-items-center text-slate-400">
-            {fallback}
-          </div>
+          <div className="grid h-full place-items-center text-slate-400">{fallback}</div>
         )}
 
-        <span className="absolute left-2 top-2 rounded-full bg-white/95 px-2 py-1 text-[9px] font-semibold uppercase tracking-[0.1em] text-slate-700 shadow-sm backdrop-blur">
+        <span className="absolute left-2 top-2 max-w-[calc(100%-16px)] truncate rounded-full bg-white/95 px-2 py-1 text-[8px] font-bold uppercase tracking-[0.08em] text-slate-600 shadow-sm backdrop-blur">
           {category}
         </span>
 
         {imageCount > 1 && (
-          <span className="absolute bottom-2 right-2 rounded-full bg-slate-950/65 px-2 py-0.5 text-[9px] font-medium text-white backdrop-blur">
+          <span className="absolute bottom-2 right-2 rounded-full bg-slate-950/65 px-2 py-0.5 text-[8px] font-medium text-white backdrop-blur">
             +{imageCount - 1} photos
           </span>
         )}
       </button>
 
-      <div className={`flex flex-1 flex-col ${isList ? "p-3 sm:p-4" : "p-3 sm:p-4"}`}>
-        <div>
-          <h3 className={`font-semibold tracking-tight text-slate-950 ${isList ? "text-sm" : "text-sm"}`}>
-            {title}
-          </h3>
-
+      <div className="flex min-h-[108px] flex-1 flex-col p-2.5 sm:p-3">
+        <div className="min-w-0">
+          <h3 className="truncate text-[13px] font-semibold tracking-tight text-slate-950">{title}</h3>
           {description && (
-            <p className={`mt-1 text-xs leading-5 text-slate-500 ${isList ? "line-clamp-1" : "line-clamp-2"}`}>
+            <p className="mt-0.5 line-clamp-1 text-[10px] leading-4 text-slate-500">
               {description}
             </p>
           )}
         </div>
 
-        <div className="mt-auto flex items-center justify-between gap-2 pt-3">
-          <div>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-400">
+        <div className="mt-auto flex items-end justify-between gap-2 pt-2.5">
+          <div className="min-w-0">
+            <p className="text-[8px] font-bold uppercase tracking-[0.12em] text-slate-400">
               {ctaLabel === "Book" ? "From" : "Price"}
             </p>
-            <p className="mt-0.5 text-sm font-bold tracking-tight text-slate-950">
+            <p className="mt-0.5 truncate text-xs font-bold tracking-tight text-slate-950 sm:text-[13px]">
               {formatPrice(price)}
             </p>
           </div>
@@ -313,9 +357,9 @@ function CatalogCard({
           <button
             type="button"
             onClick={onAdd}
-            className="inline-flex items-center gap-1 rounded-full bg-slate-950 px-3 py-2 text-[11px] font-semibold text-white transition hover:bg-slate-800 active:scale-95"
+            className="inline-flex h-8 shrink-0 items-center gap-1 rounded-full bg-slate-950 px-2.5 text-[10px] font-semibold text-white transition hover:bg-slate-800 active:scale-95"
           >
-            <Plus size={14} />
+            <Plus size={12} />
             {ctaLabel}
           </button>
         </div>
@@ -821,7 +865,7 @@ export default function StayPage({ isShopMode }: { isShopMode?: boolean }) {
         </section>
 
         {/* CATALOG */}
-        <section id="catalog" className="mt-14 scroll-mt-24">
+        <section id="catalog" className="mt-10 scroll-mt-24">
           {allRooms.length > 0 && allProducts.length > 0 && (
             <div className="mb-7 flex items-center gap-2 overflow-x-auto border-b border-slate-200 no-scrollbar">
               <button
@@ -956,14 +1000,14 @@ export default function StayPage({ isShopMode }: { isShopMode?: boolean }) {
             </div>
           )}
 
-          <div className="mt-5">
+          <div className="mt-4">
             {activeTab === "rooms" && allRooms.length > 0 && (
               filteredRooms.length ? (
                 <div
                   className={
                     viewMode === "grid"
-                      ? "grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3"
-                      : "grid gap-3"
+                      ? "grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5"
+                      : "grid gap-2"
                   }
                 >
                   {filteredRooms.map((room) => {
@@ -1004,8 +1048,8 @@ export default function StayPage({ isShopMode }: { isShopMode?: boolean }) {
                 <div
                   className={
                     viewMode === "grid"
-                      ? "grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4"
-                      : "grid gap-3"
+                      ? "grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5"
+                      : "grid gap-2"
                   }
                 >
                   {filteredProducts.map((product) => {
