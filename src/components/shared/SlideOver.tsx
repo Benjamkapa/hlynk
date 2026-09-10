@@ -25,23 +25,23 @@ export function SlideOver({ isOpen, onClose, title, children }: SlideOverProps) 
     >
       {/* Backdrop */}
       <div 
-        className="absolute inset-0 bg-gray-900/20 backdrop-blur-sm"
+        className="absolute inset-0 glass-modal"
         onClick={onClose}
       />
 
       {/* Panel */}
       <div 
-        className={`relative w-full max-w-lg bg-white pt-5 shadow-2xl flex flex-col transition-transform duration-300 ease-out ${
+        className={`relative w-full max-w-lg glass-sheet pt-5 flex flex-col transition-transform duration-300 ease-out ${
           isOpen ? 'translate-x-0' : 'translate-x-full'
         }`}
         style={{ borderRadius: 'var(--radius-lg) 0 0 var(--radius-lg)' }}
       >
         {/* Header */}
-        <div className="flex items-center justify-between pb-6 px-6 pt-[max(1.5rem,env(safe-area-inset-top))] border-b border-gray-100">
+        <div className="flex items-center justify-between pb-6 px-6 pt-[max(1.5rem,env(safe-area-inset-top))] border-b border-white/30">
           <h3 style={{ fontSize: '1.25rem', fontWeight: 600, fontFamily: 'Ubuntu' }}>{title}</h3>
           <button 
             onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors text-gray-400 hover:text-gray-900"
+            className="glass-btn p-2 rounded-xl transition-all text-gray-500 hover:text-gray-900"
           >
             <X size={20} />
           </button>

@@ -377,7 +377,7 @@ function CatalogCard({
   );
 }
 
-export default function StayPage({ isShopMode }: { isShopMode?: boolean }) {
+export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
   useStoreFonts();
 
   const { slug } = useParams<{ slug: string }>();
@@ -738,14 +738,15 @@ export default function StayPage({ isShopMode }: { isShopMode?: boolean }) {
       className="min-h-screen bg-[#f7f7f5] pb-28 text-slate-900"
       style={{ fontFamily: "'DM Sans', Inter, sans-serif" }}
     >
-      {/* HEADER */}
-      <header className="sticky top-0 z-40 border-b pt-5 border-slate-200/80 bg-[#f7f7f5]/90 backdrop-blur-xl">
-        <div className="mx-auto flex h-[72px] max-w-[1440px] items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
+      {/* HEADER — iOS frosted-glass bar */}
+      <header className="sticky top-0 z-40 border-b border-white/40 bg-white/60 backdrop-blur-2xl shadow-sm">
+        <div className="mx-auto flex h-[68px] max-w-[1440px] items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
           <div className="flex min-w-0 items-center gap-3">
+            {/* Glass back button */}
             <button
               type="button"
               onClick={() => window.history.back()}
-              className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-slate-200 bg-white text-slate-700 transition hover:bg-slate-50"
+              className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-white/60 bg-white/50 text-slate-700 shadow-sm backdrop-blur-xl transition hover:bg-white/80 active:scale-95"
               aria-label="Go back"
             >
               <ArrowLeft size={18} />
@@ -760,18 +761,28 @@ export default function StayPage({ isShopMode }: { isShopMode?: boolean }) {
             </a>
           </div>
 
-          <nav className="hidden items-center gap-6 text-xs font-medium text-slate-500 md:flex">
-            <a href="#catalog" className="transition hover:text-slate-950">Shop</a>
-            <a href="#featured" className="transition hover:text-slate-950">Featured</a>
-            {listing.phone && (
-              <a href="#contact" className="transition hover:text-slate-950">Contact</a>
-            )}
+          {/* Glass nav pills */}
+          <nav className="hidden items-center gap-1 md:flex">
+            {[
+              { href: '#catalog', label: 'Shop' },
+              { href: '#featured', label: 'Featured' },
+              ...(listing.phone ? [{ href: '#contact', label: 'Contact' }] : []),
+            ].map(({ href, label }) => (
+              <a
+                key={href}
+                href={href}
+                className="rounded-full border border-white/50 bg-white/40 px-4 py-1.5 text-xs font-semibold text-slate-700 backdrop-blur-xl transition hover:bg-white/70 hover:text-slate-950"
+              >
+                {label}
+              </a>
+            ))}
           </nav>
 
+          {/* Glass cart button */}
           <button
             type="button"
             onClick={() => setIsCartOpen(true)}
-            className="relative inline-flex h-10 items-center gap-2 rounded-full bg-slate-950 px-3.5 text-xs font-semibold text-white transition hover:bg-slate-800"
+            className="relative inline-flex h-10 items-center gap-2 rounded-full border border-white/30 bg-slate-950/85 px-3.5 text-xs font-semibold text-white shadow-sm backdrop-blur-xl transition hover:bg-slate-800/90 active:scale-95"
           >
             <ShoppingBag size={15} />
             <span className="hidden sm:inline">Cart</span>
@@ -947,13 +958,14 @@ export default function StayPage({ isShopMode }: { isShopMode?: boolean }) {
                 )}
               </div>
 
-              <div className="flex h-11 items-center rounded-full border border-slate-200 bg-white p-1">
+              {/* Glass view-mode toggle */}
+              <div className="flex h-11 items-center rounded-full border border-white/50 bg-white/50 p-1 backdrop-blur-xl shadow-sm">
                 <button
                   type="button"
                   onClick={() => setViewMode("grid")}
-                  className={`grid h-9 w-9 place-items-center rounded-full transition ${viewMode === "grid"
-                      ? "bg-slate-950 text-white"
-                      : "text-slate-400 hover:text-slate-700"
+                  className={`grid h-9 w-9 place-items-center rounded-full transition active:scale-95 ${viewMode === "grid"
+                      ? "bg-slate-950 text-white shadow-sm"
+                      : "text-slate-400 hover:bg-white/80 hover:text-slate-700"
                     }`}
                   aria-label="Grid view"
                 >
@@ -962,9 +974,9 @@ export default function StayPage({ isShopMode }: { isShopMode?: boolean }) {
                 <button
                   type="button"
                   onClick={() => setViewMode("list")}
-                  className={`grid h-9 w-9 place-items-center rounded-full transition ${viewMode === "list"
-                      ? "bg-slate-950 text-white"
-                      : "text-slate-400 hover:text-slate-700"
+                  className={`grid h-9 w-9 place-items-center rounded-full transition active:scale-95 ${viewMode === "list"
+                      ? "bg-slate-950 text-white shadow-sm"
+                      : "text-slate-400 hover:bg-white/80 hover:text-slate-700"
                     }`}
                   aria-label="List view"
                 >
@@ -982,12 +994,13 @@ export default function StayPage({ isShopMode }: { isShopMode?: boolean }) {
                 Filter
               </div>
 
+              {/* Glass filter chips */}
               <button
                 type="button"
                 onClick={() => setActiveCategory("all")}
-                className={`whitespace-nowrap rounded-full border px-4 py-2 text-xs font-semibold transition ${currentFilter === "all"
-                    ? "border-slate-950 bg-slate-950 text-white"
-                    : "border-slate-200 bg-white text-slate-600 hover:border-slate-400"
+                className={`whitespace-nowrap rounded-full border px-4 py-2 text-xs font-semibold backdrop-blur-xl transition active:scale-95 ${currentFilter === "all"
+                    ? "border-slate-950/80 bg-slate-950/85 text-white shadow-sm"
+                    : "border-white/60 bg-white/55 text-slate-600 hover:bg-white/80"
                   }`}
               >
                 All
@@ -998,9 +1011,9 @@ export default function StayPage({ isShopMode }: { isShopMode?: boolean }) {
                   key={category}
                   type="button"
                   onClick={() => setActiveCategory(category)}
-                  className={`whitespace-nowrap rounded-full border px-4 py-2 text-xs font-semibold transition ${currentFilter === category
-                      ? "border-slate-950 bg-slate-950 text-white"
-                      : "border-slate-200 bg-white text-slate-600 hover:border-slate-400"
+                  className={`whitespace-nowrap rounded-full border px-4 py-2 text-xs font-semibold backdrop-blur-xl transition active:scale-95 ${currentFilter === category
+                      ? "border-slate-950/80 bg-slate-950/85 text-white shadow-sm"
+                      : "border-white/60 bg-white/55 text-slate-600 hover:bg-white/80"
                     }`}
                 >
                   {category}
@@ -1160,7 +1173,7 @@ export default function StayPage({ isShopMode }: { isShopMode?: boolean }) {
         </section>
       </main>
 
-      {/* MOBILE / GLOBAL CART BAR */}
+      {/* MOBILE / GLOBAL CART BAR — glass pill */}
       <AnimatePresence>
         {cart.length > 0 && !isCartOpen && (
           <motion.div
@@ -1175,7 +1188,7 @@ export default function StayPage({ isShopMode }: { isShopMode?: boolean }) {
                 setIsCartOpen(true);
                 setIsOrdering(true);
               }}
-              className="flex w-full items-center justify-between rounded-[22px] bg-slate-950 p-3 pl-4 text-left text-white shadow-[0_20px_55px_rgba(15,23,42,0.28)]"
+              className="flex w-full items-center justify-between rounded-[22px] border border-white/20 bg-slate-950/80 p-3 pl-4 text-left text-white shadow-[0_20px_55px_rgba(15,23,42,0.35)] backdrop-blur-2xl active:scale-[0.98] transition"
             >
               <span className="flex min-w-0 items-center gap-3">
                 <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-white text-sm font-bold text-slate-950">
@@ -1215,9 +1228,10 @@ export default function StayPage({ isShopMode }: { isShopMode?: boolean }) {
               exit={{ x: 500 }}
               transition={{ type: "spring", damping: 28, stiffness: 280 }}
               onClick={(event) => event.stopPropagation()}
-              className="ml-auto flex h-full w-full max-w-[520px] flex-col bg-[#fafaf9] shadow-2xl"
+              className="ml-auto flex h-full w-full max-w-[520px] flex-col bg-white/80 backdrop-blur-2xl shadow-2xl"
             >
-              <div className="flex items-center justify-between border-b border-slate-200 px-5 pb-5 pt-10 sm:px-7">
+              {/* Glass drawer header */}
+              <div className="flex items-center justify-between border-b border-white/50 bg-white/60 px-5 pb-5 pt-10 backdrop-blur-xl sm:px-7">
                 <div>
                   <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-slate-400">
                     {isOrdering ? "Checkout" : "Your selection"}
@@ -1227,10 +1241,11 @@ export default function StayPage({ isShopMode }: { isShopMode?: boolean }) {
                   </h2>
                 </div>
 
+                {/* Glass close button */}
                 <button
                   type="button"
                   onClick={() => setIsCartOpen(false)}
-                  className="grid h-10 w-10 place-items-center rounded-full border border-slate-200 bg-white text-slate-600"
+                  className="grid h-10 w-10 place-items-center rounded-full border border-white/60 bg-white/50 text-slate-600 backdrop-blur-xl transition hover:bg-white/80 active:scale-95"
                   aria-label="Close cart"
                 >
                   <X size={18} />

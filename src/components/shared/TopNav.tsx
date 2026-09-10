@@ -194,7 +194,7 @@ export default function TopNav({ isMobileOpen, onMobileMenuToggle, isCollapsed, 
               } catch (_) { /* individual queries handle their own errors */ }
               setIsRefreshing(false)
             }}
-            className="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white/90 shadow hover:shadow-md hover:scale-105 transition-all text-slate-600 hover:text-emerald-700 flex items-center justify-center"
+            className="glass-btn w-10 h-10 sm:w-11 sm:h-11 rounded-full flex items-center justify-center text-slate-600 hover:text-emerald-700"
             title="Refresh Data"
           >
             <RefreshCw size={17} className={`transition-transform duration-700 ${isRefreshing ? 'animate-spin' : ''}`} />
@@ -204,10 +204,10 @@ export default function TopNav({ isMobileOpen, onMobileMenuToggle, isCollapsed, 
           <div className="relative" ref={notificationRef}>
             <button
               onClick={() => setShowNotifications(!showNotifications)}
-              className={`w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white shadow transition-all flex items-center justify-center relative ${
+              className={`glass-btn w-10 h-10 sm:w-11 sm:h-11 rounded-full flex items-center justify-center relative ${
                 showNotifications
-                  ? 'border-emerald-500 shadow-md text-emerald-700 ring-2 ring-emerald-500/10'
-                  : 'border-slate-200/60 shadow-sm hover:shadow-md hover:scale-105 text-slate-600 hover:text-emerald-700'
+                  ? 'ring-2 ring-emerald-500/20 text-emerald-700'
+                  : 'text-slate-600 hover:text-emerald-700'
               }`}
               title="Notifications"
             >
@@ -220,7 +220,7 @@ export default function TopNav({ isMobileOpen, onMobileMenuToggle, isCollapsed, 
             </button>
 
             {showNotifications && (
-              <div className="fixed sm:absolute left-2 right-2 sm:left-auto sm:right-0 top-20 sm:top-[calc(100%+0.5rem)] sm:w-[360px] bg-white border border-slate-100 rounded-xl shadow-2xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200 z-[200]">
+              <div className="fixed sm:absolute left-2 right-2 sm:left-auto sm:right-0 top-20 sm:top-[calc(100%+0.5rem)] sm:w-[360px] glass-card rounded-xl shadow-2xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200 z-[200]">
                 <div className="p-4 bg-slate-50/50 border-b border-slate-100 flex justify-between items-center">
                   <div>
                     <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">System Notifications</span>
@@ -302,14 +302,12 @@ export default function TopNav({ isMobileOpen, onMobileMenuToggle, isCollapsed, 
             )}
           </div>
 
-          {/* Profile menu */}
-          <div className="relative ml-1" ref={userMenuRef}>
+          {/* Profile menu — Hidden on mobile (accessed via bottom Profile tab) */}
+          <div className="relative ml-1 hidden lg:block" ref={userMenuRef}>
             <button
               onClick={() => setShowUserMenu(!showUserMenu)}
-              className={`w-10 h-10 sm:w-11 sm:h-11 rounded-full transition-all shadow-sm overflow-hidden flex items-center justify-center ${
-                showUserMenu
-                  ? 'bg-white border-emerald-500 shadow-md ring-2 ring-emerald-500/10'
-                  : 'bg-white border-slate-200/60 shadow-sm hover:shadow-md hover:scale-105'
+              className={`glass-btn w-10 h-10 sm:w-11 sm:h-11 rounded-full transition-all overflow-hidden flex items-center justify-center ${
+                showUserMenu ? 'ring-2 ring-emerald-500/20' : ''
               }`}
               title={user?.name || 'Profile'}
             >
@@ -321,7 +319,7 @@ export default function TopNav({ isMobileOpen, onMobileMenuToggle, isCollapsed, 
             </button>
 
             {showUserMenu && (
-              <div className="absolute top-[calc(100%+0.5rem)] right-0 w-64 bg-white border border-slate-100 rounded-[.5rem] shadow-2xl p-2 animate-in fade-in slide-in-from-top-2 duration-200 z-[200]">
+              <div className="absolute top-[calc(100%+0.5rem)] right-0 w-64 glass-card rounded-[.5rem] shadow-2xl p-2 animate-in fade-in slide-in-from-top-2 duration-200 z-[200]">
                 <div className="px-5 py-4 mb-2 border-b border-slate-50">
                   <p className="text-[9px] font-black text-slate-300 uppercase tracking-widest mb-1.5">Authenticated ID</p>
                   <p className="text-xs font-black text-slate-900 truncate">{user?.email}</p>

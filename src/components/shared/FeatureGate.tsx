@@ -48,7 +48,7 @@ export default function FeatureGate({ feature, children, fallback, variant = 'ca
   if (!feature) return <>{children}</>
   if (user?.role === 'SUPER_ADMIN') return <>{children}</>
 
-  const getPlanName = (p: string) => p === 'MAX' ? 'Business Pro' : p === 'PLUS' ? 'Growth' : 'Starter';
+  const getPlanName = (p: string) => p === 'MAX' ? 'Business Pro' : 'Starter';
 
   const planRaw = user?.subscription?.planName || 'LITE'
   const plan = planRaw.toUpperCase()

@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import {
   Zap, Users, Package,
   TrendingUp, ArrowUpRight,
@@ -73,8 +73,19 @@ export default function DashboardPage() {
       });
 
   if (statsLoading || salesLoading) return (
-    <div className="flex h-96 items-center justify-center">
-      <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#0D4A3E] border-t-transparent" />
+    <div className="space-y-8 pt-4 animate-pulse">
+      <div>
+        <div className="h-6 w-36 bg-slate-200 rounded" />
+        <div className="h-4 w-48 bg-slate-200 rounded mt-1" />
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="h-28 bg-slate-200 rounded-2xl" />
+        <div className="h-28 bg-slate-200 rounded-2xl" />
+      </div>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2 h-72 bg-slate-200 rounded-2xl" />
+        <div className="h-72 bg-slate-200 rounded-2xl" />
+      </div>
     </div>
   )
 
@@ -90,43 +101,8 @@ export default function DashboardPage() {
         <p className="text-gray-400 text-sm mt-0.5">Store performance overview</p>
       </div>
 
-      {/* KPI overview */}
-      <div className="grid grid-cols-2 lg:grid-cols-5 gap-px bg-gray-100 rounded-[.5rem] overflow-hidden border border-gray-100">
-        <SummaryCell
-          icon={Zap}
-          label="Daily sales"
-          value={`KES ${stats?.dailySales?.toLocaleString() || '0'}`}
-          sub={`Profit: KES ${stats?.profit?.toLocaleString() || '0'}`}
-        />
-        <SummaryCell
-          icon={Users}
-          label="New customers"
-          value={String(stats?.newCustomers || '0')}
-          sub="Total registered"
-        />
-        <FeatureGate feature="low_stock_alerts" variant="tease">
-          <SummaryCell
-            icon={Package}
-            label="Out of stock"
-            value={String(stats?.outOfStockCount || '0')}
-            sub={`Items below ${threshold} qty`}
-            tone="warn"
-          />
-        </FeatureGate>
-        <SummaryCell
-          icon={TrendingUp}
-          label="MTD gross profit"
-          value={`KES ${stats?.mtdProfit?.toLocaleString() || '0'}`}
-          sub="This month (cost margin)"
-        />
-        <SummaryCell
-          icon={Wallet}
-          label="Net profit (MTD)"
-          value={`${netIsPositive ? '' : '−'}KES ${Math.abs(net).toLocaleString()}`}
-          sub={`After KES ${(stats?.mtdExpenses || 0).toLocaleString()} expenses`}
-          tone={netIsPositive ? 'good' : 'warn'}
-        />
-      </div>
+      {/* KPI overview — show 2 primary cells; rest collapse behind toggle */}
+      <KpiStrip stats={stats} threshold={threshold} net={net} netIsPositive={netIsPositive} />
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
         {/* Revenue chart */}
@@ -222,9 +198,7 @@ export default function DashboardPage() {
               <p className="text-sm text-gray-400 text-center py-10">No recent sales</p>
             )}
           </div>
-          <Link to="/dashboard/sales" className="mt-4 w-full py-3 bg-[#0D4A3E] text-white rounded-[.5rem] text-center text-sm font-medium hover:bg-[#0A3D33] transition-colors">
-            View full history
-          </Link>
+
         </div>
       </div>
 
@@ -274,6 +248,67 @@ export default function DashboardPage() {
         </div>
       )}
 
+    </div>
+  )
+}
+
+// ─── KPI Strip with progressive reveal ───────────────────────────────────────
+
+function KpiStrip({ stats, threshold, net, netIsPositive }: any) {
+  const [expanded, setExpanded] = useState(false)
+  return (
+    <div>
+      {/* Always-visible: the two numbers that matter most day-to-day */}
+      <div className="grid grid-cols-2 gap-px bg-gray-100 rounded-t-[.5rem] overflow-hidden border border-b-0 border-gray-100">
+        <SummaryCell
+          icon={Zap}
+          label="Daily sales"
+          value={`KES ${stats?.dailySales?.toLocaleString() || '0'}`}
+          sub={`Profit: KES ${stats?.profit?.toLocaleString() || '0'}`}
+        />
+        <SummaryCell
+          icon={Wallet}
+          label="Net profit (MTD)"
+          value={`${netIsPositive ? '' : '−'}KES ${Math.abs(net).toLocaleString()}`}
+          sub={`After KES ${(stats?.mtdExpenses || 0).toLocaleString()} expenses`}
+          tone={netIsPositive ? 'good' : 'warn'}
+        />
+      </div>
+
+      {/* Expandable: additional 3 metrics */}
+      {expanded && (
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-px bg-gray-100 overflow-hidden border border-t-0 border-b-0 border-gray-100 animate-in fade-in duration-200">
+          <SummaryCell
+            icon={Users}
+            label="New customers"
+            value={String(stats?.newCustomers || '0')}
+            sub="Total registered"
+          />
+          <FeatureGate feature="low_stock_alerts" variant="tease">
+            <SummaryCell
+              icon={Package}
+              label="Out of stock"
+              value={String(stats?.outOfStockCount || '0')}
+              sub={`Items below ${threshold} qty`}
+              tone="warn"
+            />
+          </FeatureGate>
+          <SummaryCell
+            icon={TrendingUp}
+            label="MTD gross profit"
+            value={`KES ${stats?.mtdProfit?.toLocaleString() || '0'}`}
+            sub="This month (cost margin)"
+          />
+        </div>
+      )}
+
+      {/* Expand toggle */}
+      <button
+        onClick={() => setExpanded(v => !v)}
+        className="w-full flex items-center justify-center gap-1.5 py-2 text-[10px] font-semibold text-gray-400 hover:text-gray-600 bg-white border border-t-0 border-gray-100 rounded-b-[.5rem] transition-colors"
+      >
+        {expanded ? 'Hide metrics ▲' : 'See all metrics ▾'}
+      </button>
     </div>
   )
 }

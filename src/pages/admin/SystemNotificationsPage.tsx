@@ -243,13 +243,13 @@ export default function SystemNotificationsPage() {
             <div className="xl:hidden">
               {/* Backdrop */}
               <div
-                className="fixed inset-0 z-40 bg-black/40 backdrop-blur-[2px] animate-fadeIn"
-                onClick={() => setSelected(null)}
+                className="fixed inset-0 z-40 bg-black/40 backdrop-blur-[2px]   animate-fadeIn"
+                onClick={() => setSelected(null)} 
               />
 
               {/* Sheet */}
-              <div
-                className="fixed inset-x-0 bottom-0 z-50 flex flex-col rounded-t-2xl border-t border-slate-200 bg-white shadow-2xl max-h-[85dvh] animate-slideUp"
+                <div
+                 className="fixed inset-x-0 bottom-0 z-50 flex flex-col rounded-t-2xl border-t border-slate-200 bg-white shadow-2xl max-h-[85dvh] animate-slideUp"
                 style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
               >
                 {/* Drag handle */}

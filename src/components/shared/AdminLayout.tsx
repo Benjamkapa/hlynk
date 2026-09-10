@@ -4,13 +4,14 @@ import {
   LayoutDashboard, BarChart2, Users,
   Settings, HelpCircle, CreditCard, MessageSquare,
   Briefcase, ShieldCheck, Activity, DollarSign, Landmark, X,
-  Bell, Loader2
+  Bell, Loader2, User, MoreHorizontal
 } from 'lucide-react'
 import { useState, useEffect, useMemo } from 'react'
 import TopNav from './TopNav'
 import { motion, AnimatePresence } from 'framer-motion'
 import { getPushSubscriptionState, subscribeToPushNotifications } from '../../lib/notifications/pushService'
 import { toast } from 'sonner'
+import { MobileGestures } from './MobileGestures'
 
 // ─── Breakpoint hook ───────────────────────────────────────────────────────────
 function useIsDesktop() {
@@ -261,7 +262,8 @@ export default function AdminLayout() {
   ), [sidebarExpanded, navGroups, user])
 
   return (
-    <div className="flex h-screen h-[100dvh] overflow-hidden bg-slate-50/50">
+    <MobileGestures>
+      <div className="flex h-screen h-[100dvh] overflow-hidden bg-slate-50/50">
 
       {/* ── Mobile Backdrop ── */}
       <AnimatePresence>
@@ -374,7 +376,8 @@ export default function AdminLayout() {
 
       {/* ── Mobile Bottom Nav ── */}
       {!isDesktop && <MobileBottomAdminNav />}
-    </div>
+      </div>
+    </MobileGestures>
   )
 }
 
@@ -383,29 +386,25 @@ export default function AdminLayout() {
 // The last slot on the right opens the "More" sheet with everything else.
 function MobileBottomAdminNav() {
   const location = useLocation()
+  const { user } = useAuth()
   const [showMoreSheet, setShowMoreSheet] = useState(false)
 
   useEffect(() => { setShowMoreSheet(false) }, [location.pathname])
 
-  const leftItems = [
-    { to: '/admin', label: 'Home', icon: LayoutDashboard, end: true },
-    { to: '/admin/businesses', label: 'Business', icon: Briefcase, end: false },
-    { to: '/admin/user-operations', label: 'Users', icon: Users, end: false },
-  ]
-
+  // Exactly 5 Tabs: [0: Home] [1: Business] [2: Finance CTA] [3: More] [4: Profile]
+  const homeItem = { to: '/admin', label: 'Home', icon: LayoutDashboard, end: true }
+  const businessItem = { to: '/admin/businesses', label: 'Business', icon: Briefcase, end: false }
   const centerItem = { to: '/admin/financials', label: 'Finance', icon: DollarSign, end: false }
-
-  const rightItems = [
-    { to: '/admin/subscriptions', label: 'Subs', icon: CreditCard, end: false },
-    { to: '/admin/payments', label: 'Payments', icon: Landmark, end: false },
-  ]
+  const profileItem = { to: '/admin/settings', label: 'Profile', icon: User, end: false }
 
   const overflowItems = [
+    { to: '/admin/user-operations', label: 'Users', icon: Users },
+    { to: '/admin/subscriptions', label: 'Subscriptions', icon: CreditCard },
+    { to: '/admin/payments', label: 'Payments', icon: Landmark },
     { to: '/admin/notifications', label: 'Notifications', icon: Bell },
     { to: '/admin/community-reviews', label: 'Reviews', icon: MessageSquare },
     { to: '/admin/forensic-audit', label: 'Forensic Audit', icon: ShieldCheck },
     { to: '/admin/reports', label: 'Reports', icon: BarChart2 },
-    { to: '/admin/settings', label: 'Settings', icon: Settings },
     { to: '/admin/system-performance', label: 'Performance', icon: Activity },
   ]
 
@@ -429,28 +428,6 @@ function MobileBottomAdminNav() {
             />
           </div>
           <span className={`text-[9px] font-medium transition-all truncate w-full text-center ${isActive ? 'text-[#0D4A3E]' : 'text-[#0D4A3E] opacity-35'}`}>
-            {item.label}
-          </span>
-        </>
-      )}
-    </NavLink>
-  )
-
-  const renderCenterItem = (item: any) => (
-    <NavLink
-      key={item.label}
-      to={item.to}
-      end={item.end}
-      className="flex-1 min-w-0 flex flex-col items-center gap-0.5 py-1 no-tap-highlight"
-    >
-      {({ isActive }) => (
-        <>
-          <div className={`w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 active:scale-95 -mt-4
-            ${isActive ? 'bg-emerald-500 shadow-sm' : 'bg-[#0D4A3E] shadow-sm'}`}
-          >
-            <item.icon className="w-5 h-5 text-white" strokeWidth={2.5} />
-          </div>
-          <span className={`text-[9px] font-medium transition-all truncate w-full text-center ${isActive ? 'text-emerald-600' : 'text-[#0D4A3E] opacity-50'}`}>
             {item.label}
           </span>
         </>
@@ -486,12 +463,12 @@ function MobileBottomAdminNav() {
             transition={{ duration: 0.22, ease: [0.32, 0.72, 0, 1] }}
             className="fixed inset-x-3 z-[94] lg:hidden bottom-[calc(5.5rem+0.25rem+env(safe-area-inset-bottom,0px))]"
           >
-            <div className="bg-white rounded-[.75rem] shadow-sm overflow-hidden border border-slate-100">
+            <div className="glass-sheet rounded-[.75rem] overflow-hidden border border-white/40">
               <div className="flex items-center justify-between px-5 pt-4 pb-3 border-b border-slate-50">
                 <p className="text-xs font-semibold text-slate-400">More options</p>
                 <button
                   onClick={() => setShowMoreSheet(false)}
-                  className="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 hover:bg-slate-200 transition-colors"
+                  className="glass-btn w-6 h-6 rounded-full flex items-center justify-center text-slate-400 transition-all"
                 >
                   <X size={12} />
                 </button>
@@ -516,22 +493,45 @@ function MobileBottomAdminNav() {
         )}
       </AnimatePresence>
 
-      {/* Floating Nav Bar — 3 left, 1 center, 3 right (last = More) */}
+      {/* Floating Nav Bar — Exactly 5 Tabs: [Home] [Business] [FINANCE] [More] [Profile] */}
       <div className="fixed inset-x-0 bottom-[env(safe-area-inset-bottom,0px)] z-[95] lg:hidden flex flex-col items-center pointer-events-none">
         <div className="w-full px-3 pointer-events-auto">
-          <div className="relative py-2 bg-white/95 backdrop-blur-xl rounded-[1.5rem] shadow-sm flex items-end justify-between px-2">
-            {leftItems.map(renderNavItem)}
-            {renderCenterItem(centerItem)}
-            {rightItems.map(renderNavItem)}
+          <div className="relative py-2 glass-bar rounded-[2rem] flex items-end justify-between px-2">
+            {/* Tab 1: Home (Far Left) */}
+            {renderNavItem(homeItem)}
 
-            {/* More button */}
+            {/* Tab 2: Business (Middle Left) */}
+            {renderNavItem(businessItem)}
+
+            {/* Tab 3: Finance (Center Action) */}
+            <NavLink
+              key={centerItem.label}
+              to={centerItem.to}
+              end={centerItem.end}
+              className="flex-1 min-w-0 flex flex-col items-center gap-0.5 py-1 no-tap-highlight"
+            >
+              {({ isActive }) => (
+                <>
+                  <div className={`w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 active:scale-95 -mt-4
+                    ${isActive ? 'bg-emerald-500 shadow-sm' : 'bg-[#0D4A3E] shadow-sm'}`}
+                  >
+                    <centerItem.icon className="w-5 h-5 text-white" strokeWidth={2.5} />
+                  </div>
+                  <span className={`text-[9px] font-medium transition-all truncate w-full text-center ${isActive ? 'text-emerald-600' : 'text-[#0D4A3E] opacity-50'}`}>
+                    {centerItem.label}
+                  </span>
+                </>
+              )}
+            </NavLink>
+
+            {/* Tab 4: More (Middle Right) */}
             <button
               key="more-btn"
               onClick={() => setShowMoreSheet(v => !v)}
               className="flex-1 min-w-0 flex flex-col items-center gap-0.5 py-1 no-tap-highlight"
             >
               <div className={`w-9 h-9 rounded-full flex items-center justify-center transition-all duration-200 ${(showMoreSheet || isOverflowActive) ? 'bg-emerald-50' : 'bg-transparent'}`}>
-                <Settings
+                <MoreHorizontal
                   className={`w-[18px] h-[18px] transition-colors ${(showMoreSheet || isOverflowActive) ? 'text-[#0D4A3E]' : 'text-[#0D4A3E] opacity-35'}`}
                   strokeWidth={(showMoreSheet || isOverflowActive) ? 2.5 : 2}
                 />
@@ -540,6 +540,28 @@ function MobileBottomAdminNav() {
                 More
               </span>
             </button>
+
+            {/* Tab 5: Profile (Far Right) — User photo avatar */}
+            <NavLink
+              key="profile-btn"
+              to="/admin/settings"
+              className="flex-1 min-w-0 flex flex-col items-center gap-0.5 py-1 no-tap-highlight"
+            >
+              {({ isActive }) => (
+                <>
+                  <div className={`w-9 h-9 rounded-full flex items-center justify-center transition-all duration-200 overflow-hidden ${isActive ? 'ring-2 ring-emerald-600 ring-offset-1' : ''}`}>
+                    <img
+                      src={user?.photoUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || '')}&background=0D4A3E&color=fff`}
+                      alt="Profile"
+                      className="w-7 h-7 rounded-full object-cover"
+                    />
+                  </div>
+                  <span className={`text-[9px] font-medium transition-all truncate w-full text-center ${isActive ? 'text-[#0D4A3E]' : 'text-[#0D4A3E] opacity-35'}`}>
+                    Profile
+                  </span>
+                </>
+              )}
+            </NavLink>
           </div>
         </div>
       </div>

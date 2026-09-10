@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import { User, Store, Bell, Lock, Save, Camera, Loader2, LogOut, Trash2, Users, Shield, Mail, Phone, ArrowRight, Plus, CheckCircle2, Edit, FileText, RefreshCcw, Code, Sparkles, Eye, AlertTriangle, Terminal, ShieldCheck, CreditCard } from 'lucide-react'
+import { User, Store, Bell, Lock, Save, Camera, Loader2, LogOut, Trash2, Users, Shield, Mail, Phone, ArrowRight, Plus, CheckCircle2, Edit, FileText, RefreshCcw, Code, Sparkles, Eye, AlertTriangle, Terminal, ShieldCheck, CreditCard, ChevronDown } from 'lucide-react'
 import { ConfirmModal } from '../../components/shared/ConfirmModal'
 import { toast } from 'sonner'
 import { useAuth } from '../../lib/auth/AuthContext'
@@ -27,7 +27,7 @@ const KcbIcon = ({ className, size = 18 }: { className?: string, size?: number }
 );
 
 export default function SettingsPage() {
-  const { user, refreshUser, logout, patchUser } = useAuth()
+  const { user, refreshUser, logout, lock, patchUser } = useAuth()
   const queryClient = useQueryClient()
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState(() => window.innerWidth < 1024 ? 'Platform Hub' : 'Profile')
@@ -229,30 +229,30 @@ export default function SettingsPage() {
     return true
   })
 
-  if (isLoading) return <div className="p-12 text-center animate-pulse">Loading settings...</div>
+  if (isLoading) {
+    return (
+      <div className="space-y-6 pt-4 lg:pt-6 pb-28 animate-pulse">
+        <div className="h-10 w-48 bg-slate-200 rounded-lg" />
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          <div className="hidden lg:block space-y-3">
+            {[1, 2, 3, 4].map(i => (
+              <div key={i} className="h-12 bg-slate-200 rounded-lg" />
+            ))}
+          </div>
+          <div className="lg:col-span-3 h-96 bg-slate-200 rounded-xl" />
+        </div>
+      </div>
+    )
+  }
 
   return (
-    // Extra bottom padding on small screens: the primary nav collapses into a
-    // fixed bottom bar there, so page content needs room not to sit under it.
     <div className="space-y-6 lg:space-y-8 animate-in fade-in duration-500 pt-4 lg:pt-6 pb-28 lg:pb-6">
 
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+      <div className="flex flex-col gap-4">
         <div>
           <h1 className="text-2xl lg:text-3xl font-black text-gray-900 tracking-tight">Settings</h1>
           <p className="text-gray-500 font-medium text-sm lg:text-base">Manage your personal profile and business configurations</p>
         </div>
-        <button
-          onClick={handleSave}
-          disabled={updateMutation.isPending || passwordMutation.isPending}
-          className="w-full sm:w-auto bg-[#0D4A3E] text-white h-12 px-8 rounded-[.5rem] font-black text-sm hover:bg-[#0A3D33] transition-all flex items-center justify-center gap-2 disabled:opacity-50"
-        >
-          {updateMutation.isPending || passwordMutation.isPending ? (
-            <Loader2 className="animate-spin" size={18} />
-          ) : (
-            <Save size={18} />
-          )}
-          Save Settings
-        </button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-5 lg:gap-8">
@@ -362,6 +362,45 @@ export default function SettingsPage() {
                     onChange={(v: string) => setFormData({ ...formData, phone: v })}
                     mono
                   />
+                </div>
+
+                <div className="pt-6 border-t border-gray-50 mt-6 flex justify-end">
+                  <button
+                    onClick={handleSave}
+                    disabled={updateMutation.isPending}
+                    className="bg-[#0D4A3E] text-white h-11 px-8 rounded-[.5rem] font-black text-sm hover:bg-[#0A3D33] transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                  >
+                    {updateMutation.isPending ? <Loader2 className="animate-spin" size={16} /> : <Save size={16} />}
+                    Save Profile
+                  </button>
+                </div>
+
+                {/* Mobile & Desktop Account Session Controls */}
+                <div className="pt-6 border-t border-slate-100 mt-8 space-y-4">
+                  <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest">Session & Security Controls</h4>
+                  <div className="flex flex-wrap gap-3">
+                    {hasOfflinePin() && (
+                      <button
+                        onClick={lock}
+                        className="flex items-center gap-2 px-5 py-3 bg-slate-100 text-slate-700 rounded-lg text-xs font-bold hover:bg-slate-200 transition-all active:scale-95"
+                      >
+                        <Lock size={15} /> Lock Screen
+                      </button>
+                    )}
+                    <button
+                      onClick={async () => {
+                        await logout()
+                        if (navigator.onLine) {
+                          window.location.href = '/login'
+                        } else {
+                          toast.info('Session locked. Enter your PIN to continue.')
+                        }
+                      }}
+                      className="flex items-center gap-2 px-5 py-3 bg-red-50 text-red-600 rounded-lg text-xs font-bold hover:bg-red-100 transition-all active:scale-95"
+                    >
+                      <LogOut size={15} /> {navigator.onLine ? 'Terminate Session' : 'Lock & Secure'}
+                    </button>
+                  </div>
                 </div>
               </div>
             )}
@@ -508,104 +547,25 @@ export default function SettingsPage() {
                     />
                   </div>
                 </div>
+
+                <div className="pt-6 border-t border-gray-50 mt-2 flex justify-end">
+                  <button
+                    onClick={handleSave}
+                    disabled={updateMutation.isPending}
+                    className="bg-[#0D4A3E] text-white h-11 px-8 rounded-[.5rem] font-black text-sm hover:bg-[#0A3D33] transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                  >
+                    {updateMutation.isPending ? <Loader2 className="animate-spin" size={16} /> : <Save size={16} />}
+                    Save Business Info
+                  </button>
+                </div>
               </div>
             )}
 
             {activeTab === 'Data Management' && (
-              <div className="space-y-6 lg:space-y-8 animate-in fade-in slide-in-from-top-4 duration-500">
-                <div className="p-5 lg:p-8 bg-amber-50 border border-amber-100 rounded-[.5rem] flex flex-col sm:flex-row items-start gap-5">
-                  <AlertTriangle className="text-amber-600 shrink-0 mt-1" size={24} />
-                  <div className="w-full">
-                    <h4 className="text-lg font-black text-amber-900 mb-2">Reset Business Data</h4>
-                    <p className="text-sm text-amber-800 leading-relaxed max-w-xl">
-                      This action will <strong>permanently delete</strong> all your sales records, history, added products, expenses, and customer logs. This is useful for clearing test data before you start your real business operations.
-                    </p>
-                    <div className="mt-6 lg:mt-8 flex flex-col sm:flex-row gap-4">
-                      <button
-                        onClick={() => setConfirmDeleteId('clear-workshop')}
-                        className="w-full sm:w-auto px-8 py-4 bg-amber-600 text-white rounded-[.5rem] font-black text-xs uppercase tracking-widest hover:bg-amber-700 transition-all shadow-xl shadow-amber-900/10 active:scale-95"
-                      >
-                        Reset Workshop Data
-                      </button>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="p-5 lg:p-8 bg-red-50 border border-red-100 rounded-[.5rem] flex flex-col sm:flex-row items-start gap-5">
-                  <Trash2 className="text-red-600 shrink-0 mt-1" size={24} />
-                  <div className="w-full">
-                    <h4 className="text-lg font-black text-red-900 mb-2">Delete Profile & Facility Data</h4>
-                    <p className="text-sm text-red-800 leading-relaxed max-w-xl">
-                      Completely and permanently erases your user profile, facility tenant, staff logins, product catalog, sales, expenses, and financial logs from HudumaLynk. <strong>This action cannot be undone.</strong>
-                    </p>
-                    <div className="mt-6 lg:mt-8">
-                      <button
-                        onClick={() => setConfirmDeleteId('delete-profile-facility')}
-                        className="w-full sm:w-auto px-8 py-4 bg-red-600 text-white rounded-[.5rem] font-black text-xs uppercase tracking-widest hover:bg-red-700 transition-all shadow-xl shadow-red-900/10 active:scale-95"
-                      >
-                        Delete Profile & Facility
-                      </button>
-                    </div>
-                  </div>
-                </div>
-                <div className="p-5 lg:p-8 bg-blue-50 border border-blue-100 rounded-[.5rem] flex flex-col sm:flex-row items-start gap-5">
-                  <RefreshCcw className="text-blue-600 shrink-0 mt-1" size={24} />
-                  <div className="w-full">
-                    <h4 className="text-lg font-black text-blue-900 mb-2">Wipe Application Cache</h4>
-                    <p className="text-sm text-blue-800 leading-relaxed max-w-xl">
-                      If you see errors like <strong>"Service worker took too long to activate"</strong> or "Old version detected", use this to force the app to refresh. This will log you out but fix most mobile update issues.
-                    </p>
-                    <div className="mt-6 lg:mt-8">
-                      <button
-                        onClick={async () => {
-                          if (confirm('This will wipe local caches and log you out to fix update issues. Proceed?')) {
-                            const registrations = await navigator.serviceWorker.getRegistrations();
-                            for (let registration of registrations) {
-                              await registration.unregister();
-                            }
-                            if ('caches' in window) {
-                              const keys = await caches.keys();
-                              for (let key of keys) {
-                                await caches.delete(key);
-                              }
-                            }
-                            // Preserve one-time prompt sentinels so they don't re-fire after reset
-                            const preserve: Record<string, string | null> = {};
-                            for (let i = 0; i < localStorage.length; i++) {
-                              const k = localStorage.key(i)!;
-                              if (k === 'hlynk_pin_prompted' || k.startsWith('hlynk_reviewed_')) {
-                                preserve[k] = localStorage.getItem(k);
-                              }
-                            }
-                            localStorage.clear();
-                            Object.entries(preserve).forEach(([k, v]) => { if (v !== null) localStorage.setItem(k, v); });
-                            sessionStorage.clear();
-                            window.location.href = '/login?reset=true';
-                          }
-                        }}
-                        className="w-full sm:w-auto px-8 py-4 bg-blue-600 text-white rounded-[.5rem] font-black text-xs uppercase tracking-widest hover:bg-blue-700 transition-all shadow-xl shadow-blue-900/10 active:scale-95"
-                      >
-                        Force Hard Reset
-                      </button>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 opacity-60 pointer-events-none">
-                  <div className="p-6 bg-slate-50 rounded-[.5rem] border border-slate-100">
-                    <h5 className="font-black text-slate-900 mb-2 flex items-center gap-2">
-                      <FileText size={16} /> Auto-Backup
-                    </h5>
-                    <p className="text-[10px] text-slate-500 font-medium">Export your data to CSV automatically every week.</p>
-                  </div>
-                  <div className="p-6 bg-slate-50 rounded-[.5rem] border border-slate-100">
-                    <h5 className="font-black text-slate-900 mb-2 flex items-center gap-2">
-                      <RefreshCcw size={16} /> Data Portability
-                    </h5>
-                    <p className="text-[10px] text-slate-500 font-medium">Import your products from Excel or CSV files.</p>
-                  </div>
-                </div>
-              </div>
+              <DataManagementPanel
+                onConfirm={(id: string) => setConfirmDeleteId(id)}
+                profile={profile}
+              />
             )}
 
             {activeTab === 'Notifications' && (
@@ -640,7 +600,14 @@ export default function SettingsPage() {
                           : 'Without a PIN, you cannot log back in if you lose internet. Set one to protect your offline access.'}
                       </p>
                     </div>
-                    <div className="flex gap-2 flex-shrink-0">
+                    {/* Fix button hierarchy: primary action first, destructive as text link below */}
+                    <div className="flex flex-col items-end gap-2 flex-shrink-0">
+                      <button
+                        onClick={() => setShowPinSetup(true)}
+                        className="px-5 py-2.5 bg-[#0D4A3E] text-white rounded-[.5rem] text-[10px] font-black uppercase tracking-widest hover:bg-[#0A3D33] transition-all shadow-lg shadow-emerald-900/10"
+                      >
+                        {pinHasPin ? 'Change PIN' : 'Set PIN'}
+                      </button>
                       {pinHasPin && (
                         <button
                           onClick={() => {
@@ -648,17 +615,11 @@ export default function SettingsPage() {
                             setPinHasPin(false)
                             toast.success('Offline PIN removed')
                           }}
-                          className="px-4 py-2.5 border border-red-200 text-red-500 rounded-[.5rem] text-[10px] font-black uppercase tracking-widest hover:bg-red-50 transition-all"
+                          className="text-[10px] font-bold text-red-400 hover:text-red-600 transition-colors underline underline-offset-2"
                         >
                           Remove PIN
                         </button>
                       )}
-                      <button
-                        onClick={() => setShowPinSetup(true)}
-                        className="px-5 py-2.5 bg-[#0D4A3E] text-white rounded-[.5rem] text-[10px] font-black uppercase tracking-widest hover:bg-[#0A3D33] transition-all shadow-lg shadow-emerald-900/10"
-                      >
-                        {pinHasPin ? 'Change PIN' : 'Set PIN'}
-                      </button>
                     </div>
                   </div>
                 </div>
@@ -1058,6 +1019,108 @@ function ActivityLogViewer() {
           </div>
         )}
       </div>
+    </div>
+  )
+}
+
+function DataManagementPanel({ onConfirm, profile }: { onConfirm: (id: string) => void; profile: any }) {
+  const [showAdvanced, setShowAdvanced] = useState(false)
+
+  return (
+    <div className="space-y-6 lg:space-y-8 animate-in fade-in slide-in-from-top-4 duration-500">
+      {/* Primary/Common Action: Reset Workshop Data */}
+      <div className="p-5 lg:p-8 bg-amber-50 border border-amber-100 rounded-[.5rem] flex flex-col sm:flex-row items-start gap-5">
+        <AlertTriangle className="text-amber-600 shrink-0 mt-1" size={24} />
+        <div className="w-full">
+          <h4 className="text-lg font-black text-amber-900 mb-2">Reset Business Data</h4>
+          <p className="text-sm text-amber-800 leading-relaxed max-w-xl">
+            This action will <strong>permanently delete</strong> all your sales records, history, added products, expenses, and customer logs. This is useful for clearing test data before starting real operations.
+          </p>
+          <div className="mt-6 lg:mt-8 flex flex-col sm:flex-row gap-4">
+            <button
+              onClick={() => onConfirm('clear-workshop')}
+              className="w-full sm:w-auto px-8 py-4 bg-amber-600 text-white rounded-[.5rem] font-black text-xs uppercase tracking-widest hover:bg-amber-700 transition-all shadow-xl shadow-amber-900/10 active:scale-95"
+            >
+              Reset Workshop Data
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Progressive Disclosure Toggle */}
+      <button
+        onClick={() => setShowAdvanced(v => !v)}
+        className="w-full flex items-center justify-between p-4 bg-slate-50 border border-slate-100 rounded-[.5rem] text-slate-600 font-bold text-xs hover:bg-slate-100 transition-all"
+      >
+        <span className="flex items-center gap-2">
+          <AlertTriangle size={16} className="text-slate-400" /> Advanced & Destructive Danger Zone
+        </span>
+        <ChevronDown size={16} className={`transition-transform ${showAdvanced ? 'rotate-180' : ''}`} />
+      </button>
+
+      {showAdvanced && (
+        <div className="space-y-6 animate-in fade-in duration-300">
+          <div className="p-5 lg:p-8 bg-red-50 border border-red-100 rounded-[.5rem] flex flex-col sm:flex-row items-start gap-5">
+            <Trash2 className="text-red-600 shrink-0 mt-1" size={24} />
+            <div className="w-full">
+              <h4 className="text-lg font-black text-red-900 mb-2">Delete Profile & Facility Data</h4>
+              <p className="text-sm text-red-800 leading-relaxed max-w-xl">
+                Completely and permanently erases your user profile, facility tenant, staff logins, product catalog, sales, expenses, and financial logs from HudumaLynk. <strong>This action cannot be undone.</strong>
+              </p>
+              <div className="mt-6 lg:mt-8">
+                <button
+                  onClick={() => onConfirm('delete-profile-facility')}
+                  className="w-full sm:w-auto px-8 py-4 bg-red-600 text-white rounded-[.5rem] font-black text-xs uppercase tracking-widest hover:bg-red-700 transition-all shadow-xl shadow-red-900/10 active:scale-95"
+                >
+                  Delete Profile & Facility
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div className="p-5 lg:p-8 bg-blue-50 border border-blue-100 rounded-[.5rem] flex flex-col sm:flex-row items-start gap-5">
+            <RefreshCcw className="text-blue-600 shrink-0 mt-1" size={24} />
+            <div className="w-full">
+              <h4 className="text-lg font-black text-blue-900 mb-2">Wipe Application Cache</h4>
+              <p className="text-sm text-blue-800 leading-relaxed max-w-xl">
+                If you see errors like <strong>"Service worker took too long to activate"</strong> or "Old version detected", use this to force the app to refresh.
+              </p>
+              <div className="mt-6 lg:mt-8">
+                <button
+                  onClick={async () => {
+                    if (confirm('This will wipe local caches and log you out to fix update issues. Proceed?')) {
+                      const registrations = await navigator.serviceWorker.getRegistrations();
+                      for (let registration of registrations) {
+                        await registration.unregister();
+                      }
+                      if ('caches' in window) {
+                        const keys = await caches.keys();
+                        for (let key of keys) {
+                          await caches.delete(key);
+                        }
+                      }
+                      const preserve: Record<string, string | null> = {};
+                      for (let i = 0; i < localStorage.length; i++) {
+                        const k = localStorage.key(i)!;
+                        if (k === 'hlynk_pin_prompted' || k.startsWith('hlynk_reviewed_')) {
+                          preserve[k] = localStorage.getItem(k);
+                        }
+                      }
+                      localStorage.clear();
+                      Object.entries(preserve).forEach(([k, v]) => { if (v !== null) localStorage.setItem(k, v); });
+                      sessionStorage.clear();
+                      window.location.href = '/login?reset=true';
+                    }
+                  }}
+                  className="w-full sm:w-auto px-8 py-4 bg-blue-600 text-white rounded-[.5rem] font-black text-xs uppercase tracking-widest hover:bg-blue-700 transition-all shadow-xl shadow-blue-900/10 active:scale-95"
+                >
+                  Force Hard Reset
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

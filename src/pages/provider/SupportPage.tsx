@@ -82,7 +82,70 @@ export default function SupportPage() {
         </div>
       </div>
 
-      {/* Reviews are managed centrally and visible to new users */}
+      {/* Review Section — shown to providers, completing review unlocks the form */}
+      {user?.role === 'PROVIDER' && (
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+          <div className="p-6 bg-[#0D4A3E] text-white flex items-center gap-4">
+            <div className="h-10 w-10 rounded-xl bg-white/10 flex items-center justify-center shrink-0">
+              <Star size={20} className="text-amber-300 fill-amber-300" />
+            </div>
+            <div>
+              <p className="text-xs font-black uppercase tracking-widest text-emerald-300">Your Review</p>
+              <h3 className="text-base font-black leading-tight">
+                {myReview?.data ? 'Update Your Rating' : 'Rate Your Experience'}
+              </h3>
+            </div>
+          </div>
+          <div className="p-6 space-y-5">
+            {reviewLoading ? (
+              <div className="py-8 flex justify-center">
+                <Loader2 className="animate-spin text-emerald-600" size={24} />
+              </div>
+            ) : (
+              <>
+                <div className="flex justify-center gap-3">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <button
+                      key={star}
+                      onClick={() => setRating(star)}
+                      className="transition-transform hover:scale-110 focus:outline-none"
+                    >
+                      <Star
+                        size={36}
+                        className={`${rating >= star ? 'text-[#0D4A3E] fill-[#0D4A3E]' : 'text-slate-200 fill-slate-200'} transition-colors`}
+                      />
+                    </button>
+                  ))}
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Your Feedback (Optional)</label>
+                  <textarea
+                    value={comment}
+                    onChange={(e) => setComment(e.target.value)}
+                    placeholder="What do you love? What could we improve?"
+                    className="w-full bg-slate-50 border border-slate-100 rounded-xl p-4 text-sm font-medium text-slate-700 outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all resize-none h-24"
+                  />
+                </div>
+                <button
+                  onClick={() => submitReviewMutation.mutate({ rating, comment })}
+                  disabled={submitReviewMutation.isPending || rating === 0}
+                  className="w-full glass-btn-primary py-3.5 rounded-xl font-black text-sm uppercase tracking-widest flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {submitReviewMutation.isPending
+                    ? <><Loader2 className="animate-spin" size={16} /> Submitting...</>
+                    : <><Star size={16} /> {myReview?.data ? 'Update Review' : 'Submit Review'}</>
+                  }
+                </button>
+                {myReview?.data && (
+                  <p className="text-center text-[10px] text-emerald-600 font-black uppercase tracking-widest">
+                    ✓ Your review is live — thank you!
+                  </p>
+                )}
+              </>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   )
 }

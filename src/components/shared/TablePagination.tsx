@@ -25,7 +25,7 @@ export default function TablePagination({
           type="button"
           onClick={onPrevious}
           disabled={page <= 1}
-          className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-[10px] font-black uppercase tracking-widest text-slate-500 transition hover:text-emerald-600 disabled:cursor-not-allowed disabled:opacity-40"
+          className="rounded-xl glass-btn px-4 py-2 text-[10px] font-black uppercase tracking-widest text-slate-500 transition hover:text-emerald-600 disabled:cursor-not-allowed disabled:opacity-40"
         >
           Prev
         </button>
@@ -33,7 +33,7 @@ export default function TablePagination({
           type="button"
           onClick={onNext}
           disabled={page >= pages}
-          className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-[10px] font-black uppercase tracking-widest text-slate-500 transition hover:text-emerald-600 disabled:cursor-not-allowed disabled:opacity-40"
+          className="rounded-xl glass-btn px-4 py-2 text-[10px] font-black uppercase tracking-widest text-slate-500 transition hover:text-emerald-600 disabled:cursor-not-allowed disabled:opacity-40"
         >
           Next
         </button>

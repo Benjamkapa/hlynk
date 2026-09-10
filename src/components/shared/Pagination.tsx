@@ -26,7 +26,7 @@ export default function Pagination({ page, pages, total, onPageChange, label = '
         <button 
           onClick={() => onPageChange(Math.max(1, page - 1))}
           disabled={page === 1}
-          className="h-12 px-8 bg-white border border-gray-100 rounded-2xl text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-emerald-600 hover:border-emerald-100 hover:shadow-xl hover:shadow-emerald-900/5 disabled:opacity-20 transition-all flex items-center gap-2 group"
+          className="h-12 px-8 glass-btn rounded-2xl text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-emerald-600 disabled:opacity-20 transition-all flex items-center gap-2 group"
         >
           <ChevronLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
           Prev
@@ -46,10 +46,10 @@ export default function Pagination({ page, pages, total, onPageChange, label = '
               <button
                 key={pageNum}
                 onClick={() => onPageChange(pageNum)}
-                className={`h-10 w-10 rounded-[.5rem] text-[10px] font-black transition-all ${
+                className={`h-10 w-10 rounded-xl text-[10px] font-black transition-all ${
                   page === pageNum 
-                  ? 'bg-slate-900 text-white shadow-lg' 
-                  : 'text-slate-400 hover:bg-slate-100'
+                  ? 'glass-btn-dark' 
+                  : 'glass-btn text-slate-500'
                 }`}
               >
                 {pageNum}
@@ -61,7 +61,7 @@ export default function Pagination({ page, pages, total, onPageChange, label = '
         <button 
           onClick={() => onPageChange(Math.min(pages, page + 1))}
           disabled={page === pages}
-          className="h-12 px-8 bg-white border border-gray-100 rounded-2xl text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-emerald-600 hover:border-emerald-100 hover:shadow-xl hover:shadow-emerald-900/5 disabled:opacity-20 transition-all flex items-center gap-2 group"
+          className="h-12 px-8 glass-btn rounded-2xl text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-emerald-600 disabled:opacity-20 transition-all flex items-center gap-2 group"
         >
           Next
           <ChevronRight size={16} className="group-hover:translate-x-1 transition-transform" />

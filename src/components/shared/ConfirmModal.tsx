@@ -30,9 +30,9 @@ export function ConfirmModal({
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center animate-in fade-in duration-200">
-      <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={handleCancel} />
+      <div className="fixed inset-0 glass-modal" onClick={handleCancel} />
       
-      <div className="relative bg-white rounded-[.5em] p-8 max-w-sm w-full mx-4 shadow-2xl animate-in zoom-in-95 duration-200">
+      <div className="relative glass-sheet rounded-[1.25rem] p-8 max-w-sm w-full mx-4 animate-in zoom-in-95 duration-200">
         <button 
           onClick={handleCancel}
           disabled={isLoading}

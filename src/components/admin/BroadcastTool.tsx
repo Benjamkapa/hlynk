@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react'
-import { Send, Bell, Mail, Users, Info, AlertTriangle, CheckCircle2, Loader2, Search, X } from 'lucide-react'
+import { Send, Bell, Mail, Users, Info, AlertTriangle, CheckCircle2, Loader2, Search, X, Star } from 'lucide-react'
 import { api } from '../../lib/api/client'
 import { toast } from 'sonner'
 import { useQuery } from '@tanstack/react-query'
 
 export default function BroadcastTool() {
-  const [target, setTarget] = useState<'all' | 'specific'>('all')
+  const [target, setTarget] = useState<'all' | 'specific' | 'review'>('all')
   const [emails, setEmails] = useState('')
   const [selectedEmails, setSelectedEmails] = useState<string[]>([])
   const [title, setTitle] = useState('')
@@ -45,6 +45,25 @@ export default function BroadcastTool() {
   }
 
   const handleSend = async () => {
+    if (target === 'review') {
+      // Review request: broadcast to all vendors with a special type
+      setSending(true)
+      try {
+        const res = await api.post('/notifications/broadcast', {
+          target: 'all',
+          title: '⭐ Share Your Experience',
+          message: 'We\'d love to hear how hlynk is helping your business. Tap to leave a quick rating — it takes less than a minute!',
+          type: 'review_request',
+        })
+        toast.success(res.data.message || 'Review request sent to all vendors!')
+      } catch (err: any) {
+        toast.error(err.response?.data?.message || 'Failed to send review request')
+      } finally {
+        setSending(false)
+      }
+      return
+    }
+
     if (!title || !message) return toast.error('Title and Message are required')
     
     let finalEmails = selectedEmails
@@ -93,7 +112,7 @@ export default function BroadcastTool() {
       </div>
 
       <div className="p-8 space-y-6">
-        <div className="flex gap-4">
+        <div className="flex gap-3">
           <button
             onClick={() => setTarget('all')}
             className={`flex-1 p-4 rounded-xl border transition-all flex flex-col items-center gap-2 ${
@@ -115,6 +134,17 @@ export default function BroadcastTool() {
           >
             <Mail size={20} />
             <span className="text-[10px] font-black uppercase tracking-widest">Specific Targets</span>
+          </button>
+          <button
+            onClick={() => setTarget('review')}
+            className={`flex-1 p-4 rounded-xl border transition-all flex flex-col items-center gap-2 ${
+              target === 'review' 
+                ? 'bg-amber-50 border-amber-200 text-amber-700' 
+                : 'bg-gray-50 border-gray-100 text-gray-400 grayscale hover:grayscale-0'
+            }`}
+          >
+            <Star size={20} />
+            <span className="text-[10px] font-black uppercase tracking-widest">Request Reviews</span>
           </button>
         </div>
 
@@ -191,57 +221,80 @@ export default function BroadcastTool() {
           </div>
         )}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="space-y-2">
-            <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Notification Title</label>
-            <input
-              type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="e.g. System Maintenance"
-              className="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 text-xs font-bold outline-none focus:ring-2 focus:ring-emerald-500/10"
-            />
-          </div>
-          <div className="space-y-2">
-            <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Notice Severity</label>
-            <div className="flex gap-2">
-              <TypeButton active={type === 'info'} color="blue" icon={Info} onClick={() => setType('info')} />
-              <TypeButton active={type === 'success'} color="emerald" icon={CheckCircle2} onClick={() => setType('success')} />
-              <TypeButton active={type === 'warning'} color="amber" icon={AlertTriangle} onClick={() => setType('warning')} />
+        {target === 'review' ? (
+          <div className="p-6 bg-amber-50 border border-amber-100 rounded-2xl flex items-start gap-4 animate-in fade-in duration-300">
+            <div className="h-10 w-10 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center shrink-0">
+              <Star size={20} className="fill-amber-400 text-amber-400" />
+            </div>
+            <div>
+              <p className="text-xs font-black text-amber-900 uppercase tracking-widest mb-1">Review Request Broadcast</p>
+              <p className="text-[11px] text-amber-700 font-medium leading-relaxed">
+                This will send a notification to <span className="font-black">all vendors</span> asking them to share their experience.
+                They'll receive it in their in-app inbox with a link to the review form.
+              </p>
             </div>
           </div>
-        </div>
+        ) : (
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Notification Title</label>
+                <input
+                  type="text"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  placeholder="e.g. System Maintenance"
+                  className="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 text-xs font-bold outline-none focus:ring-2 focus:ring-emerald-500/10"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Notice Severity</label>
+                <div className="flex gap-2">
+                  <TypeButton active={type === 'info'} color="blue" icon={Info} onClick={() => setType('info')} />
+                  <TypeButton active={type === 'success'} color="emerald" icon={CheckCircle2} onClick={() => setType('success')} />
+                  <TypeButton active={type === 'warning'} color="amber" icon={AlertTriangle} onClick={() => setType('warning')} />
+                </div>
+              </div>
+            </div>
 
-        <div className="space-y-2">
-          <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Detailed Content</label>
-          <textarea
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-            placeholder="Type your message here..."
-            className="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 text-xs font-bold outline-none focus:ring-2 focus:ring-emerald-500/10 min-h-[100px]"
-          />
-        </div>
+            <div className="space-y-2">
+              <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Detailed Content</label>
+              <textarea
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                placeholder="Type your message here..."
+                className="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 text-xs font-bold outline-none focus:ring-2 focus:ring-emerald-500/10 min-h-[100px]"
+              />
+            </div>
+          </>
+        )}
 
-        <div className="p-4 bg-slate-50 rounded-xl border border-slate-100 mb-6 group">
-          <div className="flex gap-3 items-start">
-             <div className="h-5 w-5 rounded-full bg-slate-900 text-white flex items-center justify-center shrink-0 mt-0.5">
-                <Info size={10} />
-             </div>
-             <p className="text-[10px] text-slate-500 font-bold leading-relaxed">
-               <span className="text-slate-900 font-black">Dual-Delivery Logic:</span> This message will be stored in the vendor's 
-               <span className="text-emerald-600"> In-App Inbox</span> and pushed as a 
-               <span className="text-emerald-600"> Native Device Notification</span> if they have permissions enabled.
-             </p>
+        {target !== 'review' && (
+          <div className="p-4 bg-slate-50 rounded-xl border border-slate-100 mb-6 group">
+            <div className="flex gap-3 items-start">
+               <div className="h-5 w-5 rounded-full bg-slate-900 text-white flex items-center justify-center shrink-0 mt-0.5">
+                  <Info size={10} />
+               </div>
+               <p className="text-[10px] text-slate-500 font-bold leading-relaxed">
+                 <span className="text-slate-900 font-black">Dual-Delivery Logic:</span> This message will be stored in the vendor's 
+                 <span className="text-emerald-600"> In-App Inbox</span> and pushed as a 
+                 <span className="text-emerald-600"> Native Device Notification</span> if they have permissions enabled.
+               </p>
+            </div>
           </div>
-        </div>
+        )}
 
         <button
           onClick={handleSend}
           disabled={sending}
-          className="w-full bg-[#0D4A3E] text-white py-4 rounded-xl font-black text-xs uppercase tracking-[0.2em] hover:bg-[#0A3D33] transition-all flex items-center justify-center gap-2 shadow-xl shadow-emerald-900/10 disabled:opacity-50"
+          className={`w-full py-4 rounded-xl font-black text-xs uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-2 shadow-xl disabled:opacity-50 ${
+            target === 'review'
+              ? 'bg-amber-500 hover:bg-amber-400 text-white shadow-amber-900/10'
+              : 'bg-[#0D4A3E] hover:bg-[#0A3D33] text-white shadow-emerald-900/10'
+          }`}
         >
-          {sending ? <Loader2 className="animate-spin" size={16} /> : <Send size={16} />}
-          {sending ? 'Pushing to Data Nodes...' : 'Initiate Broadcast'}
+          {sending ? <Loader2 className="animate-spin" size={16} /> : target === 'review' ? <Star size={16} /> : <Send size={16} />}
+          {sending ? 'Pushing to Data Nodes...' : target === 'review' ? 'Send Review Request to All' : 'Initiate Broadcast'}
         </button>
       </div>
     </div>

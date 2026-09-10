@@ -3,8 +3,8 @@ import { useAuth } from "../../lib/auth/AuthContext";
 import {
   LayoutDashboard, Calendar, BarChart2, Users,
   Settings, LogOut, Package, ShoppingCart,
-  Zap, Clock, AlertTriangle,
-  Lock, Shield, X, Star, Loader2, Terminal, ShieldCheck, Receipt, CreditCard,
+  Zap, Clock, AlertTriangle, User, MoreHorizontal,
+  Lock, Shield, X, Terminal, ShieldCheck, Receipt, CreditCard,
   Hotel, Building, CalendarCheck, Sparkles
 } from "lucide-react";
 import { useLocation, Outlet, NavLink, Link } from "react-router-dom";
@@ -12,6 +12,7 @@ import TopNav from "./TopNav";
 import { providersApi } from "../../lib/api/providers";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
+import { MobileGestures } from "./MobileGestures";
 
 const EtimsIcon = ({ className, size = 20 }: { className?: string, size?: number }) => (
   <img src="https://etims.kra.go.ke/assets/images/logo.jpg" alt="eTIMS" style={{ width: size, height: size }} className={`${className || ''} object-contain mix-blend-darken shrink-0`} />
@@ -75,16 +76,12 @@ export default function ProviderLayout() {
     return () => { clearTimeout(t); window.removeEventListener("mousemove", reset); window.removeEventListener("keydown", reset); window.removeEventListener("click", reset); };
   }, [mobileOpen, isDesktop]);
 
-  const [showReviewModal, setShowReviewModal] = useState(false);
-  const [reviewRating, setReviewRating] = useState(0);
-  const [reviewText, setReviewText] = useState("");
-  const [isSubmittingReview, setIsSubmittingReview] = useState(false);
 
   const userModules = useMemo(() => {
     let mods: string[] = [];
     if (Array.isArray(user?.activeModules)) mods = user.activeModules;
     else if (typeof user?.activeModules === 'string') {
-      try { mods = JSON.parse(user.activeModules); } catch (_) {}
+      try { mods = JSON.parse(user.activeModules); } catch (_) { }
     }
     if (!mods.length) mods = ['POS'];
     return mods;
@@ -173,30 +170,6 @@ export default function ProviderLayout() {
   const isExpired = Number(user?.subscription?.status) === 1;
   const isTrialExpired = isTrial && isExpired;
 
-  useEffect(() => {
-    // One-time review prompt: keyed to tenant only (not date) so it never repeats after renewal
-    const reviewKey = `hlynk_reviewed_${user?.tenantId}`;
-    if (localStorage.getItem(reviewKey)) return;
-    // Only prompt when the subscription/trial has actually expired — not pre-emptively
-    if (user?.role === 'PROVIDER' && (isExpired || isTrialExpired)) {
-      setShowReviewModal(true);
-    }
-  }, [user, isExpired, isTrialExpired]);
-
-  const handleSubmitReview = async () => {
-    if (reviewRating === 0) return toast.error("Please select a rating");
-    setIsSubmittingReview(true);
-    try {
-      await providersApi.submitReview({ rating: reviewRating, reviewText });
-      toast.success("Thank you for your feedback!");
-      localStorage.setItem(`hlynk_reviewed_${user?.tenantId}`, 'true');
-      setShowReviewModal(false);
-    } catch (err: any) {
-      toast.error(err.message || "Failed to submit review");
-    } finally {
-      setIsSubmittingReview(false);
-    }
-  };
 
   const sidebarExpanded = isDesktop ? (!isCollapsed || isHovered) : mobileOpen;
   const RAIL_W = isDesktop ? 68 : 60;
@@ -372,72 +345,8 @@ export default function ProviderLayout() {
   ), [sidebarExpanded, filteredGroups, user, isTrial, isCritical, targetEndDate]);
 
   return (
-    <div className="flex h-screen h-[100dvh] overflow-hidden bg-slate-50/50">
-      <AnimatePresence>
-        {showReviewModal && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] flex items-center justify-center bg-gray-900/60 backdrop-blur-sm p-4"
-          >
-            <motion.div
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-white rounded-[.5rem] w-full max-w-md p-8 relative shadow-2xl"
-            >
-              {!isTrialExpired && (
-                <button
-                  onClick={() => {
-                    setShowReviewModal(false);
-                    localStorage.setItem(`hlynk_reviewed_${user?.tenantId}`, 'true');
-                  }}
-                  className="absolute top-6 right-6 text-slate-400 hover:text-slate-900 transition-colors"
-                >
-                  <X size={20} />
-                </button>
-              )}
-              <div className="text-center mb-8">
-                <div className="h-16 w-16 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Star size={32} className="fill-emerald-600" />
-                </div>
-                <h2 className="text-2xl font-black text-slate-900 tracking-tight mb-2">
-                  {isTrialExpired ? "Your Trial has Completed!" : "How are we doing?"}
-                </h2>
-                <p className="text-xs text-slate-500 font-medium leading-relaxed">
-                  {isTrialExpired
-                    ? "To keep using hlynk and help us grow, please share a quick rating of your experience so far!"
-                    : "Your subscription is renewing soon. We'd love to know how hlynk has helped your business grow!"}
-                </p>
-              </div>
-              <div className="flex justify-center gap-2 mb-8">
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <button key={star} onClick={() => setReviewRating(star)} className="transition-transform hover:scale-110 focus:outline-none">
-                    <Star size={40} className={`${reviewRating >= star ? 'text-[#0D4A3E] fill-[#0D4A3E]' : 'text-slate-200 fill-slate-200'} transition-colors`} />
-                  </button>
-                ))}
-              </div>
-              <div className="mb-8">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 block">Your Feedback (Optional)</label>
-                <textarea
-                  value={reviewText}
-                  onChange={e => setReviewText(e.target.value)}
-                  placeholder="What do you love? What could we improve?"
-                  className="w-full bg-slate-50 border border-slate-100 rounded-[.5rem] p-4 text-sm font-medium text-slate-700 outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all resize-none h-28"
-                />
-              </div>
-              <button
-                onClick={handleSubmitReview}
-                disabled={isSubmittingReview || reviewRating === 0}
-                className="w-full h-14 bg-[#0D4A3E] text-white rounded-[.5rem] font-black text-sm uppercase tracking-widest hover:bg-[#0A3D33] transition-all flex items-center justify-center shadow-xl shadow-emerald-900/20 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isSubmittingReview ? <Loader2 className="animate-spin" size={20} /> : 'Submit Review'}
-              </button>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+    <MobileGestures>
+      <div className="flex h-screen h-[100dvh] overflow-hidden bg-slate-50/50">
 
       <AnimatePresence>
         {!isDesktop && mobileOpen && (
@@ -491,7 +400,7 @@ export default function ProviderLayout() {
                 </p>
               </div>
             </div>
-            <Link to="/dashboard/subscription" className="ml-4 flex-shrink-0 px-5 py-2 bg-white text-red-600 rounded-[.5rem] text-[10px] font-black uppercase tracking-widest hover:bg-red-50 transition-all shadow-lg active:scale-95">
+            <Link to="/dashboard/subscription" className="ml-4 flex-shrink-0 px-5 py-2 glass-btn text-red-600 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all active:scale-95">
               {isTrial ? "Upgrade Now" : "Top Up Now"}
             </Link>
           </div>
@@ -505,7 +414,7 @@ export default function ProviderLayout() {
           extraActions={
             <Link
               to="/dashboard/sales/new"
-              className="hidden lg:flex items-center gap-2 px-5 py-2.5 bg-[#0D4A3E] text-white rounded-[.5rem] font-black text-xs uppercase tracking-widest shadow-xl shadow-emerald-900/10 hover:bg-[#064E3B] hover:-translate-y-0.5 transition-all"
+            className="hidden lg:flex items-center gap-2 px-5 py-2.5 glass-btn-primary rounded-xl font-black text-xs uppercase tracking-widest hover:-translate-y-0.5 transition-all"
             >
               <Zap size={15} /> Record Sale
             </Link>
@@ -523,34 +432,27 @@ export default function ProviderLayout() {
           targetEndDate={targetEndDate}
         />
       )}
-    </div>
+      </div>
+    </MobileGestures>
   );
 }
 
-// ─── Mobile Bottom Nav (floating, cage-free) ──────────────────────────────────
+// ─── Mobile Bottom Nav (floating, 5 Tabs Max) ──────────────────────────────────
 function MobileBottomNav({ user, targetEndDate }: {
   user: any;
   targetEndDate: string | undefined;
 }) {
-  const [showBanner, setShowBanner] = useState(false);
   const [showMoreSheet, setShowMoreSheet] = useState(false);
   const location = useLocation();
-  const isTrial = Number(user?.subscription?.status) === 2 || user?.subscription?.status === 'TRIAL';
 
   // Close "More" sheet on navigation
   useEffect(() => { setShowMoreSheet(false); }, [location.pathname]);
-
-  useEffect(() => {
-    if (!showBanner) return;
-    const t = setTimeout(() => setShowBanner(false), 5000);
-    return () => clearTimeout(t);
-  }, [showBanner]);
 
   const userModules = useMemo(() => {
     let mods: string[] = [];
     if (Array.isArray(user?.activeModules)) mods = user.activeModules;
     else if (typeof user?.activeModules === 'string') {
-      try { mods = JSON.parse(user.activeModules); } catch (_) {}
+      try { mods = JSON.parse(user.activeModules); } catch (_) { }
     }
     if (!mods.length) mods = ['POS'];
     return mods;
@@ -559,150 +461,67 @@ function MobileBottomNav({ user, targetEndDate }: {
   const hasPos = userModules.includes('POS');
   const hasHosp = userModules.includes('HOSPITALITY');
 
-  // Primary nav items (always visible in the bar) — mirrors POS: 3 left | CTA center | 2 right | More
-  const primaryItems = useMemo(() => {
+  // 5 Tabs Max: [0: Home] [1: Items/Units] [2: Sell/Book CTA] [3: More] [4: Profile]
+  const homeItem = useMemo(() => {
+    return { to: hasHosp && !hasPos ? '/dashboard/hospitality' : '/dashboard', label: 'Home', icon: LayoutDashboard, end: true };
+  }, [hasPos, hasHosp]);
+
+  const primaryLeftItem = useMemo(() => {
     if (hasHosp && !hasPos) {
-      // Hospitality-only — mirrors POS structure: 3 | Book⬤ | 2 | More
-      return [
-        { to: '/dashboard/hospitality',            label: 'Overview', icon: CalendarCheck, end: true,  isCenter: false },
-        { to: '/dashboard/hospitality/properties', label: 'Units',    icon: Building,      end: false, isCenter: false },
-        { to: '/dashboard/hospitality/operations', label: 'Tasks',    icon: Sparkles,      end: false, isCenter: false },
-        { to: '/dashboard/hospitality/bookings',   label: 'Book',     icon: CalendarCheck, end: false, isCenter: true  },
-        { to: '/dashboard/customers',              label: 'Guests',   icon: Users,         end: false, isCenter: false },
-        { to: '/dashboard/reports',                label: 'Growth',   icon: BarChart2,     end: false, isCenter: false, plan: 'PLUS' as const },
-      ];
+      return { to: '/dashboard/hospitality/properties', label: 'Units', icon: Building, end: false };
     }
-    if (hasHosp && hasPos) {
-      // Both modules — 3 | Sell⬤ | 2 | More
-      return [
-        { to: '/dashboard',                        label: 'Home',     icon: LayoutDashboard, end: true,  isCenter: false },
-        { to: '/dashboard/hospitality/properties', label: 'Units',    icon: Building,        end: false, isCenter: false },
-        { to: '/dashboard/hospitality/operations', label: 'Tasks',    icon: Sparkles,        end: false, isCenter: false },
-        { to: '/dashboard/sales/new',              label: 'Sell',     icon: Zap,             end: false, isCenter: true  },
-        { to: '/dashboard/hospitality',            label: 'Bookings', icon: CalendarCheck,   end: true,  isCenter: false },
-        { to: '/dashboard/customers',              label: 'Guests',   icon: Users,           end: false, isCenter: false },
-      ];
+    return { to: '/dashboard/products', label: 'Items', icon: Package, end: false };
+  }, [hasPos, hasHosp]);
+
+  const centerCtaItem = useMemo(() => {
+    if (hasHosp && !hasPos) {
+      return { to: '/dashboard/hospitality/bookings', label: 'Book', icon: CalendarCheck, end: false };
     }
-    // POS only — 3 | Sell⬤ | 2 | More
-    return [
-      { to: '/dashboard',           label: 'Home',    icon: LayoutDashboard, end: true,  isCenter: false },
-      { to: '/dashboard/products',  label: 'Items',   icon: Package,         end: false, isCenter: false },
-      { to: '/dashboard/expenses',  label: 'Spends',  icon: ShoppingCart,    end: false, isCenter: false },
-      { to: '/dashboard/sales/new', label: 'Sell',    icon: Zap,             end: false, isCenter: true  },
-      { to: '/dashboard/sales',     label: 'History', icon: Clock,           end: true,  isCenter: false },
-      { to: '/dashboard/reports',   label: 'Growth',  icon: BarChart2,       end: false, isCenter: false, plan: 'PLUS' as const },
-    ];
+    return { to: '/dashboard/sales/new', label: 'Sell', icon: Zap, end: false };
   }, [hasPos, hasHosp]);
 
   // Overflow items shown in the "More" sheet
   const overflowItems = useMemo(() => {
-    if (hasHosp && !hasPos) {
-      // Hospitality-only overflow
-      return [
-        { to: '/dashboard/sales/new',    label: 'New Booking',       icon: CalendarCheck },
-        { to: '/dashboard/customers',    label: 'Customers',         icon: Users },
-        { to: '/dashboard/developer',    label: 'Payment Gateway',   icon: CreditCard },
-        { to: '/dashboard/settings',     label: 'Settings & Tools',  icon: Settings },
-        { to: '/dashboard/subscription', label: 'My Plan',           icon: Calendar },
-      ];
-    }
-    if (hasHosp && hasPos) {
-      // Both-modules overflow
-      return [
-        { to: '/dashboard/sales',        label: 'Sales History',     icon: Clock },
-        { to: '/dashboard/products',     label: 'Items & Pricing',   icon: Package },
-        { to: '/dashboard/expenses',     label: 'Expenses',          icon: ShoppingCart },
-        { to: '/dashboard/customers',    label: 'Customers',         icon: Users },
-        { to: '/dashboard/developer',    label: 'Payment Gateway',   icon: CreditCard },
-        { to: '/dashboard/settings',     label: 'Settings & Tools',  icon: Settings },
-        { to: '/dashboard/subscription', label: 'My Plan',           icon: Calendar },
-      ];
-    }
-    // POS only — settings + subscription + customers + payment gateway
     return [
-      { to: '/dashboard/customers',    label: 'Customers',         icon: Users },
+      { to: '/dashboard/sales',        label: 'Sales History',     icon: Clock },
+      { to: '/dashboard/expenses',     label: 'Expenses & Costs',  icon: ShoppingCart },
+      { to: '/dashboard/customers',    label: 'Customers & Guests', icon: Users },
+      { to: '/dashboard/reports',      label: 'Growth & Reports',  icon: BarChart2 },
       { to: '/dashboard/developer',    label: 'Payment Gateway',   icon: CreditCard },
-      { to: '/dashboard/settings',     label: 'Settings & Tools',  icon: Settings },
-      { to: '/dashboard/subscription', label: 'My Plan',           icon: Calendar },
+      { to: '/dashboard/subscription', label: 'My Subscription',   icon: Calendar },
     ];
-  }, [hasPos, hasHosp]);
+  }, []);
 
-  const getPlanWeight = (p: string) => p.includes('MAX') ? 3 : p.includes('PLUS') ? 2 : 1;
-  const currentPlan = (user?.subscription?.planName || 'LITE').toUpperCase();
-  const userWeight = getPlanWeight(currentPlan);
+  const isOverflowActive = overflowItems.some(item =>
+    location.pathname === item.to || location.pathname.startsWith(item.to + '/')
+  );
 
-  const handleLockedClick = (plan: string) => {
-    toast.error(`Upgrade to ${plan} to access this feature`, {
-      description: "Visit settings to manage your subscription",
-      action: {
-        label: "Upgrade",
-        onClick: () => window.location.href = "/dashboard/subscription"
-      }
-    });
-  };
-
-  const renderNavItem = (item: any) => {
-    const isLocked = item.plan && userWeight < getPlanWeight(item.plan);
-
-    if (isLocked) {
-      return (
-        <button
-          key={item.label}
-          onClick={() => handleLockedClick(item.plan!)}
-          className="flex-1 min-w-0 flex flex-col items-center gap-0.5 py-1 opacity-30 grayscale no-tap-highlight"
-        >
-          <div className="w-9 h-9 rounded-full flex items-center justify-center">
-            <item.icon className="w-[18px] h-[18px] text-[#0D4A3E]" strokeWidth={2} />
+  const renderNavItem = (item: any) => (
+    <NavLink
+      key={item.label}
+      to={item.to}
+      end={item.end}
+      className="flex-1 min-w-0 flex flex-col items-center gap-0.5 py-1 no-tap-highlight"
+    >
+      {({ isActive }) => (
+        <>
+          <div className={`w-9 h-9 rounded-full flex items-center justify-center transition-all duration-200 ${isActive ? 'bg-emerald-50' : 'bg-transparent'}`}>
+            <item.icon
+              className={`w-[18px] h-[18px] transition-colors ${isActive ? 'text-[#0D4A3E]' : 'text-[#0D4A3E] opacity-35'}`}
+              strokeWidth={isActive ? 2.5 : 2}
+            />
           </div>
-          <span className="text-[9px] font-medium text-[#0D4A3E] truncate w-full text-center">{item.label}</span>
-        </button>
-      );
-    }
-
-    if (item.isCenter) {
-      return (
-        <NavLink
-          key={item.label}
-          to={item.to}
-          className="flex-1 min-w-0 flex flex-col items-center gap-0.5 py-1 no-tap-highlight"
-        >
-          {({ isActive }) => (
-            <>
-              <div className={`w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 active:scale-95 ${isActive ? 'bg-emerald-500 shadow-lg shadow-emerald-500/30' : 'bg-[#0D4A3E] shadow-lg shadow-[#0D4A3E]/25'}`}>
-                <item.icon className="w-5 h-5 text-white" strokeWidth={2.5} />
-              </div>
-              <span className={`text-[9px] font-medium transition-all truncate w-full text-center ${isActive ? 'text-emerald-600' : 'text-[#0D4A3E] opacity-50'}`}>{item.label}</span>
-            </>
-          )}
-        </NavLink>
-      );
-    }
-
-    return (
-      <NavLink
-        key={item.label}
-        to={item.to}
-        end={item.end}
-        className="flex-1 min-w-0 flex flex-col items-center gap-0.5 py-1 no-tap-highlight"
-      >
-        {({ isActive }) => (
-          <>
-            <div className={`w-9 h-9 rounded-full flex items-center justify-center transition-all duration-200 ${isActive ? 'bg-emerald-50 shadow-sm' : 'bg-transparent'}`}>
-              <item.icon className={`w-[18px] h-[18px] transition-colors ${isActive ? 'text-[#0D4A3E]' : 'text-[#0D4A3E] opacity-35'}`} strokeWidth={isActive ? 2.5 : 2} />
-            </div>
-            <span className={`text-[9px] font-medium transition-all truncate w-full text-center ${isActive ? 'text-[#0D4A3E]' : 'text-[#0D4A3E] opacity-35'}`}>{item.label}</span>
-          </>
-        )}
-      </NavLink>
-    );
-  };
-
-  // Check if any overflow item is currently active
-  const isOverflowActive = overflowItems.some(item => location.pathname === item.to || location.pathname.startsWith(item.to + '/'));
+          <span className={`text-[9px] font-medium transition-all truncate w-full text-center ${isActive ? 'text-[#0D4A3E]' : 'text-[#0D4A3E] opacity-35'}`}>
+            {item.label}
+          </span>
+        </>
+      )}
+    </NavLink>
+  );
 
   return (
-    <>
-      {/* ── More Sheet backdrop ── */}
+    <div className="fixed inset-x-0 bottom-[env(safe-area-inset-bottom,0px)] z-[95] lg:hidden flex flex-col items-center pointer-events-none">
+      {/* "More" Bottom Sheet Backdrop */}
       <AnimatePresence>
         {showMoreSheet && (
           <motion.div
@@ -711,13 +530,13 @@ function MobileBottomNav({ user, targetEndDate }: {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-[93] bg-slate-900/30 backdrop-blur-[2px] lg:hidden"
+            className="fixed inset-0 z-[93] bg-slate-900/30 backdrop-blur-[2px] pointer-events-auto"
             onClick={() => setShowMoreSheet(false)}
           />
         )}
       </AnimatePresence>
 
-      {/* ── More Sheet panel ── */}
+      {/* "More" Bottom Sheet Panel */}
       <AnimatePresence>
         {showMoreSheet && (
           <motion.div
@@ -726,27 +545,29 @@ function MobileBottomNav({ user, targetEndDate }: {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 16, scale: 0.97 }}
             transition={{ duration: 0.22, ease: [0.32, 0.72, 0, 1] }}
-            className="fixed inset-x-3 z-[94] lg:hidden bottom-[calc(5.5rem+0.25rem+env(safe-area-inset-bottom,0px))]"
+            className="fixed inset-x-3 z-[94] bottom-[calc(5.5rem+0.25rem+env(safe-area-inset-bottom,0px))] pointer-events-auto"
           >
-            <div className="bg-white rounded-[1.5rem] shadow-[0_20px_60px_rgba(0,0,0,0.14)] overflow-hidden border border-slate-100">
-              {/* Sheet header */}
+            <div className="glass-sheet rounded-[.75rem] overflow-hidden border border-white/40">
               <div className="flex items-center justify-between px-5 pt-4 pb-3 border-b border-slate-50">
-                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">More Options</p>
+                <p className="text-xs font-semibold text-slate-400">More options</p>
                 <button
                   onClick={() => setShowMoreSheet(false)}
-                  className="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 hover:bg-slate-200 transition-colors"
+                  className="glass-btn w-6 h-6 rounded-full flex items-center justify-center text-slate-400 transition-all"
                 >
                   <X size={12} />
                 </button>
               </div>
-              {/* Sheet items */}
               <div className="p-3 grid grid-cols-2 gap-2">
                 {overflowItems.map((item) => (
                   <NavLink
                     key={item.label}
                     to={item.to}
                     className={({ isActive }) =>
-                      `flex items-center gap-3 px-4 py-3.5 rounded-[.9rem] transition-all no-tap-highlight ${isActive ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-50 text-slate-600 hover:bg-emerald-50 hover:text-emerald-700'}`
+                      `flex items-center gap-3 px-4 py-3.5 rounded-md transition-all no-tap-highlight ${
+                        isActive
+                          ? 'bg-emerald-50 text-emerald-700'
+                          : 'bg-slate-50 text-slate-600 hover:bg-emerald-50 hover:text-emerald-700'
+                      }`
                     }
                   >
                     <item.icon className="w-[18px] h-[18px] flex-shrink-0" strokeWidth={2} />
@@ -754,87 +575,82 @@ function MobileBottomNav({ user, targetEndDate }: {
                   </NavLink>
                 ))}
               </div>
-              {/* Sheet bottom padding for safe area */}
               <div className="h-2" />
             </div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* ── Floating countdown toggle button (right side, above bottom nav) ── */}
-      {targetEndDate && (
-        <div className="fixed right-3 z-[94] lg:hidden pointer-events-none"
-          style={{ bottom: `calc(6.5rem + env(safe-area-inset-bottom, 0px))` }}
-        >
-          <button
-            onClick={() => setShowBanner(v => !v)}
-            className="pointer-events-auto flex flex-col items-center justify-center h-10 w-10 rounded-full bg-[#0D4A3E] shadow-lg shadow-[#0D4A3E]/30 active:scale-95 transition-all no-tap-highlight border border-white/10"
-            aria-label="Toggle subscription countdown"
+      {/* Floating nav bar — Exactly 5 Tabs: [Home] [Items/Units] [SELL/BOOK] [More] [Profile with User Avatar] */}
+      <div className="w-full px-3 pointer-events-auto">
+        <div className="relative py-2 glass-bar rounded-[2rem] flex items-end justify-between px-2">
+          {/* Tab 1: Home (Far Left) */}
+          {renderNavItem(homeItem)}
+
+          {/* Tab 2: Items / Units (Middle Left) */}
+          {renderNavItem(primaryLeftItem)}
+
+          {/* Tab 3: Sell / Book CTA Button (Center) */}
+          <NavLink
+            key={centerCtaItem.label}
+            to={centerCtaItem.to}
+            end={centerCtaItem.end}
+            className="flex-1 min-w-0 flex flex-col items-center gap-0.5 py-1 no-tap-highlight"
           >
-            <Clock className="w-4 h-4 text-white" strokeWidth={2.5} />
+            {({ isActive }) => (
+              <>
+                <div className={`w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 active:scale-95 -mt-4
+                  ${isActive ? 'bg-emerald-500 shadow-lg shadow-emerald-500/30' : 'bg-[#0D4A3E] shadow-lg shadow-emerald-950/30'}`}
+                >
+                  <centerCtaItem.icon className="w-5 h-5 text-white" strokeWidth={2.5} />
+                </div>
+                <span className={`text-[9px] font-bold transition-all truncate w-full text-center ${isActive ? 'text-emerald-600' : 'text-[#0D4A3E]'}`}>
+                  {centerCtaItem.label}
+                </span>
+              </>
+            )}
+          </NavLink>
+
+          {/* Tab 4: More Sheet (Middle Right) */}
+          <button
+            key="more-btn"
+            onClick={() => setShowMoreSheet(v => !v)}
+            className="flex-1 min-w-0 flex flex-col items-center gap-0.5 py-1 no-tap-highlight"
+          >
+            <div className={`w-9 h-9 rounded-full flex items-center justify-center transition-all duration-200 ${showMoreSheet || isOverflowActive ? 'bg-emerald-50' : 'bg-transparent'}`}>
+              <MoreHorizontal className={`w-[18px] h-[18px] transition-colors ${showMoreSheet || isOverflowActive ? 'text-[#0D4A3E]' : 'text-[#0D4A3E] opacity-40'}`} />
+            </div>
+            <span className={`text-[9px] font-medium transition-all truncate w-full text-center ${showMoreSheet || isOverflowActive ? 'text-[#0D4A3E]' : 'text-[#0D4A3E] opacity-40'}`}>More</span>
           </button>
-        </div>
-      )}
 
-      <div className="fixed inset-x-0 bottom-[env(safe-area-inset-bottom,0px)] z-[95] lg:hidden flex flex-col items-center pointer-events-none">
-
-        {/* Subscription status banner — toggled by the floating clock button */}
-        <AnimatePresence>
-          {targetEndDate && showBanner && (
-            <motion.div
-              initial={{ opacity: 0, y: 16, scale: 0.94 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 16, scale: 0.94 }}
-              transition={{ duration: 0.2 }}
-              className="w-full max-w-[340px] pointer-events-auto mb-4 px-4"
-            >
-              <Link
-                to="/dashboard/subscription"
-                className="bg-[#0D4A3E] border border-white/10 p-3 rounded-[1.5rem] flex items-center justify-between shadow-[0_20px_50px_rgba(13,74,61,0.4)]"
-              >
-                <div className="pl-2">
-                  <p className="text-[7px] font-black text-emerald-400 uppercase tracking-widest leading-none">
-                    Subscription Status
-                  </p>
-                  <p className="text-[9px] font-black text-white mt-1 uppercase tracking-tight">
-                    {isTrial ? 'Free Trial' : 'Active Plan'}
-                  </p>
+          {/* Tab 5: Profile (Far Right) — Actual user image */}
+          <NavLink
+            key="profile-btn"
+            to="/dashboard/settings"
+            className="flex-1 min-w-0 flex flex-col items-center gap-0.5 py-1 no-tap-highlight"
+          >
+            {({ isActive }) => (
+              <>
+                <div className={`w-9 h-9 rounded-full flex items-center justify-center transition-all duration-200 overflow-hidden ${isActive ? 'ring-2 ring-emerald-600 ring-offset-1' : ''}`}>
+                  <img
+                    src={user?.photoUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || '')}&background=0D4A3E&color=fff`}
+                    alt="Profile"
+                    className="w-7 h-7 rounded-full object-cover"
+                  />
                 </div>
-                <div className="bg-white/5 px-4 py-2 rounded-xl">
-                  <MiniCountdown expiryDate={targetEndDate} />
-                </div>
-              </Link>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Floating nav */}
-        <div className="w-full px-3 pointer-events-auto">
-          <div className="relative py-2 bg-white/95 backdrop-blur-xl rounded-[2rem] shadow-[0_8px_30px_rgba(0,0,0,0.08)] flex items-end justify-between px-2">
-            {primaryItems.map(renderNavItem)}
-
-            {/* ── "More" button — shown when there are overflow items ── */}
-            <button
-              key="more-btn"
-              onClick={() => setShowMoreSheet(v => !v)}
-              className="flex-1 min-w-0 flex flex-col items-center gap-0.5 py-1 no-tap-highlight"
-            >
-              <div className={`w-9 h-9 rounded-full flex items-center justify-center transition-all duration-200 ${showMoreSheet || isOverflowActive ? 'bg-emerald-50' : 'bg-transparent'}`}>
-                {/* Three-dot icon using inline SVG for compactness */}
-                <svg viewBox="0 0 20 20" fill="none" className={`w-[18px] h-[18px] transition-colors ${showMoreSheet || isOverflowActive ? 'text-[#0D4A3E]' : 'text-[#0D4A3E] opacity-35'}`}>
-                  <circle cx="4" cy="10" r="1.5" fill="currentColor" />
-                  <circle cx="10" cy="10" r="1.5" fill="currentColor" />
-                  <circle cx="16" cy="10" r="1.5" fill="currentColor" />
-                </svg>
-              </div>
-              <span className={`text-[9px] font-medium transition-all truncate w-full text-center ${showMoreSheet || isOverflowActive ? 'text-[#0D4A3E]' : 'text-[#0D4A3E] opacity-35'}`}>More</span>
-            </button>
-          </div>
+                <span className={`text-[9px] font-medium transition-all truncate w-full text-center ${isActive ? 'text-[#0D4A3E]' : 'text-[#0D4A3E] opacity-40'}`}>
+                  Profile
+                </span>
+              </>
+            )}
+          </NavLink>
         </div>
       </div>
-    </>
+    </div>
   );
 }
+
+
 
 // ─── Mini countdown (banner) ──────────────────────────────────────────────────
 function MiniCountdown({ expiryDate }: { expiryDate: string }) {

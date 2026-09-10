@@ -26,7 +26,7 @@ const TermsConditions = lazy(() => import('./pages/TermsConditions'))
 const GooglePrivacyPolicy = lazy(() => import('./pages/GooglePrivacyPolicy'))
 const GoogleTermsConditions = lazy(() => import('./pages/GoogleTermsConditions'))
 const Partners = lazy(() => import('./pages/Partners'))
-const StayPage = lazy(() => import('./pages/StayPage'))
+const FrontPage = lazy(() => import('./pages/front/FrontPage'))
 
 // Dashboards
 import DashboardPage from './pages/provider/DashboardPage'
@@ -136,9 +136,9 @@ export default function App() {
         <Route path="/google/privacy" element={<GooglePrivacyPolicy />} />
         <Route path="/google/terms" element={<GoogleTermsConditions />} />
         <Route path="/partners" element={<Partners />} />
-        <Route path="/stay/:slug" element={<StayPage />} />
-        <Route path="/shop/:slug" element={<StayPage isShopMode={true} />} />
-        <Route path="/store/:slug" element={<StayPage isShopMode={true} />} />
+        <Route path="/stay/:slug" element={<FrontPage />} />
+        <Route path="/shop/:slug" element={<FrontPage isShopMode={true} />} />
+        <Route path="/store/:slug" element={<FrontPage isShopMode={true} />} />
 
         {/* Provider Portal */}
         <Route path="/dashboard" element={<ProtectedRoute><SubscriptionGuard><ProviderLayout /></SubscriptionGuard></ProtectedRoute>}>
