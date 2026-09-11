@@ -1,5 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
-import { User, Store, Bell, Lock, Save, Camera, Loader2, LogOut, Trash2, Users, Shield, Mail, Phone, ArrowRight, Plus, CheckCircle2, Edit, FileText, RefreshCcw, Code, Sparkles, Eye, AlertTriangle, Terminal, ShieldCheck, CreditCard, ChevronDown } from 'lucide-react'
+import {
+  User, Storefront as Store, Bell, Lock, FloppyDisk as Save, Camera, CircleNotch as Loader2, SignOut as LogOut, Trash as Trash2, Users, Shield, Envelope as Mail, Phone, ArrowRight, Plus, CheckCircle as CheckCircle2, PencilSimple as Edit, FileText, ArrowClockwise as RefreshCcw, Code, Sparkle as Sparkles, Eye, Warning as AlertTriangle, Terminal, ShieldCheck, CreditCard, CaretDown as ChevronDown
+} from '@phosphor-icons/react'
 import { ConfirmModal } from '../../components/shared/ConfirmModal'
 import { toast } from 'sonner'
 import { useAuth } from '../../lib/auth/AuthContext'
@@ -398,7 +400,7 @@ export default function SettingsPage() {
                       }}
                       className="flex items-center gap-2 px-5 py-3 bg-red-50 text-red-600 rounded-lg text-xs font-bold hover:bg-red-100 transition-all active:scale-95"
                     >
-                      <LogOut size={15} /> {navigator.onLine ? 'Terminate Session' : 'Lock & Secure'}
+                      <LogOut size={15} /> Log Out
                     </button>
                   </div>
                 </div>

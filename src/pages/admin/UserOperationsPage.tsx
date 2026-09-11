@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react'
-import { Users, Monitor, LogOut, Search, Trash2 } from 'lucide-react'
+import { Users, Desktop, SignOut, MagnifyingGlass, Trash } from '@phosphor-icons/react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { adminApi } from '../../lib/api/providers'
 import { toast } from 'sonner'
@@ -158,7 +158,7 @@ export default function UserOperationsPage() {
                           onClick={(e) => { e.stopPropagation(); setConfirmTerminateId(s.id); }}
                           className="text-gray-400 hover:text-red-600 transition-all p-2 hover:bg-red-50 rounded-md"
                         >
-                          <LogOut size={16} />
+                          <SignOut size={16} />
                         </button>
                       </td>
                     </tr>
@@ -183,7 +183,7 @@ export default function UserOperationsPage() {
               </div>
               <div className="flex flex-wrap gap-3">
                 <div className="relative w-64">
-                  <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-300" size={15} />
+                  <MagnifyingGlass className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-300" size={15} />
                   <input
                     type="text"
                     placeholder="Search identities..."
@@ -262,7 +262,7 @@ export default function UserOperationsPage() {
                               title="Impersonate User"
                               className="hover:text-[#0D4A3E] transition-all p-2 hover:bg-emerald-50 rounded-md disabled:opacity-50"
                             >
-                              <Monitor size={15} />
+                              <Desktop size={15} />
                             </button>
                           )}
                           <button
@@ -270,7 +270,7 @@ export default function UserOperationsPage() {
                             className="hover:text-red-600 transition-all p-2 hover:bg-red-50 rounded-md"
                             title="Delete User"
                           >
-                            <Trash2 size={15} />
+                            <Trash size={15} />
                           </button>
                         </div>
                       </td>
@@ -336,10 +336,10 @@ export default function UserOperationsPage() {
         </div>
 
         <div className="space-y-6">
-          <div className="bg-white p-6 rounded-[.5rem] border border-gray-100 sticky top-6">
+          <div className="bg-[#0D4A3E]/5 p-6 rounded-[.5rem] border border-[#0D4A3E]/10 sticky top-6">
             <h3 className="text-sm font-medium text-gray-900 mb-5">Traffic intelligence</h3>
             <div className="space-y-5">
-              <div className="p-4 bg-slate-50 rounded-md border border-slate-100">
+              <div className="p-4 bg-white rounded-md border border-slate-100 shadow-sm">
                 <p className="text-xs text-gray-400 mb-1">Platform load</p>
                 <h4 className="text-xl font-semibold text-slate-900 hl-mono">{sessions.length} <span className="text-xs text-slate-400 font-normal">active</span></h4>
                 <div className="h-1.5 w-full bg-slate-200 rounded-full mt-3 overflow-hidden">
@@ -361,9 +361,9 @@ export default function UserOperationsPage() {
         isOpen={!!confirmTerminateId}
         onClose={() => setConfirmTerminateId(null)}
         onConfirm={() => confirmTerminateId && terminateMutation.mutate(confirmTerminateId)}
-        title="Terminate Session"
-        message="Are you sure you want to terminate this live session? The user will be immediately logged out."
-        confirmText="Terminate"
+        title="Log Out Session"
+        message="Are you sure you want to log out this live session? The user will be immediately logged out."
+        confirmText="Log Out"
         isDestructive={true}
         isLoading={terminateMutation.isPending}
       />

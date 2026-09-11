@@ -202,7 +202,10 @@ export default function ProductsPage() {
             <FileText size={15} /> CSV
           </button>
           <button
-            onClick={() => setIsAddModalOpen(true)}
+            onClick={() => {
+              setEditingProduct(null);
+              setIsAddModalOpen(true);
+            }}
             title="Add Product"
             className="bg-[#0D4A3E] text-white h-9 px-5 rounded-[.5rem] font-medium text-sm hover:bg-[#0A3D33] transition-colors flex items-center justify-center gap-2 col-span-2 sm:col-span-1"
           >

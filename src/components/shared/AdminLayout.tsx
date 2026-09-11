@@ -1,10 +1,10 @@
-import { Outlet, NavLink, useLocation, Link } from 'react-router-dom'
+import { Outlet, NavLink, useLocation, Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../lib/auth/AuthContext'
 import {
   LayoutDashboard, BarChart2, Users,
   Settings, HelpCircle, CreditCard, MessageSquare,
   Briefcase, ShieldCheck, Activity, DollarSign, Landmark, X,
-  Bell, Loader2, User, MoreHorizontal
+  Bell, Loader2, User, MoreHorizontal, Lock, LogOut
 } from 'lucide-react'
 import { useState, useEffect, useMemo } from 'react'
 import TopNav from './TopNav'
@@ -12,6 +12,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { getPushSubscriptionState, subscribeToPushNotifications } from '../../lib/notifications/pushService'
 import { toast } from 'sonner'
 import { MobileGestures } from './MobileGestures'
+import { hasOfflinePin } from '../../lib/offline/offlinePin'
 
 // ─── Breakpoint hook ───────────────────────────────────────────────────────────
 function useIsDesktop() {
@@ -37,7 +38,7 @@ interface NavGroup {
 }
 
 export default function AdminLayout() {
-  const { user } = useAuth()
+  const { user, logout } = useAuth()
   const location = useLocation()
   const isDesktop = useIsDesktop()
 
@@ -251,12 +252,45 @@ export default function AdminLayout() {
           )}
         </AnimatePresence>
 
-        <NavLink
-          to="/admin/settings"
-          className={`h-10 bg-slate-50 rounded-md flex items-center justify-center text-slate-400 hover:bg-emerald-50 hover:text-emerald-600 transition-all border border-slate-100 ${sidebarExpanded ? 'w-full' : 'w-10'}`}
-        >
-          <Settings size={18} />
-        </NavLink>
+        {/* Profile (Desktop) */}
+        <div className="group relative w-full flex justify-center mt-2">
+          <button
+            onClick={() => {
+              if (window.confirm("Are you sure you want to log out?")) {
+                logout();
+              }
+            }}
+            className={`flex items-center gap-3 transition-colors ${sidebarExpanded ? 'w-full hover:bg-slate-100 p-2 rounded-md border border-slate-100/50' : 'hover:scale-110 p-1 bg-slate-50 rounded-md border border-slate-100'}`}
+            title="Log Out"
+          >
+            <div className="relative flex-shrink-0">
+              <img
+                src={user?.photoUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || '')}&background=0D4A3E&color=fff`}
+                alt="Profile"
+                className={`rounded-md object-cover border border-slate-200 ${sidebarExpanded ? 'w-8 h-8' : 'w-8 h-8'}`}
+              />
+              <div className="absolute -bottom-1 -right-1 bg-white rounded-full p-[2px]">
+                <div className="bg-emerald-500 w-1.5 h-1.5 rounded-full" />
+              </div>
+            </div>
+            
+            {sidebarExpanded && (
+              <div className="flex-1 min-w-0 text-left flex justify-between items-center pr-1">
+                <div className="min-w-0 truncate">
+                  <p className="text-xs font-bold text-slate-900 truncate">{user?.name || 'Admin'}</p>
+                  <p className="text-[10px] font-semibold text-slate-500 truncate mt-0.5 group-hover:text-red-500 transition-colors">Log out</p>
+                </div>
+                <LogOut size={14} className="text-slate-400 group-hover:text-red-500 flex-shrink-0 transition-colors" />
+              </div>
+            )}
+          </button>
+          {!sidebarExpanded && isDesktop && (
+            <div className="absolute left-[calc(100%+10px)] top-1/2 -translate-y-1/2 bg-slate-900 text-white px-3 py-1.5 rounded-md text-xs font-semibold opacity-0 group-hover:opacity-100 invisible group-hover:visible transition-all pointer-events-none whitespace-nowrap z-[200] shadow-sm">
+              Log Out
+              <div className="absolute top-1/2 -left-1 -translate-y-1/2 border-y-4 border-y-transparent border-r-4 border-r-slate-900" />
+            </div>
+          )}
+        </div>
       </div>
     </div>
   ), [sidebarExpanded, navGroups, user])
@@ -382,20 +416,22 @@ export default function AdminLayout() {
 }
 
 // ─── Mobile Bottom Navigation ────────────────────────────────────────────────
-// Symmetric layout: 3 items — center (primary) — 3 items = 7 buttons total.
-// The last slot on the right opens the "More" sheet with everything else.
 function MobileBottomAdminNav() {
   const location = useLocation()
-  const { user } = useAuth()
+  const navigate = useNavigate()
+  const { user, logout, lock } = useAuth()
   const [showMoreSheet, setShowMoreSheet] = useState(false)
+  const [showProfileSheet, setShowProfileSheet] = useState(false)
 
-  useEffect(() => { setShowMoreSheet(false) }, [location.pathname])
+  useEffect(() => {
+    setShowMoreSheet(false)
+    setShowProfileSheet(false)
+  }, [location.pathname])
 
   // Exactly 5 Tabs: [0: Home] [1: Business] [2: Finance CTA] [3: More] [4: Profile]
   const homeItem = { to: '/admin', label: 'Home', icon: LayoutDashboard, end: true }
   const businessItem = { to: '/admin/businesses', label: 'Business', icon: Briefcase, end: false }
   const centerItem = { to: '/admin/financials', label: 'Finance', icon: DollarSign, end: false }
-  const profileItem = { to: '/admin/settings', label: 'Profile', icon: User, end: false }
 
   const overflowItems = [
     { to: '/admin/user-operations', label: 'Users', icon: Users },
@@ -437,17 +473,17 @@ function MobileBottomAdminNav() {
 
   return (
     <>
-      {/* More Sheet Backdrop */}
+      {/* More & Profile Sheet Backdrop */}
       <AnimatePresence>
-        {showMoreSheet && (
+        {(showMoreSheet || showProfileSheet) && (
           <motion.div
-            key="more-backdrop"
+            key="sheet-backdrop"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
             className="fixed inset-0 z-[93] bg-slate-900/30 backdrop-blur-[2px] lg:hidden"
-            onClick={() => setShowMoreSheet(false)}
+            onClick={() => { setShowMoreSheet(false); setShowProfileSheet(false); }}
           />
         )}
       </AnimatePresence>
@@ -493,6 +529,80 @@ function MobileBottomAdminNav() {
         )}
       </AnimatePresence>
 
+      {/* Profile Pop-up Bottom Sheet Panel */}
+      <AnimatePresence>
+        {showProfileSheet && (
+          <motion.div
+            key="profile-sheet"
+            initial={{ opacity: 0, y: 24, scale: 0.97 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 16, scale: 0.97 }}
+            transition={{ duration: 0.22, ease: [0.32, 0.72, 0, 1] }}
+            className="fixed inset-x-3 z-[94] lg:hidden bottom-[calc(5.5rem+0.25rem+env(safe-area-inset-bottom,0px))]"
+          >
+            <div className="glass-sheet rounded-[1rem] overflow-hidden border border-white/40 p-3 shadow-2xl">
+              <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100/60">
+                <div className="flex items-center gap-3 min-w-0">
+                  <img
+                    src={user?.photoUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || '')}&background=0D4A3E&color=fff`}
+                    alt="Profile"
+                    className="w-10 h-10 rounded-full object-cover border border-emerald-600/20 flex-shrink-0"
+                  />
+                  <div className="min-w-0">
+                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Signed in as</p>
+                    <p className="text-xs font-bold text-slate-900 truncate">{user?.name || user?.businessName}</p>
+                    <p className="text-[10px] text-slate-500 truncate">{user?.email}</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowProfileSheet(false)}
+                  className="glass-btn w-7 h-7 rounded-full flex items-center justify-center text-slate-400 transition-all flex-shrink-0"
+                >
+                  <X size={14} />
+                </button>
+              </div>
+
+              <div className="p-2 space-y-1.5 mt-1">
+                <Link
+                  to="/admin/settings"
+                  onClick={() => setShowProfileSheet(false)}
+                  className="flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold text-slate-700 bg-slate-50 hover:bg-emerald-50 hover:text-emerald-700 transition-colors"
+                >
+                  <User size={16} className="text-emerald-600" /> My Profile & Settings
+                </Link>
+
+                {hasOfflinePin() && (
+                  <button
+                    onClick={() => {
+                      setShowProfileSheet(false);
+                      lock();
+                    }}
+                    className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold text-slate-700 bg-slate-50 hover:bg-slate-100 transition-colors"
+                  >
+                    <Lock size={16} className="text-slate-500" /> Lock Screen (PIN)
+                  </button>
+                )}
+
+                <button
+                  onClick={async () => {
+                    setShowProfileSheet(false);
+                    await logout();
+                    if (navigator.onLine) {
+                      navigate('/login');
+                    } else {
+                      toast.info('Session locked. Enter your PIN to continue.');
+                    }
+                  }}
+                  className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold text-red-600 bg-red-50 hover:bg-red-100 transition-colors"
+                >
+                  <LogOut size={16} /> Log Out
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Floating Nav Bar — Exactly 5 Tabs: [Home] [Business] [FINANCE] [More] [Profile] */}
       <div className="fixed inset-x-0 bottom-[env(safe-area-inset-bottom,0px)] z-[95] lg:hidden flex flex-col items-center pointer-events-none">
         <div className="w-full px-3 pointer-events-auto">
@@ -527,7 +637,10 @@ function MobileBottomAdminNav() {
             {/* Tab 4: More (Middle Right) */}
             <button
               key="more-btn"
-              onClick={() => setShowMoreSheet(v => !v)}
+              onClick={() => {
+                setShowProfileSheet(false);
+                setShowMoreSheet(v => !v);
+              }}
               className="flex-1 min-w-0 flex flex-col items-center gap-0.5 py-1 no-tap-highlight"
             >
               <div className={`w-9 h-9 rounded-full flex items-center justify-center transition-all duration-200 ${(showMoreSheet || isOverflowActive) ? 'bg-emerald-50' : 'bg-transparent'}`}>
@@ -541,27 +654,26 @@ function MobileBottomAdminNav() {
               </span>
             </button>
 
-            {/* Tab 5: Profile (Far Right) — User photo avatar */}
-            <NavLink
+            {/* Tab 5: Profile (Far Right) — Triggers Profile Pop-up Modal Sheet */}
+            <button
               key="profile-btn"
-              to="/admin/settings"
+              onClick={() => {
+                setShowMoreSheet(false);
+                setShowProfileSheet(v => !v);
+              }}
               className="flex-1 min-w-0 flex flex-col items-center gap-0.5 py-1 no-tap-highlight"
             >
-              {({ isActive }) => (
-                <>
-                  <div className={`w-9 h-9 rounded-full flex items-center justify-center transition-all duration-200 overflow-hidden ${isActive ? 'ring-2 ring-emerald-600 ring-offset-1' : ''}`}>
-                    <img
-                      src={user?.photoUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || '')}&background=0D4A3E&color=fff`}
-                      alt="Profile"
-                      className="w-7 h-7 rounded-full object-cover"
-                    />
-                  </div>
-                  <span className={`text-[9px] font-medium transition-all truncate w-full text-center ${isActive ? 'text-[#0D4A3E]' : 'text-[#0D4A3E] opacity-35'}`}>
-                    Profile
-                  </span>
-                </>
-              )}
-            </NavLink>
+              <div className={`w-9 h-9 rounded-full flex items-center justify-center transition-all duration-200 overflow-hidden ${showProfileSheet || location.pathname.includes('/settings') ? 'ring-2 ring-emerald-600 ring-offset-1' : ''}`}>
+                <img
+                  src={user?.photoUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || '')}&background=0D4A3E&color=fff`}
+                  alt="Profile"
+                  className="w-7 h-7 rounded-full object-cover"
+                />
+              </div>
+              <span className={`text-[9px] font-medium transition-all truncate w-full text-center ${showProfileSheet || location.pathname.includes('/settings') ? 'text-[#0D4A3E]' : 'text-[#0D4A3E] opacity-35'}`}>
+                Profile
+              </span>
+            </button>
           </div>
         </div>
       </div>

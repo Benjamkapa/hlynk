@@ -897,7 +897,7 @@ export default function SubscriptionPage() {
                 {[
                   { id: '1', label: 'Monthly', days: 28 },
                   { id: '6', label: 'Half year', days: 180, promo: 'Save 5%' },
-                  { id: '12', label: 'Full year', days: 365, promo: 'Save 15%' }
+                  { id: '12', label: 'Full year', days: 365, promo: 'Save 10%' }
                 ].map(cycle => (
                   <button
                     key={cycle.id}

@@ -31,11 +31,12 @@ export const thermalReceiptStyles = `
 
 const getStatusLabel = (status: any) => {
   const s = Number(status);
-  if (s === 0) return 'Success';
-  if (s === 2) return 'Pending';
+  if (s === 0) return 'Paid';
+  if (s === 1) return 'Pay on Delivery';
+  if (s === 2) return 'Pending Payment';
   if (s === 3) return 'Cancelled';
-  if (s === 1) return 'Failed';
-  return 'Success';
+  if (s === 4) return 'Payment Failed';
+  return 'Paid';
 };
 
 export default function ThermalReceipt({ sale, autoPrint = false }: ThermalReceiptProps) {
@@ -140,7 +141,7 @@ export default function ThermalReceipt({ sale, autoPrint = false }: ThermalRecei
             <span>SUBTOTAL</span><span>KES {subtotal.toLocaleString()}</span>
           </div>
 
-          {/* <div style={{ display: 'flex', justifyContent: 'space-between', color: '#666', marginBottom: 6, alignItems: 'center' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', color: '#666', marginBottom: 6, alignItems: 'center' }}>
             <span>STATUS</span>
             <span style={{ 
               fontSize: 8, 
@@ -148,13 +149,13 @@ export default function ThermalReceipt({ sale, autoPrint = false }: ThermalRecei
               borderRadius: 4, 
               fontWeight: 900, 
               textTransform: 'uppercase',
-              color: sale.status === 0 ? '#059669' : '#DC2626',
-              background: sale.status === 0 ? '#ECFDF5' : '#FEF2F2',
-              border: `1px solid ${sale.status === 0 ? '#10B981' : '#F87171'}`
+              color: Number(sale.status) === 0 ? '#059669' : Number(sale.status) === 1 ? '#1D4ED8' : Number(sale.status) === 2 ? '#D97706' : '#DC2626',
+              background: Number(sale.status) === 0 ? '#ECFDF5' : Number(sale.status) === 1 ? '#EFF6FF' : Number(sale.status) === 2 ? '#FFFBEB' : '#FEF2F2',
+              border: `1px solid ${Number(sale.status) === 0 ? '#10B981' : Number(sale.status) === 1 ? '#60A5FA' : Number(sale.status) === 2 ? '#FBBF24' : '#F87171'}`
             }}>
               {getStatusLabel(sale.status)}
             </span>
-          </div> */}
+          </div>
 
           <div style={{ display: 'flex', justifyContent: 'space-between', color: '#666', marginBottom: 6 }}>
             <span>METHOD</span>

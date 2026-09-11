@@ -55,7 +55,7 @@ export default function Pricing() {
                {[
                  { id: '1', label: 'Monthly', days: 28 },
                  { id: '6', label: '6 Months', days: 180, promo: '−5%' },
-                 { id: '12', label: '1 Year', days: 365, promo: '−15%' }
+                 { id: '12', label: '1 Year', days: 365, promo: '−10%' }
                ].map(cycle => (
                  <button
                    key={cycle.id}
@@ -85,7 +85,7 @@ export default function Pricing() {
             const daysReward = months === 12 ? 365 : months === 6 ? 180 : 28
 
             const total = months === 12
-              ? Math.round((basePrice * 12) * 0.85)
+              ? Math.round((basePrice * 12) * 0.90)
               : months === 6
                 ? Math.round((basePrice * 6) * 0.95)
                 : basePrice

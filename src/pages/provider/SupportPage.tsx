@@ -54,9 +54,9 @@ export default function SupportPage() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-        <ContactMethod icon={Phone} title="Call Us" value="+254 700 000 000" sub="Mon - Fri, 8am - 5pm" />
+        <ContactMethod icon={Phone} title="Call Us" value="+254 790 590 653" sub="Mon - Fri, 8am - 5pm" />
         <ContactMethod icon={Mail} title="Email Us" value="info@hlynk.co.ke" sub="24/7 Response time" />
-        <ContactMethod icon={MessageCircle} title="Live Chat" value="Start Chat" sub="Average wait: 2 mins" isAction />
+        {/* <ContactMethod icon={MessageCircle} title="Live Chat" value="Start Chat" sub="Average wait: 2 mins" isAction /> */}
       </div>
 
       <div className="bg-white rounded-[14px] border border-gray-100 shadow-sm p-8">

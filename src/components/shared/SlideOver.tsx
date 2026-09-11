@@ -49,7 +49,7 @@ export function SlideOver({ isOpen, onClose, title, children }: SlideOverProps) 
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto p-8">
-          {children}
+          {isOpen && children}
         </div>
       </div>
     </div>

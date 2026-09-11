@@ -7,12 +7,13 @@ import {
   Lock, Shield, X, Terminal, ShieldCheck, Receipt, CreditCard,
   Hotel, Building, CalendarCheck, Sparkles
 } from "lucide-react";
-import { useLocation, Outlet, NavLink, Link } from "react-router-dom";
+import { useLocation, Outlet, NavLink, Link, useNavigate } from "react-router-dom";
 import TopNav from "./TopNav";
 import { providersApi } from "../../lib/api/providers";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { MobileGestures } from "./MobileGestures";
+import { hasOfflinePin } from "../../lib/offline/offlinePin";
 
 const EtimsIcon = ({ className, size = 20 }: { className?: string, size?: number }) => (
   <img src="https://etims.kra.go.ke/assets/images/logo.jpg" alt="eTIMS" style={{ width: size, height: size }} className={`${className || ''} object-contain mix-blend-darken shrink-0`} />
@@ -334,15 +335,48 @@ export default function ProviderLayout() {
           )}
         </AnimatePresence>
 
-        <NavLink
-          to="/dashboard/settings"
-          className={`h-10 bg-slate-50 rounded-[.45rem] flex items-center justify-center text-slate-400 hover:bg-emerald-50 hover:text-emerald-600 transition-all border border-slate-100 ${sidebarExpanded ? 'w-full' : 'w-10'}`}
-        >
-          <Settings size={18} />
-        </NavLink>
+        {/* Profile (Desktop) */}
+        <div className="group relative w-full flex justify-center mt-2">
+          <button
+            onClick={() => {
+              if (window.confirm("Are you sure you want to log out?")) {
+                logout();
+              }
+            }}
+            className={`flex items-center gap-3 transition-colors ${sidebarExpanded ? 'w-full hover:bg-slate-100 p-2 rounded-md border border-slate-100/50' : 'hover:scale-110 p-1 bg-slate-50 rounded-md border border-slate-100'}`}
+            title="Log Out"
+          >
+            <div className="relative flex-shrink-0">
+              <img
+                src={user?.photoUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || '')}&background=0D4A3E&color=fff`}
+                alt="Profile"
+                className={`rounded-md object-cover border border-slate-200 ${sidebarExpanded ? 'w-8 h-8' : 'w-8 h-8'}`}
+              />
+              <div className="absolute -bottom-1 -right-1 bg-white rounded-full p-[2px]">
+                <div className="bg-emerald-500 w-1.5 h-1.5 rounded-full" />
+              </div>
+            </div>
+            
+            {sidebarExpanded && (
+              <div className="flex-1 min-w-0 text-left flex justify-between items-center pr-1">
+                <div className="min-w-0 truncate">
+                  <p className="text-xs font-bold text-slate-900 truncate">{user?.name || 'Provider'}</p>
+                  <p className="text-[10px] font-semibold text-slate-500 truncate mt-0.5 group-hover:text-red-500 transition-colors">Log out</p>
+                </div>
+                <LogOut size={14} className="text-slate-400 group-hover:text-red-500 flex-shrink-0 transition-colors" />
+              </div>
+            )}
+          </button>
+          {!sidebarExpanded && isDesktop && (
+            <div className="absolute left-[calc(100%+10px)] top-1/2 -translate-y-1/2 bg-slate-900 text-white px-3 py-1.5 rounded-md text-xs font-semibold opacity-0 group-hover:opacity-100 invisible group-hover:visible transition-all pointer-events-none whitespace-nowrap z-[200] shadow-sm">
+              Log Out
+              <div className="absolute top-1/2 -left-1 -translate-y-1/2 border-y-4 border-y-transparent border-r-4 border-r-slate-900" />
+            </div>
+          )}
+        </div>
       </div>
     </div>
-  ), [sidebarExpanded, filteredGroups, user, isTrial, isCritical, targetEndDate]);
+  ), [sidebarExpanded, filteredGroups, user, isTrial, isCritical, targetEndDate, logout]);
 
   return (
     <MobileGestures>
@@ -443,10 +477,16 @@ function MobileBottomNav({ user, targetEndDate }: {
   targetEndDate: string | undefined;
 }) {
   const [showMoreSheet, setShowMoreSheet] = useState(false);
+  const [showProfileSheet, setShowProfileSheet] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+  const { logout, lock } = useAuth();
 
-  // Close "More" sheet on navigation
-  useEffect(() => { setShowMoreSheet(false); }, [location.pathname]);
+  // Close sheets on navigation
+  useEffect(() => {
+    setShowMoreSheet(false);
+    setShowProfileSheet(false);
+  }, [location.pathname]);
 
   const userModules = useMemo(() => {
     let mods: string[] = [];
@@ -521,17 +561,17 @@ function MobileBottomNav({ user, targetEndDate }: {
 
   return (
     <div className="fixed inset-x-0 bottom-[env(safe-area-inset-bottom,0px)] z-[95] lg:hidden flex flex-col items-center pointer-events-none">
-      {/* "More" Bottom Sheet Backdrop */}
+      {/* "More" & "Profile" Bottom Sheet Backdrop */}
       <AnimatePresence>
-        {showMoreSheet && (
+        {(showMoreSheet || showProfileSheet) && (
           <motion.div
-            key="more-backdrop"
+            key="sheet-backdrop"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
             className="fixed inset-0 z-[93] bg-slate-900/30 backdrop-blur-[2px] pointer-events-auto"
-            onClick={() => setShowMoreSheet(false)}
+            onClick={() => { setShowMoreSheet(false); setShowProfileSheet(false); }}
           />
         )}
       </AnimatePresence>
@@ -581,6 +621,80 @@ function MobileBottomNav({ user, targetEndDate }: {
         )}
       </AnimatePresence>
 
+      {/* Profile Pop-up Bottom Sheet Panel */}
+      <AnimatePresence>
+        {showProfileSheet && (
+          <motion.div
+            key="profile-sheet"
+            initial={{ opacity: 0, y: 24, scale: 0.97 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 16, scale: 0.97 }}
+            transition={{ duration: 0.22, ease: [0.32, 0.72, 0, 1] }}
+            className="fixed inset-x-3 z-[94] bottom-[calc(5.5rem+0.25rem+env(safe-area-inset-bottom,0px))] pointer-events-auto"
+          >
+            <div className="glass-sheet rounded-[1rem] overflow-hidden border border-white/40 p-3 shadow-2xl">
+              <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100/60">
+                <div className="flex items-center gap-3 min-w-0">
+                  <img
+                    src={user?.photoUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || '')}&background=0D4A3E&color=fff`}
+                    alt="Profile"
+                    className="w-10 h-10 rounded-full object-cover border border-emerald-600/20 flex-shrink-0"
+                  />
+                  <div className="min-w-0">
+                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Signed in as</p>
+                    <p className="text-xs font-bold text-slate-900 truncate">{user?.name || user?.businessName}</p>
+                    <p className="text-[10px] text-slate-500 truncate">{user?.email}</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowProfileSheet(false)}
+                  className="glass-btn w-7 h-7 rounded-full flex items-center justify-center text-slate-400 transition-all flex-shrink-0"
+                >
+                  <X size={14} />
+                </button>
+              </div>
+
+              <div className="p-2 space-y-1.5 mt-1">
+                <Link
+                  to={user?.role === 'SUPER_ADMIN' ? '/admin/settings' : '/dashboard/settings'}
+                  onClick={() => setShowProfileSheet(false)}
+                  className="flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold text-slate-700 bg-slate-50 hover:bg-emerald-50 hover:text-emerald-700 transition-colors"
+                >
+                  <User size={16} className="text-emerald-600" /> My Profile & Settings
+                </Link>
+
+                {hasOfflinePin() && (
+                  <button
+                    onClick={() => {
+                      setShowProfileSheet(false);
+                      lock();
+                    }}
+                    className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold text-slate-700 bg-slate-50 hover:bg-slate-100 transition-colors"
+                  >
+                    <Lock size={16} className="text-slate-500" /> Lock Screen (PIN)
+                  </button>
+                )}
+
+                <button
+                  onClick={async () => {
+                    setShowProfileSheet(false);
+                    await logout();
+                    if (navigator.onLine) {
+                      navigate('/login');
+                    } else {
+                      toast.info('Session locked. Enter your PIN to continue.');
+                    }
+                  }}
+                  className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold text-red-600 bg-red-50 hover:bg-red-100 transition-colors"
+                >
+                  <LogOut size={16} /> Log Out
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Floating nav bar — Exactly 5 Tabs: [Home] [Items/Units] [SELL/BOOK] [More] [Profile with User Avatar] */}
       <div className="w-full px-3 pointer-events-auto">
         <div className="relative py-2 glass-bar rounded-[2rem] flex items-end justify-between px-2">
@@ -614,7 +728,10 @@ function MobileBottomNav({ user, targetEndDate }: {
           {/* Tab 4: More Sheet (Middle Right) */}
           <button
             key="more-btn"
-            onClick={() => setShowMoreSheet(v => !v)}
+            onClick={() => {
+              setShowProfileSheet(false);
+              setShowMoreSheet(v => !v);
+            }}
             className="flex-1 min-w-0 flex flex-col items-center gap-0.5 py-1 no-tap-highlight"
           >
             <div className={`w-9 h-9 rounded-full flex items-center justify-center transition-all duration-200 ${showMoreSheet || isOverflowActive ? 'bg-emerald-50' : 'bg-transparent'}`}>
@@ -623,27 +740,26 @@ function MobileBottomNav({ user, targetEndDate }: {
             <span className={`text-[9px] font-medium transition-all truncate w-full text-center ${showMoreSheet || isOverflowActive ? 'text-[#0D4A3E]' : 'text-[#0D4A3E] opacity-40'}`}>More</span>
           </button>
 
-          {/* Tab 5: Profile (Far Right) — Actual user image */}
-          <NavLink
+          {/* Tab 5: Profile (Far Right) — Triggers Profile Pop-up Modal Sheet */}
+          <button
             key="profile-btn"
-            to="/dashboard/settings"
+            onClick={() => {
+              setShowMoreSheet(false);
+              setShowProfileSheet(v => !v);
+            }}
             className="flex-1 min-w-0 flex flex-col items-center gap-0.5 py-1 no-tap-highlight"
           >
-            {({ isActive }) => (
-              <>
-                <div className={`w-9 h-9 rounded-full flex items-center justify-center transition-all duration-200 overflow-hidden ${isActive ? 'ring-2 ring-emerald-600 ring-offset-1' : ''}`}>
-                  <img
-                    src={user?.photoUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || '')}&background=0D4A3E&color=fff`}
-                    alt="Profile"
-                    className="w-7 h-7 rounded-full object-cover"
-                  />
-                </div>
-                <span className={`text-[9px] font-medium transition-all truncate w-full text-center ${isActive ? 'text-[#0D4A3E]' : 'text-[#0D4A3E] opacity-40'}`}>
-                  Profile
-                </span>
-              </>
-            )}
-          </NavLink>
+            <div className={`w-9 h-9 rounded-full flex items-center justify-center transition-all duration-200 overflow-hidden ${showProfileSheet || location.pathname.includes('/settings') ? 'ring-2 ring-emerald-600 ring-offset-1' : ''}`}>
+              <img
+                src={user?.photoUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || '')}&background=0D4A3E&color=fff`}
+                alt="Profile"
+                className="w-7 h-7 rounded-full object-cover"
+              />
+            </div>
+            <span className={`text-[9px] font-medium transition-all truncate w-full text-center ${showProfileSheet || location.pathname.includes('/settings') ? 'text-[#0D4A3E]' : 'text-[#0D4A3E] opacity-40'}`}>
+              Profile
+            </span>
+          </button>
         </div>
       </div>
     </div>

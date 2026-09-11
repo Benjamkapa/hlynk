@@ -21,7 +21,7 @@ const TRADES = [
     id: 'retail',
     label: 'Duka & Retail',
     icon: ShoppingBag,
-    swatch: '#E3A23C',
+    swatch: '#064E3B',
     metricLabel: "Today's Sales",
     metric: 'KES 48,250',
     tag: '+18.4%',
@@ -116,13 +116,13 @@ export default function Hero() {
             <h1 className="text-4xl sm:text-5xl lg:text-[3.4rem] font-black pt-5 font-ubuntu tracking-tight leading-[1.06]">
               Duka, lodge, fleet, or workshop —
               <br className="hidden sm:block" />
-              <span className="text-[#E3A23C]"> run it all</span> from one board.
+              <span className="text-[#064E3B]"> run it all</span> from one board.
             </h1>
 
             <div className="flex flex-wrap items-center gap-3 pt-1">
               <a
                 href="/register"
-                className="px-7 py-3.5 rounded-full bg-[#E3A23C] hover:opacity-85 text-[#14181A] font-bold text-sm transition-all flex items-center gap-2.5 active:scale-95"
+                className="px-7 py-3.5 rounded-full bg-[#064E3B] hover:opacity-85 text-[#14181A] font-bold text-sm transition-all flex items-center gap-2.5 active:scale-95"
               >
                 Start free trial <ArrowRight size={16} />
               </a>
@@ -207,7 +207,7 @@ export default function Hero() {
 
               <div className="px-6 pb-5 flex items-center justify-between text-[11px] text-white/40">
                 <span className="font-medium">5 trades · more in settings</span>
-                <span className="px-2.5 py-1 rounded-full bg-white/5 text-[#E3A23C] font-bold">Included free</span>
+                <span className="px-2.5 py-1 rounded-full bg-white/5 text-[#064E3B] font-bold">Included free</span>
               </div>
             </div>
           </div>

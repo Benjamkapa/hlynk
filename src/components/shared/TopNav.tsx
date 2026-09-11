@@ -1,5 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
-import { Bell, User, LogOut, RefreshCw, Lock as LockIcon, CheckCircle2 } from 'lucide-react'
+import {
+  Bell, User, SignOut, ArrowClockwise, Lock, Check, SidebarSimple, DotsThreeOutline
+} from '@phosphor-icons/react'
 import { useAuth } from '../../lib/auth/AuthContext'
 
 import { Link, useNavigate } from 'react-router-dom'
@@ -197,7 +199,7 @@ export default function TopNav({ isMobileOpen, onMobileMenuToggle, isCollapsed, 
             className="glass-btn w-10 h-10 sm:w-11 sm:h-11 rounded-full flex items-center justify-center text-slate-600 hover:text-emerald-700"
             title="Refresh Data"
           >
-            <RefreshCw size={17} className={`transition-transform duration-700 ${isRefreshing ? 'animate-spin' : ''}`} />
+            <ArrowClockwise size={17} className={`transition-transform duration-700 ${isRefreshing ? 'animate-spin' : ''}`} />
           </button>
 
           {/* Notifications */}
@@ -284,7 +286,7 @@ export default function TopNav({ isMobileOpen, onMobileMenuToggle, isCollapsed, 
                                       title="Mark as done"
                                       className="flex-shrink-0 flex items-center gap-1 px-2 py-0.5 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 rounded-full text-[9px] font-black transition-colors"
                                     >
-                                      <CheckCircle2 size={10} /> Done
+                                      <Check size={10} /> Done
                                     </button>
                                   )}
                                 </div>
@@ -302,53 +304,7 @@ export default function TopNav({ isMobileOpen, onMobileMenuToggle, isCollapsed, 
             )}
           </div>
 
-          {/* Profile menu — Hidden on mobile (accessed via bottom Profile tab) */}
-          <div className="relative ml-1 hidden lg:block" ref={userMenuRef}>
-            <button
-              onClick={() => setShowUserMenu(!showUserMenu)}
-              className={`glass-btn w-10 h-10 sm:w-11 sm:h-11 rounded-full transition-all overflow-hidden flex items-center justify-center ${
-                showUserMenu ? 'ring-2 ring-emerald-500/20' : ''
-              }`}
-              title={user?.name || 'Profile'}
-            >
-              <img
-                src={user?.photoUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || '')}&background=0D4A3E&color=fff`}
-                alt="Profile"
-                className="w-full h-full rounded-full object-cover"
-              />
-            </button>
-
-            {showUserMenu && (
-              <div className="absolute top-[calc(100%+0.5rem)] right-0 w-64 glass-card rounded-[.5rem] shadow-2xl p-2 animate-in fade-in slide-in-from-top-2 duration-200 z-[200]">
-                <div className="px-5 py-4 mb-2 border-b border-slate-50">
-                  <p className="text-[9px] font-black text-slate-300 uppercase tracking-widest mb-1.5">Authenticated ID</p>
-                  <p className="text-xs font-black text-slate-900 truncate">{user?.email}</p>
-                </div>
-                <Link
-                  to="/dashboard/settings"
-                  onClick={() => setShowUserMenu(false)}
-                  className="flex items-center gap-3 px-4 py-3.5 rounded-[.5rem] text-xs font-black text-slate-500 uppercase tracking-widest hover:bg-emerald-50 hover:text-emerald-700"
-                >
-                  <User size={16} className="opacity-50" /> Profile Security
-                </Link>
-                {hasOfflinePin() && (
-                  <button
-                    onClick={handleLock}
-                    className="w-full flex items-center gap-3 px-4 py-3.5 rounded-[.5rem] text-xs font-black text-slate-500 uppercase tracking-widest hover:bg-slate-50"
-                  >
-                    <LockIcon size={16} className="opacity-50" /> Lock Screen
-                  </button>
-                )}
-                <div className="h-px bg-slate-50 my-2 mx-2" />
-                <button
-                  onClick={handleLogout}
-                  className="w-full flex items-center gap-3 px-4 py-3.5 rounded-[.5rem] text-xs font-black text-red-500 uppercase tracking-widest hover:bg-red-50"
-                >
-                  <LogOut size={16} /> {navigator.onLine ? 'Terminate Session' : 'Lock & Secure'}
-                </button>
-              </div>
-            )}
-          </div>
+          {/* Profile menu has been moved to sidebars and mobile bottom navs per user request */}
         </div>
       </div>
     </header>

@@ -34,6 +34,129 @@ const PRESET_PHOTOS = [
   { name: "Gym / Fitness", url: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800" },
 ];
 
+function CardImageSlider({
+  images,
+  title,
+  statusBadgeColor,
+  status,
+  parentTitle,
+  onOpenGallery
+}: {
+  images: string[];
+  title: string;
+  statusBadgeColor: string;
+  status: string;
+  parentTitle: string;
+  onOpenGallery: () => void;
+}) {
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  const prevImage = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+    setCurrentIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
+  };
+
+  const nextImage = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+    setCurrentIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
+  };
+
+  const currentImg = images[currentIndex] || images[0];
+
+  return (
+    <div className="relative h-48 w-full bg-slate-900 overflow-hidden group/slider">
+      {currentImg ? (
+        <img
+          src={currentImg}
+          alt={`${title} - Photo ${currentIndex + 1}`}
+          className="w-full h-full object-cover transition-transform duration-500 group-hover/slider:scale-105"
+        />
+      ) : (
+        <div className="w-full h-full bg-gradient-to-br from-emerald-900 to-slate-900 flex flex-col items-center justify-center text-slate-300">
+          <Building size={36} className="opacity-40 mb-1" />
+          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">No Image Attached</span>
+        </div>
+      )}
+
+      {/* Gradient Overlay */}
+      <div className="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-transparent to-black/40 pointer-events-none" />
+
+      {/* Navigation Arrows for Multiple Photos */}
+      {images.length > 1 && (
+        <>
+          <button
+            type="button"
+            onClick={prevImage}
+            className="absolute left-2 top-1/2 -translate-y-1/2 h-8 w-8 rounded-full bg-black/60 hover:bg-black/90 text-white flex items-center justify-center backdrop-blur-md opacity-0 group-hover/slider:opacity-100 transition-opacity z-20 shadow-lg"
+            title="Previous Photo"
+          >
+            <ChevronLeft size={16} />
+          </button>
+          <button
+            type="button"
+            onClick={nextImage}
+            className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 rounded-full bg-black/60 hover:bg-black/90 text-white flex items-center justify-center backdrop-blur-md opacity-0 group-hover/slider:opacity-100 transition-opacity z-20 shadow-lg"
+            title="Next Photo"
+          >
+            <ChevronRight size={16} />
+          </button>
+
+          {/* Slide Dots Indicator */}
+          <div className="absolute bottom-11 left-1/2 -translate-x-1/2 flex items-center gap-1.5 z-20 bg-black/50 px-2 py-1 rounded-full backdrop-blur-sm">
+            {images.map((_, idx) => (
+              <button
+                key={idx}
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  e.preventDefault();
+                  setCurrentIndex(idx);
+                }}
+                className={`h-1.5 rounded-full transition-all ${
+                  idx === currentIndex ? 'w-4 bg-emerald-400' : 'w-1.5 bg-white/60 hover:bg-white'
+                }`}
+                title={`Photo ${idx + 1}`}
+              />
+            ))}
+          </div>
+        </>
+      )}
+
+      {/* Status Badge */}
+      <div className="absolute top-3 left-3 z-10">
+        <span className={`text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-lg shadow-md backdrop-blur-sm ${statusBadgeColor}`}>
+          {status}
+        </span>
+      </div>
+
+      {/* Gallery Button Badge */}
+      {images.length > 0 && (
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            onOpenGallery();
+          }}
+          className="absolute top-3 right-3 bg-black/60 hover:bg-black/80 text-white text-[10px] font-bold px-2.5 py-1 rounded-lg backdrop-blur-md flex items-center gap-1.5 transition-all shadow-md z-10"
+        >
+          <Camera size={12} /> {images.length > 1 ? `${currentIndex + 1}/${images.length}` : '1 Photo'}
+        </button>
+      )}
+
+      {/* Title & Group on Image Bottom */}
+      <div className="absolute bottom-3 left-3 right-3 text-white z-10 pointer-events-none">
+        <span className="text-[10px] font-black uppercase tracking-widest text-emerald-300 block truncate">
+          {parentTitle}
+        </span>
+        <h3 className="text-lg font-black tracking-tight leading-snug drop-shadow-sm truncate">{title}</h3>
+      </div>
+    </div>
+  );
+}
+
 export default function PropertiesPage() {
   const [properties, setProperties] = useState<Resource[]>([]);
   const [rooms, setRooms] = useState<Resource[]>([]);
@@ -342,7 +465,11 @@ export default function PropertiesPage() {
             <Share2 size={14} /> Share Listing
           </button>
           <button
-            onClick={() => setShowPropertyModal(true)}
+            onClick={() => {
+              setPropName("");
+              setPropAddress("");
+              setShowPropertyModal(true);
+            }}
             className="px-4 py-2.5 bg-slate-100 text-slate-800 font-bold text-xs rounded-[.5rem] hover:bg-slate-200 transition-all flex items-center gap-2"
           >
             <Plus size={15} /> Add Group
@@ -423,49 +550,15 @@ export default function PropertiesPage() {
                 animate={{ opacity: 1, y: 0 }}
                 className="bg-white rounded-[1.2rem] border border-slate-100 shadow-sm overflow-hidden flex flex-col justify-between group hover:shadow-md transition-shadow"
               >
-                {/* Visual Image Header */}
-                <div className="relative h-48 w-full bg-slate-900 overflow-hidden">
-                  {displayImage ? (
-                    <img
-                      src={displayImage}
-                      alt={room.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    />
-                  ) : (
-                    <div className="w-full h-full bg-gradient-to-br from-emerald-900 to-slate-900 flex flex-col items-center justify-center text-slate-300">
-                      <Building size={36} className="opacity-40 mb-1" />
-                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">No Image Attached</span>
-                    </div>
-                  )}
-
-                  {/* Gradient Overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-black/30" />
-
-                  {/* Status Badge */}
-                  <div className="absolute top-3 left-3">
-                    <span className={`text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-lg shadow-md backdrop-blur-sm ${statusBadgeColor}`}>
-                      {room.status}
-                    </span>
-                  </div>
-
-                  {/* Photos Badge / Gallery Button */}
-                  {allImagesList.length > 0 && (
-                    <button
-                      onClick={() => openGallery(allImagesList, room.title)}
-                      className="absolute top-3 right-3 bg-black/60 hover:bg-black/80 text-white text-[10px] font-bold px-2.5 py-1 rounded-lg backdrop-blur-md flex items-center gap-1.5 transition-all shadow-md"
-                    >
-                      <Camera size={12} /> {allImagesList.length} {allImagesList.length === 1 ? 'Photo' : 'Photos'}
-                    </button>
-                  )}
-
-                  {/* Title & Group on Image Bottom */}
-                  <div className="absolute bottom-3 left-3 right-3 text-white">
-                    <span className="text-[10px] font-black uppercase tracking-widest text-emerald-300 block">
-                      {parentProperty ? parentProperty.title : (room.meta?.roomType || 'Unit')}
-                    </span>
-                    <h3 className="text-lg font-black tracking-tight leading-snug drop-shadow-sm">{room.title}</h3>
-                  </div>
-                </div>
+                {/* Visual Image Header with Interactive Slide Controls */}
+                <CardImageSlider
+                  images={allImagesList}
+                  title={room.title}
+                  status={room.status}
+                  statusBadgeColor={statusBadgeColor}
+                  parentTitle={parentProperty ? parentProperty.title : (room.meta?.roomType || 'Unit')}
+                  onOpenGallery={() => openGallery(allImagesList, room.title)}
+                />
 
                 {/* Body Details */}
                 <div className="p-5 space-y-4 flex-1">
@@ -657,11 +750,14 @@ export default function PropertiesPage() {
                       onChange={(e) => setRoomParentId(e.target.value)}
                       className="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-sm font-bold text-slate-800 outline-none focus:border-emerald-600"
                     >
-                      <option value="">No Property (Standalone Unit)</option>
+                      <option value="">No Group (Standalone Unit)</option>
                       {properties.map(p => (
                         <option key={p.id} value={p.id}>{p.title}</option>
                       ))}
                     </select>
+                    <p className="text-[11px] text-slate-400 font-medium mt-1">
+                      Choose "No Group" if adding a single room, car, B&B studio, or standalone villa.
+                    </p>
                   </div>
                   <div>
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Unit Category</label>

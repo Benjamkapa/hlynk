@@ -12,18 +12,22 @@ import ThermalReceipt, { thermalReceiptStyles } from '../../components/shared/Th
 
 const getStatusLabel = (status: any) => {
   const s = Number(status);
-  if (s === 0) return 'Success';
-  if (s === 2) return 'Pending';
+  if (s === 0) return 'Paid';
+  if (s === 1) return 'Pay on Delivery';
+  if (s === 2) return 'Pending Payment';
   if (s === 3) return 'Cancelled';
-  if (s === 1) return 'Failed';
-  return 'Success';
+  if (s === 4) return 'Payment Failed';
+  return 'Paid';
 };
 
 const getStatusColor = (status: any) => {
   const s = Number(status);
-  if (s === 0) return 'text-emerald-600 bg-emerald-50';
-  if (s === 2) return 'text-amber-600 bg-amber-50';
-  return 'text-red-600 bg-red-50';
+  if (s === 0) return 'text-emerald-700 bg-emerald-50 border border-emerald-200';
+  if (s === 1) return 'text-blue-700 bg-blue-50 border border-blue-200';
+  if (s === 2) return 'text-amber-700 bg-amber-50 border border-amber-200';
+  if (s === 3) return 'text-gray-600 bg-gray-50 border border-gray-200';
+  if (s === 4) return 'text-red-700 bg-red-50 border border-red-200';
+  return 'text-emerald-700 bg-emerald-50 border border-emerald-200';
 };
 
 export default function SalesHistoryPage() {

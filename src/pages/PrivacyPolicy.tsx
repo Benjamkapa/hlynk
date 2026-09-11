@@ -39,21 +39,33 @@ export default function PrivacyPolicy() {
                 <div>
                   <h3 className="font-bold text-slate-800 mb-2">2.1 Business Account Holders</h3>
                   <ul className="list-disc pl-6 space-y-2">
-                    <li><strong>Registration details:</strong> Full name, email address, phone number, and a hashed (encrypted) password.</li>
-                    <li><strong>Business profile:</strong> Business name, physical location, county, business category, and any staff members you add to your account.</li>
+                    <li><strong>Google account details:</strong> When you sign in with Google, we receive your name and email address from Google. We do not receive your Google password at any point. This data is used solely to create and identify your Hlynk account.</li>
+                    <li><strong>Business profile:</strong> Business name, physical location, town, county, and business category — entered by you during registration.</li>
+                    <li><strong>M-Pesa number:</strong> Your registered M-Pesa phone number, used for subscription payments, STK Push authorisation, and — if applicable — partner commission payouts.</li>
                     <li><strong>Financial records:</strong> Sales transactions, stock movements, expense entries, and profit data that you record using the platform.</li>
                     <li><strong>M-Pesa transaction metadata:</strong> Phone numbers and amounts involved in M-Pesa STK Push payments processed through the platform. We do not store M-Pesa PINs at any point.</li>
-                    <li><strong>Technical usage data:</strong> IP addresses, browser type, session tokens, and platform interaction logs. This is used to maintain security and improve performance.</li>
+                    <li><strong>Technical usage data:</strong> IP addresses, browser type, session tokens, and platform interaction logs. This is used to maintain security, detect fraud, and improve performance.</li>
+                    <li><strong>Referral data:</strong> If you participate in the partner referral programme, we record the businesses you have referred and keep track of associated commission calculations and settlement history.</li>
                   </ul>
                 </div>
 
                 <div>
-                  <h3 className="font-bold text-slate-800 mb-2">2.2 End Customers (Buyers at Hlynk-powered businesses)</h3>
+                  <h3 className="font-bold text-slate-800 mb-2">2.2 Staff Members</h3>
                   <p className="mb-2">
-                    If you are a customer of a business that uses Hlynk, the business may record your name, phone number, and purchase history within their Hlynk account. This data is entered by the business, not collected directly by Hlynk.
+                    If a business owner adds you as a staff member on Hlynk, we will hold your name and phone number as entered by the business owner. You will access the platform via your own Google account. Staff activity — including sales recorded, logs reviewed, and system actions — is tracked for audit purposes on Business Pro accounts.
+                  </p>
+                </div>
+
+                <div>
+                  <h3 className="font-bold text-slate-800 mb-2">2.3 End Customers (Buyers & Guests at Hlynk-powered storefronts)</h3>
+                  <p className="mb-2">
+                    When you place an order or make a booking through a Hlynk-powered public storefront (such as <code>/store/:slug</code>, <code>/shop/:slug</code>, or <code>/stay/:slug</code>) or directly at a merchant's POS, we collect your name, phone number, email address (if provided), delivery address, and transaction details.
+                  </p>
+                  <p className="mb-2">
+                    This information is stored in the merchant's customer management portal to facilitate order fulfillment, process delivery, manage payment statuses (e.g., Pay on Delivery or online M-Pesa STK Push), issue receipts, and maintain customer purchase history.
                   </p>
                   <p>
-                    We process this data on behalf of the business as a <strong>data processor</strong> under the DPA 2019. The business (our client) is the <strong>data controller</strong> responsible for obtaining your consent where required. If you have concerns about how a specific business has recorded your information, please raise them directly with that business.
+                    We process this data on behalf of the business owner as a <strong>data processor</strong> under the Kenya Data Protection Act 2019 (DPA 2019). The business owner is the <strong>data controller</strong> responsible for managing customer records. If you wish to request access to or deletion of your customer records held by a specific business, you may contact the business owner directly or email us at <a href="mailto:info@hlynk.co.ke" className="text-emerald-600 underline">info@hlynk.co.ke</a>.
                   </p>
                 </div>
               </div>
@@ -62,9 +74,10 @@ export default function PrivacyPolicy() {
             <section>
               <h2 className="text-xl font-black text-slate-900 mb-4">3. How We Use Your Data</h2>
               <ul className="list-disc pl-6 space-y-2">
-                <li>To create and manage your Hlynk account securely.</li>
-                <li>To operate the platform's core features: point of sale, inventory management, expense tracking, and reporting dashboards.</li>
-                <li>To process subscription payments and M-Pesa STK Push transactions.</li>
+                <li>To create and manage your Hlynk account securely via Google Sign-In.</li>
+                <li>To operate the platform's core features: point of sale, inventory management, expense tracking, hospitality booking, and financial reporting dashboards.</li>
+                <li>To process subscription payments via M-Pesa STK Push or manually submitted M-Pesa codes.</li>
+                <li>To manage your referral partner commissions and process settlement payouts to your M-Pesa account.</li>
                 <li>To generate audit logs and business intelligence reports that you can access from your dashboard.</li>
                 <li>To send you important service notifications, security alerts, and updates about the platform.</li>
                 <li>To investigate disputes, fraud, or misuse of the platform.</li>
@@ -73,20 +86,39 @@ export default function PrivacyPolicy() {
             </section>
 
             <section>
-              <h2 className="text-xl font-black text-slate-900 mb-4">4. Who We Share Data With</h2>
-              <p className="mb-4">We share data only where necessary and only with parties bound by appropriate obligations:</p>
-              <ul className="list-disc pl-6 space-y-2">
-                <li><strong>Cloud infrastructure providers:</strong> Hlynk's data is hosted on servers located in Kenya. Any hosting provider we use is required to maintain appropriate security standards.</li>
-                <li><strong>Safaricom (Daraja API):</strong> M-Pesa payment processing requires us to pass transaction data to Safaricom's API. This is governed by Safaricom's own terms and data policies.</li>
-                <li><strong>Legal and regulatory authorities:</strong> We may disclose data if required by Kenyan law, a court order, or a lawful request from a government authority.</li>
+              <h2 className="text-xl font-black text-slate-900 mb-4">4. Google Sign-In and Data from Google</h2>
+              <p className="mb-3">
+                Hlynk uses Google Sign-In as its authentication method. By clicking "Continue with Google", you are sharing the following with Hlynk via Google's OAuth2 service:
+              </p>
+              <ul className="list-disc pl-6 space-y-2 mb-3">
+                <li>Your full name (as registered with Google)</li>
+                <li>Your email address</li>
               </ul>
-              <p className="mt-4">We do not transfer your data outside Kenya except where strictly required (for example, if a third-party service operates internationally). In such cases, we take steps to ensure adequate protection is in place.</p>
+              <p className="mb-3">
+                We do not access your Google contacts, Gmail, Google Drive, or any other Google services. The data obtained from Google is used solely for creating and identifying your Hlynk account.
+              </p>
+              <p>
+                Your use of Google for authentication is also governed by <a href="/google/privacy" className="text-emerald-600 underline">Google's Privacy Policy</a> and <a href="/google/terms" className="text-emerald-600 underline">Google's Terms of Service</a>.
+              </p>
             </section>
 
             <section>
-              <h2 className="text-xl font-black text-slate-900 mb-4">5. How Long We Keep Your Data</h2>
+              <h2 className="text-xl font-black text-slate-900 mb-4">5. Who We Share Data With</h2>
+              <p className="mb-4">We share data only where necessary and only with parties bound by appropriate obligations:</p>
+              <ul className="list-disc pl-6 space-y-2">
+                <li><strong>Google (Sign-In):</strong> Authentication is handled through Google's Identity Services. Google's handling of authentication data is governed by their own policies.</li>
+                <li><strong>Cloud infrastructure providers:</strong> Hlynk's data is hosted on servers. Any hosting provider we use is required to maintain appropriate security standards.</li>
+                <li><strong>Safaricom (Daraja API):</strong> M-Pesa payment processing requires us to pass transaction data to Safaricom's API. This is governed by Safaricom's own terms and data policies.</li>
+                <li><strong>KCB (Buni Gateway):</strong> Business Pro subscribers who use the KCB Buni direct settlement feature will have relevant transaction data shared with KCB for processing. This is governed by KCB's own terms and data policies.</li>
+                <li><strong>Legal and regulatory authorities:</strong> We may disclose data if required by Kenyan law, a court order, or a lawful request from a government authority.</li>
+              </ul>
+              <p className="mt-4">We do not transfer your data outside Kenya except where strictly required by a third-party service (for example, Google's global authentication infrastructure). In such cases, we take steps to ensure adequate protection is in place.</p>
+            </section>
+
+            <section>
+              <h2 className="text-xl font-black text-slate-900 mb-4">6. How Long We Keep Your Data</h2>
               <p className="mb-3">
-                We retain your account and transaction data for as long as your account is active. If you cancel your subscription or request deletion, we will remove your data within <strong>30 days</strong>, except where we are required to retain it longer by law — for example, financial transaction records that may be subject to tax or audit requirements under Kenyan law.
+                We retain your account and transaction data for as long as your account is active. If you cease using the platform or request account deletion, we will remove your data within <strong>30 days</strong>, except where we are required to retain it longer by law — for example, financial transaction records that may be subject to tax or audit requirements under Kenyan law.
               </p>
               <p>
                 Anonymised, aggregated data (such as overall platform usage statistics that cannot identify any individual) may be retained indefinitely for platform improvement purposes.
@@ -94,49 +126,48 @@ export default function PrivacyPolicy() {
             </section>
 
             <section>
-              <h2 className="text-xl font-black text-slate-900 mb-4">6. How We Protect Your Data</h2>
+              <h2 className="text-xl font-black text-slate-900 mb-4">7. How We Protect Your Data</h2>
               <p className="mb-3">
-                We implement technical and organisational measures to protect your data, including password hashing, encrypted data transmission (HTTPS), access controls that limit who within our team can access your data, and session security measures.
+                We implement technical and organisational measures to protect your data, including encrypted data transmission (HTTPS), access controls that limit who within our team can access your data, session security measures, and audit logging on Business Pro accounts.
               </p>
               <p>
-                No system connected to the internet can be guaranteed as completely secure. We encourage you to use a strong, unique password for your Hlynk account and to notify us immediately at <a href="mailto:info@hlynk.co.ke" className="text-emerald-600 underline">info@hlynk.co.ke</a> if you suspect any unauthorised access.
+                No system connected to the internet can be guaranteed as completely secure. We encourage you to maintain the security of the Google account you use to log in to Hlynk, and to notify us immediately at <a href="mailto:info@hlynk.co.ke" className="text-emerald-600 underline">info@hlynk.co.ke</a> if you suspect any unauthorised access.
               </p>
             </section>
 
             <section>
-              <h2 className="text-xl font-black text-slate-900 mb-4">7. Your Rights Under Kenyan Law</h2>
+              <h2 className="text-xl font-black text-slate-900 mb-4">8. Your Rights Under Kenyan Law</h2>
               <p className="mb-4">Under the Kenya Data Protection Act 2019, you have the following rights regarding your personal data:</p>
               <ul className="list-disc pl-6 space-y-2">
                 <li><strong>Right to access:</strong> You can request a copy of the personal data we hold about you.</li>
                 <li><strong>Right to correction:</strong> You can ask us to correct inaccurate or incomplete data.</li>
                 <li><strong>Right to deletion:</strong> You can ask us to delete your personal data, subject to any legal retention requirements.</li>
                 <li><strong>Right to object:</strong> You can object to certain types of processing, such as where processing is not strictly necessary for the Service.</li>
-                <li><strong>Right to data portability:</strong> You can request your data in a portable format.</li>
+                <li><strong>Right to data portability:</strong> You can request your data in a portable format within 30 days of account termination.</li>
               </ul>
               <p className="mt-4">To exercise any of these rights, email us at <a href="mailto:info@hlynk.co.ke" className="text-emerald-600 underline">info@hlynk.co.ke</a>. We will respond within <strong>21 days</strong> as required under the DPA 2019.</p>
             </section>
 
             <section>
-              <h2 className="text-xl font-black text-slate-900 mb-4">8. Cookies and Tracking</h2>
+              <h2 className="text-xl font-black text-slate-900 mb-4">9. Cookies and Session Data</h2>
               <p>
-                Hlynk uses session cookies strictly to keep you logged in and to maintain platform security. We do not use advertising cookies or third-party tracking technologies. You can disable cookies in your browser, but doing so will prevent you from logging in to the platform.
+                Hlynk uses session tokens and local storage to keep you logged in securely and to maintain the state of the application (for example, offline PIN access). We do not use advertising cookies or third-party tracking technologies. Clearing your browser's local storage or cookies will log you out of the platform.
               </p>
             </section>
 
             <section>
-              <h2 className="text-xl font-black text-slate-900 mb-4">9. Changes to This Policy</h2>
+              <h2 className="text-xl font-black text-slate-900 mb-4">10. Changes to This Policy</h2>
               <p>
                 We may update this policy as the platform evolves or as legal requirements change. When we make material changes, we will notify active users by email or via an in-app notice at least <strong>14 days</strong> before the changes take effect. The "Last updated" date at the top of this page will always reflect the most recent version.
               </p>
             </section>
 
             <section>
-              <h2 className="text-xl font-black text-slate-900 mb-4">10. Contact Us</h2>
+              <h2 className="text-xl font-black text-slate-900 mb-4">11. Contact Us</h2>
               <p className="mb-3">If you have any questions, concerns, or requests relating to this Privacy Policy or how we handle your data, please contact us:</p>
               <p>
                 <strong>Email:</strong> <a href="mailto:info@hlynk.co.ke" className="text-emerald-600 underline">info@hlynk.co.ke</a><br />
-                
-                {/* <strong>Platform:</strong> www.hlynk.co.ke */}
+                <strong>Platform:</strong> www.hlynk.co.ke
               </p>
               <p className="mt-4 text-sm text-slate-500">
                 If you believe your data rights have been violated and we have not resolved your concern, you may lodge a complaint with the <strong>Office of the Data Protection Commissioner (ODPC)</strong> of Kenya at <a href="https://www.odpc.go.ke" className="text-emerald-600 underline" target="_blank" rel="noreferrer">www.odpc.go.ke</a>.

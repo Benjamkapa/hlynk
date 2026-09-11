@@ -230,6 +230,7 @@ function EmptyState({ query }: { query: string }) {
 
 function CatalogCard({
   item,
+  images = [],
   image,
   imageCount,
   onImageClick,
@@ -238,6 +239,7 @@ function CatalogCard({
   isList,
 }: {
   item: Room | Product;
+  images?: string[];
   image?: string;
   imageCount: number;
   onImageClick: () => void;
@@ -245,6 +247,7 @@ function CatalogCard({
   ctaLabel: string;
   isList: boolean;
 }) {
+  const [currentIndex, setCurrentIndex] = useState(0);
   const title = "title" in item ? item.title : item.name;
   const category = "title" in item ? item.type : item.category || "General";
   const description =
@@ -252,28 +255,43 @@ function CatalogCard({
   const price = "title" in item ? Number(item.basePrice) : Number(item.price);
   const fallback = "title" in item ? <BedDouble size={24} /> : <Package size={24} />;
 
+  const allImgs = images.length > 0 ? images : (image ? [image] : []);
+  const activeImg = allImgs[currentIndex] || allImgs[0];
+
+  const prevImg = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+    setCurrentIndex((prev) => (prev === 0 ? allImgs.length - 1 : prev - 1));
+  };
+
+  const nextImg = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+    setCurrentIndex((prev) => (prev === allImgs.length - 1 ? 0 : prev + 1));
+  };
+
   if (isList) {
     return (
       <article className="group flex min-h-[68px] w-full overflow-hidden rounded-xl border border-slate-200 bg-white transition hover:border-slate-300 hover:shadow-sm">
         <button
           type="button"
-          disabled={!image}
+          disabled={!activeImg}
           onClick={onImageClick}
           className="relative h-[68px] w-[68px] min-w-[68px] overflow-hidden bg-[#f3f1ec] text-left disabled:cursor-default sm:h-[76px] sm:w-[76px] sm:min-w-[76px]"
-          aria-label={image ? `View photos of ${title}` : undefined}
+          aria-label={activeImg ? `View photos of ${title}` : undefined}
         >
-          {image ? (
+          {activeImg ? (
             <img
-              src={image}
+              src={activeImg}
               alt={title}
               className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.03]"
             />
           ) : (
             <div className="grid h-full place-items-center text-slate-400">{fallback}</div>
           )}
-          {imageCount > 1 && (
+          {allImgs.length > 1 && (
             <span className="absolute bottom-1 right-1 rounded-full bg-slate-950/70 px-1.5 py-0.5 text-[8px] font-semibold text-white">
-              +{imageCount - 1}
+              +{allImgs.length - 1}
             </span>
           )}
         </button>
@@ -314,34 +332,72 @@ function CatalogCard({
   }
 
   return (
-    <article className="group flex min-w-0 flex-col overflow-hidden rounded-[16px] border border-slate-200 bg-white transition duration-300 hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-[0_14px_32px_rgba(15,23,42,0.07)]">
-      <button
-        type="button"
-        disabled={!image}
+    <article className="group/card flex min-w-0 flex-col overflow-hidden rounded-[16px] border border-slate-200 bg-white transition duration-300 hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-[0_14px_32px_rgba(15,23,42,0.07)]">
+      <div
+        className="relative aspect-[1.12/1] w-full overflow-hidden bg-[#f3f1ec] text-left group/slider cursor-pointer"
         onClick={onImageClick}
-        className="relative aspect-[1.12/1] w-full overflow-hidden bg-[#f3f1ec] text-left disabled:cursor-default"
-        aria-label={image ? `View photos of ${title}` : undefined}
       >
-        {image ? (
+        {activeImg ? (
           <img
-            src={image}
+            src={activeImg}
             alt={title}
-            className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.035]"
+            className="h-full w-full object-cover transition duration-500 group-hover/card:scale-[1.035]"
           />
         ) : (
           <div className="grid h-full place-items-center text-slate-400">{fallback}</div>
         )}
 
-        <span className="absolute left-2 top-2 max-w-[calc(100%-16px)] truncate rounded-full bg-white/95 px-2 py-1 text-[8px] font-bold uppercase tracking-[0.08em] text-slate-600 shadow-sm backdrop-blur">
+        <span className="absolute left-2 top-2 max-w-[calc(100%-16px)] truncate rounded-full bg-white/95 px-2 py-1 text-[8px] font-bold uppercase tracking-[0.08em] text-slate-600 shadow-sm backdrop-blur z-10">
           {category}
         </span>
 
-        {imageCount > 1 && (
-          <span className="absolute bottom-2 right-2 rounded-full bg-slate-950/65 px-2 py-0.5 text-[8px] font-medium text-white backdrop-blur">
-            +{imageCount - 1} photos
+        {allImgs.length > 1 && (
+          <>
+            {/* Arrows */}
+            <button
+              type="button"
+              onClick={prevImg}
+              className="absolute left-1.5 top-1/2 -translate-y-1/2 h-7 w-7 rounded-full bg-slate-950/70 hover:bg-slate-950 text-white flex items-center justify-center backdrop-blur opacity-0 group-hover/slider:opacity-100 transition-opacity z-20 shadow"
+              title="Previous photo"
+            >
+              <ChevronLeft size={14} />
+            </button>
+            <button
+              type="button"
+              onClick={nextImg}
+              className="absolute right-1.5 top-1/2 -translate-y-1/2 h-7 w-7 rounded-full bg-slate-950/70 hover:bg-slate-950 text-white flex items-center justify-center backdrop-blur opacity-0 group-hover/slider:opacity-100 transition-opacity z-20 shadow"
+              title="Next photo"
+            >
+              <ChevronRight size={14} />
+            </button>
+
+            {/* Slide Dots */}
+            <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex items-center gap-1 z-20 bg-slate-950/50 px-1.5 py-0.5 rounded-full backdrop-blur">
+              {allImgs.map((_, idx) => (
+                <button
+                  key={idx}
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    setCurrentIndex(idx);
+                  }}
+                  className={`h-1.5 rounded-full transition-all ${
+                    idx === currentIndex ? 'w-3 bg-white' : 'w-1.5 bg-white/50 hover:bg-white/80'
+                  }`}
+                  title={`Photo ${idx + 1}`}
+                />
+              ))}
+            </div>
+          </>
+        )}
+
+        {allImgs.length > 0 && (
+          <span className="absolute bottom-2 right-2 rounded-full bg-slate-950/65 px-2 py-0.5 text-[8px] font-medium text-white backdrop-blur z-10">
+            {allImgs.length > 1 ? `${currentIndex + 1}/${allImgs.length}` : '1 photo'}
           </span>
         )}
-      </button>
+      </div>
 
       <div className="flex min-h-[108px] flex-1 flex-col p-2.5 sm:p-3">
         <div className="min-w-0">
@@ -1038,6 +1094,7 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
                       <CatalogCard
                         key={room.id}
                         item={room}
+                        images={images}
                         image={images[0]}
                         imageCount={images.length}
                         onImageClick={() =>
@@ -1080,6 +1137,7 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
                       <CatalogCard
                         key={product.id}
                         item={product}
+                        images={images}
                         image={images[0]}
                         imageCount={images.length}
                         onImageClick={() =>

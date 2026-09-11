@@ -25,11 +25,11 @@ const faqs = [
   },
   {
     question: "Is there a free trial or binding contract?",
-    answer: "Every new account gets a 14-day free trial with no credit card required. Subscriptions are billed flexibly month-to-month, or discounted for 6-month (-5%) and 1-year (-15%) billing cycles."
+    answer: "Every new account gets a 14-day free trial with no credit card required. Subscriptions are billed flexibly month-to-month, or discounted for 6-month (-5%) and 1-year (-10%) billing cycles."
   },
   {
     question: "How do I get started with Hlynk?",
-    answer: "Every new account gets a 14-day free trial with no credit card required. Subscriptions are billed flexibly month-to-month, or discounted for 6-month (-5%) and 1-year (-15%) billing cycles."
+    answer: "Every new account gets a 14-day free trial with no credit card required. Subscriptions are billed flexibly month-to-month, or discounted for 6-month (-5%) and 1-year (-10%) billing cycles."
   },
   {
     question: "Can I install Hlynk as an app on my iPhone or Android device?",
