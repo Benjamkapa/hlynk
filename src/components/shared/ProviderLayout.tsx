@@ -3,7 +3,7 @@ import { useAuth } from "../../lib/auth/AuthContext";
 import {
   LayoutDashboard, Calendar, BarChart2, Users,
   Settings, LogOut, Package, ShoppingCart,
-  Zap, Clock, AlertTriangle, User, MoreHorizontal,
+  Zap, Clock, AlertTriangle, User, CircleEllipsis ,
   Lock, Shield, X, Terminal, ShieldCheck, Receipt, CreditCard,
   Hotel, Building, CalendarCheck, Sparkles
 } from "lucide-react";
@@ -735,7 +735,7 @@ function MobileBottomNav({ user, targetEndDate }: {
             className="flex-1 min-w-0 flex flex-col items-center gap-0.5 py-1 no-tap-highlight"
           >
             <div className={`w-9 h-9 rounded-full flex items-center justify-center transition-all duration-200 ${showMoreSheet || isOverflowActive ? 'bg-emerald-50' : 'bg-transparent'}`}>
-              <MoreHorizontal className={`w-[18px] h-[18px] transition-colors ${showMoreSheet || isOverflowActive ? 'text-[#0D4A3E]' : 'text-[#0D4A3E] opacity-40'}`} />
+              <CircleEllipsis  className={`w-[18px] h-[18px] transition-colors ${showMoreSheet || isOverflowActive ? 'text-[#0D4A3E]' : 'text-[#0D4A3E] opacity-40'}`} />
             </div>
             <span className={`text-[9px] font-medium transition-all truncate w-full text-center ${showMoreSheet || isOverflowActive ? 'text-[#0D4A3E]' : 'text-[#0D4A3E] opacity-40'}`}>More</span>
           </button>

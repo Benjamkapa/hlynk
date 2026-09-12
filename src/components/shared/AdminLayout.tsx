@@ -4,7 +4,7 @@ import {
   LayoutDashboard, BarChart2, Users,
   Settings, HelpCircle, CreditCard, MessageSquare,
   Briefcase, ShieldCheck, Activity, DollarSign, Landmark, X,
-  Bell, Loader2, User, MoreHorizontal, Lock, LogOut
+  Bell, Loader2, User, CircleEllipsis, Lock, LogOut
 } from 'lucide-react'
 import { useState, useEffect, useMemo } from 'react'
 import TopNav from './TopNav'
@@ -273,7 +273,7 @@ export default function AdminLayout() {
                 <div className="bg-emerald-500 w-1.5 h-1.5 rounded-full" />
               </div>
             </div>
-            
+
             {sidebarExpanded && (
               <div className="flex-1 min-w-0 text-left flex justify-between items-center pr-1">
                 <div className="min-w-0 truncate">
@@ -299,117 +299,117 @@ export default function AdminLayout() {
     <MobileGestures>
       <div className="flex h-screen h-[100dvh] overflow-hidden bg-slate-50/50">
 
-      {/* ── Mobile Backdrop ── */}
-      <AnimatePresence>
-        {!isDesktop && mobileOpen && (
-          <motion.div
-            key="backdrop"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-[65] bg-slate-900/40 backdrop-blur-[2px] lg:hidden"
-            onClick={() => setMobileOpen(false)}
-            aria-label="Close sidebar"
-          />
-        )}
-      </AnimatePresence>
+        {/* ── Mobile Backdrop ── */}
+        <AnimatePresence>
+          {!isDesktop && mobileOpen && (
+            <motion.div
+              key="backdrop"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="fixed inset-0 z-[65] bg-slate-900/40 backdrop-blur-[2px] lg:hidden"
+              onClick={() => setMobileOpen(false)}
+              aria-label="Close sidebar"
+            />
+          )}
+        </AnimatePresence>
 
-      {/* ── Sidebar ── */}
-      {isDesktop ? (
-        // Desktop: rail that expands on hover or pin toggle
-        <motion.aside
-          animate={{ width: sidebarExpanded ? FULL_W : RAIL_W }}
-          transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
-          onMouseEnter={() => setIsHovered(true)}
-          onMouseLeave={() => setIsHovered(false)}
-          className="relative flex-shrink-0 h-screen border-r border-slate-100 bg-white overflow-visible z-[70]"
-          style={{ minWidth: RAIL_W }}
-        >
-          <motion.div
+        {/* ── Sidebar ── */}
+        {isDesktop ? (
+          // Desktop: rail that expands on hover or pin toggle
+          <motion.aside
             animate={{ width: sidebarExpanded ? FULL_W : RAIL_W }}
             transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
-            className={`absolute inset-y-0 left-0 bg-white overflow-hidden ${isCollapsed && isHovered ? 'shadow-sm border-r border-slate-100' : ''}`}
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
+            className="relative flex-shrink-0 h-screen border-r border-slate-100 bg-white overflow-visible z-[70]"
+            style={{ minWidth: RAIL_W }}
           >
-            {sidebarContent}
-          </motion.div>
-        </motion.aside>
-      ) : (
-        // Mobile: slide-in drawer (same as ProviderLayout)
-        <AnimatePresence>
-          {mobileOpen && (
-            <motion.aside
-              key="mobile-sidebar"
-              initial={{ x: -FULL_W }}
-              animate={{ x: 0 }}
-              exit={{ x: -FULL_W }}
+            <motion.div
+              animate={{ width: sidebarExpanded ? FULL_W : RAIL_W }}
               transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
-              className="fixed top-0 left-0 h-full bg-white z-[70] shadow-sm"
-              style={{ width: FULL_W }}
+              className={`absolute inset-y-0 left-0 bg-white overflow-hidden ${isCollapsed && isHovered ? 'shadow-sm border-r border-slate-100' : ''}`}
             >
               {sidebarContent}
-            </motion.aside>
-          )}
-        </AnimatePresence>
-      )}
-
-      {/* ── Main Content ── */}
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-
-        {/* Push Notifications Banner */}
-        <AnimatePresence>
-          {pushStatus !== 'subscribed' && pushStatus !== 'unsupported' && (
-            <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: 'auto', opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              className="bg-emerald-900 text-white z-[100] border-b pt-10 border-white/10 flex-shrink-0"
-            >
-              <div className="max-w-screen-2xl mx-auto px-4 sm:px-8 py-3 flex items-center justify-between gap-4">
-                <div className="flex items-center gap-3 overflow-hidden">
-                  <div className="bg-emerald-800 p-2 rounded-md flex-shrink-0">
-                    <Bell size={16} className="text-emerald-300" />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-[11px] font-semibold text-emerald-300 leading-none mb-1">
-                      {pushStatus === 'ios_browser' ? 'Action required' : 'Security recommendation'}
-                    </p>
-                    <p className="text-sm font-bold truncate">
-                      {pushStatus === 'ios_browser'
-                        ? "To enable alerts on iOS, tap 'Share' then 'Add to Home Screen'."
-                        : "Enable system push alerts to monitor platform activity even when offline."}
-                    </p>
-                  </div>
-                </div>
-                {pushStatus !== 'ios_browser' && (
-                  <button
-                    onClick={handleEnablePush}
-                    disabled={isPushLoading}
-                    className="bg-emerald-500 hover:bg-emerald-400 text-white px-4 py-2 rounded-md text-xs font-semibold transition-all flex items-center gap-2 flex-shrink-0 disabled:opacity-50"
-                  >
-                    {isPushLoading ? <Loader2 size={14} className="animate-spin" /> : <ShieldCheck size={14} strokeWidth={2} />}
-                    Activate alerts
-                  </button>
-                )}
-              </div>
             </motion.div>
-          )}
-        </AnimatePresence>
+          </motion.aside>
+        ) : (
+          // Mobile: slide-in drawer (same as ProviderLayout)
+          <AnimatePresence>
+            {mobileOpen && (
+              <motion.aside
+                key="mobile-sidebar"
+                initial={{ x: -FULL_W }}
+                animate={{ x: 0 }}
+                exit={{ x: -FULL_W }}
+                transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
+                className="fixed top-0 left-0 h-full bg-white z-[70] shadow-sm"
+                style={{ width: FULL_W }}
+              >
+                {sidebarContent}
+              </motion.aside>
+            )}
+          </AnimatePresence>
+        )}
 
-        <TopNav
-          isMobileOpen={mobileOpen}
-          onMobileMenuToggle={() => setMobileOpen(v => !v)}
-          isCollapsed={isCollapsed}
-          onToggleCollapse={() => { setIsCollapsed(v => !v); setIsHovered(false) }}
-        />
+        {/* ── Main Content ── */}
+        <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
 
-        <main className="flex-1 overflow-y-auto px-3 sm:px-6 lg:px-10 py-3 sm:py-4 lg:py-8 bg-slate-50/30 pb-28 lg:pb-8 max-w-full overflow-x-hidden">
-          <Outlet />
-        </main>
-      </div>
+          {/* Push Notifications Banner */}
+          <AnimatePresence>
+            {pushStatus !== 'subscribed' && pushStatus !== 'unsupported' && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: 'auto', opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                className="bg-emerald-900 text-white z-[100] border-b pt-10 border-white/10 flex-shrink-0"
+              >
+                <div className="max-w-screen-2xl mx-auto px-4 sm:px-8 py-3 flex items-center justify-between gap-4">
+                  <div className="flex items-center gap-3 overflow-hidden">
+                    <div className="bg-emerald-800 p-2 rounded-md flex-shrink-0">
+                      <Bell size={16} className="text-emerald-300" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-[11px] font-semibold text-emerald-300 leading-none mb-1">
+                        {pushStatus === 'ios_browser' ? 'Action required' : 'Security recommendation'}
+                      </p>
+                      <p className="text-sm font-bold truncate">
+                        {pushStatus === 'ios_browser'
+                          ? "To enable alerts on iOS, tap 'Share' then 'Add to Home Screen'."
+                          : "Enable system push alerts to monitor platform activity even when offline."}
+                      </p>
+                    </div>
+                  </div>
+                  {pushStatus !== 'ios_browser' && (
+                    <button
+                      onClick={handleEnablePush}
+                      disabled={isPushLoading}
+                      className="bg-emerald-500 hover:bg-emerald-400 text-white px-4 py-2 rounded-md text-xs font-semibold transition-all flex items-center gap-2 flex-shrink-0 disabled:opacity-50"
+                    >
+                      {isPushLoading ? <Loader2 size={14} className="animate-spin" /> : <ShieldCheck size={14} strokeWidth={2} />}
+                      Activate alerts
+                    </button>
+                  )}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
-      {/* ── Mobile Bottom Nav ── */}
-      {!isDesktop && <MobileBottomAdminNav />}
+          <TopNav
+            isMobileOpen={mobileOpen}
+            onMobileMenuToggle={() => setMobileOpen(v => !v)}
+            isCollapsed={isCollapsed}
+            onToggleCollapse={() => { setIsCollapsed(v => !v); setIsHovered(false) }}
+          />
+
+          <main className="flex-1 overflow-y-auto px-3 sm:px-6 lg:px-10 py-3 sm:py-4 lg:py-8 bg-slate-50/30 pb-28 lg:pb-8 max-w-full overflow-x-hidden">
+            <Outlet />
+          </main>
+        </div>
+
+        {/* ── Mobile Bottom Nav ── */}
+        {!isDesktop && <MobileBottomAdminNav />}
       </div>
     </MobileGestures>
   )
@@ -644,7 +644,7 @@ function MobileBottomAdminNav() {
               className="flex-1 min-w-0 flex flex-col items-center gap-0.5 py-1 no-tap-highlight"
             >
               <div className={`w-9 h-9 rounded-full flex items-center justify-center transition-all duration-200 ${(showMoreSheet || isOverflowActive) ? 'bg-emerald-50' : 'bg-transparent'}`}>
-                <MoreHorizontal
+                <CircleEllipsis
                   className={`w-[18px] h-[18px] transition-colors ${(showMoreSheet || isOverflowActive) ? 'text-[#0D4A3E]' : 'text-[#0D4A3E] opacity-35'}`}
                   strokeWidth={(showMoreSheet || isOverflowActive) ? 2.5 : 2}
                 />
