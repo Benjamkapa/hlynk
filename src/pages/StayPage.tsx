@@ -795,7 +795,7 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
       style={{ fontFamily: "'DM Sans', Inter, sans-serif" }}
     >
       {/* HEADER — iOS frosted-glass bar */}
-      <header className="sticky top-0 z-40 border-b border-white/40 bg-white/60 backdrop-blur-2xl shadow-sm">
+      <header className="sticky top-0 z-40 border-b border-white/40 bg-white/60 backdrop-blur-2xl shadow-sm" style={{ paddingTop: 'env(safe-area-inset-top)', paddingLeft: 'env(safe-area-inset-left)', paddingRight: 'env(safe-area-inset-right)' }}>
         <div className="mx-auto flex h-[68px] max-w-[1440px] items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
           <div className="flex min-w-0 items-center gap-3">
             {/* Glass back button */}
@@ -1189,7 +1189,7 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
               {listing.phone && (
                 <>
                   <a
-                    href={`tel:${listing.phone}`}
+                    href={`tel:${listing.phone.replace(/[^0-9+\-()\s]/g, "")}`}
                     className="inline-flex items-center gap-2 rounded-full bg-white px-5 py-3 text-xs font-bold text-slate-950 transition hover:bg-slate-100"
                   >
                     <Phone size={15} />
@@ -1197,7 +1197,7 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
                   </a>
 
                   <a
-                    href={`https://wa.me/${listing.phone.replace(/[^0-9]/g, "")}`}
+                    href={`https://wa.me/${formatWhatsAppNumber(listing.phone)}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-5 py-3 text-xs font-bold text-white transition hover:bg-white/15"

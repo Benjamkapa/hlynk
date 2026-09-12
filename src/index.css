@@ -658,3 +658,14 @@
   }
 }
 
+/* ─── Sonner Toast — Safe-Area Offset (iOS Notch / Dynamic Island) ───────────
+ * viewport-fit=cover is set, so toasts at top-center land behind the notch.
+ * Push them below the safe area inset with a minimum of 16px on non-notch devices.
+ * ─────────────────────────────────────────────────────────────────────────── */
+[data-sonner-toaster][data-position*="top"] {
+  top: max(16px, calc(env(safe-area-inset-top) + 8px)) !important;
+}
+[data-sonner-toaster][data-position*="bottom"] {
+  bottom: max(16px, calc(env(safe-area-inset-bottom) + 8px)) !important;
+}
+
