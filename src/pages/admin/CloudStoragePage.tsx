@@ -61,7 +61,7 @@ export default function CloudStoragePage() {
              <span className="text-[10px] font-black uppercase tracking-widest">Platform Integrity</span>
           </div>
           <h1 className="text-xl font-semibold text-gray-900">Cloud Infrastructure Storage</h1>
-          <p className="text-gray-500 font-medium max-w-xl">Centralized media management for identity certificates, product catalogs, and user profiles across the Hlynk ecosystem.</p>
+          <p className="text-gray-500 font-medium max-w-xl">Centralized media management for identity certificates, product catalogs, and user profiles across the hlynk ecosystem.</p>
         </div>
         
         <div className="flex flex-wrap items-center gap-3">
@@ -311,7 +311,7 @@ export default function CloudStoragePage() {
         onClose={() => setConfirmDelete(null)}
         onConfirm={() => confirmDelete && deleteMutation.mutate(confirmDelete.path)}
         title="Destroy Cloud Object?"
-        message={`This action will permanently purge '${confirmDelete?.name}' from the Hlynk storage cluster. Live links will break immediately.`}
+        message={`This action will permanently purge '${confirmDelete?.name}' from the hlynk storage cluster. Live links will break immediately.`}
         confirmText="Confirm Purge"
         isDestructive={true}
         isLoading={deleteMutation.isPending}

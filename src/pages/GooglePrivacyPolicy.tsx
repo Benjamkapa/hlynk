@@ -21,7 +21,7 @@ export default function GooglePrivacyPolicy() {
           <section>
             <h2 className="text-xl font-black text-slate-900">1. What this notice covers</h2>
             <p>
-              This notice explains what we do with the information you provide through Google sign-in on the Hlynk portal.
+              This notice explains what we do with the information you provide through Google sign-in on the hlynk portal.
             </p>
           </section>
 
@@ -31,7 +31,7 @@ export default function GooglePrivacyPolicy() {
               Our backend verifies your Google credential and may read these fields (when present):
             </p>
             <ul className="list-disc pl-6 space-y-2">
-              <li><strong>Email</strong> (used to find or create your Hlynk user account).</li>
+              <li><strong>Email</strong> (used to find or create your hlynk user account).</li>
               <li><strong>Name</strong> (used for account onboarding fields).</li>
               <li><strong>Profile photo</strong> (used to store/update the profile photo in your account).</li>
             </ul>

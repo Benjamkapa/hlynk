@@ -335,7 +335,7 @@ export default function OperationsPage() {
                     className="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-sm font-bold text-slate-800 outline-none focus:border-emerald-600"
                   />
                   <p className="text-[10px] text-slate-400 font-medium mt-1">
-                    If cost &gt; 0, it will automatically record an entry in Hlynk Core Expenses.
+                    If cost &gt; 0, it will automatically record an entry in hlynk Core Expenses.
                   </p>
                 </div>
 

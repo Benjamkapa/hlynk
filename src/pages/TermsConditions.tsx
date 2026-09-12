@@ -9,40 +9,40 @@ export default function TermsConditions() {
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <button
           onClick={() => window.history.back()}
-          className="mb-8 flex items-center gap-2 text-slate-500 hover:text-slate-900 transition-colors font-bold text-sm uppercase tracking-widest"
+          className="mb-8 flex items-center gap-2 text-slate-500 hover:text-slate-900 transition-colors font-bold text-sm tracking-widest"
         >
           <ChevronLeft className="w-5 h-5" /> Back to App
         </button>
 
         <div className="bg-white p-10 md:p-16 rounded-[.5rem] shadow-xl shadow-slate-900/5 border border-slate-100">
           <h1 className="text-4xl font-black text-slate-900 tracking-tighter mb-4">Terms of Service</h1>
-          <p className="text-sm font-bold text-emerald-600 uppercase tracking-widest mb-2">Last updated: {updated}</p>
+          <p className="text-sm font-bold text-emerald-600 tracking-widest mb-2">Last updated: {updated}</p>
           <p className="text-sm text-slate-500 mb-12">
-            Please read these terms carefully before using Hlynk. By signing in or creating an account you confirm that you have read and agreed to these terms. If you do not agree, please do not use the Service.
+            Please read these terms carefully before using hlynk. By signing in or creating an account you confirm that you have read and agreed to these terms. If you do not agree, please do not use the Service.
           </p>
 
           <div className="space-y-12 text-slate-600 leading-relaxed">
 
             <section>
-              <h2 className="text-xl font-black text-slate-900 mb-4">1. About Hlynk</h2>
+              <h2 className="text-xl font-black text-slate-900 mb-4">1. About hlynk</h2>
               <p className="mb-3">
-                Hlynk is a business management platform providing point-of-sale, inventory tracking, expense management, hospitality booking, and financial reporting tools for small and medium businesses in Kenya. The platform is accessible at <strong>www.hlynk.co.ke</strong> and is operated as a sole proprietorship in Kenya.
+                hlynk is a business management platform providing point-of-sale, inventory tracking, expense management, hospitality booking, and financial reporting tools for small and medium businesses in Kenya. The platform is accessible at <strong>www.hlynk.co.ke</strong> and is operated as a sole proprietorship in Kenya.
               </p>
               <p>
-                These Terms of Service ("Terms") govern your use of the Hlynk platform ("the Service"). Where we refer to "you" or "the user", we mean any person who creates an account, uses the platform, or accesses any part of the Service — including business owners and their staff members.
+                These Terms of Service ("Terms") govern your use of the hlynk platform ("the Service"). Where we refer to "you" or "the user", we mean any person who creates an account, uses the platform, or accesses any part of the Service — including business owners and their staff members.
               </p>
             </section>
 
             <section>
               <h2 className="text-xl font-black text-slate-900 mb-4">2. Eligibility and Account Registration</h2>
-              <p className="mb-4">To use Hlynk, you must:</p>
+              <p className="mb-4">To use hlynk, you must:</p>
               <ul className="list-disc pl-6 space-y-2">
                 <li>Be at least 18 years of age.</li>
                 <li>Have the legal authority to enter into a binding agreement on behalf of yourself or the business you represent.</li>
                 <li>Provide accurate, honest, and complete information during registration and keep it up to date.</li>
               </ul>
               <p className="mt-4 mb-3">
-                <strong>Authentication:</strong> Hlynk uses Google Sign-In as the sole login method. By signing in with Google, you authorise Hlynk to receive your Google account name and email address for the purpose of creating and managing your account. You must have a valid Google account to use the Service.
+                <strong>Authentication:</strong> hlynk uses Google Sign-In as the sole login method. By signing in with Google, you authorise hlynk to receive your Google account name and email address for the purpose of creating and managing your account. You must have a valid Google account to use the Service.
               </p>
               <p className="mb-3">Regarding account security:</p>
               <ul className="list-disc pl-6 space-y-2">
@@ -55,7 +55,7 @@ export default function TermsConditions() {
             <section>
               <h2 className="text-xl font-black text-slate-900 mb-4">3. Subscription Plans and Pricing</h2>
               <p className="mb-4">
-                Hlynk offers two subscription plans. Pricing and features are as follows:
+                hlynk offers two subscription plans. Pricing and features are as follows:
               </p>
               <div className="overflow-x-auto mb-6">
                 <table className="w-full text-sm border border-slate-200 rounded-lg overflow-hidden">
@@ -95,7 +95,7 @@ export default function TermsConditions() {
                   <strong>Non-refundable payments:</strong> All subscription payments are non-refundable once processed, except where required by Kenyan consumer protection law. If you believe a payment was made in error, contact us within 7 days and we will review it.
                 </li>
                 <li>
-                  <strong>M-Pesa and Safaricom:</strong> M-Pesa payment processing is facilitated through Safaricom's Daraja API. Hlynk is not responsible for payment failures, delays, or errors caused by Safaricom's systems or network downtime. In such cases, please retry the transaction or contact us.
+                  <strong>M-Pesa and Safaricom:</strong> M-Pesa payment processing is facilitated through Safaricom's Daraja API. hlynk is not responsible for payment failures, delays, or errors caused by Safaricom's systems or network downtime. In such cases, please retry the transaction or contact us.
                 </li>
                 <li>
                   <strong>Subscription suspension:</strong> If a payment fails and is not resolved, we may suspend access to your account. Your data will not be deleted during a suspension period.
@@ -109,14 +109,14 @@ export default function TermsConditions() {
               <ul className="list-disc pl-6 space-y-2">
                 <li><strong>Business Pro-only features</strong> include: Public Store/Shop pages (<code>/store/:slug</code>, <code>/shop/:slug</code>), Public Stay Booking pages (<code>/stay/:slug</code>), KCB Buni Direct Bank Settlement, Unlimited Staff Accounts, Staff Audit Logs & Activity Tracking, and Custom Roles & Permissions.</li>
                 <li>Attempting to access Business Pro features on a Starter plan will result in an upgrade prompt. No unauthorised access to gated features is permitted.</li>
-                <li>Staff accounts operate within the permissions defined by the business owner. Hlynk is not responsible for the scope of access granted by business owners to their staff.</li>
+                <li>Staff accounts operate within the permissions defined by the business owner. hlynk is not responsible for the scope of access granted by business owners to their staff.</li>
                 <li>Staff accounts are strictly prohibited from viewing or managing business billing and subscription information.</li>
               </ul>
             </section>
 
             <section>
               <h2 className="text-xl font-black text-slate-900 mb-4">5. How You May Use the Service</h2>
-              <p className="mb-4">You may use Hlynk for lawful business management purposes. You agree not to:</p>
+              <p className="mb-4">You may use hlynk for lawful business management purposes. You agree not to:</p>
               <ul className="list-disc pl-6 space-y-2">
                 <li>Record or process transactions that are fraudulent, illegal, or misrepresent the nature of a sale.</li>
                 <li>Attempt to access another user's account or business data without authorisation.</li>
@@ -131,14 +131,14 @@ export default function TermsConditions() {
             <section>
               <h2 className="text-xl font-black text-slate-900 mb-4">6. Partner Referral Programme</h2>
               <p className="mb-3">
-                Hlynk operates a partner referral programme that allows existing users to earn commissions by referring new businesses to the platform. Participation is subject to the following terms:
+                hlynk operates a partner referral programme that allows existing users to earn commissions by referring new businesses to the platform. Participation is subject to the following terms:
               </p>
               <ul className="list-disc pl-6 space-y-2">
                 <li><strong>Referral commissions</strong> are calculated as a percentage of the referred business's first subscription payment. Current commission rates are displayed in your account dashboard and may vary by plan.</li>
                 <li><strong>The 180-day Season Rule:</strong> Referral commissions on renewals are only payable if you have referred at least one new business in the preceding 180-day season window. If you have not onboarded a new business within the active season, renewal commissions will not be paid until a new qualifying referral is made.</li>
                 <li>Commission payouts are subject to admin approval and are settled to your registered M-Pesa number. Settlement timelines are displayed in your account.</li>
                 <li>Hlynk reserves the right to disqualify referrals that are fraudulent, self-referrals, or that violate the spirit of the programme.</li>
-                <li>The partner programme terms, commission rates, and season rules may be updated by Hlynk at any time with reasonable notice.</li>
+                <li>The partner programme terms, commission rates, and season rules may be updated by hlynk at any time with reasonable notice.</li>
               </ul>
             </section>
 
@@ -150,18 +150,18 @@ export default function TermsConditions() {
               <ul className="list-disc pl-6 space-y-2">
                 <li>You are solely responsible for the accuracy of product listings, pricing, availability, and all information displayed on your public storefront.</li>
                 <li>You must not list illegal, counterfeit, or prohibited goods or services on your public page.</li>
-                <li>Hlynk is not a party to any transaction between you and your customers. We are not liable for disputes arising from orders placed through your public storefront.</li>
-                <li>Hlynk reserves the right to deactivate any public page that violates these Terms or Kenyan law.</li>
+                <li>hlynk is not a party to any transaction between you and your customers. We are not liable for disputes arising from orders placed through your public storefront.</li>
+                <li>hlynk reserves the right to deactivate any public page that violates these Terms or Kenyan law.</li>
               </ul>
             </section>
 
             <section>
               <h2 className="text-xl font-black text-slate-900 mb-4">8. Your Data and Our Role</h2>
               <p className="mb-3">
-                All business data, inventory records, transaction histories, and customer information that you enter into Hlynk remains yours. We do not claim ownership of it.
+                All business data, inventory records, transaction histories, and customer information that you enter into hlynk remains yours. We do not claim ownership of it.
               </p>
               <p className="mb-3">
-                By using the Service, you grant Hlynk a limited licence to host, store, and process your data for the sole purpose of delivering the platform's features to you. We do not use your business data for advertising or share it with third parties for commercial purposes.
+                By using the Service, you grant hlynk a limited licence to host, store, and process your data for the sole purpose of delivering the platform's features to you. We do not use your business data for advertising or share it with third parties for commercial purposes.
               </p>
               <p>
                 If your account is terminated or you cancel your subscription, you may request an export of your data within <strong>30 days</strong> of termination. After that period, your data may be permanently deleted from our systems, subject to any mandatory retention requirements under Kenyan law.
@@ -171,17 +171,17 @@ export default function TermsConditions() {
             <section>
               <h2 className="text-xl font-black text-slate-900 mb-4">9. Customer Data Responsibility</h2>
               <p className="mb-3">
-                If you use Hlynk to record information about your customers — such as names, phone numbers, or purchase history — you are the data controller for that information under the <strong>Kenya Data Protection Act 2019</strong>. Hlynk processes this data on your behalf as a data processor.
+                If you use hlynk to record information about your customers — such as names, phone numbers, or purchase history — you are the data controller for that information under the <strong>Kenya Data Protection Act 2019</strong>. hlynk processes this data on your behalf as a data processor.
               </p>
               <p>
-                You are responsible for ensuring that you have a lawful basis for collecting and storing your customers' personal data, and for informing them about how their information is used. Hlynk is not liable for claims arising from your handling of customer data.
+                You are responsible for ensuring that you have a lawful basis for collecting and storing your customers' personal data, and for informing them about how their information is used. hlynk is not liable for claims arising from your handling of customer data.
               </p>
             </section>
 
             <section>
               <h2 className="text-xl font-black text-slate-900 mb-4">10. Service Availability</h2>
               <p className="mb-3">
-                We aim to keep Hlynk available at all times, but we cannot guarantee uninterrupted access. The platform may be temporarily unavailable due to scheduled maintenance, technical issues, or circumstances outside our control (including third-party service outages such as Safaricom's M-Pesa network or Google's authentication services).
+                We aim to keep hlynk available at all times, but we cannot guarantee uninterrupted access. The platform may be temporarily unavailable due to scheduled maintenance, technical issues, or circumstances outside our control (including third-party service outages such as Safaricom's M-Pesa network or Google's authentication services).
               </p>
               <p>
                 We will notify users of planned maintenance where possible. We are not liable for losses arising from temporary unavailability of the Service.
@@ -191,35 +191,35 @@ export default function TermsConditions() {
             <section>
               <h2 className="text-xl font-black text-slate-900 mb-4">11. Intellectual Property</h2>
               <p>
-                The Hlynk platform — including its interface, code, branding, features, and documentation — is the intellectual property of Hlynk and its operator. You are granted a limited, non-exclusive, non-transferable licence to use the platform for the duration of your active subscription. This licence does not give you any ownership rights over the platform or its components.
+                The hlynk platform — including its interface, code, branding, features, and documentation — is the intellectual property of hlynk and its operator. You are granted a limited, non-exclusive, non-transferable licence to use the platform for the duration of your active subscription. This licence does not give you any ownership rights over the platform or its components.
               </p>
             </section>
 
             <section>
               <h2 className="text-xl font-black text-slate-900 mb-4">12. Limitation of Liability</h2>
               <p className="mb-3">
-                Hlynk provides the platform on an "as is" basis. We do not guarantee that the platform is error-free or that all features will work perfectly in every situation.
+                hlynk provides the platform on an "as is" basis. We do not guarantee that the platform is error-free or that all features will work perfectly in every situation.
               </p>
               <p className="mb-3">
-                To the maximum extent permitted by Kenyan law, Hlynk shall not be liable for:
+                To the maximum extent permitted by Kenyan law, hlynk shall not be liable for:
               </p>
               <ul className="list-disc pl-6 space-y-2">
                 <li>Loss of profits, revenue, or business data arising from use of or inability to use the platform.</li>
                 <li>Errors in financial reports generated by the platform due to data entered incorrectly by the user.</li>
                 <li>Losses resulting from M-Pesa transaction failures or Safaricom network issues.</li>
                 <li>Losses resulting from Google authentication service outages or account issues.</li>
-                <li>Any indirect or consequential losses not directly caused by Hlynk's own negligence.</li>
+                <li>Any indirect or consequential losses not directly caused by hlynk's own negligence.</li>
                 <li>Disputes or losses arising from transactions conducted through a business's public storefront page.</li>
               </ul>
               <p className="mt-4">
-                Our total liability to you in any circumstances shall not exceed the total subscription fees you paid to Hlynk in the 3 months prior to the event giving rise to the claim.
+                Our total liability to you in any circumstances shall not exceed the total subscription fees you paid to hlynk in the 3 months prior to the event giving rise to the claim.
               </p>
             </section>
 
             <section>
               <h2 className="text-xl font-black text-slate-900 mb-4">13. Termination</h2>
               <p className="mb-3">
-                You may cancel your use of Hlynk at any time by ceasing to renew your subscription. Access to the platform remains available until your current subscription period ends.
+                You may cancel your use of hlynk at any time by ceasing to renew your subscription. Access to the platform remains available until your current subscription period ends.
               </p>
               <p className="mb-3">
                 We reserve the right to suspend or terminate your account if:
@@ -244,7 +244,7 @@ export default function TermsConditions() {
             <section>
               <h2 className="text-xl font-black text-slate-900 mb-4">15. Governing Law</h2>
               <p>
-                These Terms are governed by and construed in accordance with the laws of Kenya. Any disputes arising from the use of the Hlynk platform shall first be attempted to be resolved through direct communication. If unresolved, disputes shall be subject to the jurisdiction of the courts of Kenya.
+                These Terms are governed by and construed in accordance with the laws of Kenya. Any disputes arising from the use of the hlynk platform shall first be attempted to be resolved through direct communication. If unresolved, disputes shall be subject to the jurisdiction of the courts of Kenya.
               </p>
             </section>
 

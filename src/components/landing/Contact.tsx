@@ -65,7 +65,7 @@ export default function Contact() {
                   <span className="text-[#064E3B] font-ubuntu">We're here.</span>
                 </h2>
                 <p className="text-lg text-white/45 font-medium leading-relaxed max-w-md">
-                  Have a question about Hlynk or need help setting up your account? Our team is ready to support your business growth.
+                  Have a question about hlynk or need help setting up your account? Our team is ready to support your business growth.
                 </p>
               </div>
 

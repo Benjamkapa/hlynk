@@ -47,7 +47,7 @@ export default function PartnerProgram() {
               Earn Recurring Commissions.
             </h2>
             <p className="text-slate-500 font-medium text-lg max-w-2xl mx-auto">
-              Bring businesses to Hlynk and earn money every month for 1 year. After that, add 5 new shops to keep earning.
+              Bring businesses to hlynk and earn money every month for 1 year. After that, add 5 new shops to keep earning.
             </p>
           </FadeUp>
         </div>
@@ -62,7 +62,7 @@ export default function PartnerProgram() {
                 Why Onboard Businesses?
               </h3>
               <p className="text-slate-600 mb-8 font-medium">
-                Hlynk is built directly to rescue Kenyan Biasharas from manual errors and lost profits. Because of this, it has an incredibly high retention rate, meaning payouts keep arriving.
+                hlynk is built directly to rescue Kenyan Biasharas from manual errors and lost profits. Because of this, it has an incredibly high retention rate, meaning payouts keep arriving.
               </p>
             </FadeUp>
 
@@ -76,7 +76,7 @@ export default function PartnerProgram() {
                 {
                   icon: <Percent className="text-purple-600" size={24} />,
                   title: "Up to 29% Commission Payout",
-                  desc: "We give back about 30% of each plan price to our partners who help shop owners start using Hlynk."
+                  desc: "We give back about 30% of each plan price to our partners who help shop owners start using hlynk."
                 },
                 {
                   icon: <Users className="text-blue-600" size={24} />,
@@ -86,7 +86,7 @@ export default function PartnerProgram() {
                 {
                   icon: <Award className="text-amber-500" size={24} />,
                   title: "No Cap on Onboardings",
-                  desc: "Work on your own terms. Whether you onboard 5 shops or 500, Hlynk scales your payout accordingly."
+                  desc: "Work on your own terms. Whether you onboard 5 shops or 500, hlynk scales your payout accordingly."
                 }
               ].map((item, idx) => (
                 <FadeUp key={idx} delay={0.3 + idx * 0.1}>
@@ -211,7 +211,7 @@ export default function PartnerProgram() {
                   </Link>
 
                   <a
-                    href="https://wa.me/254790590653?text=Hi%20Hlynk%2C%20I%20want%20to%20know%20more%20about%20the%20Partner%20Program."
+                    href="https://wa.me/254790590653?text=Hi%20hlynk%2C%20I%20want%20to%20know%20more%20about%20the%20Partner%20Program."
                     target="_blank"
                     rel="noopener noreferrer"
                     className="w-full sm:w-auto px-6 py-4 border border-slate-200 hover:border-emerald-300 hover:bg-emerald-50/50 text-slate-600 hover:text-emerald-700 font-bold text-xs text-center rounded-xl transition-all flex items-center justify-center gap-2"

@@ -9,7 +9,7 @@ const categories = [
     description: "Track rooms, guests, and check-ins — no more double bookings.",
     features: ["Room Calendar", "Guest Payments & Balances", "Airbnb & Direct Bookings", "Room Cleaning Status"],
     onboarding: ["Sign in with Google", "Add your rooms or units", "Record your first guest booking"],
-    integration: "Hlynk immediately updates room availability and calculates guest balances."
+    integration: "hlynk immediately updates room availability and calculates guest balances."
   },
   {
     icon: <Car size={20} />,
@@ -65,7 +65,7 @@ export default function WhoUses({ onSelectCategory }: { onSelectCategory: (cat: 
             Built for your type of business
           </h2>
           <p className="text-white/50 text-sm md:text-base font-medium">
-            Pick your business type to see how Hlynk fits your day-to-day.
+            Pick your business type to see how hlynk fits your day-to-day.
           </p>
         </div>
 

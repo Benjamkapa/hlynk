@@ -671,7 +671,7 @@ export default function RecordSalePage() {
           {/* Back button for mobile cart view */}
           <button
             onClick={() => setActiveTab('products')}
-            className="xl:hidden flex items-center gap-2 text-slate-400 font-black text-[10px] uppercase tracking-widest mb-2"
+            className="xl:hidden flex items-center gap-2 text-slate-400 font-black text-[10px] tracking-widest mb-2"
           >
             <ChevronLeft size={16} /> Back to Products
           </button>

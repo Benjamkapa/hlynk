@@ -6,7 +6,7 @@ const features = [
   {
     icon: <TrendingUp size={22} />,
     title: "Real-Time Profit Tracking",
-    desc: "See your exact profits instantly — Hlynk subtracts costs and expenses automatically."
+    desc: "See your exact profits instantly — hlynk subtracts costs and expenses automatically."
   },
   {
     icon: <Receipt size={22} />,

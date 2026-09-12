@@ -21,7 +21,7 @@ export default function GoogleTermsConditions() {
           <section>
             <h2 className="text-xl font-black text-slate-900">1. Using Google Sign-In</h2>
             <p>
-              If you sign in with Google, you agree that we will verify your Google credential and use the provided profile information to authenticate you and enable access to the Hlynk portal.
+              If you sign in with Google, you agree that we will verify your Google credential and use the provided profile information to authenticate you and enable access to the hlynk portal.
             </p>
           </section>
 
@@ -39,7 +39,7 @@ export default function GoogleTermsConditions() {
           <section>
             <h2 className="text-xl font-black text-slate-900">3. What we do with your Google information</h2>
             <ul className="list-disc pl-6 space-y-2">
-              <li>Read your Google email (used to find or create your Hlynk user account).</li>
+              <li>Read your Google email (used to find or create your hlynk user account).</li>
               <li>Use your Google name and profile photo fields when present to complete onboarding and keep your stored photo up to date.</li>
               <li>Create a session and issue access/refresh tokens for your use of the portal.</li>
             </ul>

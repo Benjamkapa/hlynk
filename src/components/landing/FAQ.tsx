@@ -5,7 +5,7 @@ import { FadeUp } from './Animations'
 const faqs = [
   {
     question: "How do M-Pesa payments and bank payouts work?",
-    answer: "Hlynk supports instant M-Pesa STK Push checkout and automated KCB bank settlements. Customers receive direct prompts on their phone, and sales are automatically reconciled in your portal."
+    answer: "hlynk supports instant M-Pesa STK Push checkout and automated KCB bank settlements. Customers receive direct prompts on their phone, and sales are automatically reconciled in your portal."
   },
   {
     question: "What is the difference between Starter and Business Pro?",
@@ -16,11 +16,11 @@ const faqs = [
     answer: "Yes. Business Pro subscribers and trial users get dedicated public store (/store/your-slug) and stay booking pages (/stay/your-property) to showcase products & rooms, check availability, and accept direct client orders and guest bookings."
   },
   {
-    question: "Does Hlynk work offline when my internet connection drops?",
+    question: "Does hlynk work offline when my internet connection drops?",
     answer: "Yes. You can record sales and issue receipts without internet. All offline records automatically synchronize to the secure cloud as soon as your device reconnects."
   },
   {
-    question: "How does Hlynk protect my business from staff theft or unauthorized changes?",
+    question: "How does hlynk protect my business from staff theft or unauthorized changes?",
     answer: "You can create individual staff accounts with restricted permission roles. Every sale, item edit, discount, or deletion is tracked in real-time audit logs tagged to the active worker."
   },
   {
@@ -32,8 +32,8 @@ const faqs = [
     answer: "Every new account gets a 14-day free trial with no credit card required. Subscriptions are billed flexibly month-to-month, or discounted for 6-month (-5%) and 1-year (-10%) billing cycles."
   },
   {
-    question: "Can I install Hlynk as an app on my iPhone or Android device?",
-    answer: "Yes. Hlynk is a Progressive Web App (PWA) that can be installed on your iPhone or Android device. Simply tap the 'Add to Home Screen' option in your browser to install Hlynk as an app on your device."
+    question: "Can I install hlynk as an app on my iPhone or Android device?",
+    answer: "Yes. hlynk is a Progressive Web App (PWA) that can be installed on your iPhone or Android device. Simply tap the 'Add to Home Screen' option in your browser to install Hlynk as an app on your device."
   }
 ]
 
@@ -53,7 +53,7 @@ export default function FAQ() {
               Frequently Asked Questions
             </h2>
             <p className="text-slate-400 font-medium max-w-2xl mx-auto">
-              Everything you need to know about Hlynk's POS, stay bookings, payments, and plans.
+              Everything you need to know about hlynk's POS, stay bookings, payments, and plans.
             </p>
           </FadeUp>
         </div>

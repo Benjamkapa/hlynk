@@ -9,22 +9,22 @@ export default function PrivacyPolicy() {
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <button
           onClick={() => window.history.back()}
-          className="mb-8 flex items-center gap-2 text-slate-500 hover:text-slate-900 transition-colors font-bold text-sm uppercase tracking-widest"
+          className="mb-8 flex items-center gap-2 text-slate-500 hover:text-slate-900 transition-colors font-bold text-sm tracking-widest"
         >
           <ChevronLeft className="w-5 h-5" /> Back to App
         </button>
 
         <div className="bg-white p-10 md:p-16 rounded-[.5rem] shadow-xl shadow-slate-900/5 border border-slate-100">
           <h1 className="text-4xl font-black text-slate-900 tracking-tighter mb-4">Privacy Policy</h1>
-          <p className="text-sm font-bold text-emerald-600 uppercase tracking-widest mb-2">Last updated: {updated}</p>
-          <p className="text-sm text-slate-500 mb-12">This policy applies to all users of the Hlynk platform, including business owners, their staff, and end customers whose data is processed through the platform.</p>
+          <p className="text-sm font-bold text-emerald-600 tracking-widest mb-2">Last updated: {updated}</p>
+          <p className="text-sm text-slate-500 mb-12">This policy applies to all users of the hlynk platform, including business owners, their staff, and end customers whose data is processed through the platform.</p>
 
           <div className="space-y-12 text-slate-600 leading-relaxed">
 
             <section>
               <h2 className="text-xl font-black text-slate-900 mb-4">1. Who We Are</h2>
               <p className="mb-3">
-                Hlynk is a business management and point-of-sale platform operated in Kenya. The platform is currently run as a sole proprietorship and is in the process of formal registration. References to "Hlynk", "we", "us", or "our" in this policy refer to the operator of the platform accessible at <strong>www.hlynk.co.ke</strong>.
+                hlynk is a business management and point-of-sale platform operated in Kenya. The platform is currently run as a sole proprietorship and is in the process of formal registration. References to "Hlynk", "we", "us", or "our" in this policy refer to the operator of the platform accessible at <strong>www.hlynk.co.ke</strong>.
               </p>
               <p>
                 We take data privacy seriously. This policy is written to comply with the <strong>Kenya Data Protection Act, 2019 (DPA 2019)</strong> and the regulations made under it. If you have any questions about how we handle your data, please contact us directly before using the platform.
@@ -39,7 +39,7 @@ export default function PrivacyPolicy() {
                 <div>
                   <h3 className="font-bold text-slate-800 mb-2">2.1 Business Account Holders</h3>
                   <ul className="list-disc pl-6 space-y-2">
-                    <li><strong>Google account details:</strong> When you sign in with Google, we receive your name and email address from Google. We do not receive your Google password at any point. This data is used solely to create and identify your Hlynk account.</li>
+                    <li><strong>Google account details:</strong> When you sign in with Google, we receive your name and email address from Google. We do not receive your Google password at any point. This data is used solely to create and identify your hlynk account.</li>
                     <li><strong>Business profile:</strong> Business name, physical location, town, county, and business category — entered by you during registration.</li>
                     <li><strong>M-Pesa number:</strong> Your registered M-Pesa phone number, used for subscription payments, STK Push authorisation, and — if applicable — partner commission payouts.</li>
                     <li><strong>Financial records:</strong> Sales transactions, stock movements, expense entries, and profit data that you record using the platform.</li>
@@ -52,14 +52,14 @@ export default function PrivacyPolicy() {
                 <div>
                   <h3 className="font-bold text-slate-800 mb-2">2.2 Staff Members</h3>
                   <p className="mb-2">
-                    If a business owner adds you as a staff member on Hlynk, we will hold your name and phone number as entered by the business owner. You will access the platform via your own Google account. Staff activity — including sales recorded, logs reviewed, and system actions — is tracked for audit purposes on Business Pro accounts.
+                    If a business owner adds you as a staff member on hlynk, we will hold your name and phone number as entered by the business owner. You will access the platform via your own Google account. Staff activity — including sales recorded, logs reviewed, and system actions — is tracked for audit purposes on Business Pro accounts.
                   </p>
                 </div>
 
                 <div>
-                  <h3 className="font-bold text-slate-800 mb-2">2.3 End Customers (Buyers & Guests at Hlynk-powered storefronts)</h3>
+                  <h3 className="font-bold text-slate-800 mb-2">2.3 End Customers (Buyers & Guests at hlynk-powered storefronts)</h3>
                   <p className="mb-2">
-                    When you place an order or make a booking through a Hlynk-powered public storefront (such as <code>/store/:slug</code>, <code>/shop/:slug</code>, or <code>/stay/:slug</code>) or directly at a merchant's POS, we collect your name, phone number, email address (if provided), delivery address, and transaction details.
+                    When you place an order or make a booking through a hlynk-powered public storefront (such as <code>/store/:slug</code>, <code>/shop/:slug</code>, or <code>/stay/:slug</code>) or directly at a merchant's POS, we collect your name, phone number, email address (if provided), delivery address, and transaction details.
                   </p>
                   <p className="mb-2">
                     This information is stored in the merchant's customer management portal to facilitate order fulfillment, process delivery, manage payment statuses (e.g., Pay on Delivery or online M-Pesa STK Push), issue receipts, and maintain customer purchase history.
@@ -74,7 +74,7 @@ export default function PrivacyPolicy() {
             <section>
               <h2 className="text-xl font-black text-slate-900 mb-4">3. How We Use Your Data</h2>
               <ul className="list-disc pl-6 space-y-2">
-                <li>To create and manage your Hlynk account securely via Google Sign-In.</li>
+                <li>To create and manage your hlynk account securely via Google Sign-In.</li>
                 <li>To operate the platform's core features: point of sale, inventory management, expense tracking, hospitality booking, and financial reporting dashboards.</li>
                 <li>To process subscription payments via M-Pesa STK Push or manually submitted M-Pesa codes.</li>
                 <li>To manage your referral partner commissions and process settlement payouts to your M-Pesa account.</li>
@@ -88,14 +88,14 @@ export default function PrivacyPolicy() {
             <section>
               <h2 className="text-xl font-black text-slate-900 mb-4">4. Google Sign-In and Data from Google</h2>
               <p className="mb-3">
-                Hlynk uses Google Sign-In as its authentication method. By clicking "Continue with Google", you are sharing the following with Hlynk via Google's OAuth2 service:
+                hlynk uses Google Sign-In as its authentication method. By clicking "Continue with Google", you are sharing the following with hlynk via Google's OAuth2 service:
               </p>
               <ul className="list-disc pl-6 space-y-2 mb-3">
                 <li>Your full name (as registered with Google)</li>
                 <li>Your email address</li>
               </ul>
               <p className="mb-3">
-                We do not access your Google contacts, Gmail, Google Drive, or any other Google services. The data obtained from Google is used solely for creating and identifying your Hlynk account.
+                We do not access your Google contacts, Gmail, Google Drive, or any other Google services. The data obtained from Google is used solely for creating and identifying your hlynk account.
               </p>
               <p>
                 Your use of Google for authentication is also governed by <a href="/google/privacy" className="text-emerald-600 underline">Google's Privacy Policy</a> and <a href="/google/terms" className="text-emerald-600 underline">Google's Terms of Service</a>.
@@ -107,7 +107,7 @@ export default function PrivacyPolicy() {
               <p className="mb-4">We share data only where necessary and only with parties bound by appropriate obligations:</p>
               <ul className="list-disc pl-6 space-y-2">
                 <li><strong>Google (Sign-In):</strong> Authentication is handled through Google's Identity Services. Google's handling of authentication data is governed by their own policies.</li>
-                <li><strong>Cloud infrastructure providers:</strong> Hlynk's data is hosted on servers. Any hosting provider we use is required to maintain appropriate security standards.</li>
+                <li><strong>Cloud infrastructure providers:</strong> hlynk's data is hosted on servers. Any hosting provider we use is required to maintain appropriate security standards.</li>
                 <li><strong>Safaricom (Daraja API):</strong> M-Pesa payment processing requires us to pass transaction data to Safaricom's API. This is governed by Safaricom's own terms and data policies.</li>
                 <li><strong>KCB (Buni Gateway):</strong> Business Pro subscribers who use the KCB Buni direct settlement feature will have relevant transaction data shared with KCB for processing. This is governed by KCB's own terms and data policies.</li>
                 <li><strong>Legal and regulatory authorities:</strong> We may disclose data if required by Kenyan law, a court order, or a lawful request from a government authority.</li>
@@ -131,7 +131,7 @@ export default function PrivacyPolicy() {
                 We implement technical and organisational measures to protect your data, including encrypted data transmission (HTTPS), access controls that limit who within our team can access your data, session security measures, and audit logging on Business Pro accounts.
               </p>
               <p>
-                No system connected to the internet can be guaranteed as completely secure. We encourage you to maintain the security of the Google account you use to log in to Hlynk, and to notify us immediately at <a href="mailto:info@hlynk.co.ke" className="text-emerald-600 underline">info@hlynk.co.ke</a> if you suspect any unauthorised access.
+                No system connected to the internet can be guaranteed as completely secure. We encourage you to maintain the security of the Google account you use to log in to hlynk, and to notify us immediately at <a href="mailto:info@hlynk.co.ke" className="text-emerald-600 underline">info@hlynk.co.ke</a> if you suspect any unauthorised access.
               </p>
             </section>
 
@@ -151,7 +151,7 @@ export default function PrivacyPolicy() {
             <section>
               <h2 className="text-xl font-black text-slate-900 mb-4">9. Cookies and Session Data</h2>
               <p>
-                Hlynk uses session tokens and local storage to keep you logged in securely and to maintain the state of the application (for example, offline PIN access). We do not use advertising cookies or third-party tracking technologies. Clearing your browser's local storage or cookies will log you out of the platform.
+                hlynk uses session tokens and local storage to keep you logged in securely and to maintain the state of the application (for example, offline PIN access). We do not use advertising cookies or third-party tracking technologies. Clearing your browser's local storage or cookies will log you out of the platform.
               </p>
             </section>
 

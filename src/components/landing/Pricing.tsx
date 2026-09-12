@@ -138,7 +138,7 @@ export default function Pricing() {
         </div>
 
         <p className="text-center text-white/30 text-xs font-medium mt-10">
-          Free 14-day trial, no card required. <Link to="/register?trial=true" className="text-white/60 hover:text-white underline underline-offset-2">Try Hlynk free →</Link>
+          Free 14-day trial, no card required. <Link to="/register?trial=true" className="text-white/60 hover:text-white underline underline-offset-2">Try hlynk free →</Link>
         </p>
       </div>
     </section>

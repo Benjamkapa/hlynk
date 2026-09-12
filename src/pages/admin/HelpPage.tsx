@@ -62,7 +62,7 @@ export default function HelpPage() {
                 </section>
                 <section>
                   <h4 className="text-lg font-bold text-gray-900 mb-2">2. Identity Verification</h4>
-                  <p>Verification is handled seamlessly by Google Authentication. By utilizing Google's secure OAuth flow, Hlynk instantly verifies the provider's email address and identity without the need for manual SMS OTPs or confirmation links.</p>
+                  <p>Verification is handled seamlessly by Google Authentication. By utilizing Google's secure OAuth flow, hlynk instantly verifies the provider's email address and identity without the need for manual SMS OTPs or confirmation links.</p>
                 </section>
                 <section>
                   <h4 className="text-lg font-bold text-gray-900 mb-2">3. Subscription Assignment</h4>
@@ -78,7 +78,7 @@ export default function HelpPage() {
               <div className="space-y-6 text-gray-600">
                 <section>
                   <h4 className="text-lg font-bold text-gray-900 mb-2">Duplicate Receipts</h4>
-                  <p>To thwart payment fraud, the Hlynk payment parser utilizes exact M-Pesa receipt IDs payload matching. Attempting to record identical 10-character M-Pesa codes across independent tenants will trigger a <code>Forensic Alert</code> and suspend the transaction entry.</p>
+                  <p>To thwart payment fraud, the hlynk payment parser utilizes exact M-Pesa receipt IDs payload matching. Attempting to record identical 10-character M-Pesa codes across independent tenants will trigger a <code>Forensic Alert</code> and suspend the transaction entry.</p>
                 </section>
                 <section>
                   <h4 className="text-lg font-bold text-gray-900 mb-2">Intrusion Detection</h4>

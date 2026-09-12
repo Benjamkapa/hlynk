@@ -724,7 +724,7 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
               href="/"
               className="rounded-full border border-slate-200 px-5 py-3 text-sm font-semibold text-slate-700"
             >
-              Back to Hlynk
+              Back to hlynk
             </a>
           </div>
         </div>

@@ -57,7 +57,7 @@ export default function FeatureGate({ feature, children, fallback, variant = 'ca
 
   if (!featurePlans) return <>{children}</>
 
-  // Hlynk Hierarchy: MAX > PLUS > LITE
+  // hlynk Hierarchy: MAX > PLUS > LITE
   const getPlanWeight = (p: string) => {
     if (p.includes('MAX')) return 3
     if (p.includes('PLUS')) return 2
