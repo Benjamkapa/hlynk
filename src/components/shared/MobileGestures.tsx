@@ -86,7 +86,7 @@ export function MobileGestures({ children }: { children: React.ReactNode }) {
       {/* Pull to refresh visual indicator */}
       {(pullDistance > 0 || isRefreshing) && (
         <div
-          className="fixed top-2 left-1/2 -translate-x-1/2 z-[200] flex items-center gap-2 bg-[#0D4A3E] text-white px-4 py-2 rounded-full shadow-xl text-xs font-bold transition-all"
+          className="fixed top-5 left-1/2 -translate-x-1/2 z-[200] flex items-center gap-2 bg-[#0D4A3E] text-white px-4 py-2 rounded-full shadow-xl text-xs font-bold transition-all"
           style={{ transform: `translate(-50%, ${isRefreshing ? 16 : Math.min(40, pullDistance * 0.5)}px)` }}
         >
           <RefreshCw size={14} className={isRefreshing ? 'animate-spin' : ''} style={{ transform: `rotate(${pullDistance * 3}deg)` }} />
