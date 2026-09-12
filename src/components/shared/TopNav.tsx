@@ -186,22 +186,6 @@ export default function TopNav({ isMobileOpen, onMobileMenuToggle, isCollapsed, 
         {/* RIGHT: actions & identity */}
         <div className="flex items-center gap-2 sm:gap-4">
 
-          {/* Refresh Data */}
-          <button
-            onClick={async () => {
-              setIsRefreshing(true)
-              try {
-                await queryClient.refetchQueries()
-                if (refreshUser) await refreshUser()
-              } catch (_) { /* individual queries handle their own errors */ }
-              setIsRefreshing(false)
-            }}
-            className="glass-btn w-10 h-10 sm:w-11 sm:h-11 rounded-full flex items-center justify-center text-slate-600 hover:text-emerald-700"
-            title="Refresh Data"
-          >
-            <ArrowClockwise size={17} className={`transition-transform duration-700 ${isRefreshing ? 'animate-spin' : ''}`} />
-          </button>
-
           {/* Notifications */}
           <div className="relative" ref={notificationRef}>
             <button
