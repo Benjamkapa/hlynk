@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Plus, Search, Filter, Edit, Trash2, Package, TrendingDown, Activity, AlertTriangle, LayoutGrid, List, Camera, FileText, Eye, Share2, ShoppingBag, Phone, MessageSquare, Check } from 'lucide-react'
+import { Plus, Search, Filter, Edit, Trash2, Package, TrendingDown, Activity, AlertTriangle, LayoutGrid, List, Camera, FileText, Eye, Share2, ShoppingBag, Phone, MessageSquare, Check, CheckCircle2, Clock, CreditCard } from 'lucide-react'
 import { CameraCapture } from '../../components/shared/CameraCapture'
 import { ConfirmModal } from '../../components/shared/ConfirmModal'
 import { SlideOver } from '../../components/shared/SlideOver'
@@ -311,6 +311,71 @@ export default function ProductsPage() {
                         </a>
                       )}
                     </div>
+
+                    {/* PAYMENT STATUS BADGE */}
+                    {(() => {
+                      const payOption = msgData?.paymentOption || (req.salePaymentMethod === 'ONLINE_MPESA' ? 'PAY_UPFRONT' : 'PAY_ON_DELIVERY');
+                      const sStatus = req.saleStatus !== undefined && req.saleStatus !== null ? Number(req.saleStatus) : (payOption === 'PAY_UPFRONT' ? 2 : 1);
+                      const mpesaReceipt = req.mpesaReceipt || msgData?.mpesaReceipt;
+
+                      if (payOption === 'PAY_UPFRONT') {
+                        if (sStatus === 0) {
+                          return (
+                            <div className="flex flex-col gap-0.5 p-2.5 rounded-[.5rem] bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs">
+                              <span className="font-bold flex items-center gap-1.5 text-emerald-800">
+                                <CheckCircle2 size={14} className="text-emerald-600" />
+                                PAID UPFRONT — M-PESA VERIFIED 🎉
+                              </span>
+                              {mpesaReceipt && (
+                                <span className="text-[10px] text-emerald-700 font-mono">
+                                  {/* Receipt No: <strong className="text-slate-950">{mpesaReceipt}</strong> */}
+                                </span>
+                              )}
+                            </div>
+                          );
+                        } else if (sStatus === 3) {
+                          return (
+                            <div className="flex flex-col gap-0.5 p-2.5 rounded-[.5rem] bg-red-50 border border-red-200 text-red-900 text-xs">
+                              <span className="font-bold flex items-center gap-1.5 text-red-800">
+                                <AlertTriangle size={14} className="text-red-600" />
+                                PAY UPFRONT — CANCELLED ON PHONE 🔴
+                              </span>
+                              <span className="text-[10px] text-red-700">Customer cancelled the M-Pesa STK prompt.</span>
+                            </div>
+                          );
+                        } else if (sStatus === 4) {
+                          return (
+                            <div className="flex flex-col gap-0.5 p-2.5 rounded-[.5rem] bg-red-50 border border-red-200 text-red-900 text-xs">
+                              <span className="font-bold flex items-center gap-1.5 text-red-800">
+                                <AlertTriangle size={14} className="text-red-600" />
+                                PAY UPFRONT — STK PAYMENT FAILED ⚠️
+                              </span>
+                              <span className="text-[10px] text-red-700">Payment failed or timed out.</span>
+                            </div>
+                          );
+                        } else {
+                          return (
+                            <div className="flex flex-col gap-0.5 p-2.5 rounded-[.5rem] bg-amber-50 border border-amber-200 text-amber-900 text-xs">
+                              <span className="font-bold flex items-center gap-1.5 text-amber-800">
+                                <Clock size={14} className="animate-spin text-amber-600" />
+                                PAY UPFRONT — STK PROMPT SENT ⏳
+                              </span>
+                              <span className="text-[10px] text-amber-700">Awaiting customer M-Pesa PIN entry.</span>
+                            </div>
+                          );
+                        }
+                      } else {
+                        return (
+                          <div className="flex flex-col gap-0.5 p-2.5 rounded-[.5rem] bg-blue-50 border border-blue-200 text-blue-900 text-xs">
+                            <span className="font-bold flex items-center gap-1.5 text-blue-800">
+                              <CreditCard size={14} className="text-blue-600" />
+                              PAY ON DELIVERY / ARRIVAL 🚚
+                            </span>
+                            <span className="text-[10px] text-blue-700">Customer will pay cash or transfer upon receiving items.</span>
+                          </div>
+                        );
+                      }
+                    })()}
 
                     {/* Message details */}
                     {msgData && (

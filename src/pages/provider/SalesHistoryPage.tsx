@@ -12,9 +12,9 @@ import ThermalReceipt, { thermalReceiptStyles } from '../../components/shared/Th
 
 const getStatusLabel = (status: any) => {
   const s = Number(status);
-  if (s === 0) return 'Paid';
+  if (s === 0) return 'Paid (M-Pesa)';
   if (s === 1) return 'Pay on Delivery';
-  if (s === 2) return 'Pending Payment';
+  if (s === 2) return 'Awaiting STK PIN';
   if (s === 3) return 'Cancelled';
   if (s === 4) return 'Payment Failed';
   return 'Paid';

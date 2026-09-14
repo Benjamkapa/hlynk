@@ -516,6 +516,9 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
     }
   };
 
+  // Unused — kept for reference; actual STK flow is inside handleOrderSubmit
+  const _handleInitiateStkPushStandalone = handleInitiateStkPush;
+
   const handleOrderSubmit = async (event: FormEvent) => {
     event.preventDefault();
 
@@ -535,33 +538,89 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
     }
 
     setSubmittingOrder(true);
-    let activeReqId = checkoutRequestId;
 
     try {
-      if (paymentOption === "PAY_UPFRONT" && !activeReqId) {
-        activeReqId = await handleInitiateStkPush();
-        if (!activeReqId) {
+      if (paymentOption === "PAY_UPFRONT") {
+        // ── STEP 1: Submit order first to get a real saleId (same pattern as provider RecordSalePage) ──
+        const orderRes = await axios.post(`${API_URL}/api/v1/public/order`, {
+          slug,
+          customerName,
+          customerPhone,
+          deliveryAddress,
+          notes,
+          items: cart,
+          paymentOption,
+          checkoutRequestId: null, // will be set after STK fires
+        });
+
+        const { saleId, orderId, totalAmount: orderTotal } = orderRes.data.data;
+
+        // ── STEP 2: Fire STK push with saleId as the reference so the callback reconciles ──
+        const phoneToUse = mpesaPhone.trim() || customerPhone.trim();
+        if (!phoneToUse) {
+          toast.error("Please enter your M-Pesa phone number");
           setSubmittingOrder(false);
           return;
         }
+
+        setStkStatus("SENDING");
+        let activeReqId: string | null = null;
+        try {
+          const stkRes = await axios.post(`${API_URL}/api/v1/public/mpesa-push`, {
+            slug,
+            phone: phoneToUse,
+            amount: orderTotal ?? totalCartAmount,
+            customerName: customerName.trim() || "Customer",
+            saleId, // backend passes this as `reference` to Safaricom so callback can find the sale
+          });
+
+          if (stkRes.data.success) {
+            activeReqId = stkRes.data.data?.CheckoutRequestID || null;
+            setCheckoutRequestId(activeReqId);
+            setStkStatus("SENT");
+            toast.success("M-Pesa STK Push prompt sent to your phone!");
+          } else {
+            setStkStatus("FAILED");
+            toast.error(stkRes.data.message || "M-Pesa prompt failed. Your order was saved — contact the merchant.");
+          }
+        } catch (stkErr: any) {
+          setStkStatus("FAILED");
+          toast.error(stkErr.response?.data?.message || "M-Pesa prompt failed. Your order was saved — contact the merchant.");
+        }
+
+        setOrderSuccess({
+          orderId,
+          saleId,
+          totalAmount: orderTotal ?? totalCartAmount,
+          orderedByName: customerName,
+          paymentOption,
+          paymentStatus: activeReqId ? "PENDING_STK" : "STK_FAILED",
+          mpesaReceipt: null,
+          checkoutRequestId: activeReqId,
+        });
+      } else {
+        // ── PAY_ON_DELIVERY path (unchanged) ──
+        const response = await axios.post(`${API_URL}/api/v1/public/order`, {
+          slug,
+          customerName,
+          customerPhone,
+          deliveryAddress,
+          notes,
+          items: cart,
+          paymentOption,
+          checkoutRequestId: null,
+        });
+
+        setOrderSuccess({
+          ...response.data.data,
+          orderedByName: customerName,
+          paymentOption,
+          paymentStatus: "PAY_ON_DELIVERY",
+          mpesaReceipt: null,
+        });
+
+        toast.success("Order submitted successfully");
       }
-
-      const response = await axios.post(`${API_URL}/api/v1/public/order`, {
-        slug,
-        customerName,
-        customerPhone,
-        deliveryAddress,
-        notes,
-        items: cart,
-        paymentOption,
-        checkoutRequestId: activeReqId,
-      });
-
-      setOrderSuccess({
-        ...response.data.data,
-        orderedByName: customerName,
-        paymentOption,
-      });
 
       setCart([]);
       setCustomerName("");
@@ -573,8 +632,6 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
       setStkStatus("IDLE");
       setIsOrdering(false);
       setIsCartOpen(false);
-
-      toast.success("Order submitted successfully");
     } catch (err: any) {
       toast.error(
         err.response?.data?.message ||
@@ -584,6 +641,44 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
       setSubmittingOrder(false);
     }
   };
+
+  useEffect(() => {
+    if (!orderSuccess?.saleId || orderSuccess.paymentOption !== "PAY_UPFRONT") return;
+    if (orderSuccess.paymentStatus === "PAID" || orderSuccess.paymentStatus === "CANCELLED" || orderSuccess.paymentStatus === "FAILED" || orderSuccess.paymentStatus === "TIMED_OUT") return;
+
+    let pollAttempts = 0;
+    const maxPolls = 30; // 30 polls * 3s = 90 seconds maximum spinning
+
+    const interval = setInterval(async () => {
+      pollAttempts++;
+      try {
+        const res = await axios.get(`${API_URL}/api/v1/public/order-status/${orderSuccess.saleId}`);
+        if (res.data.success && res.data.data) {
+          const { status, statusLabel, mpesaReceipt } = res.data.data;
+          if (status === 0 || statusLabel === "PAID") {
+            setOrderSuccess((prev: any) => (prev ? { ...prev, paymentStatus: "PAID", mpesaReceipt } : null));
+            toast.success("M-Pesa Payment Verified! 🎉");
+            clearInterval(interval);
+            return;
+          } else if (status === 3 || statusLabel === "CANCELLED" || status === 4 || statusLabel === "FAILED") {
+            setOrderSuccess((prev: any) => (prev ? { ...prev, paymentStatus: "CANCELLED" } : null));
+            toast.error("M-Pesa payment was cancelled or failed.");
+            clearInterval(interval);
+            return;
+          }
+        }
+      } catch (e) {
+        // ignore polling errors silently
+      }
+
+      if (pollAttempts >= maxPolls) {
+        clearInterval(interval);
+        setOrderSuccess((prev: any) => (prev && prev.paymentStatus === "PENDING_STK" ? { ...prev, paymentStatus: "TIMED_OUT" } : prev));
+      }
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, [orderSuccess?.saleId, orderSuccess?.paymentOption, orderSuccess?.paymentStatus]);
 
   useEffect(() => {
     if (!slug) return;
@@ -1584,10 +1679,10 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
               initial={{ y: 18, scale: 0.98 }}
               animate={{ y: 0, scale: 1 }}
               exit={{ y: 18, scale: 0.98 }}
-              className="w-full max-w-md rounded-[30px] bg-white p-7 text-center shadow-2xl"
+              className="w-full max-w-md rounded-[1em] bg-white p-7 text-center shadow-2xl"
             >
               <div className="mx-auto grid h-16 w-16 place-items-center rounded-full bg-emerald-50 text-emerald-600">
-                <CheckCircle2 size={31} />
+                <CheckCircle2 size={50} />
               </div>
 
               <h2 className="mt-5 text-3xl text-slate-950" style={serif}>
@@ -1600,22 +1695,63 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
               </p>
 
               {orderSuccess.paymentOption === "PAY_UPFRONT" ? (
-                <div className="mt-4 rounded-2xl border border-emerald-100 bg-emerald-50/60 p-4 text-left text-xs leading-relaxed text-emerald-950">
-                  <p className="font-bold text-emerald-900 mb-1">M-Pesa Prompt Triggered 📲</p>
-                  If you entered your PIN, retain the M-Pesa confirmation message to show upon delivery or check-in if needed.
+                <div className="mt-4 rounded-2xl border p-4 text-left text-xs leading-relaxed transition-all duration-300">
+                  {orderSuccess.paymentStatus === "PAID" ? (
+                    <div className="border-emerald-200 bg-emerald-50 text-emerald-950 p-3 rounded-xl space-y-1">
+                      <div className="flex items-center gap-1.5 font-bold text-emerald-800">
+                        <CheckCircle2 size={16} className="text-emerald-600" />
+                        <span>M-Pesa Payment Verified! 🎉</span>
+                      </div>
+                      {/* <p className="text-[11px] text-emerald-700">
+                        Receipt No: <span className="font-mono font-bold text-slate-900">{orderSuccess.mpesaReceipt}</span>
+                      </p> */}
+                    </div>
+                  ) : orderSuccess.paymentStatus === "CANCELLED" || orderSuccess.paymentStatus === "FAILED" || orderSuccess.paymentStatus === "TIMED_OUT" ? (
+                    <div className="border-red-200 bg-red-50 text-red-950 p-3 rounded-xl space-y-2">
+                      <div className="flex items-center gap-1.5 font-bold text-red-800">
+                        <AlertTriangle size={16} className="text-red-600" />
+                        <span>Payment Cancelled or Timed Out</span>
+                      </div>
+                      <p className="text-[11px] text-red-700">
+                        {orderSuccess.paymentStatus === "TIMED_OUT"
+                          ? "We didn't receive payment confirmation yet. You can complete payment with the business owner upon delivery or arrival."
+                          : "The M-Pesa prompt was cancelled on your phone. You can complete payment with the business owner upon delivery or arrival."}
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => setOrderSuccess((prev: any) => prev ? { ...prev, paymentOption: "PAY_ON_DELIVERY", paymentStatus: "PAY_ON_DELIVERY" } : null)}
+                        className="w-full py-2 bg-white border border-red-200 text-red-900 font-semibold text-xs rounded-xl hover:bg-red-50 transition-colors flex items-center justify-center gap-1.5"
+                      >
+                        <Truck size={14} className="text-red-700" />
+                        Switch to Pay on Delivery
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="border-amber-200 bg-amber-50/80 text-amber-950 p-3 rounded-xl space-y-2">
+                      <div className="flex items-center gap-2 font-bold text-amber-900">
+                        <Loader2 size={15} className="animate-spin text-amber-600" />
+                        <span>Awaiting M-Pesa PIN entry...</span>
+                      </div>
+                      <p className="text-[11px] text-amber-800 leading-snug">
+                        An M-Pesa prompt was sent to your phone. Enter your PIN to complete instant payment.
+                      </p>
+                    </div>
+                  )}
                 </div>
               ) : (
                 <div className="mt-4 rounded-2xl border border-slate-100 bg-slate-50/80 p-4 text-left text-xs leading-relaxed text-slate-700">
-                  <p className="font-bold text-slate-900 mb-1">Pay on Delivery Selected 🚚</p>
+                  <p className="font-bold text-slate-900 mb-1 flex items-center gap-1.5">
+                    <Truck size={15} className="text-slate-600" /> Pay on Delivery Selected
+                  </p>
                   You can pay cash or make a mobile transfer directly to the business owner upon delivery or arrival.
                 </div>
               )}
 
-              <div className="mt-6 grid gap-2">
+              <div className="mt-6 flex justify-center gap-2">
                 {listing?.phone && (
                   <a
                     href={`https://wa.me/${formatWhatsAppNumber(listing.phone)}?text=${encodeURIComponent(
-                      `Hi ${listing.businessName}, I just placed an order (${orderSuccess.paymentOption === "PAY_UPFRONT" ? "Paid Upfront via M-Pesa" : "Pay on Delivery"}). My name is ${orderSuccess.orderedByName}.`
+                      `Hi ${listing.businessName}, I just placed an order (${orderSuccess.paymentOption === "PAY_UPFRONT" ? (orderSuccess.paymentStatus === "PAID" ? `Paid Upfront M-Pesa Receipt: ${orderSuccess.mpesaReceipt}` : "M-Pesa STK Prompt Sent") : "Pay on Delivery"}). My name is ${orderSuccess.orderedByName}.`
                     )}`}
                     target="_blank"
                     rel="noopener noreferrer"
@@ -1629,7 +1765,7 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
                 <button
                   type="button"
                   onClick={() => setOrderSuccess(null)}
-                  className="rounded-full border border-slate-200 px-5 py-3 text-sm font-semibold text-slate-600 transition hover:bg-slate-50"
+                  className="rounded-full border border-slate-200 px-5 py-3 text-sm font-semibold text-green-600 bg-green-50 transition hover:bg-slate-50"
                 >
                   Done
                 </button>
