@@ -382,9 +382,8 @@ function CatalogCard({
                     e.preventDefault();
                     setCurrentIndex(idx);
                   }}
-                  className={`h-1.5 rounded-full transition-all ${
-                    idx === currentIndex ? 'w-3 bg-white' : 'w-1.5 bg-white/50 hover:bg-white/80'
-                  }`}
+                  className={`h-1.5 rounded-full transition-all ${idx === currentIndex ? 'w-3 bg-white' : 'w-1.5 bg-white/50 hover:bg-white/80'
+                    }`}
                   title={`Photo ${idx + 1}`}
                 />
               ))}
@@ -516,9 +515,6 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
     }
   };
 
-  // Unused — kept for reference; actual STK flow is inside handleOrderSubmit
-  const _handleInitiateStkPushStandalone = handleInitiateStkPush;
-
   const handleOrderSubmit = async (event: FormEvent) => {
     event.preventDefault();
 
@@ -538,89 +534,35 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
     }
 
     setSubmittingOrder(true);
+    let activeReqId = checkoutRequestId;
 
     try {
-      if (paymentOption === "PAY_UPFRONT") {
-        // ── STEP 1: Submit order first to get a real saleId (same pattern as provider RecordSalePage) ──
-        const orderRes = await axios.post(`${API_URL}/api/v1/public/order`, {
-          slug,
-          customerName,
-          customerPhone,
-          deliveryAddress,
-          notes,
-          items: cart,
-          paymentOption,
-          checkoutRequestId: null, // will be set after STK fires
-        });
-
-        const { saleId, orderId, totalAmount: orderTotal } = orderRes.data.data;
-
-        // ── STEP 2: Fire STK push with saleId as the reference so the callback reconciles ──
-        const phoneToUse = mpesaPhone.trim() || customerPhone.trim();
-        if (!phoneToUse) {
-          toast.error("Please enter your M-Pesa phone number");
+      if (paymentOption === "PAY_UPFRONT" && !activeReqId) {
+        activeReqId = await handleInitiateStkPush();
+        if (!activeReqId) {
           setSubmittingOrder(false);
           return;
         }
-
-        setStkStatus("SENDING");
-        let activeReqId: string | null = null;
-        try {
-          const stkRes = await axios.post(`${API_URL}/api/v1/public/mpesa-push`, {
-            slug,
-            phone: phoneToUse,
-            amount: orderTotal ?? totalCartAmount,
-            customerName: customerName.trim() || "Customer",
-            saleId, // backend passes this as `reference` to Safaricom so callback can find the sale
-          });
-
-          if (stkRes.data.success) {
-            activeReqId = stkRes.data.data?.CheckoutRequestID || null;
-            setCheckoutRequestId(activeReqId);
-            setStkStatus("SENT");
-            toast.success("M-Pesa STK Push prompt sent to your phone!");
-          } else {
-            setStkStatus("FAILED");
-            toast.error(stkRes.data.message || "M-Pesa prompt failed. Your order was saved — contact the merchant.");
-          }
-        } catch (stkErr: any) {
-          setStkStatus("FAILED");
-          toast.error(stkErr.response?.data?.message || "M-Pesa prompt failed. Your order was saved — contact the merchant.");
-        }
-
-        setOrderSuccess({
-          orderId,
-          saleId,
-          totalAmount: orderTotal ?? totalCartAmount,
-          orderedByName: customerName,
-          paymentOption,
-          paymentStatus: activeReqId ? "PENDING_STK" : "STK_FAILED",
-          mpesaReceipt: null,
-          checkoutRequestId: activeReqId,
-        });
-      } else {
-        // ── PAY_ON_DELIVERY path (unchanged) ──
-        const response = await axios.post(`${API_URL}/api/v1/public/order`, {
-          slug,
-          customerName,
-          customerPhone,
-          deliveryAddress,
-          notes,
-          items: cart,
-          paymentOption,
-          checkoutRequestId: null,
-        });
-
-        setOrderSuccess({
-          ...response.data.data,
-          orderedByName: customerName,
-          paymentOption,
-          paymentStatus: "PAY_ON_DELIVERY",
-          mpesaReceipt: null,
-        });
-
-        toast.success("Order submitted successfully");
       }
+
+      const response = await axios.post(`${API_URL}/api/v1/public/order`, {
+        slug,
+        customerName,
+        customerPhone,
+        deliveryAddress,
+        notes,
+        items: cart,
+        paymentOption,
+        checkoutRequestId: activeReqId,
+      });
+
+      setOrderSuccess({
+        ...response.data.data,
+        orderedByName: customerName,
+        paymentOption,
+        paymentStatus: paymentOption === "PAY_UPFRONT" ? "PENDING_STK" : "PAY_ON_DELIVERY",
+        mpesaReceipt: null,
+      });
 
       setCart([]);
       setCustomerName("");
@@ -632,6 +574,8 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
       setStkStatus("IDLE");
       setIsOrdering(false);
       setIsCartOpen(false);
+
+      toast.success("Order submitted successfully");
     } catch (err: any) {
       toast.error(
         err.response?.data?.message ||
@@ -647,7 +591,7 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
     if (orderSuccess.paymentStatus === "PAID" || orderSuccess.paymentStatus === "CANCELLED" || orderSuccess.paymentStatus === "FAILED" || orderSuccess.paymentStatus === "TIMED_OUT") return;
 
     let pollAttempts = 0;
-    const maxPolls = 30; // 30 polls * 3s = 90 seconds maximum spinning
+    const maxPolls = 12; // 12 polls * 3s = 36 seconds maximum spinning
 
     const interval = setInterval(async () => {
       pollAttempts++;
@@ -657,7 +601,7 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
           const { status, statusLabel, mpesaReceipt } = res.data.data;
           if (status === 0 || statusLabel === "PAID") {
             setOrderSuccess((prev: any) => (prev ? { ...prev, paymentStatus: "PAID", mpesaReceipt } : null));
-            toast.success("M-Pesa Payment Verified! 🎉");
+            toast.success(`M-Pesa payment received! Receipt: ${mpesaReceipt}`);
             clearInterval(interval);
             return;
           } else if (status === 3 || statusLabel === "CANCELLED" || status === 4 || statusLabel === "FAILED") {
@@ -1043,8 +987,8 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
                 type="button"
                 onClick={() => switchTab("rooms")}
                 className={`relative px-4 py-3 text-sm font-semibold transition ${activeTab === "rooms"
-                    ? "text-slate-950"
-                    : "text-slate-400 hover:text-slate-700"
+                  ? "text-slate-950"
+                  : "text-slate-400 hover:text-slate-700"
                   }`}
               >
                 <span className="inline-flex items-center gap-2">
@@ -1059,8 +1003,8 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
                 type="button"
                 onClick={() => switchTab("products")}
                 className={`relative px-4 py-3 text-sm font-semibold transition ${activeTab === "products"
-                    ? "text-slate-950"
-                    : "text-slate-400 hover:text-slate-700"
+                  ? "text-slate-950"
+                  : "text-slate-400 hover:text-slate-700"
                   }`}
               >
                 <span className="inline-flex items-center gap-2">
@@ -1115,8 +1059,8 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
                   type="button"
                   onClick={() => setViewMode("grid")}
                   className={`grid h-9 w-9 place-items-center rounded-full transition active:scale-95 ${viewMode === "grid"
-                      ? "bg-slate-950 text-white shadow-sm"
-                      : "text-slate-400 hover:bg-white/80 hover:text-slate-700"
+                    ? "bg-slate-950 text-white shadow-sm"
+                    : "text-slate-400 hover:bg-white/80 hover:text-slate-700"
                     }`}
                   aria-label="Grid view"
                 >
@@ -1126,8 +1070,8 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
                   type="button"
                   onClick={() => setViewMode("list")}
                   className={`grid h-9 w-9 place-items-center rounded-full transition active:scale-95 ${viewMode === "list"
-                      ? "bg-slate-950 text-white shadow-sm"
-                      : "text-slate-400 hover:bg-white/80 hover:text-slate-700"
+                    ? "bg-slate-950 text-white shadow-sm"
+                    : "text-slate-400 hover:bg-white/80 hover:text-slate-700"
                     }`}
                   aria-label="List view"
                 >
@@ -1150,8 +1094,8 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
                 type="button"
                 onClick={() => setActiveCategory("all")}
                 className={`whitespace-nowrap rounded-full border px-4 py-2 text-xs font-semibold backdrop-blur-xl transition active:scale-95 ${currentFilter === "all"
-                    ? "border-slate-950/80 bg-slate-950/85 text-white shadow-sm"
-                    : "border-white/60 bg-white/55 text-slate-600 hover:bg-white/80"
+                  ? "border-slate-950/80 bg-slate-950/85 text-white shadow-sm"
+                  : "border-white/60 bg-white/55 text-slate-600 hover:bg-white/80"
                   }`}
               >
                 All
@@ -1163,8 +1107,8 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
                   type="button"
                   onClick={() => setActiveCategory(category)}
                   className={`whitespace-nowrap rounded-full border px-4 py-2 text-xs font-semibold backdrop-blur-xl transition active:scale-95 ${currentFilter === category
-                      ? "border-slate-950/80 bg-slate-950/85 text-white shadow-sm"
-                      : "border-white/60 bg-white/55 text-slate-600 hover:bg-white/80"
+                    ? "border-slate-950/80 bg-slate-950/85 text-white shadow-sm"
+                    : "border-white/60 bg-white/55 text-slate-600 hover:bg-white/80"
                     }`}
                 >
                   {category}
@@ -1553,11 +1497,10 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
                                     setStkStatus("IDLE");
                                     setCheckoutRequestId(null);
                                   }}
-                                  className={`flex flex-col justify-between rounded-2xl border p-3.5 text-left transition ${
-                                    paymentOption === "PAY_ON_DELIVERY"
+                                  className={`flex flex-col justify-between rounded-2xl border p-3.5 text-left transition ${paymentOption === "PAY_ON_DELIVERY"
                                       ? "border-slate-950 bg-slate-950 text-white shadow-sm"
                                       : "border-slate-200 bg-white text-slate-700 hover:border-slate-300"
-                                  }`}
+                                    }`}
                                 >
                                   <div className="flex items-center gap-2">
                                     <Truck size={15} className={paymentOption === "PAY_ON_DELIVERY" ? "text-white" : "text-slate-500"} />
@@ -1576,25 +1519,23 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
                                       setPaymentOption("PAY_UPFRONT");
                                     }
                                   }}
-                                  className={`flex flex-col justify-between rounded-2xl border p-3.5 text-left transition ${
-                                    listing?.hasMpesaGateway === false
+                                  className={`flex flex-col justify-between rounded-2xl border p-3.5 text-left transition ${listing?.hasMpesaGateway === false
                                       ? "cursor-not-allowed border-slate-100 bg-slate-50 opacity-60 text-slate-400"
                                       : paymentOption === "PAY_UPFRONT"
-                                      ? "border-slate-950 bg-slate-950 text-white shadow-sm"
-                                      : "border-slate-200 bg-white text-slate-700 hover:border-slate-300"
-                                  }`}
+                                        ? "border-slate-950 bg-slate-950 text-white shadow-sm"
+                                        : "border-slate-200 bg-white text-slate-700 hover:border-slate-300"
+                                    }`}
                                 >
                                   <div className="flex items-center gap-2">
                                     <Smartphone size={15} className={paymentOption === "PAY_UPFRONT" && listing?.hasMpesaGateway !== false ? "text-white" : "text-slate-400"} />
                                     <span className="text-xs font-bold">Pay Upfront</span>
                                   </div>
-                                  <span className={`mt-2 text-[11px] leading-tight ${
-                                    listing?.hasMpesaGateway === false
+                                  <span className={`mt-2 text-[11px] leading-tight ${listing?.hasMpesaGateway === false
                                       ? "text-slate-400 font-medium"
                                       : paymentOption === "PAY_UPFRONT"
-                                      ? "text-slate-300"
-                                      : "text-slate-500"
-                                  }`}>
+                                        ? "text-slate-300"
+                                        : "text-slate-500"
+                                    }`}>
                                     {listing?.hasMpesaGateway === false ? "Not configured by vendor" : "M-Pesa STK push prompt"}
                                   </span>
                                 </button>
@@ -1679,10 +1620,10 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
               initial={{ y: 18, scale: 0.98 }}
               animate={{ y: 0, scale: 1 }}
               exit={{ y: 18, scale: 0.98 }}
-              className="w-full max-w-md rounded-[1em] bg-white p-7 text-center shadow-2xl"
+              className="w-full max-w-md rounded-[30px] bg-white p-7 text-center shadow-2xl"
             >
               <div className="mx-auto grid h-16 w-16 place-items-center rounded-full bg-emerald-50 text-emerald-600">
-                <CheckCircle2 size={50} />
+                <CheckCircle2 size={31} />
               </div>
 
               <h2 className="mt-5 text-3xl text-slate-950" style={serif}>
@@ -1702,9 +1643,9 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
                         <CheckCircle2 size={16} className="text-emerald-600" />
                         <span>M-Pesa Payment Verified! 🎉</span>
                       </div>
-                      {/* <p className="text-[11px] text-emerald-700">
+                      <p className="text-[11px] text-emerald-700">
                         Receipt No: <span className="font-mono font-bold text-slate-900">{orderSuccess.mpesaReceipt}</span>
-                      </p> */}
+                      </p>
                     </div>
                   ) : orderSuccess.paymentStatus === "CANCELLED" || orderSuccess.paymentStatus === "FAILED" || orderSuccess.paymentStatus === "TIMED_OUT" ? (
                     <div className="border-red-200 bg-red-50 text-red-950 p-3 rounded-xl space-y-2">
@@ -1735,6 +1676,13 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
                       <p className="text-[11px] text-amber-800 leading-snug">
                         An M-Pesa prompt was sent to your phone. Enter your PIN to complete instant payment.
                       </p>
+                      <button
+                        type="button"
+                        onClick={() => setOrderSuccess((prev: any) => prev ? { ...prev, paymentStatus: "CANCELLED" } : null)}
+                        className="text-[11px] font-semibold text-amber-900 underline hover:text-amber-950"
+                      >
+                        Cancelled on phone or didn't receive prompt?
+                      </button>
                     </div>
                   )}
                 </div>
@@ -1747,7 +1695,7 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
                 </div>
               )}
 
-              <div className="mt-6 flex justify-center gap-2">
+              <div className="mt-6 grid gap-2">
                 {listing?.phone && (
                   <a
                     href={`https://wa.me/${formatWhatsAppNumber(listing.phone)}?text=${encodeURIComponent(
@@ -1765,7 +1713,7 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
                 <button
                   type="button"
                   onClick={() => setOrderSuccess(null)}
-                  className="rounded-full border border-slate-200 px-5 py-3 text-sm font-semibold text-green-600 bg-green-50 transition hover:bg-slate-50"
+                  className="rounded-full border border-slate-200 px-5 py-3 text-sm font-semibold text-slate-600 transition hover:bg-slate-50"
                 >
                   Done
                 </button>

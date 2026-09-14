@@ -68,7 +68,7 @@ export default function RecordSalePage() {
 
   useEffect(() => {
     if (configuredSources.length > 0 && !configuredSources.includes(saleSource)) {
-        setSaleSource(configuredSources[0])
+      setSaleSource(configuredSources[0])
     }
   }, [profile])
 
@@ -378,7 +378,7 @@ export default function RecordSalePage() {
             description: `M-Pesa payment received. Receipt #${sale.id?.slice(-6).toUpperCase()} issued.`,
             icon: <CheckCircle2 className="text-emerald-500" />
           })
-          
+
           setCompletedSale(sale);
 
           setCart([])
@@ -449,8 +449,8 @@ export default function RecordSalePage() {
       })
 
       // KCB Buni UAT wraps ids in a "response" object
-      const checkoutId = res?.data?.response?.CheckoutRequestID 
-        || res?.data?.CheckoutRequestID 
+      const checkoutId = res?.data?.response?.CheckoutRequestID
+        || res?.data?.CheckoutRequestID
         || res?.CheckoutRequestID;
 
       handleCompleteSale.mutate({ status: 2, mpesaRequestId: checkoutId })
@@ -702,14 +702,14 @@ export default function RecordSalePage() {
                       className="w-full bg-slate-50 border border-slate-100 rounded-[.5rem] py-4 pl-12 pr-6 text-sm font-bold focus:ring-4 focus:ring-emerald-500/5 outline-none transition-all placeholder:text-slate-300"
                     />
                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-emerald-500 transition-colors" size={18} />
-                    
+
                     {isSearchingCustomer && (
-                       <button 
+                      <button
                         onClick={() => { setCustomerSearchInput(''); setIsSearchingCustomer(false); }}
                         className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-1"
-                       >
-                         <X size={14} />
-                       </button>
+                      >
+                        <X size={14} />
+                      </button>
                     )}
                   </div>
 
@@ -736,8 +736,8 @@ export default function RecordSalePage() {
                           </button>
                         ))}
                       </div>
-                      
-                      <button 
+
+                      <button
                         className="w-full py-4 bg-slate-50 hover:bg-emerald-500 hover:text-white text-[10px] font-black uppercase tracking-widest text-slate-400 border-t border-slate-100 transition-all flex items-center justify-center gap-2"
                       >
                         <Plus size={14} /> Create New Customer
@@ -810,7 +810,7 @@ export default function RecordSalePage() {
                             value={item.buyingPrice !== undefined ? item.buyingPrice : (item.type === 'SERVICE' ? 0 : '')}
                             placeholder="Auto"
                             onChange={(e) => {
-                               setCart(cart.map(i => i.id === item.id ? { ...i, buyingPrice: e.target.value === '' ? undefined : parseFloat(e.target.value) } : i))
+                              setCart(cart.map(i => i.id === item.id ? { ...i, buyingPrice: e.target.value === '' ? undefined : parseFloat(e.target.value) } : i))
                             }}
                             className="bg-transparent border-b border-dashed border-slate-300 w-20 text-xs text-amber-700 font-black hl-mono focus:outline-none focus:border-amber-500 transition-colors"
                             title="Associated expense/cost for this sale (Leave auto if normal)"
@@ -854,7 +854,7 @@ export default function RecordSalePage() {
             <div className="grid grid-cols-2 gap-1">
               {[
                 { id: 'CASH', label: 'Cash', icon: Banknote, feature: null },
-                { id: 'MPESA', label: 'Express', icon: MpesaBankIcon, feature: 'mpesa_stk'  },
+                { id: 'MPESA', label: 'Express', icon: MpesaBankIcon, feature: 'mpesa_stk' },
                 { id: 'KCB', label: 'Mobile', icon: KcbBankIcon, feature: 'kcb_settlement' },
                 { id: 'MPESA_MANUAL', label: 'M-Pesa [Pochi/Till]', icon: Wallet, feature: null },
               ].map(method => (
@@ -1069,35 +1069,35 @@ export default function RecordSalePage() {
       )}
 
       {/* ── Transaction Receipt Modal ── */}
-      <SlideOver 
-        isOpen={!!completedSale} 
-        onClose={() => setCompletedSale(null)} 
+      <SlideOver
+        isOpen={!!completedSale}
+        onClose={() => setCompletedSale(null)}
         title="Transaction Finalized"
       >
         {completedSale && (
           <div className="space-y-6">
             <div className="bg-emerald-50 border border-emerald-100 p-4 rounded-[.5rem] flex items-center gap-3 animate-in zoom-in-95 duration-500">
-               <div className="h-10 w-10 rounded-full bg-emerald-500 text-white flex items-center justify-center">
-                 <CheckCircle2 size={24} />
-               </div>
-               <div>
-                  <p className="text-xs font-black text-emerald-900 uppercase tracking-tight">Success</p>
-                  <p className="text-[10px] text-emerald-700 font-medium">The sale has been recorded and tax calculated.</p>
-               </div>
+              <div className="h-10 w-10 rounded-full bg-emerald-500 text-white flex items-center justify-center">
+                <CheckCircle2 size={24} />
+              </div>
+              <div>
+                <p className="text-xs font-black text-emerald-900 uppercase tracking-tight">Success</p>
+                <p className="text-[10px] text-emerald-700 font-medium">The sale has been recorded and tax calculated.</p>
+              </div>
             </div>
 
-            <ThermalReceipt 
-              sale={completedSale} 
-              autoPrint={profile?.data?.operationalSettings?.autoPrint} 
+            <ThermalReceipt
+              sale={completedSale}
+              autoPrint={profile?.data?.operationalSettings?.autoPrint}
             />
 
             <div className="pt-4 grid grid-cols-1 gap-3 no-print">
-               <button 
-                 onClick={() => setCompletedSale(null)}
-                 className="w-full py-4 bg-slate-900 text-white rounded-[.5rem] font-black text-xs uppercase tracking-widest shadow-xl hover:shadow-2xl transition-all"
-               >
-                 Acknowledge & Continue
-               </button>
+              <button
+                onClick={() => setCompletedSale(null)}
+                className="w-full py-4 bg-slate-900 text-white rounded-[.5rem] font-black text-xs uppercase tracking-widest shadow-xl hover:shadow-2xl transition-all"
+              >
+                Acknowledge & Continue
+              </button>
             </div>
           </div>
         )}

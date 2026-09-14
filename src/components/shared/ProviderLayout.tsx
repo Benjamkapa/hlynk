@@ -466,6 +466,14 @@ export default function ProviderLayout() {
           targetEndDate={targetEndDate}
         />
       )}
+
+      <FloatingExpiryWidget
+        user={user}
+        targetEndDate={targetEndDate}
+        isTrial={isTrial}
+        daysRemaining={daysRemaining}
+        isCritical={isCritical}
+      />
       </div>
     </MobileGestures>
   );
@@ -847,6 +855,90 @@ function CountdownTimer({ expiryDate }: { expiryDate: string | undefined }) {
           <span className="text-[6px] font-black text-emerald-400 uppercase opacity-50">{seg.l}</span>
         </div>
       ))}
+    </div>
+  );
+}
+
+// ─── Floating Subscription Expiry Circle Widget ─────────────────────────────
+function FloatingExpiryWidget({
+  user,
+  targetEndDate,
+  isTrial,
+  daysRemaining,
+  isCritical,
+}: {
+  user: any;
+  targetEndDate: string | undefined;
+  isTrial: boolean;
+  daysRemaining: number;
+  isCritical: boolean;
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+
+  if (user?.role !== 'PROVIDER' || !targetEndDate) return null;
+
+  return (
+    <div className="fixed bottom-24 right-4 lg:bottom-8 lg:right-8 z-[90] pointer-events-auto">
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9, y: 10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.9, y: 10 }}
+            transition={{ duration: 0.2 }}
+            className="absolute bottom-14 right-0 w-72 rounded-2xl bg-slate-900 text-white p-5 shadow-2xl border border-slate-800 space-y-4"
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className={`h-2.5 w-2.5 rounded-full ${isCritical ? 'bg-red-500 animate-ping' : 'bg-emerald-400'}`} />
+                <span className="text-[10px] font-black uppercase tracking-widest text-emerald-400">
+                  {isTrial ? 'Free Trial' : (user?.subscription?.planName || 'Standard')} Tier
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsOpen(false)}
+                className="text-slate-400 hover:text-white transition-colors"
+              >
+                <X size={14} />
+              </button>
+            </div>
+
+            <div>
+              <p className="text-xs text-slate-400 mb-1.5">Subscription Expiry Countdown:</p>
+              <CountdownTimer expiryDate={targetEndDate} />
+            </div>
+
+            <div className="text-[10px] text-slate-400 leading-tight">
+              Expiry Date: <span className="text-slate-200 font-semibold">{new Date(targetEndDate).toLocaleDateString(undefined, { dateStyle: 'medium' })}</span>
+            </div>
+
+            <Link
+              to="/dashboard/subscription"
+              onClick={() => setIsOpen(false)}
+              className="block w-full text-center py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs transition-colors shadow-lg shadow-emerald-500/20"
+            >
+              {isTrial ? 'Upgrade Subscription' : 'Manage / Top Up Plan'}
+            </Link>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <button
+        type="button"
+        onClick={() => setIsOpen((prev) => !prev)}
+        className={`group relative grid h-12 w-12 place-items-center rounded-full shadow-2xl transition-all duration-300 active:scale-95 ${
+          isCritical
+            ? 'bg-red-600 text-white shadow-red-600/40 ring-4 ring-red-400/30'
+            : 'bg-emerald-900 text-emerald-300 hover:bg-emerald-800 shadow-emerald-950/40 border border-emerald-700/50'
+        }`}
+        title="Provider Subscription Expiry Countdown"
+      >
+        <Clock size={20} className="transition-transform group-hover:rotate-12" />
+        <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500 text-[9px] font-black font-mono text-slate-950 shadow-md border-2 border-white">
+          {daysRemaining}d
+        </span>
+      </button>
     </div>
   );
 }
