@@ -878,7 +878,7 @@ function FloatingExpiryWidget({
   if (user?.role !== 'PROVIDER' || !targetEndDate) return null;
 
   return (
-    <div className="fixed bottom-24 right-4 lg:bottom-8 lg:right-8 z-[90] pointer-events-auto">
+    <div className="fixed bottom-32 lg:bottom-8 right-4 lg:right-8 z-[90] pointer-events-auto">
       <AnimatePresence>
         {isOpen && (
           <motion.div

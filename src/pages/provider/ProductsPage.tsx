@@ -9,7 +9,9 @@ import { inventoryApi, providersApi, requestsApi } from '../../lib/api/providers
 import { getErrorMessage } from '../../lib/utils/error'
 import { getLocalDateString, formatLocalDate } from '../../lib/utils/date'
 import { exportToCSV } from '../../lib/utils/export'
-import FeatureGate from '../../components/shared/FeatureGate'
+import FeatureGate, { canAccessFeature } from '../../components/shared/FeatureGate'
+import { useAuth } from '../../lib/auth/AuthContext'
+import { useNavigate } from 'react-router-dom'
 
 import { useEffect } from 'react'
 import { keepPreviousData } from '@tanstack/react-query'
@@ -40,6 +42,8 @@ const PRESET_PRODUCT_PHOTOS = [
 ];
 
 export default function ProductsPage() {
+  const { user } = useAuth()
+  const navigate = useNavigate()
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   const [editingProduct, setEditingProduct] = useState<any>(null)
   const [search, setSearch] = useState('')
@@ -113,6 +117,16 @@ export default function ProductsPage() {
   }
 
   const handleShareStore = () => {
+    if (!canAccessFeature(user, 'store_page')) {
+      toast.error('Public Store / Shop Page is locked on your plan', {
+        description: 'Upgrade to Business Pro to activate your public store link and share it with clients.',
+        action: {
+          label: 'Upgrade Plan',
+          onClick: () => navigate('/dashboard/subscription')
+        }
+      });
+      return;
+    }
     if (!publicStoreUrl) return toast.error('Your store link is not ready yet');
     navigator.clipboard.writeText(publicStoreUrl).then(() => {
       toast.success('Public store link copied to clipboard!', { description: publicStoreUrl });
@@ -178,15 +192,25 @@ export default function ProductsPage() {
             )}
           </button>
           {publicStoreUrl && (
-            <a
-              href={publicStoreUrl}
-              target="_blank"
-              rel="noopener noreferrer"
+            <button
+              onClick={() => {
+                if (!canAccessFeature(user, 'store_page')) {
+                  toast.error('Public Store / Shop Page is locked on your plan', {
+                    description: 'Upgrade to Business Pro to activate your public store and preview it.',
+                    action: {
+                      label: 'Upgrade Plan',
+                      onClick: () => navigate('/dashboard/subscription')
+                    }
+                  });
+                  return;
+                }
+                window.open(publicStoreUrl, '_blank');
+              }}
               className="h-9 px-4 rounded-[.5rem] border border-gray-100 font-medium text-sm text-gray-600 hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"
               title="Preview your public store catalog"
             >
               <Eye size={15} /> Preview
-            </a>
+            </button>
           )}
           <button
             onClick={handleShareStore}

@@ -10,6 +10,9 @@ import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
 import { providersApi } from "../../../lib/api/providers";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../../lib/auth/AuthContext";
+import { canAccessFeature } from "../../../components/shared/FeatureGate";
 
 const PRESET_PHOTOS = [
   { name: "Luxury Suite", url: "https://images.unsplash.com/photo-1590490360182-c33d57733427?w=800" },
@@ -158,6 +161,8 @@ function CardImageSlider({
 }
 
 export default function PropertiesPage() {
+  const { user } = useAuth();
+  const navigate = useNavigate();
   const [properties, setProperties] = useState<Resource[]>([]);
   const [rooms, setRooms] = useState<Resource[]>([]);
   const [loading, setLoading] = useState(true);
@@ -170,6 +175,16 @@ export default function PropertiesPage() {
   const publicListingUrl = slug ? `${window.location.origin}/stay/${slug}` : null;
 
   const handleShareListing = () => {
+    if (!canAccessFeature(user, 'stay_page')) {
+      toast.error('Public Stay Booking Page is locked on your plan', {
+        description: 'Upgrade to Business Pro to activate your public booking page and share listing links.',
+        action: {
+          label: 'Upgrade Plan',
+          onClick: () => navigate('/dashboard/subscription')
+        }
+      });
+      return;
+    }
     if (isProfileLoading) {
       return toast.info('Loading your listing link...');
     }
@@ -447,15 +462,25 @@ export default function PropertiesPage() {
 
         <div className="flex items-center gap-3">
           {publicListingUrl && (
-            <a
-              href={publicListingUrl}
-              // target="_blank"
-              rel="noopener noreferrer"
+            <button
+              onClick={() => {
+                if (!canAccessFeature(user, 'stay_page')) {
+                  toast.error('Public Stay Booking Page is locked on your plan', {
+                    description: 'Upgrade to Business Pro to enable your public booking page.',
+                    action: {
+                      label: 'Upgrade Plan',
+                      onClick: () => navigate('/dashboard/subscription')
+                    }
+                  });
+                  return;
+                }
+                window.open(publicListingUrl, '_blank');
+              }}
               className="px-4 py-2.5 bg-slate-100 text-slate-700 font-bold text-xs rounded-[.5rem] hover:bg-slate-200 transition-all flex items-center gap-2"
               title="Preview your public listing"
             >
               <Eye size={14} /> Preview
-            </a>
+            </button>
           )}
           <button
             onClick={handleShareListing}

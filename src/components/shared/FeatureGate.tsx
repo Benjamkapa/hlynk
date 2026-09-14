@@ -39,6 +39,39 @@ export const FEATURE_PLANS: Record<Feature, string[]> = {
   kcb_settlement: ['MAX'],
 }
 
+export function canAccessFeature(user: any, feature: Feature): boolean {
+  if (!user) return false;
+  if (user?.role === 'SUPER_ADMIN') return true;
+  // Staff can access operational features but NOT premium-gated ones
+  // (they inherit the business's plan, so fall through to plan check)
+
+  const planRaw = user?.subscription?.planName || 'LITE';
+  const plan = planRaw.toUpperCase();
+
+  // Trial is only valid if status=2/TRIAL *and* trialEndDate has not passed
+  const statusNum = Number(user?.subscription?.status);
+  const statusStr = String(user?.subscription?.status || '');
+  const trialEndDate = user?.subscription?.trialEndDate;
+  const trialExpired = trialEndDate ? new Date(trialEndDate) < new Date() : true;
+  const isTrial = (statusNum === 2 || statusStr === 'TRIAL') && !trialExpired;
+
+  const featurePlans = FEATURE_PLANS[feature];
+  if (!featurePlans) return true;
+
+  const getPlanWeight = (p: string) => {
+    if (p.includes('MAX')) return 3;
+    if (p.includes('PLUS')) return 2;
+    return 1;
+  };
+
+  const userWeight = getPlanWeight(plan);
+  const requiredWeight = Math.min(...featurePlans.map(getPlanWeight));
+
+  // For MAX-only features (stay_page, store_page, etc), trial gets access;
+  // for PLUS+ features, both trial and PLUS+ plans get access
+  return isTrial || userWeight >= requiredWeight;
+}
+
 export default function FeatureGate({ feature, children, fallback, variant = 'card', badge, badgeColor }: FeatureGateProps) {
   const { user, isLoading } = useAuth()
   
@@ -50,27 +83,10 @@ export default function FeatureGate({ feature, children, fallback, variant = 'ca
 
   const getPlanName = (p: string) => p === 'MAX' ? 'Business Pro' : 'Starter';
 
-  const planRaw = user?.subscription?.planName || 'LITE'
-  const plan = planRaw.toUpperCase()
-  const isTrial = Number(user?.subscription?.status) === 2 || user?.subscription?.status === 'TRIAL'
   const featurePlans = FEATURE_PLANS[feature]
-
   if (!featurePlans) return <>{children}</>
 
-  // hlynk Hierarchy: MAX > PLUS > LITE
-  const getPlanWeight = (p: string) => {
-    if (p.includes('MAX')) return 3
-    if (p.includes('PLUS')) return 2
-    return 1
-  }
-
-  const userWeight = getPlanWeight(plan)
-  const requiredWeight = Math.min(...featurePlans.map(getPlanWeight))
-
-  let hasAccess = userWeight >= requiredWeight
-
-  // STAFF PRIVACY & UNLOCK: Staff see everything allowed to them WITHOUT plan limits
-  if (user?.role === 'STAFF') hasAccess = true
+  let hasAccess = canAccessFeature(user, feature)
 
   if (hasAccess) return <>{children}</>
 
