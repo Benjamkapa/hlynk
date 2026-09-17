@@ -156,12 +156,21 @@ export default function TopNav({ isMobileOpen, onMobileMenuToggle, isCollapsed, 
     <header className="w-full bg-transparent flex flex-col justify-center z-[100] px-4 sm:px-8 relative pt-[env(safe-area-inset-top,0px)]">
       <div className="w-full h-16 lg:h-24 flex items-center justify-between">
 
-        {/* LEFT: logo on mobile / collapse toggle on desktop */}
-        <div className="flex items-center gap-4">
-          <div className="lg:hidden flex items-center gap-3">
+        {/* LEFT: logo & mobile menu button on mobile / collapse toggle on desktop */}
+        <div className="flex items-center gap-2 sm:gap-4">
+          <div className="lg:hidden flex items-center gap-2.5">
+            {onMobileMenuToggle && (
+              <button
+                onClick={onMobileMenuToggle}
+                className="p-2 rounded-xl bg-white border border-slate-200/80 text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 transition-all shadow-sm active:scale-95"
+                title="Open Navigation Menu"
+              >
+                <SidebarSimple size={20} weight="bold" />
+              </button>
+            )}
             <img src="/fav.png" alt="hlynk" className="h-8 w-8 object-contain" />
             <div className="flex flex-col min-w-0">
-              <span className="text-normal font-nunito font-bold text-emerald-800 truncate max-w-[140px] leading-none tracking-tight">
+              <span className="text-normal font-nunito font-bold text-emerald-800 truncate max-w-[120px] sm:max-w-[160px] leading-none tracking-tight">
                 {user?.businessName}
               </span>
             </div>

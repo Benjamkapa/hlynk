@@ -56,7 +56,7 @@ export default function CustomersPage() {
           <h1 className="text-xl font-semibold text-gray-900">Customers</h1>
           <p className="text-gray-400 text-sm mt-0.5">Relationship management</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex justify-end gap-2">
           <button
             onClick={handleExport}
             className="h-9 px-4 rounded-[.5rem] text-sm font-medium text-gray-500 hover:text-gray-900 hover:bg-gray-50 transition-colors flex items-center gap-2"

@@ -82,15 +82,15 @@ export default function StaffManagementPage() {
     <FeatureGate feature="staff_accounts">
       <div className="space-y-8 animate-in fade-in duration-500 pt-6">
         
-        <div className="flex justify-between items-end">
+        <div className="flex flex-col sm:flex-row justify-between sm:items-end gap-4">
           <div>
-            <h1 className="text-3xl font-black text-gray-900 tracking-tight">Team Management</h1>
-            <p className="text-gray-500 font-medium">Manage team members, module-based permissions, and commissions</p>
+            <h1 className="text-2xl sm:text-3xl font-black text-gray-900 tracking-tight">Team Management</h1>
+            <p className="text-xs sm:text-sm text-gray-500 font-medium">Manage team members, module-based permissions, and commissions</p>
           </div>
-          <div className="flex gap-3">
+          <div className="flex justify-end gap-3 w-full sm:w-auto">
             <button 
               onClick={() => setIsAddModalOpen(true)} 
-              className="bg-[#0D4A3E] text-white h-12 px-6 rounded-[.5em] font-bold text-sm hover:bg-[#0A3D33] transition-all flex items-center gap-2"
+              className="sm:w-auto bg-[#0D4A3E] text-white h-12 px-6 rounded-[.5em] font-bold text-sm hover:bg-[#0A3D33] transition-all flex items-center justify-center gap-2 shadow-md active:scale-95"
             >
               <Plus size={18} /> Add Member
             </button>
@@ -133,12 +133,12 @@ export default function StaffManagementPage() {
             <table className="w-full text-left">
               <thead>
                 <tr className="bg-gray-50/50">
-                  <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest">Name</th>
-                  <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest">Contact</th>
-                  <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest">Role & Permissions</th>
-                  <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Total Sales</th>
-                  <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Owed Commission</th>
-                  <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Action</th>
+                  <th className="px-8 py-5 text-[10px] font-black text-gray-400 tracking-widest">Name</th>
+                  <th className="px-8 py-5 text-[10px] font-black text-gray-400 tracking-widest">Contact</th>
+                  <th className="px-8 py-5 text-[10px] font-black text-gray-400 tracking-widest">Role & Permissions</th>
+                  <th className="px-8 py-5 text-[10px] font-black text-gray-400 tracking-widest text-right">Total Sales</th>
+                  <th className="px-8 py-5 text-[10px] font-black text-gray-400 tracking-widest text-right">Owed Commission</th>
+                  <th className="px-8 py-5 text-[10px] font-black text-gray-400 tracking-widest text-right">Action</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50">

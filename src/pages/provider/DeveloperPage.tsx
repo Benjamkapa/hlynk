@@ -79,6 +79,7 @@ export default function DeveloperPage() {
             <h1 className="text-xl font-semibold text-gray-900">Payment gateway</h1>
             <p className="text-gray-400 text-sm mt-0.5">Configure direct-to-merchant settlements</p>
           </div>
+          <div className='flex justify-end'>
           <button
             onClick={handleSave}
             disabled={updateMutation.isPending}
@@ -87,6 +88,7 @@ export default function DeveloperPage() {
             {updateMutation.isPending ? <Loader2 className="animate-spin" size={15} /> : <Save size={15} />}
             Save integration
           </button>
+          </div>
         </div>
 
         {/* Tabs */}

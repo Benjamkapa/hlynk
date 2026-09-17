@@ -8,6 +8,7 @@ import { resourcesApi, Resource } from "../../../lib/api/universal";
 import { CameraCapture } from "../../../components/shared/CameraCapture";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
+import { Modal } from "../../../components/shared/Modal";
 import { useQuery } from "@tanstack/react-query";
 import { providersApi } from "../../../lib/api/providers";
 import { useNavigate } from "react-router-dom";
@@ -453,10 +454,10 @@ export default function PropertiesPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-[1.2rem] border border-slate-100 shadow-sm">
         <div>
           <h1 className="text-xl font-bold text-slate-900 flex items-center gap-2">
-            <Building className="text-emerald-700" size={22} /> Resources & Units Management
+            <Building className="text-emerald-700" size={22} /> Units, Vehicles & Assets Management
           </h1>
           <p className="text-xs text-slate-500 font-medium mt-0.5">
-            Create resource groups, upload photos, manage rates, and track availability statuses.
+            Manage accommodations, vehicles, car yard inventory, venues, or rental assets, set rates, upload photos, and track availability.
           </p>
         </div>
 
@@ -497,13 +498,13 @@ export default function PropertiesPage() {
             }}
             className="px-4 py-2.5 bg-slate-100 text-slate-800 font-bold text-xs rounded-[.5rem] hover:bg-slate-200 transition-all flex items-center gap-2"
           >
-            <Plus size={15} /> Add Group
+            <Plus size={15} /> Add Group / Yard
           </button>
           <button
             onClick={openAddUnitModal}
             className="px-4 py-2.5 bg-[#0D4A3E] text-white font-black text-xs uppercase tracking-wider rounded-[.5rem] hover:bg-[#08362D] transition-all flex items-center gap-2 shadow-lg"
           >
-            <Plus size={15} /> Add Unit / Property
+            <Plus size={15} /> Add Unit / Vehicle / Asset
           </button>
         </div>
       </div>
@@ -511,7 +512,7 @@ export default function PropertiesPage() {
       {/* Properties List Header */}
       {properties.length > 0 && (
         <div className="flex items-center gap-2 overflow-x-auto pb-2 custom-scrollbar">
-          <span className="text-xs font-bold text-slate-500 mr-2">Properties / Groups:</span>
+          <span className="text-xs font-bold text-slate-500 mr-2">Property Groups / Fleet / Yards:</span>
           {properties.map((p) => (
             <div key={p.id} className="bg-white border border-slate-200 px-3 py-1.5 rounded-lg text-xs font-bold text-slate-800 flex items-center gap-2 shadow-sm whitespace-nowrap">
               <Building size={14} className="text-emerald-600" />
@@ -527,7 +528,7 @@ export default function PropertiesPage() {
         </div>
       )}
 
-      {/* Rooms Grid */}
+      {/* Rooms/Units Grid */}
       {loading ? (
         <div className="h-64 flex items-center justify-center bg-white rounded-[1.2rem] border border-slate-100">
           <Loader2 className="animate-spin text-emerald-600" size={28} />
@@ -535,15 +536,15 @@ export default function PropertiesPage() {
       ) : rooms.length === 0 ? (
         <div className="text-center py-16 bg-white rounded-[1.2rem] border-2 border-dashed border-slate-200 p-8">
           <Building size={40} className="mx-auto text-slate-300 mb-3" />
-          <h3 className="text-base font-bold text-slate-800">No Units Added Yet</h3>
+          <h3 className="text-base font-bold text-slate-800">No Units or Vehicles Added Yet</h3>
           <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto font-medium">
-            Start by adding units or resources (e.g. Deluxe Room, Car: Toyota Axio, Executive Suite).
+            Start by adding units or assets (e.g. Deluxe Suite, Car: Toyota Axio KCG 123X, B&B Studio, Pickup Truck, Conference Hall).
           </p>
           <button
             onClick={openAddUnitModal}
             className="mt-4 px-5 py-2.5 bg-[#0D4A3E] text-white font-bold text-xs uppercase tracking-wider rounded-[.5rem] hover:bg-[#08362D] transition-all inline-flex items-center gap-2 shadow-md"
           >
-            <Plus size={16} /> Add Unit Now
+            <Plus size={16} /> Add Unit / Vehicle Now
           </button>
         </div>
       ) : (
@@ -589,14 +590,14 @@ export default function PropertiesPage() {
                 <div className="p-5 space-y-4 flex-1">
                   <div className="flex items-center justify-between">
                     <div>
-                      <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 block">Rate / Night</span>
+                      <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 block">Base Rate / Unit Rate</span>
                       <span className="text-xl font-black text-slate-900">
                         KES {Number(room.basePrice).toLocaleString()}
                       </span>
                     </div>
                     {room.code && (
                       <div className="text-right">
-                        <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 block">Code / Unit #</span>
+                        <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 block">Code / Reg # / Unit #</span>
                         <span className="text-xs font-bold text-slate-700 bg-slate-100 px-2 py-0.5 rounded-md">{room.code}</span>
                       </div>
                     )}
@@ -651,7 +652,7 @@ export default function PropertiesPage() {
                     onClick={() => openEditUnitModal(room)}
                     className="text-xs text-emerald-700 hover:text-emerald-900 font-bold flex items-center gap-1.5"
                   >
-                    <Edit2 size={13} /> Edit Unit
+                    <Edit2 size={13} /> Edit Unit / Asset
                   </button>
 
                   <button
@@ -667,98 +668,73 @@ export default function PropertiesPage() {
         </div>
       )}
 
-      {/* Property Group Modal */}
-      <AnimatePresence>
-        {showPropertyModal && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
-            <motion.div
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-white rounded-[1.2rem] w-full max-w-md p-6 relative shadow-2xl space-y-4"
-            >
-              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-                <h3 className="text-lg font-bold text-slate-900">Add Property Group</h3>
-                <button onClick={() => setShowPropertyModal(false)} className="text-slate-400 hover:text-slate-700">
-                  <X size={20} />
-                </button>
-              </div>
-
-              <form onSubmit={handleCreateProperty} className="space-y-4">
-                <div>
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Property Name *</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="e.g. Main Garage, Fleet Alpha, Block A"
-                    value={propName}
-                    onChange={(e) => setPropName(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-sm font-bold text-slate-800 outline-none focus:border-emerald-600"
-                  />
-                </div>
-
-                <div>
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Address / Location</label>
-                  <input
-                    type="text"
-                    placeholder="e.g. Kilimani, Nairobi"
-                    value={propAddress}
-                    onChange={(e) => setPropAddress(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-sm font-bold text-slate-800 outline-none focus:border-emerald-600"
-                  />
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={submitting}
-                  className="w-full h-12 bg-[#0D4A3E] text-white font-black text-xs uppercase tracking-wider rounded-lg hover:bg-[#08362D] transition-all flex items-center justify-center shadow-lg disabled:opacity-50"
-                >
-                  {submitting ? <Loader2 className="animate-spin" size={18} /> : 'Save Property Group'}
-                </button>
-              </form>
-            </motion.div>
+      {/* Property / Yard Group Modal */}
+      <Modal
+        isOpen={showPropertyModal}
+        onClose={() => setShowPropertyModal(false)}
+        title="Add Group / Yard / Fleet"
+        maxWidth="md"
+      >
+        <form onSubmit={handleCreateProperty} className="space-y-4">
+          <div>
+            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Group / Yard / Fleet Name *</label>
+            <input
+              type="text"
+              required
+              placeholder="e.g. Main Yard, Fleet Alpha, Block A, Showroom West"
+              value={propName}
+              onChange={(e) => setPropName(e.target.value)}
+              className="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-sm font-bold text-slate-800 outline-none focus:border-emerald-600"
+            />
           </div>
-        )}
-      </AnimatePresence>
 
-      {/* Unit / Room Modal (Add & Edit with File Upload & Camera Support) */}
-      <AnimatePresence>
-        {showRoomModal && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
-            <motion.div
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-white rounded-[1.2rem] w-full max-w-xl p-6 relative shadow-2xl space-y-5 max-h-[90vh] overflow-y-auto"
-            >
-              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-                <h3 className="text-lg font-bold text-slate-900">
-                  {editingResource ? `Edit Unit: ${editingResource.title}` : 'Add Unit / Property'}
-                </h3>
-                <button onClick={() => setShowRoomModal(false)} className="text-slate-400 hover:text-slate-700">
-                  <X size={20} />
-                </button>
-              </div>
+          <div>
+            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Address / Location</label>
+            <input
+              type="text"
+              placeholder="e.g. Kilimani, Nairobi / Along Ngong Road"
+              value={propAddress}
+              onChange={(e) => setPropAddress(e.target.value)}
+              className="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-sm font-bold text-slate-800 outline-none focus:border-emerald-600"
+            />
+          </div>
 
-              <form onSubmit={handleSaveRoom} className="space-y-4">
+          <button
+            type="submit"
+            disabled={submitting}
+            className="w-full h-12 bg-[#0D4A3E] text-white font-black text-xs uppercase tracking-wider rounded-lg hover:bg-[#08362D] transition-all flex items-center justify-center shadow-lg disabled:opacity-50"
+          >
+            {submitting ? <Loader2 className="animate-spin" size={18} /> : 'Save Group / Yard'}
+          </button>
+        </form>
+      </Modal>
+
+      {/* Unit / Vehicle Modal (Add & Edit with File Upload & Camera Support) */}
+      <Modal
+        isOpen={showRoomModal}
+        onClose={() => setShowRoomModal(false)}
+        title={editingResource ? `Edit Unit / Asset: ${editingResource.title}` : 'Add Unit, Vehicle or Asset'}
+        maxWidth="xl"
+      >
+        <form onSubmit={handleSaveRoom} className="space-y-4">
                 {/* Title & Code */}
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Unit Title / Name *</label>
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Unit / Vehicle Title or Model *</label>
                     <input
                       type="text"
                       required
-                      placeholder="e.g. Deluxe Room 101, Car: Axio, Studio A"
+                      placeholder="e.g. Toyota Axio KCG 123X, Deluxe Room 101, Executive Suite"
                       value={roomTitle}
                       onChange={(e) => setRoomTitle(e.target.value)}
                       className="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-sm font-bold text-slate-800 outline-none focus:border-emerald-600"
                     />
                   </div>
                   <div>
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Code / Unit Number</label>
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Code / Reg Number / VIN</label>
                     <input
                       type="text"
-                      placeholder="e.g. RM-101, KCG-123X"
+                      placeholder="e.g. KCG-123X, RM-101, VIN-9082"
                       value={roomCode}
                       onChange={(e) => setRoomCode(e.target.value)}
                       className="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-sm font-bold text-slate-800 outline-none focus:border-emerald-600"
@@ -769,19 +745,19 @@ export default function PropertiesPage() {
                 {/* Group & Type */}
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Property Group (Optional)</label>
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Group / Yard / Fleet (Optional)</label>
                     <select
                       value={roomParentId}
                       onChange={(e) => setRoomParentId(e.target.value)}
                       className="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-sm font-bold text-slate-800 outline-none focus:border-emerald-600"
                     >
-                      <option value="">No Group (Standalone Unit)</option>
+                      <option value="">No Group (Standalone Unit / Car)</option>
                       {properties.map(p => (
                         <option key={p.id} value={p.id}>{p.title}</option>
                       ))}
                     </select>
                     <p className="text-[11px] text-slate-400 font-medium mt-1">
-                      Choose "No Group" if adding a single room, car, B&B studio, or standalone villa.
+                      Choose "No Group" if adding a single room, car, vehicle, B&B studio, or standalone unit.
                     </p>
                   </div>
                   <div>
@@ -792,11 +768,12 @@ export default function PropertiesPage() {
                       className="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-sm font-bold text-slate-800 outline-none focus:border-emerald-600"
                     >
                       <option value="Standard">Standard</option>
+                      <option value="Vehicle">Vehicle / Car Hire</option>
+                      <option value="Executive">Executive / Luxury</option>
+                      <option value="Suite">Suite / Studio</option>
+                      <option value="Commercial">Commercial / Truck / Equipment</option>
                       <option value="Premium">Premium</option>
-                      <option value="Executive">Executive</option>
-                      <option value="Suite">Suite</option>
-                      <option value="Vehicle">Vehicle / Rental</option>
-                      <option value="Budget">Budget</option>
+                      <option value="Budget">Budget / Economy</option>
                     </select>
                   </div>
                 </div>
@@ -804,7 +781,7 @@ export default function PropertiesPage() {
                 {/* Base Rate & Amenities */}
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Base Rate (KES) *</label>
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Base Rate per Day / Night / Hire (KES) *</label>
                     <input
                       type="number"
                       required
@@ -817,10 +794,10 @@ export default function PropertiesPage() {
                     />
                   </div>
                   <div>
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Amenities (Comma separated)</label>
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Amenities & Specs (Comma separated)</label>
                     <input
                       type="text"
-                      placeholder="WiFi, AC, Ocean View, Automatic"
+                      placeholder="Automatic, WiFi, AC, Leather Seats, Petrol"
                       value={roomAmenities}
                       onChange={(e) => setRoomAmenities(e.target.value)}
                       className="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-sm font-bold text-slate-800 outline-none focus:border-emerald-600"
@@ -830,10 +807,10 @@ export default function PropertiesPage() {
 
                 {/* Description */}
                 <div>
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Unit Description (Optional)</label>
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Unit / Vehicle Description (Optional)</label>
                   <textarea
                     rows={2}
-                    placeholder="Describe the unit layout, features, and condition..."
+                    placeholder="Describe engine specs, mileage, condition, layout, or features..."
                     value={roomDescription}
                     onChange={(e) => setRoomDescription(e.target.value)}
                     className="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-xs font-medium text-slate-800 outline-none focus:border-emerald-600"
@@ -845,7 +822,7 @@ export default function PropertiesPage() {
                   <div className="flex items-center justify-between">
                     <div>
                       <label className="text-[10px] font-black text-slate-900 uppercase tracking-widest block">
-                        Unit Photos & Gallery
+                        Unit & Vehicle Photos / Gallery
                       </label>
                       <p className="text-[11px] text-slate-500 font-medium">
                         Upload images from your device or capture using your camera.
@@ -983,13 +960,10 @@ export default function PropertiesPage() {
                   disabled={submitting}
                   className="w-full h-12 bg-[#0D4A3E] text-white font-black text-xs uppercase tracking-wider rounded-lg hover:bg-[#08362D] transition-all flex items-center justify-center shadow-lg disabled:opacity-50"
                 >
-                  {submitting ? <Loader2 className="animate-spin" size={18} /> : (editingResource ? 'Save Changes' : 'Create Unit')}
+                  {submitting ? <Loader2 className="animate-spin" size={18} /> : (editingResource ? 'Save Changes' : 'Create Unit / Asset')}
                 </button>
-              </form>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
+        </form>
+      </Modal>
 
       {/* Camera Capture Modal */}
       {isCameraOpen && (

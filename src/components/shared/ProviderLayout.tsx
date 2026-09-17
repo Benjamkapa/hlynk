@@ -110,7 +110,7 @@ export default function ProviderLayout() {
       items: [
         { to: '/dashboard/hospitality', label: 'Overview', icon: CalendarCheck, end: true, permission: 'hospitality', module: 'HOSPITALITY' },
         { to: '/dashboard/hospitality/bookings', label: 'Bookings & Reservations', icon: CalendarCheck, permission: 'hospitality', module: 'HOSPITALITY' },
-        { to: '/dashboard/hospitality/properties', label: 'Units, Slots & Rates', icon: Building, permission: 'properties', module: 'HOSPITALITY' },
+        { to: '/dashboard/hospitality/properties', label: 'Units, Assets & Rates', icon: Building, permission: 'properties', module: 'HOSPITALITY' },
         { to: '/dashboard/hospitality/operations', label: 'Tasks & Maintenance', icon: Sparkles, permission: 'operations', module: 'HOSPITALITY' },
       ],
     },
@@ -414,7 +414,21 @@ export default function ProviderLayout() {
             {sidebarContent}
           </motion.div>
         </motion.aside>
-      ) : null}
+      ) : (
+        <AnimatePresence>
+          {mobileOpen && (
+            <motion.aside
+              initial={{ x: "-100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "-100%" }}
+              transition={{ type: "spring", damping: 25, stiffness: 220 }}
+              className="fixed inset-y-0 left-0 z-[70] w-[280px] bg-white border-r border-slate-100 shadow-2xl overflow-hidden flex flex-col"
+            >
+              {sidebarContent}
+            </motion.aside>
+          )}
+        </AnimatePresence>
+      )}
 
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {isCritical && user?.role === 'PROVIDER' && (
@@ -464,6 +478,8 @@ export default function ProviderLayout() {
         <MobileBottomNav
           user={user}
           targetEndDate={targetEndDate}
+          filteredGroups={filteredGroups}
+          onOpenMobileMenu={() => setMobileOpen(true)}
         />
       )}
 
@@ -480,9 +496,11 @@ export default function ProviderLayout() {
 }
 
 // ─── Mobile Bottom Nav (floating, 5 Tabs Max) ──────────────────────────────────
-function MobileBottomNav({ user, targetEndDate }: {
+function MobileBottomNav({ user, targetEndDate, filteredGroups = [], onOpenMobileMenu }: {
   user: any;
   targetEndDate: string | undefined;
+  filteredGroups?: NavGroup[];
+  onOpenMobileMenu?: () => void;
 }) {
   const [showMoreSheet, setShowMoreSheet] = useState(false);
   const [showProfileSheet, setShowProfileSheet] = useState(false);
@@ -528,17 +546,32 @@ function MobileBottomNav({ user, targetEndDate }: {
     return { to: '/dashboard/sales/new', label: 'Sell', icon: Zap, end: false };
   }, [hasPos, hasHosp]);
 
-  // Overflow items shown in the "More" sheet
+  // Overflow items shown in the "More" sheet - computed dynamically from accessible navigation groups
   const overflowItems = useMemo(() => {
+    const mainPaths = [homeItem.to, primaryLeftItem.to, centerCtaItem.to];
+    const items: NavItem[] = [];
+
+    filteredGroups.forEach(group => {
+      group.items.forEach(item => {
+        if (!mainPaths.includes(item.to) && !items.some(x => x.to === item.to)) {
+          items.push(item);
+        }
+      });
+    });
+
+    if (items.length > 0) return items;
+
+    // Fallback default list if filteredGroups is empty
     return [
       { to: '/dashboard/sales',        label: 'Sales History',     icon: Clock },
       { to: '/dashboard/expenses',     label: 'Expenses & Costs',  icon: ShoppingCart },
-      { to: '/dashboard/customers',    label: 'Customers & Guests', icon: Users },
+      { to: '/dashboard/staff',        label: 'Manage Staff',      icon: Users },
+      { to: '/dashboard/customers',    label: 'Customers & CRM',   icon: Users },
       { to: '/dashboard/reports',      label: 'Growth & Reports',  icon: BarChart2 },
       { to: '/dashboard/developer',    label: 'Payment Gateway',   icon: CreditCard },
       { to: '/dashboard/subscription', label: 'My Subscription',   icon: Calendar },
     ];
-  }, []);
+  }, [filteredGroups, homeItem.to, primaryLeftItem.to, centerCtaItem.to]);
 
   const isOverflowActive = overflowItems.some(item =>
     location.pathname === item.to || location.pathname.startsWith(item.to + '/')
@@ -568,7 +601,7 @@ function MobileBottomNav({ user, targetEndDate }: {
   );
 
   return (
-    <div className="fixed inset-x-0 bottom-[env(safe-area-inset-bottom,0px)] z-[95] lg:hidden flex flex-col items-center pointer-events-none">
+    <div className="fixed inset-x-0 bottom-0 z-[95] lg:hidden flex flex-col items-center pointer-events-none pb-[max(0.25rem,env(safe-area-inset-bottom,0.25rem))]">
       {/* "More" & "Profile" Bottom Sheet Backdrop */}
       <AnimatePresence>
         {(showMoreSheet || showProfileSheet) && (
@@ -593,11 +626,11 @@ function MobileBottomNav({ user, targetEndDate }: {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 16, scale: 0.97 }}
             transition={{ duration: 0.22, ease: [0.32, 0.72, 0, 1] }}
-            className="fixed inset-x-3 z-[94] bottom-[calc(5.5rem+0.25rem+env(safe-area-inset-bottom,0px))] pointer-events-auto"
+            className="fixed inset-x-3 z-[94] bottom-[calc(4.75rem+env(safe-area-inset-bottom,0px))] pointer-events-auto max-h-[75vh] flex flex-col"
           >
-            <div className="glass-sheet rounded-[.75rem] overflow-hidden border border-white/40">
-              <div className="flex items-center justify-between px-5 pt-4 pb-3 border-b border-slate-50">
-                <p className="text-xs font-semibold text-slate-400">More options</p>
+            <div className="glass-sheet rounded-[.75rem] overflow-hidden border border-white/40 flex flex-col max-h-full">
+              <div className="flex items-center justify-between px-5 pt-4 pb-3 border-b border-slate-50 flex-shrink-0">
+                <p className="text-xs font-semibold text-slate-400">All Features & Options</p>
                 <button
                   onClick={() => setShowMoreSheet(false)}
                   className="glass-btn w-6 h-6 rounded-full flex items-center justify-center text-slate-400 transition-all"
@@ -605,25 +638,37 @@ function MobileBottomNav({ user, targetEndDate }: {
                   <X size={12} />
                 </button>
               </div>
-              <div className="p-3 grid grid-cols-2 gap-2">
+              <div className="p-3 grid grid-cols-3 gap-2 overflow-y-auto max-h-[50vh] custom-scrollbar">
                 {overflowItems.map((item) => (
                   <NavLink
                     key={item.label}
                     to={item.to}
                     className={({ isActive }) =>
-                      `flex items-center gap-3 px-4 py-3.5 rounded-md transition-all no-tap-highlight ${
+                      `flex items-center gap-3 px-3.5 py-3 rounded-md transition-all no-tap-highlight ${
                         isActive
-                          ? 'bg-emerald-50 text-emerald-700'
+                          ? 'bg-emerald-50 text-emerald-700 font-bold'
                           : 'bg-slate-50 text-slate-600 hover:bg-emerald-50 hover:text-emerald-700'
                       }`
                     }
                   >
                     <item.icon className="w-[18px] h-[18px] flex-shrink-0" strokeWidth={2} />
-                    <span className="text-[11px] font-bold leading-tight">{item.label}</span>
+                    <span className="text-[11px] leading-tight truncate">{item.label}</span>
                   </NavLink>
                 ))}
               </div>
-              <div className="h-2" />
+              {onOpenMobileMenu && (
+                <div className="p-3 border-t border-slate-100 bg-slate-50/50 flex-shrink-0">
+                  <button
+                    onClick={() => {
+                      setShowMoreSheet(false);
+                      onOpenMobileMenu();
+                    }}
+                    className="w-full py-2.5 px-4 bg-emerald-900 text-white rounded-lg text-xs font-bold flex items-center justify-center gap-2 hover:bg-emerald-800 transition-all shadow-md"
+                  >
+                    <LayoutDashboard size={16} /> Open Full Navigation Menu
+                  </button>
+                </div>
+              )}
             </div>
           </motion.div>
         )}
@@ -638,7 +683,7 @@ function MobileBottomNav({ user, targetEndDate }: {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 16, scale: 0.97 }}
             transition={{ duration: 0.22, ease: [0.32, 0.72, 0, 1] }}
-            className="fixed inset-x-3 z-[94] bottom-[calc(5.5rem+0.25rem+env(safe-area-inset-bottom,0px))] pointer-events-auto"
+            className="fixed inset-x-3 z-[94] bottom-[calc(4.75rem+env(safe-area-inset-bottom,0px))] pointer-events-auto"
           >
             <div className="glass-sheet rounded-[1rem] overflow-hidden border border-white/40 p-3 shadow-2xl">
               <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100/60">

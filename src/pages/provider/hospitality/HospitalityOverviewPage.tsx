@@ -62,7 +62,7 @@ export default function HospitalityOverviewPage() {
           </div>
           <h1 className="text-2xl lg:text-3xl font-black tracking-tight">Overview</h1>
           <p className="text-emerald-100/80 text-xs font-medium mt-1">
-            Real-time tracking of units, bookings, service tasks, and revenue.
+            Real-time tracking of units, vehicles, bookings, service tasks, and revenue.
           </p>
         </div>
 
@@ -78,14 +78,14 @@ export default function HospitalityOverviewPage() {
             to="/dashboard/hospitality/bookings"
             className="px-5 py-3 bg-emerald-400 text-slate-950 font-black text-xs uppercase tracking-wider rounded-[.5rem] hover:bg-emerald-300 transition-all flex items-center gap-2 shadow-lg active:scale-95"
           >
-            <Plus size={16} /> New Booking
+            <Plus size={16} /> New Booking / Hire
           </Link>
         </div>
       </div>
 
       {/* KPI Cards Grid */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Occupancy Rate */}
+        {/* Occupancy / Utilization Rate */}
         <div className="bg-white p-5 rounded-[1.2rem] border border-slate-100 shadow-sm flex flex-col justify-between">
           <div className="flex items-center justify-between">
             <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">Utilization Rate</span>
@@ -96,7 +96,7 @@ export default function HospitalityOverviewPage() {
           <div className="mt-4">
             <div className="text-2xl lg:text-3xl font-black text-slate-900 leading-none">{utilizationRate}%</div>
             <p className="text-xs text-slate-500 font-medium mt-1">
-              {occupiedUnits} of {totalUnits} units active
+              {occupiedUnits} of {totalUnits} units/vehicles active
             </p>
           </div>
         </div>
@@ -150,7 +150,7 @@ export default function HospitalityOverviewPage() {
               {pendingOperations.length}
             </div>
             <p className="text-xs text-slate-500 font-medium mt-1">
-              {inProgressUnits} units needing attention
+              {inProgressUnits} units/vehicles needing attention
             </p>
           </div>
         </div>
@@ -167,14 +167,14 @@ export default function HospitalityOverviewPage() {
               <Building size={24} />
             </div>
             <h3 className="text-base font-bold text-slate-900 group-hover:text-emerald-700 transition-colors">
-              Units & Resources
+              Units, Vehicles & Assets
             </h3>
             <p className="text-xs text-slate-500 font-medium mt-1 leading-relaxed">
-              Manage your units, slots, pricing, features, and availability statuses.
+              Manage your units, vehicles, slots, pricing, features, and availability statuses.
             </p>
           </div>
           <div className="flex items-center gap-2 text-xs font-bold text-emerald-700 mt-6 group-hover:translate-x-1 transition-transform">
-            View All Units <ArrowUpRight size={14} />
+            View All Units & Vehicles <ArrowUpRight size={14} />
           </div>
         </Link>
 
@@ -190,11 +190,11 @@ export default function HospitalityOverviewPage() {
               Bookings & Reservations
             </h3>
             <p className="text-xs text-slate-500 font-medium mt-1 leading-relaxed">
-              Record reservations, start/end dates, channels (WhatsApp, Direct, Platform), and deposits.
+              Record reservations, vehicle hires, rental periods, channels (WhatsApp, Direct, Showroom), and deposits.
             </p>
           </div>
           <div className="flex items-center gap-2 text-xs font-bold text-blue-700 mt-6 group-hover:translate-x-1 transition-transform">
-            Manage Bookings <ArrowUpRight size={14} />
+            Manage Bookings & Hires <ArrowUpRight size={14} />
           </div>
         </Link>
 
@@ -210,7 +210,7 @@ export default function HospitalityOverviewPage() {
               Tasks & Maintenance
             </h3>
             <p className="text-xs text-slate-500 font-medium mt-1 leading-relaxed">
-              Track pending tasks and maintenance issues. Completed repairs auto-sync to Core Expenses.
+              Track housekeeping, detailing, car servicing, and maintenance. Completed repairs auto-sync to Core Expenses.
             </p>
           </div>
           <div className="flex items-center gap-2 text-xs font-bold text-purple-700 mt-6 group-hover:translate-x-1 transition-transform">
@@ -219,14 +219,14 @@ export default function HospitalityOverviewPage() {
         </Link>
       </div>
 
-      {/* Room Status Overview & Recent Activity */}
+      {/* Room/Vehicle Status Overview & Recent Activity */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Live Room Status Grid */}
+        {/* Live Status Grid */}
         <div className="bg-white p-6 rounded-[1.2rem] border border-slate-100 shadow-sm space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-base font-bold text-slate-900">Unit Status Overview</h3>
+            <h3 className="text-base font-bold text-slate-900">Unit & Vehicle Status Overview</h3>
             <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 bg-slate-100 px-2.5 py-1 rounded-full">
-              {totalUnits} Total Units
+              {totalUnits} Total Items
             </span>
           </div>
 
@@ -237,12 +237,12 @@ export default function HospitalityOverviewPage() {
           ) : resources.length === 0 ? (
             <div className="text-center py-12 border-2 border-dashed border-slate-100 rounded-xl">
               <Building size={32} className="mx-auto text-slate-300 mb-2" />
-              <p className="text-xs font-medium text-slate-500">No units added yet.</p>
+              <p className="text-xs font-medium text-slate-500">No units or vehicles added yet.</p>
               <Link
                 to="/dashboard/hospitality/properties"
                 className="mt-3 inline-flex items-center gap-1.5 text-xs font-bold text-emerald-700 hover:underline"
               >
-                <Plus size={14} /> Add your first unit
+                <Plus size={14} /> Add your first unit or vehicle
               </Link>
             </div>
           ) : (
@@ -302,7 +302,7 @@ export default function HospitalityOverviewPage() {
         {/* Active Bookings List */}
         <div className="bg-white p-6 rounded-[1.2rem] border border-slate-100 shadow-sm space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-base font-bold text-slate-900">Current & Upcoming</h3>
+            <h3 className="text-base font-bold text-slate-900">Current & Upcoming Bookings/Hires</h3>
             <Link to="/dashboard/hospitality/bookings" className="text-xs font-bold text-emerald-700 hover:underline">
               View All
             </Link>
@@ -315,12 +315,12 @@ export default function HospitalityOverviewPage() {
           ) : activeBookings.length === 0 ? (
             <div className="text-center py-12 border-2 border-dashed border-slate-100 rounded-xl">
               <Users size={32} className="mx-auto text-slate-300 mb-2" />
-              <p className="text-xs font-medium text-slate-500">No active bookings right now.</p>
+              <p className="text-xs font-medium text-slate-500">No active bookings or hires right now.</p>
               <Link
                 to="/dashboard/hospitality/bookings"
                 className="mt-3 inline-flex items-center gap-1.5 text-xs font-bold text-emerald-700 hover:underline"
               >
-                <Plus size={14} /> Create a booking
+                <Plus size={14} /> Create a booking / hire
               </Link>
             </div>
           ) : (
