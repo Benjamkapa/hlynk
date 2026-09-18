@@ -9,6 +9,7 @@ import { SlideOver } from '../../components/shared/SlideOver'
 import { PaginatedResponse } from '../../lib/types/api'
 import TablePagination from '../../components/shared/TablePagination'
 import ThermalReceipt, { thermalReceiptStyles } from '../../components/shared/ThermalReceipt'
+import { useLocation } from 'react-router-dom'
 
 const getStatusLabel = (status: any) => {
   const s = Number(status);
@@ -42,6 +43,7 @@ export default function SalesHistoryPage() {
   const [voidConfirm, setVoidConfirm] = useState(false)
   const [voidReason, setVoidReason] = useState('')
   const queryClient = useQueryClient()
+  const location = useLocation()
 
   // First fetch: NO date filter — so channel tabs show ALL channels ever, not just today's
   const { data: allData } = useQuery<PaginatedResponse<any> & { stats: any }>({
@@ -89,6 +91,20 @@ export default function SalesHistoryPage() {
       if (fresh) setSelectedSale(fresh)
     }
   }, [salesData])
+
+  // Auto-open sale from notification deep-link (location.state.highlightId)
+  useEffect(() => {
+    const highlightId = (location.state as any)?.highlightId;
+    if (!highlightId || !salesData?.items) return;
+    const found = salesData.items.find((s: any) => s.id === highlightId);
+    if (found) {
+      setSelectedSale(found);
+    } else {
+      // Try fetching without date filter by clearing date
+      setSelectedDate('');
+      setSearch(highlightId.slice(-8));
+    }
+  }, [salesData, location.state])
 
   useEffect(() => {
     if (error) toast.error(getErrorMessage(error))

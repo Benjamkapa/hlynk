@@ -235,12 +235,12 @@ export default function PropertiesPage() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [propsData, unitsData] = await Promise.all([
+      const [propsData, allResources] = await Promise.all([
         resourcesApi.getResources({ type: 'PROPERTY' }),
         resourcesApi.getResources({})
       ]);
       setProperties(propsData);
-      setRooms(unitsData);
+      setRooms(allResources.filter((r: Resource) => r.type !== 'PROPERTY'));
     } catch (err: any) {
       toast.error("Failed to load properties and rooms", { description: err.message });
     } finally {
@@ -252,8 +252,50 @@ export default function PropertiesPage() {
     fetchData();
   }, []);
 
+  // Save form draft locally so user never loses typed data on refresh or clickaway
+  useEffect(() => {
+    if (showRoomModal && !editingResource) {
+      const draft = {
+        roomTitle, roomCode, roomType, roomParentId, roomPrice, roomAmenities, roomDescription, roomPhotos
+      };
+      localStorage.setItem('hlynk_unit_draft', JSON.stringify(draft));
+    }
+  }, [showRoomModal, editingResource, roomTitle, roomCode, roomType, roomParentId, roomPrice, roomAmenities, roomDescription, roomPhotos]);
+
   const openAddUnitModal = () => {
     setEditingResource(null);
+    const savedDraftStr = localStorage.getItem('hlynk_unit_draft');
+    if (savedDraftStr) {
+      try {
+        const draft = JSON.parse(savedDraftStr);
+        setRoomTitle(draft.roomTitle || "");
+        setRoomCode(draft.roomCode || "");
+        setRoomType(draft.roomType || "Standard");
+        setRoomParentId(draft.roomParentId || "");
+        setRoomPrice(draft.roomPrice || "");
+        setRoomAmenities(draft.roomAmenities || "WiFi, TV, Hot Shower");
+        setRoomDescription(draft.roomDescription || "");
+        setRoomPhotos(Array.isArray(draft.roomPhotos) ? draft.roomPhotos : []);
+        setShowRoomModal(true);
+        if (draft.roomTitle || draft.roomPrice) {
+          toast.info("Restored your unsaved draft!", {
+            action: {
+              label: "Clear Draft",
+              onClick: () => clearDraftForm()
+            }
+          });
+        }
+        return;
+      } catch (e) {
+        // ignore
+      }
+    }
+    clearDraftForm();
+    setShowRoomModal(true);
+  };
+
+  const clearDraftForm = () => {
+    localStorage.removeItem('hlynk_unit_draft');
     setRoomTitle("");
     setRoomCode("");
     setRoomType("Standard");
@@ -263,7 +305,6 @@ export default function PropertiesPage() {
     setRoomDescription("");
     setRoomPhotos([]);
     setCustomUrlInput("");
-    setShowRoomModal(true);
   };
 
   const openEditUnitModal = (unit: Resource) => {
@@ -411,6 +452,7 @@ export default function PropertiesPage() {
         toast.success("Unit created successfully!");
       }
 
+      localStorage.removeItem('hlynk_unit_draft');
       setShowRoomModal(false);
       fetchData();
     } catch (err: any) {
@@ -713,6 +755,7 @@ export default function PropertiesPage() {
       <Modal
         isOpen={showRoomModal}
         onClose={() => setShowRoomModal(false)}
+        closeOnOverlayClick={false}
         title={editingResource ? `Edit Unit / Asset: ${editingResource.title}` : 'Add Unit, Vehicle or Asset'}
         maxWidth="xl"
       >

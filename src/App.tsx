@@ -90,36 +90,16 @@ function AdminRoute({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
-  const { isLocked, user, isLoading } = useAuth()
-  const [showPinSetup, setShowPinSetup] = useState(false)
-
-  // After first successful login, prompt user to set an offline PIN (once)
-  useEffect(() => {
-    if (user && !isLoading && !hasOfflinePin() && !hasPinBeenPrompted()) {
-      // Small delay so the dashboard loads first
-      const t = setTimeout(() => {
-        setShowPinSetup(true)
-        markPinPrompted() // Mark as prompted immediately so it won't pop up again on next login
-      }, 2000)
-      return () => clearTimeout(t)
-    }
-  }, [user, isLoading])
+  const { isLocked } = useAuth()
 
   return (
     <Suspense fallback={<LoadingScreen />}>
       <ReloadPrompt />
       <OfflineBanner />
 
-      {/* Offline lock screen — shown when user logs out while offline */}
+      {/* Offline lock screen — shown when session is locked */}
       <AnimatePresence>
         {isLocked && <OfflineLockScreen />}
-      </AnimatePresence>
-
-      {/* PIN setup modal — shown once after login if no PIN is set */}
-      <AnimatePresence>
-        {showPinSetup && !isLocked && (
-          <PinSetupModal onDone={() => setShowPinSetup(false)} />
-        )}
       </AnimatePresence>
       <Routes>
         {/* Public */}

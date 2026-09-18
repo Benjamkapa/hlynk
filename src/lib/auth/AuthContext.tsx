@@ -43,7 +43,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const fetchUser = async () => {
       // If we are offline, don't even try to reach the server, just keep using cached profile
-      if (!navigator.onLine && user) {
+      if (!navigator.onLine) {
         setIsLoading(false)
         return
       }
@@ -53,17 +53,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (res.success && res.data) {
           setUser(res.data)
           storage.setItem('user_profile', JSON.stringify(res.data))
-        } else {
-          throw new Error('Invalid session')
         }
       } catch (err: any) {
-        // Only clear tokens if the error is actually an auth error
-        if (err.response?.status === 401 || err.response?.status === 403) {
+        // Only clear token if server explicitly returned 401 with unauthorized message AND user is online
+        const isAuthError = err.response?.status === 401 && err.response?.data?.message?.toLowerCase().includes('unauthorized')
+        const cachedUser = storage.getItem('user_profile')
+
+        if (isAuthError && !cachedUser) {
           storage.removeItem('accessToken')
           storage.removeItem('user_profile')
           setUser(null)
         } else {
-          console.log('[Auth] Network error or server unreachable. Preserving offline session.')
+          console.log('[Auth] Network error or server unreachable. Preserving session.')
         }
       } finally {
         setIsLoading(false)
@@ -75,7 +76,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       const intervalId = setInterval(() => {
         if (navigator.onLine) fetchUser()
-      }, 30000)
+      }, 60000)
 
       return () => clearInterval(intervalId)
     }

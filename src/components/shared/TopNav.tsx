@@ -1,305 +1,101 @@
-import { useState, useRef, useEffect } from 'react'
-import {
-  Bell, User, SignOut, ArrowClockwise, Lock, Check, SidebarSimple, DotsThreeOutline
-} from '@phosphor-icons/react'
-import { useAuth } from '../../lib/auth/AuthContext'
+import React from 'react';
+import { useLocation } from 'react-router-dom';
+import { PanelLeftClose, PanelLeft } from 'lucide-react';
+import NotificationBell from './NotificationBell';
 
-import { Link, useNavigate } from 'react-router-dom'
-import { toast } from 'sonner'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { platformApi } from '../../lib/api/platform'
-import { PanelLeftClose, PanelLeftOpen } from 'lucide-react'
-import { hasOfflinePin } from '../../lib/offline/offlinePin'
-import { subscribeToPushNotifications } from '../../lib/notifications/pushService'
-
-interface TopNavProps {
-  isMobileOpen?: boolean
-  onMobileMenuToggle?: () => void
-  isCollapsed?: boolean
-  onToggleCollapse?: () => void
-  showMail?: boolean
-  extraActions?: React.ReactNode
+export interface TopNavProps {
+  isMobileOpen?: boolean;
+  onMobileMenuToggle?: () => void;
+  isCollapsed?: boolean;
+  onToggleCollapse?: () => void;
+  title?: string;
+  extraActions?: React.ReactNode;
 }
 
-export default function TopNav({ isMobileOpen, onMobileMenuToggle, isCollapsed, onToggleCollapse, extraActions }: TopNavProps) {
-  const { user, logout, lock, refreshUser } = useAuth()
-  const [isRefreshing, setIsRefreshing] = useState(false)
-  const navigate = useNavigate()
-  const queryClient = useQueryClient()
-  const [showUserMenu, setShowUserMenu] = useState(false)
-  const [showNotifications, setShowNotifications] = useState(false)
-  const userMenuRef = useRef<HTMLDivElement>(null)
-  const notificationRef = useRef<HTMLDivElement>(null)
-  const [notificationPermission, setNotificationPermission] = useState('Notification' in window ? Notification.permission : 'denied')
+const routeTitles: Record<string, string> = {
+  '/dashboard': 'Overview',
+  '/dashboard/sales/new': 'Record Sale',
+  '/dashboard/sales': 'Sales History',
+  '/dashboard/products': 'Products',
+  '/dashboard/expenses': 'Expenses',
+  '/dashboard/customers': 'Customers',
+  '/dashboard/reports': 'Reports',
+  '/dashboard/subscription': 'Subscription',
+  '/dashboard/staff': 'Staff',
+  '/dashboard/developer': 'M-Pesa & API',
+  '/dashboard/logs': 'Audit Logs',
+  '/dashboard/hospitality': 'Rentals',
+  '/dashboard/hospitality/properties': 'Units & Assets',
+  '/dashboard/hospitality/bookings': 'Bookings',
+  '/dashboard/hospitality/operations': 'Operations',
+  '/dashboard/settings': 'Settings',
+  '/dashboard/help': 'Help',
+  '/admin': 'Admin Portal',
+  '/admin/system-performance': 'Performance',
+  '/admin/financials': 'Financials',
+  '/admin/businesses': 'Providers',
+  '/admin/user-operations': 'User Ops',
+  '/admin/subscriptions': 'Subscriptions',
+  '/admin/payments': 'Payments',
+  '/admin/forensic-audit': 'Audit',
+  '/admin/community-reviews': 'Reviews',
+  '/admin/reports': 'Reports',
+  '/admin/notifications': 'Notifications',
+  '/admin/settings': 'Settings',
+  '/admin/help': 'Help',
+};
 
-  // Use a ref so we can track seen IDs without triggering re-renders or dep-array loops
-  const toastedIds = useRef<Set<string>>(new Set())
-  const isInitialized = useRef(false)
+export default function TopNav({
+  isMobileOpen = false,
+  onMobileMenuToggle,
+  isCollapsed = true,
+  onToggleCollapse,
+  title,
+  extraActions,
+}: TopNavProps) {
+  const location = useLocation();
 
-  const handleEnablePush = async () => {
-    try {
-      await subscribeToPushNotifications()
-      if ('Notification' in window) setNotificationPermission(Notification.permission)
-      toast.success('Push notifications enabled!')
-    } catch (err: any) {
-      toast.error(err.message || 'Failed to enable push notifications')
-    }
-  }
-
-  useEffect(() => {
-    // Automatically request push permission after a short delay
-    if ('Notification' in window && Notification.permission === 'default') {
-      setTimeout(() => {
-        subscribeToPushNotifications()
-          .then(() => setNotificationPermission(Notification.permission))
-          .catch(console.warn)
-      }, 3000)
-    }
-  }, [])
-
-  const { data: notifyRes, isLoading: notifyLoading } = useQuery({
-    queryKey: ['notifications'],
-    queryFn: () => platformApi.getNotifications(),
-    enabled: !!user,
-    refetchInterval: 6000,
-    refetchOnWindowFocus: true
-  })
-
-  // Listen for real-time messages from Service Worker (Push Notifications)
-  useEffect(() => {
-    if (!('serviceWorker' in navigator)) return
-
-    const handleMessage = (event: MessageEvent) => {
-      if (event.data?.type === 'PUSH_NOTIFICATION') {
-        const { title, body, type } = event.data.payload
-        if (type === 'success') toast.success(title, { description: body })
-        else if (type === 'warning' || type === 'error') toast.error(title, { description: body })
-        else toast(title, { description: body })
-        queryClient.invalidateQueries({ queryKey: ['notifications'] })
-      }
-    }
-
-    navigator.serviceWorker.addEventListener('message', handleMessage)
-    return () => navigator.serviceWorker.removeEventListener('message', handleMessage)
-  }, [queryClient])
-
-  // Monitor polled notifications and toast any unread ones we haven't seen yet.
-  useEffect(() => {
-    if (!notifyRes?.data) return
-
-    const unread: any[] = notifyRes.data.filter((n: any) => !n.isRead)
-
-    if (!isInitialized.current) {
-      unread.forEach((n: any) => toastedIds.current.add(n.id))
-      isInitialized.current = true
-      return
-    }
-
-    unread.forEach((n: any) => {
-      if (!toastedIds.current.has(n.id)) {
-        if (n.type === 'success') toast.success(n.title, { description: n.message })
-        else if (n.type === 'warning' || n.type === 'error') toast.error(n.title, { description: n.message })
-        else toast(n.title, { description: n.message })
-        toastedIds.current.add(n.id)
-      }
-    })
-  }, [notifyRes])
-
-  const markReadMutation = useMutation({
-    mutationFn: (id: string) => platformApi.markAsRead(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['notifications'] })
-  })
-
-  const deleteNotificationsMutation = useMutation({
-    mutationFn: () => platformApi.deleteAllNotifications(),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['notifications'] })
-      toast.success('History wiped permanently')
-    }
-  })
-
-  const notifications = notifyRes?.data || []
-  const unreadCount = notifications.filter((n: any) => !n.isRead).length
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent | TouchEvent) => {
-      const target = event.target as Node
-      if (userMenuRef.current && !userMenuRef.current.contains(target))
-        setShowUserMenu(false)
-      if (notificationRef.current && !notificationRef.current.contains(target))
-        setShowNotifications(false)
-    }
-    document.addEventListener('mousedown', handleClickOutside)
-    document.addEventListener('touchend', handleClickOutside as EventListener)
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside)
-      document.removeEventListener('touchend', handleClickOutside as EventListener)
-    }
-  }, [])
-
-  const handleLogout = async () => {
-    setShowUserMenu(false)
-    await logout()
-    if (navigator.onLine) {
-      navigate('/login')
-    } else {
-      toast.info('Session locked. Enter your PIN to continue.')
-    }
-  }
-
-  const handleLock = () => {
-    setShowUserMenu(false)
-    lock()
-  }
+  const currentTitle =
+    title ||
+    routeTitles[location.pathname] ||
+    (location.pathname.startsWith('/dashboard/hospitality')
+      ? 'Hospitality'
+      : location.pathname.startsWith('/admin')
+      ? 'Admin Portal'
+      : 'Dashboard');
 
   return (
-    <header className="w-full bg-transparent flex flex-col justify-center z-[100] px-4 sm:px-8 relative pt-[env(safe-area-inset-top,0px)]">
-      <div className="w-full h-16 lg:h-24 flex items-center justify-between">
+    <header className="h-16 lg:h-20 border-b border-slate-100 bg-white/80 backdrop-blur-md px-4 sm:px-6 lg:px-8 flex items-center justify-between z-30 flex-shrink-0 transition-all">
+      <div className="flex items-center gap-3">
+        {/* Desktop sidebar collapse toggle button */}
+        {onToggleCollapse && (
+          <button
+            onClick={onToggleCollapse}
+            className="hidden lg:flex p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-xl transition-colors"
+            title={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            aria-label="Toggle sidebar collapse"
+          >
+            {isCollapsed ? <PanelLeft size={20} /> : <PanelLeftClose size={20} />}
+          </button>
+        )}
 
-        {/* LEFT: logo & mobile menu button on mobile / collapse toggle on desktop */}
-        <div className="flex items-center gap-2 sm:gap-4">
-          <div className="lg:hidden flex items-center gap-2.5">
-            {onMobileMenuToggle && (
-              <button
-                onClick={onMobileMenuToggle}
-                className="p-2 rounded-xl bg-white border border-slate-200/80 text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 transition-all shadow-sm active:scale-95"
-                title="Open Navigation Menu"
-              >
-                <SidebarSimple size={20} weight="bold" />
-              </button>
-            )}
-            <img src="/fav.png" alt="hlynk" className="h-8 w-8 object-contain" />
-            <div className="flex flex-col min-w-0">
-              <span className="text-normal font-nunito font-bold text-emerald-800 truncate max-w-[120px] sm:max-w-[160px] leading-none tracking-tight">
-                {user?.businessName}
-              </span>
-            </div>
-          </div>
-
-          {onToggleCollapse && (
-            <button
-              onClick={onToggleCollapse}
-              className="hidden lg:flex h-12 w-12 rounded-full bg-white items-center justify-center text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 hover:border-emerald-100 transition-all shadow-md"
-            >
-              {isCollapsed ? <PanelLeftOpen size={20} /> : <PanelLeftClose size={20} />}
-            </button>
-          )}
-
-          {extraActions && (
-            <div className="hidden lg:block ml-4">
-              {extraActions}
-            </div>
-          )}
-        </div>
-
-        {/* RIGHT: actions & identity */}
-        <div className="flex items-center gap-2 sm:gap-4">
-
-          {/* Notifications */}
-          <div className="relative" ref={notificationRef}>
-            <button
-              onClick={() => setShowNotifications(!showNotifications)}
-              className={`glass-btn w-10 h-10 sm:w-11 sm:h-11 rounded-full flex items-center justify-center relative ${
-                showNotifications
-                  ? 'ring-2 ring-emerald-500/20 text-emerald-700'
-                  : 'text-slate-600 hover:text-emerald-700'
-              }`}
-              title="Notifications"
-            >
-              <Bell size={17} />
-              {unreadCount > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-red-500 rounded-full border-2 border-white flex items-center justify-center text-[8px] font-black text-white shadow-sm">
-                  {unreadCount}
-                </span>
-              )}
-            </button>
-
-            {showNotifications && (
-              <div className="fixed sm:absolute left-2 right-2 sm:left-auto sm:right-0 top-20 sm:top-[calc(100%+0.5rem)] sm:w-[360px] glass-card rounded-xl shadow-2xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200 z-[200]">
-                <div className="p-4 bg-slate-50/50 border-b border-slate-100 flex justify-between items-center">
-                  <div>
-                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">System Notifications</span>
-                    {unreadCount > 0 && (
-                      <span className="ml-2 bg-red-100 text-red-600 text-[9px] font-black px-1.5 py-0.5 rounded-full">{unreadCount} unread</span>
-                    )}
-                  </div>
-                  {notifications.length > 0 && (
-                    <button
-                      onClick={() => deleteNotificationsMutation.mutate()}
-                      className="text-[10px] font-black text-red-500 hover:text-red-700 transition-colors"
-                    >
-                      Clear All
-                    </button>
-                  )}
-                </div>
-
-                <div className="max-h-[420px] overflow-y-auto">
-                  {notificationPermission !== 'granted' && 'Notification' in window && (
-                    <div className="p-3 m-3 bg-[#0D4A3E]/10 rounded-xl border border-[#0D4A3E]/20 flex items-center justify-between gap-2">
-                      <div className="flex bg-[#0D4A3E]/20 p-2 rounded-full text-[#0D4A3E]">
-                        <Bell size={14} />
-                      </div>
-                      <div className="flex-1">
-                        <p className="text-[10px] font-black text-[#0D4A3E] uppercase tracking-widest leading-none mb-0.5">Push Notifications</p>
-                        <p className="text-[9px] font-medium opacity-80 uppercase tracking-widest text-emerald-800 leading-tight">Don't miss out on important updates</p>
-                      </div>
-                      <button
-                        onClick={handleEnablePush}
-                        className="px-3 py-1.5 bg-[#0D4A3E] text-white rounded-[.5rem] text-[9px] font-black uppercase tracking-widest hover:bg-[#064E3B] transition-all shadow-md active:scale-95"
-                      >
-                        Enable
-                      </button>
-                    </div>
-                  )}
-
-                  {notifyLoading ? (
-                    <div className="p-12 text-center animate-pulse text-slate-400 font-bold text-xs">Fetching notifications...</div>
-                  ) : notifications.length === 0 ? (
-                    <div className="p-16 text-center text-sm font-medium text-slate-400">No notifications yet</div>
-                  ) : (
-                    <div className="divide-y divide-slate-50">
-                      {notifications.map((n: any) => {
-                        const notifDate = new Date(n.createdAt)
-                        const isToday = notifDate.toDateString() === new Date().toDateString()
-                        const dateStr = isToday
-                          ? `Today, ${notifDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
-                          : `${notifDate.toLocaleDateString([], { day: 'numeric', month: 'short', year: 'numeric' })}, ${notifDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
-                        return (
-                          <div key={n.id} className={`p-4 transition-colors ${!n.isRead ? 'bg-emerald-50/40' : 'hover:bg-slate-50'}`}>
-                            <div className="flex gap-3">
-                              <div className={`h-8 w-8 shrink-0 rounded-lg flex items-center justify-center ${!n.isRead ? 'bg-emerald-100' : 'bg-slate-100'}`}>
-                                <img src="/fav.png" alt="hlynk" className="w-4 h-4 object-contain" />
-                              </div>
-                              <div className="flex-1 min-w-0">
-                                <div className="flex justify-between items-start gap-2">
-                                  <p className={`text-xs font-bold leading-tight ${n.isRead ? 'text-slate-500' : 'text-slate-900'}`}>{n.title}</p>
-                                  {!n.isRead && (
-                                    <button
-                                      onClick={() => markReadMutation.mutate(n.id)}
-                                      title="Mark as done"
-                                      className="flex-shrink-0 flex items-center gap-1 px-2 py-0.5 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 rounded-full text-[9px] font-black transition-colors"
-                                    >
-                                      <Check size={10} /> Done
-                                    </button>
-                                  )}
-                                </div>
-                                <p className="text-[10px] text-slate-500 leading-tight mt-0.5 line-clamp-2">{n.message}</p>
-                                <p className="text-[9px] text-slate-400 mt-1 font-medium">{dateStr}</p>
-                              </div>
-                            </div>
-                          </div>
-                        )
-                      })}
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Profile menu has been moved to sidebars and mobile bottom navs per user request */}
+        {/* Title display (Logo icon only shown on mobile where SideNav is hidden) */}
+        <div className="flex items-center gap-2.5">
+          <img src="/fav.png" alt="hlynk" className="h-7 w-7 object-contain shrink-0 lg:hidden" />
+          <h1 className="text-base sm:text-lg font-extrabold text-slate-900 tracking-tight leading-tight truncate">
+            {currentTitle}
+          </h1>
         </div>
       </div>
+
+      {/* Right side actions */}
+      <div className="flex items-center gap-2">
+        {extraActions}
+
+        {/* Notification Bell */}
+        <NotificationBell />
+      </div>
     </header>
-  )
+  );
 }
+

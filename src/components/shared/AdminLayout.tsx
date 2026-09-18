@@ -1,682 +1,175 @@
-import { Outlet, NavLink, useLocation, Link, useNavigate } from 'react-router-dom'
-import { useAuth } from '../../lib/auth/AuthContext'
+import React, { useState } from 'react';
+import { NavLink, Outlet, useNavigate, Link } from 'react-router-dom';
 import {
-  LayoutDashboard, BarChart2, Users,
-  Settings, HelpCircle, CreditCard, MessageSquare,
-  Briefcase, ShieldCheck, Activity, DollarSign, Landmark, X,
-  Bell, Loader2, User, CircleEllipsis, Lock, LogOut
-} from 'lucide-react'
-import { useState, useEffect, useMemo } from 'react'
-import TopNav from './TopNav'
-import { motion, AnimatePresence } from 'framer-motion'
-import { getPushSubscriptionState, subscribeToPushNotifications } from '../../lib/notifications/pushService'
-import { toast } from 'sonner'
-import { MobileGestures } from './MobileGestures'
-import { hasOfflinePin } from '../../lib/offline/offlinePin'
+  LayoutDashboard,
+  Activity,
+  DollarSign,
+  Building2,
+  Users,
+  CreditCard,
+  Receipt,
+  ShieldCheck,
+  Star,
+  BarChart3,
+  Bell,
+  Settings,
+  HelpCircle,
+  LogOut,
+  ChevronLeft,
+  ChevronRight,
+  Shield,
+} from 'lucide-react';
+import { useAuth } from '../../lib/auth/AuthContext';
+import TopNav from './TopNav';
 
-// ─── Breakpoint hook ───────────────────────────────────────────────────────────
-function useIsDesktop() {
-  const [isDesktop, setIsDesktop] = useState(() => window.innerWidth >= 1024)
-  useEffect(() => {
-    const fn = () => setIsDesktop(window.innerWidth >= 1024)
-    window.addEventListener('resize', fn)
-    return () => window.removeEventListener('resize', fn)
-  }, [])
-  return isDesktop
+interface AdminNavItem {
+  to: string;
+  label: string;
+  icon: React.ElementType;
+  end?: boolean;
 }
 
-interface NavItem {
-  to: string
-  label: string
-  icon: any
-  end?: boolean
-}
-
-interface NavGroup {
-  label: string
-  items: NavItem[]
-}
+const adminNavItems: AdminNavItem[] = [
+  { to: '/admin', label: 'Overview', icon: LayoutDashboard, end: true },
+  { to: '/admin/system-performance', label: 'Performance', icon: Activity },
+  { to: '/admin/financials', label: 'Financials', icon: DollarSign },
+  { to: '/admin/businesses', label: 'Providers', icon: Building2 },
+  { to: '/admin/user-operations', label: 'User Operations', icon: Users },
+  { to: '/admin/subscriptions', label: 'Subscriptions', icon: CreditCard },
+  { to: '/admin/payments', label: 'Payments', icon: Receipt },
+  { to: '/admin/forensic-audit', label: 'Audit & Security', icon: ShieldCheck },
+  { to: '/admin/community-reviews', label: 'Reviews', icon: Star },
+  { to: '/admin/reports', label: 'Reports', icon: BarChart3 },
+  { to: '/admin/notifications', label: 'Notifications', icon: Bell },
+  { to: '/admin/settings', label: 'System Settings', icon: Settings },
+  { to: '/admin/help', label: 'Admin Help', icon: HelpCircle },
+];
 
 export default function AdminLayout() {
-  const { user, logout } = useAuth()
-  const location = useLocation()
-  const isDesktop = useIsDesktop()
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
 
-  const [isCollapsed, setIsCollapsed] = useState(true)
-  const [isHovered, setIsHovered] = useState(false)
-  const [mobileOpen, setMobileOpen] = useState(false)
-  const [pushStatus, setPushStatus] = useState<'subscribed' | 'denied' | 'prompt' | 'unsupported' | 'ios_browser'>('subscribed')
-  const [isPushLoading, setIsPushLoading] = useState(false)
-
-  useEffect(() => { setMobileOpen(false) }, [location.pathname])
-
-  // Auto-close mobile menu after 5 min of inactivity
-  useEffect(() => {
-    if (isDesktop || !mobileOpen) return
-    let t: ReturnType<typeof setTimeout>
-    const reset = () => { clearTimeout(t); t = setTimeout(() => setMobileOpen(false), 300_000) }
-    reset()
-    window.addEventListener('mousemove', reset)
-    window.addEventListener('keydown', reset)
-    window.addEventListener('click', reset)
-    return () => { clearTimeout(t); window.removeEventListener('mousemove', reset); window.removeEventListener('keydown', reset); window.removeEventListener('click', reset) }
-  }, [mobileOpen, isDesktop])
-
-  useEffect(() => {
-    getPushSubscriptionState().then(status => {
-      setPushStatus(status)
-      if ('Notification' in window && (Notification.permission === 'granted' || Notification.permission === 'default')) {
-        subscribeToPushNotifications()
-          .then(() => setPushStatus('subscribed'))
-          .catch(err => console.warn('[AdminPush] Auto-subscribe notice:', err?.message))
-      }
-    })
-  }, [])
-
-  const handleEnablePush = async () => {
-    setIsPushLoading(true)
-    try {
-      await subscribeToPushNotifications()
-      setPushStatus('subscribed')
-      toast.success('System notifications enabled!')
-    } catch (err: any) {
-      toast.error(err.message || 'Failed to enable notifications')
-      const status = await getPushSubscriptionState()
-      setPushStatus(status)
-    } finally {
-      setIsPushLoading(false)
+  const handleLogout = async () => {
+    if (window.confirm('Are you sure you want to log out of the Admin portal?')) {
+      await logout({ force: true });
+      navigate('/login');
     }
-  }
+  };
 
-  const navGroups: NavGroup[] = [
-    {
-      label: 'System Control',
-      items: [
-        { to: '/admin', label: 'Dashboard', icon: LayoutDashboard, end: true },
-        { to: '/admin/system-performance', label: 'Performance', icon: Activity },
-        { to: '/admin/financials', label: 'Financials', icon: DollarSign },
-        { to: '/admin/payments', label: 'Payments', icon: Landmark },
-        { to: '/admin/notifications', label: 'Notifications', icon: Bell },
-      ],
-    },
-    {
-      label: 'Operations',
-      items: [
-        { to: '/admin/businesses', label: 'Businesses', icon: Briefcase },
-        { to: '/admin/user-operations', label: 'Users', icon: Users },
-        { to: '/admin/subscriptions', label: 'Subscriptions', icon: CreditCard },
-        { to: '/admin/community-reviews', label: 'Reviews', icon: MessageSquare },
-      ],
-    },
-    {
-      label: 'Governance',
-      items: [
-        { to: '/admin/forensic-audit', label: 'Forensic Audit', icon: ShieldCheck },
-        { to: '/admin/reports', label: 'Reports', icon: BarChart2 },
-        { to: '/admin/settings', label: 'Settings', icon: Settings },
-      ],
-    },
-  ]
+  return (
+    <div className="flex h-screen h-[100dvh] overflow-hidden bg-slate-900 text-slate-100">
+      {/* Mobile backdrop */}
+      {mobileOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-slate-950/60 backdrop-blur-sm lg:hidden"
+          onClick={() => setMobileOpen(false)}
+        />
+      )}
 
-  const sidebarExpanded = isDesktop ? (!isCollapsed || isHovered) : mobileOpen
-  const RAIL_W = isDesktop ? 68 : 60
-  const FULL_W = 260
-
-  const sidebarContent = useMemo(() => (
-    <div className="flex flex-col h-full">
-      {/* Logo */}
-      <div className={`h-16 lg:h-20 flex items-center flex-shrink-0 ${sidebarExpanded ? 'px-5' : 'justify-center'}`}>
-        <AnimatePresence mode="wait" initial={false}>
-          {sidebarExpanded ? (
-            <motion.div
-              key="full"
-              initial={{ opacity: 0, x: -8 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -8 }}
-              transition={{ duration: 0.18 }}
-              className="flex items-center gap-3 overflow-hidden"
-            >
-              <img src="/fav.png" alt="hlynk" className="h-8 w-8 lg:h-9 lg:w-9 object-contain" />
-              <div className="flex flex-col min-w-0">
-                <span className="text-sm font-bold text-[#00694B] truncate tracking-tight leading-none">
-                  {user?.businessName}
-                </span>
-                <span className="text-[10px] font-semibold text-slate-400 mt-0.5">Admin console</span>
-              </div>
-            </motion.div>
-          ) : (
-            <motion.img
-              key="icon"
-              src="/fav.png"
-              alt="hlynk"
-              className="h-6 w-6 lg:h-7 lg:w-7 object-contain"
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.8 }}
-              transition={{ duration: 0.15 }}
-            />
-          )}
-        </AnimatePresence>
-      </div>
-
-      {/* Navigation */}
-      <nav className="flex-1 px-3 space-y-4 overflow-y-auto overflow-x-hidden pt-2 custom-scrollbar">
-        {navGroups.map((group) => (
-          <div key={group.label}>
-            <AnimatePresence>
-              {sidebarExpanded && (
-                <motion.p
-                  initial={{ opacity: 0, x: -6 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.15 }}
-                  className="text-[10px] font-semibold text-slate-400 px-3 mb-2 whitespace-nowrap"
-                >
-                  {group.label}
-                </motion.p>
-              )}
-            </AnimatePresence>
-
-            <div className="space-y-0.5">
-              {group.items.map((item) => {
-                const iconEl = (
-                  <div className="relative flex-shrink-0">
-                    <item.icon className={`${sidebarExpanded ? 'w-[18px] h-[18px]' : 'w-[18px] h-[18px] lg:w-[20px] lg:h-[20px]'}`} />
-                  </div>
-                )
-
-                const labelEl = sidebarExpanded && (
-                  <motion.div
-                    initial={{ opacity: 0, x: -6 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    className="flex items-center justify-between flex-1 min-w-0 ml-3"
-                  >
-                    <span className="text-sm font-bold whitespace-nowrap truncate">{item.label}</span>
-                  </motion.div>
-                )
-
-                const tooltip = !sidebarExpanded && isDesktop && (
-                  <div className="absolute left-[calc(100%+10px)] bg-slate-900 text-white px-3 py-1.5 rounded-md text-xs font-semibold opacity-0 group-hover:opacity-100 invisible group-hover:visible translate-x-2 group-hover:translate-x-0 transition-all pointer-events-none whitespace-nowrap z-[200] shadow-sm">
-                    {item.label}
-                    <div className="absolute top-1/2 -left-1 -translate-y-1/2 border-y-4 border-y-transparent border-r-4 border-r-slate-900" />
-                  </div>
-                )
-
-                const baseClass = `group relative flex items-center rounded-md transition-all duration-150 ${sidebarExpanded ? 'px-3 py-2.5' : 'justify-center py-2.5 px-0'}`
-
-                return (
-                  <NavLink
-                    key={item.label}
-                    to={item.to}
-                    end={item.end}
-                    className={({ isActive }) =>
-                      `${baseClass} ${isActive
-                        ? 'bg-emerald-50 text-emerald-700'
-                        : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800'}`
-                    }
-                  >
-                    {iconEl}{labelEl}{tooltip}
-                  </NavLink>
-                )
-              })}
+      {/* Sidebar */}
+      <aside
+        className={`fixed lg:static inset-y-0 left-0 z-50 flex flex-col bg-slate-950 border-r border-slate-800 transition-all duration-300 ease-in-out ${
+          isCollapsed ? 'w-20' : 'w-64'
+        } ${mobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}
+      >
+        {/* Header / Brand */}
+        <div className="h-16 lg:h-20 flex items-center justify-between px-4 border-b border-slate-800 flex-shrink-0">
+          <div className="flex items-center gap-3 overflow-hidden">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-500 flex items-center justify-center text-white font-black shadow-lg flex-shrink-0">
+              <Shield size={22} />
             </div>
+            {!isCollapsed && (
+              <div className="flex flex-col min-w-0">
+                <span className="text-sm font-extrabold text-white tracking-wider uppercase leading-none">
+                  Hlynk Admin
+                </span>
+                <span className="text-[10px] font-semibold text-emerald-400 uppercase tracking-widest mt-1">
+                  Super Admin
+                </span>
+              </div>
+            )}
           </div>
-        ))}
-      </nav>
 
-      {/* Sidebar Footer */}
-      <div className={`flex-shrink-0 p-3 mt-auto border-t border-slate-100 ${sidebarExpanded ? '' : 'flex justify-center'}`}>
-        <AnimatePresence>
-          {sidebarExpanded && (
-            <motion.div
-              initial={{ opacity: 0, y: 6 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 6 }}
-              className="mb-3"
-            >
-              <Link
-                to="/admin/help"
-                className="block bg-slate-900 rounded-[.5rem] p-3 hover:bg-slate-800 transition-colors group"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="h-8 w-8 rounded-md bg-white/10 flex items-center justify-center flex-shrink-0">
-                    <HelpCircle size={16} className="text-slate-300" />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-[10px] text-slate-400 font-semibold leading-none mb-0.5">Help center</p>
-                    <p className="text-xs font-bold text-white truncate">Docs &amp; guides</p>
-                  </div>
-                </div>
-              </Link>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Profile (Desktop) */}
-        <div className="group relative w-full flex justify-center mt-2">
           <button
-            onClick={() => {
-              if (window.confirm("Are you sure you want to log out?")) {
-                logout();
-              }
-            }}
-            className={`flex items-center gap-3 transition-colors ${sidebarExpanded ? 'w-full hover:bg-slate-100 p-2 rounded-md border border-slate-100/50' : 'hover:scale-110 p-1 bg-slate-50 rounded-md border border-slate-100'}`}
+            onClick={() => setIsCollapsed(v => !v)}
+            className="hidden lg:flex p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+            title={isCollapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
+          >
+            {isCollapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
+          </button>
+        </div>
+
+        {/* Navigation Items */}
+        <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto custom-scrollbar">
+          {adminNavItems.map((item) => {
+            const Icon = item.icon;
+            return (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                end={item.end}
+                onClick={() => setMobileOpen(false)}
+                className={({ isActive }) =>
+                  `flex items-center gap-3 px-3 py-2.5 rounded-xl font-semibold text-xs transition-all ${
+                    isActive
+                      ? 'bg-emerald-600 text-white shadow-md shadow-emerald-900/30'
+                      : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900'
+                  } ${isCollapsed ? 'justify-center' : ''}`
+                }
+                title={isCollapsed ? item.label : undefined}
+              >
+                <Icon size={18} className="flex-shrink-0" />
+                {!isCollapsed && <span className="truncate">{item.label}</span>}
+              </NavLink>
+            );
+          })}
+        </nav>
+
+        {/* Sidebar Footer / User Info & Logout */}
+        <div className="p-3 border-t border-slate-800 flex-shrink-0">
+          {!isCollapsed && (
+            <div className="mb-3 px-2 flex items-center justify-between">
+              <div className="min-w-0">
+                <p className="text-xs font-bold text-slate-200 truncate">{user?.name || 'Administrator'}</p>
+                <p className="text-[10px] text-slate-500 truncate">{user?.email}</p>
+              </div>
+              <Link
+                to="/dashboard"
+                className="text-[10px] font-bold text-emerald-400 hover:underline flex-shrink-0"
+              >
+                Provider UI
+              </Link>
+            </div>
+          )}
+
+          <button
+            onClick={handleLogout}
+            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold text-red-400 hover:text-red-300 bg-red-950/40 hover:bg-red-900/40 transition-colors ${
+              isCollapsed ? 'justify-center' : ''
+            }`}
             title="Log Out"
           >
-            <div className="relative flex-shrink-0">
-              <img
-                src={user?.photoUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || '')}&background=0D4A3E&color=fff`}
-                alt="Profile"
-                className={`rounded-md object-cover border border-slate-200 ${sidebarExpanded ? 'w-8 h-8' : 'w-8 h-8'}`}
-              />
-              <div className="absolute -bottom-1 -right-1 bg-white rounded-full p-[2px]">
-                <div className="bg-emerald-500 w-1.5 h-1.5 rounded-full" />
-              </div>
-            </div>
-
-            {sidebarExpanded && (
-              <div className="flex-1 min-w-0 text-left flex justify-between items-center pr-1">
-                <div className="min-w-0 truncate">
-                  <p className="text-xs font-bold text-slate-900 truncate">{user?.name || 'Admin'}</p>
-                  <p className="text-[10px] font-semibold text-slate-500 truncate mt-0.5 group-hover:text-red-500 transition-colors">Log out</p>
-                </div>
-                <LogOut size={14} className="text-slate-400 group-hover:text-red-500 flex-shrink-0 transition-colors" />
-              </div>
-            )}
+            <LogOut size={18} className="flex-shrink-0" />
+            {!isCollapsed && <span>Log Out</span>}
           </button>
-          {!sidebarExpanded && isDesktop && (
-            <div className="absolute left-[calc(100%+10px)] top-1/2 -translate-y-1/2 bg-slate-900 text-white px-3 py-1.5 rounded-md text-xs font-semibold opacity-0 group-hover:opacity-100 invisible group-hover:visible transition-all pointer-events-none whitespace-nowrap z-[200] shadow-sm">
-              Log Out
-              <div className="absolute top-1/2 -left-1 -translate-y-1/2 border-y-4 border-y-transparent border-r-4 border-r-slate-900" />
-            </div>
-          )}
         </div>
+      </aside>
+
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden bg-slate-900">
+        <TopNav
+          isMobileOpen={mobileOpen}
+          onMobileMenuToggle={() => setMobileOpen(v => !v)}
+          isCollapsed={isCollapsed}
+          onToggleCollapse={() => setIsCollapsed(v => !v)}
+        />
+
+        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 bg-slate-900 text-slate-100">
+          <Outlet />
+        </main>
       </div>
     </div>
-  ), [sidebarExpanded, navGroups, user])
-
-  return (
-    <MobileGestures>
-      <div className="flex h-screen h-[100dvh] overflow-hidden bg-slate-50/50">
-
-        {/* ── Mobile Backdrop ── */}
-        <AnimatePresence>
-          {!isDesktop && mobileOpen && (
-            <motion.div
-              key="backdrop"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              className="fixed inset-0 z-[65] bg-slate-900/40 backdrop-blur-[2px] lg:hidden"
-              onClick={() => setMobileOpen(false)}
-              aria-label="Close sidebar"
-            />
-          )}
-        </AnimatePresence>
-
-        {/* ── Sidebar ── */}
-        {isDesktop ? (
-          // Desktop: rail that expands on hover or pin toggle
-          <motion.aside
-            animate={{ width: sidebarExpanded ? FULL_W : RAIL_W }}
-            transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
-            onMouseEnter={() => setIsHovered(true)}
-            onMouseLeave={() => setIsHovered(false)}
-            className="relative flex-shrink-0 h-screen border-r border-slate-100 bg-white overflow-visible z-[70]"
-            style={{ minWidth: RAIL_W }}
-          >
-            <motion.div
-              animate={{ width: sidebarExpanded ? FULL_W : RAIL_W }}
-              transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
-              className={`absolute inset-y-0 left-0 bg-white overflow-hidden ${isCollapsed && isHovered ? 'shadow-sm border-r border-slate-100' : ''}`}
-            >
-              {sidebarContent}
-            </motion.div>
-          </motion.aside>
-        ) : (
-          // Mobile: slide-in drawer (same as ProviderLayout)
-          <AnimatePresence>
-            {mobileOpen && (
-              <motion.aside
-                key="mobile-sidebar"
-                initial={{ x: -FULL_W }}
-                animate={{ x: 0 }}
-                exit={{ x: -FULL_W }}
-                transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
-                className="fixed top-0 left-0 h-full bg-white z-[70] shadow-sm"
-                style={{ width: FULL_W }}
-              >
-                {sidebarContent}
-              </motion.aside>
-            )}
-          </AnimatePresence>
-        )}
-
-        {/* ── Main Content ── */}
-        <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-
-          {/* Push Notifications Banner */}
-          <AnimatePresence>
-            {pushStatus !== 'subscribed' && pushStatus !== 'unsupported' && (
-              <motion.div
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: 'auto', opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                className="bg-emerald-900 text-white z-[100] border-b pt-10 border-white/10 flex-shrink-0"
-              >
-                <div className="max-w-screen-2xl mx-auto px-4 sm:px-8 py-3 flex items-center justify-between gap-4">
-                  <div className="flex items-center gap-3 overflow-hidden">
-                    <div className="bg-emerald-800 p-2 rounded-md flex-shrink-0">
-                      <Bell size={16} className="text-emerald-300" />
-                    </div>
-                    <div className="min-w-0">
-                      <p className="text-[11px] font-semibold text-emerald-300 leading-none mb-1">
-                        {pushStatus === 'ios_browser' ? 'Action required' : 'Security recommendation'}
-                      </p>
-                      <p className="text-sm font-bold truncate">
-                        {pushStatus === 'ios_browser'
-                          ? "To enable alerts on iOS, tap 'Share' then 'Add to Home Screen'."
-                          : "Enable system push alerts to monitor platform activity even when offline."}
-                      </p>
-                    </div>
-                  </div>
-                  {pushStatus !== 'ios_browser' && (
-                    <button
-                      onClick={handleEnablePush}
-                      disabled={isPushLoading}
-                      className="bg-emerald-500 hover:bg-emerald-400 text-white px-4 py-2 rounded-md text-xs font-semibold transition-all flex items-center gap-2 flex-shrink-0 disabled:opacity-50"
-                    >
-                      {isPushLoading ? <Loader2 size={14} className="animate-spin" /> : <ShieldCheck size={14} strokeWidth={2} />}
-                      Activate alerts
-                    </button>
-                  )}
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          <TopNav
-            isMobileOpen={mobileOpen}
-            onMobileMenuToggle={() => setMobileOpen(v => !v)}
-            isCollapsed={isCollapsed}
-            onToggleCollapse={() => { setIsCollapsed(v => !v); setIsHovered(false) }}
-          />
-
-          <main className="flex-1 overflow-y-auto px-3 sm:px-6 lg:px-10 py-3 sm:py-4 lg:py-8 bg-slate-50/30 pb-28 lg:pb-8 max-w-full overflow-x-hidden">
-            <Outlet />
-          </main>
-        </div>
-
-        {/* ── Mobile Bottom Nav ── */}
-        {!isDesktop && <MobileBottomAdminNav />}
-      </div>
-    </MobileGestures>
-  )
-}
-
-// ─── Mobile Bottom Navigation ────────────────────────────────────────────────
-function MobileBottomAdminNav() {
-  const location = useLocation()
-  const navigate = useNavigate()
-  const { user, logout, lock } = useAuth()
-  const [showMoreSheet, setShowMoreSheet] = useState(false)
-  const [showProfileSheet, setShowProfileSheet] = useState(false)
-
-  useEffect(() => {
-    setShowMoreSheet(false)
-    setShowProfileSheet(false)
-  }, [location.pathname])
-
-  // Exactly 5 Tabs: [0: Home] [1: Business] [2: Finance CTA] [3: More] [4: Profile]
-  const homeItem = { to: '/admin', label: 'Home', icon: LayoutDashboard, end: true }
-  const businessItem = { to: '/admin/businesses', label: 'Business', icon: Briefcase, end: false }
-  const centerItem = { to: '/admin/financials', label: 'Finance', icon: DollarSign, end: false }
-
-  const overflowItems = [
-    { to: '/admin/user-operations', label: 'Users', icon: Users },
-    { to: '/admin/subscriptions', label: 'Subscriptions', icon: CreditCard },
-    { to: '/admin/payments', label: 'Payments', icon: Landmark },
-    { to: '/admin/notifications', label: 'Notifications', icon: Bell },
-    { to: '/admin/community-reviews', label: 'Reviews', icon: MessageSquare },
-    { to: '/admin/forensic-audit', label: 'Forensic Audit', icon: ShieldCheck },
-    { to: '/admin/reports', label: 'Reports', icon: BarChart2 },
-    { to: '/admin/system-performance', label: 'Performance', icon: Activity },
-  ]
-
-  const isOverflowActive = overflowItems.some(item =>
-    location.pathname === item.to || location.pathname.startsWith(item.to + '/')
-  )
-
-  const renderNavItem = (item: any) => (
-    <NavLink
-      key={item.label}
-      to={item.to}
-      end={item.end}
-      className="flex-1 min-w-0 flex flex-col items-center gap-0.5 py-1 no-tap-highlight"
-    >
-      {({ isActive }) => (
-        <>
-          <div className={`w-9 h-9 rounded-full flex items-center justify-center transition-all duration-200 ${isActive ? 'bg-emerald-50' : 'bg-transparent'}`}>
-            <item.icon
-              className={`w-[18px] h-[18px] transition-colors ${isActive ? 'text-[#0D4A3E]' : 'text-[#0D4A3E] opacity-35'}`}
-              strokeWidth={isActive ? 2.5 : 2}
-            />
-          </div>
-          <span className={`text-[9px] font-medium transition-all truncate w-full text-center ${isActive ? 'text-[#0D4A3E]' : 'text-[#0D4A3E] opacity-35'}`}>
-            {item.label}
-          </span>
-        </>
-      )}
-    </NavLink>
-  )
-
-  return (
-    <>
-      {/* More & Profile Sheet Backdrop */}
-      <AnimatePresence>
-        {(showMoreSheet || showProfileSheet) && (
-          <motion.div
-            key="sheet-backdrop"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-[93] bg-slate-900/30 backdrop-blur-[2px] lg:hidden"
-            onClick={() => { setShowMoreSheet(false); setShowProfileSheet(false); }}
-          />
-        )}
-      </AnimatePresence>
-
-      {/* More Sheet Panel */}
-      <AnimatePresence>
-        {showMoreSheet && (
-          <motion.div
-            key="more-sheet"
-            initial={{ opacity: 0, y: 24, scale: 0.97 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 16, scale: 0.97 }}
-            transition={{ duration: 0.22, ease: [0.32, 0.72, 0, 1] }}
-            className="fixed inset-x-3 z-[94] lg:hidden bottom-[calc(5.5rem+0.25rem+env(safe-area-inset-bottom,0px))]"
-          >
-            <div className="glass-sheet rounded-[.75rem] overflow-hidden border border-white/40">
-              <div className="flex items-center justify-between px-5 pt-4 pb-3 border-b border-slate-50">
-                <p className="text-xs font-semibold text-slate-400">More options</p>
-                <button
-                  onClick={() => setShowMoreSheet(false)}
-                  className="glass-btn w-6 h-6 rounded-full flex items-center justify-center text-slate-400 transition-all"
-                >
-                  <X size={12} />
-                </button>
-              </div>
-              <div className="p-3 grid grid-cols-2 gap-2">
-                {overflowItems.map((item) => (
-                  <NavLink
-                    key={item.label}
-                    to={item.to}
-                    className={({ isActive }) =>
-                      `flex items-center gap-3 px-4 py-3.5 rounded-md transition-all no-tap-highlight ${isActive ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-50 text-slate-600 hover:bg-emerald-50 hover:text-emerald-700'}`
-                    }
-                  >
-                    <item.icon className="w-[18px] h-[18px] flex-shrink-0" strokeWidth={2} />
-                    <span className="text-[11px] font-bold leading-tight">{item.label}</span>
-                  </NavLink>
-                ))}
-              </div>
-              <div className="h-2" />
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Profile Pop-up Bottom Sheet Panel */}
-      <AnimatePresence>
-        {showProfileSheet && (
-          <motion.div
-            key="profile-sheet"
-            initial={{ opacity: 0, y: 24, scale: 0.97 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 16, scale: 0.97 }}
-            transition={{ duration: 0.22, ease: [0.32, 0.72, 0, 1] }}
-            className="fixed inset-x-3 z-[94] lg:hidden bottom-[calc(5.5rem+0.25rem+env(safe-area-inset-bottom,0px))]"
-          >
-            <div className="glass-sheet rounded-[1rem] overflow-hidden border border-white/40 p-3 shadow-2xl">
-              <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100/60">
-                <div className="flex items-center gap-3 min-w-0">
-                  <img
-                    src={user?.photoUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || '')}&background=0D4A3E&color=fff`}
-                    alt="Profile"
-                    className="w-10 h-10 rounded-full object-cover border border-emerald-600/20 flex-shrink-0"
-                  />
-                  <div className="min-w-0">
-                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Signed in as</p>
-                    <p className="text-xs font-bold text-slate-900 truncate">{user?.name || user?.businessName}</p>
-                    <p className="text-[10px] text-slate-500 truncate">{user?.email}</p>
-                  </div>
-                </div>
-                <button
-                  onClick={() => setShowProfileSheet(false)}
-                  className="glass-btn w-7 h-7 rounded-full flex items-center justify-center text-slate-400 transition-all flex-shrink-0"
-                >
-                  <X size={14} />
-                </button>
-              </div>
-
-              <div className="p-2 space-y-1.5 mt-1">
-                <Link
-                  to="/admin/settings"
-                  onClick={() => setShowProfileSheet(false)}
-                  className="flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold text-slate-700 bg-slate-50 hover:bg-emerald-50 hover:text-emerald-700 transition-colors"
-                >
-                  <User size={16} className="text-emerald-600" /> My Profile & Settings
-                </Link>
-
-                {hasOfflinePin() && (
-                  <button
-                    onClick={() => {
-                      setShowProfileSheet(false);
-                      lock();
-                    }}
-                    className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold text-slate-700 bg-slate-50 hover:bg-slate-100 transition-colors"
-                  >
-                    <Lock size={16} className="text-slate-500" /> Lock Screen (PIN)
-                  </button>
-                )}
-
-                <button
-                  onClick={async () => {
-                    setShowProfileSheet(false);
-                    await logout();
-                    if (navigator.onLine) {
-                      navigate('/login');
-                    } else {
-                      toast.info('Session locked. Enter your PIN to continue.');
-                    }
-                  }}
-                  className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold text-red-600 bg-red-50 hover:bg-red-100 transition-colors"
-                >
-                  <LogOut size={16} /> Log Out
-                </button>
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Floating Nav Bar — Exactly 5 Tabs: [Home] [Business] [FINANCE] [More] [Profile] */}
-      <div className="fixed inset-x-0 bottom-[env(safe-area-inset-bottom,0px)] z-[95] lg:hidden flex flex-col items-center pointer-events-none">
-        <div className="w-full px-3 pointer-events-auto">
-          <div className="relative py-2 glass-bar rounded-[2rem] flex items-end justify-between px-2">
-            {/* Tab 1: Home (Far Left) */}
-            {renderNavItem(homeItem)}
-
-            {/* Tab 2: Business (Middle Left) */}
-            {renderNavItem(businessItem)}
-
-            {/* Tab 3: Finance (Center Action) */}
-            <NavLink
-              key={centerItem.label}
-              to={centerItem.to}
-              end={centerItem.end}
-              className="flex-1 min-w-0 flex flex-col items-center gap-0.5 py-1 no-tap-highlight"
-            >
-              {({ isActive }) => (
-                <>
-                  <div className={`w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 active:scale-95 -mt-4
-                    ${isActive ? 'bg-emerald-500 shadow-sm' : 'bg-[#0D4A3E] shadow-sm'}`}
-                  >
-                    <centerItem.icon className="w-5 h-5 text-white" strokeWidth={2.5} />
-                  </div>
-                  <span className={`text-[9px] font-medium transition-all truncate w-full text-center ${isActive ? 'text-emerald-600' : 'text-[#0D4A3E] opacity-50'}`}>
-                    {centerItem.label}
-                  </span>
-                </>
-              )}
-            </NavLink>
-
-            {/* Tab 4: More (Middle Right) */}
-            <button
-              key="more-btn"
-              onClick={() => {
-                setShowProfileSheet(false);
-                setShowMoreSheet(v => !v);
-              }}
-              className="flex-1 min-w-0 flex flex-col items-center gap-0.5 py-1 no-tap-highlight"
-            >
-              <div className={`w-9 h-9 rounded-full flex items-center justify-center transition-all duration-200 ${(showMoreSheet || isOverflowActive) ? 'bg-emerald-50' : 'bg-transparent'}`}>
-                <CircleEllipsis
-                  className={`w-[18px] h-[18px] transition-colors ${(showMoreSheet || isOverflowActive) ? 'text-[#0D4A3E]' : 'text-[#0D4A3E] opacity-35'}`}
-                  strokeWidth={(showMoreSheet || isOverflowActive) ? 2.5 : 2}
-                />
-              </div>
-              <span className={`text-[9px] font-medium transition-all truncate w-full text-center ${(showMoreSheet || isOverflowActive) ? 'text-[#0D4A3E]' : 'text-[#0D4A3E] opacity-35'}`}>
-                More
-              </span>
-            </button>
-
-            {/* Tab 5: Profile (Far Right) — Triggers Profile Pop-up Modal Sheet */}
-            <button
-              key="profile-btn"
-              onClick={() => {
-                setShowMoreSheet(false);
-                setShowProfileSheet(v => !v);
-              }}
-              className="flex-1 min-w-0 flex flex-col items-center gap-0.5 py-1 no-tap-highlight"
-            >
-              <div className={`w-9 h-9 rounded-full flex items-center justify-center transition-all duration-200 overflow-hidden ${showProfileSheet || location.pathname.includes('/settings') ? 'ring-2 ring-emerald-600 ring-offset-1' : ''}`}>
-                <img
-                  src={user?.photoUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || '')}&background=0D4A3E&color=fff`}
-                  alt="Profile"
-                  className="w-7 h-7 rounded-full object-cover"
-                />
-              </div>
-              <span className={`text-[9px] font-medium transition-all truncate w-full text-center ${showProfileSheet || location.pathname.includes('/settings') ? 'text-[#0D4A3E]' : 'text-[#0D4A3E] opacity-35'}`}>
-                Profile
-              </span>
-            </button>
-          </div>
-        </div>
-      </div>
-    </>
-  )
+  );
 }

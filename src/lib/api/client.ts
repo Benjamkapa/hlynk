@@ -38,7 +38,12 @@ api.interceptors.response.use(
         storage.setItem('accessToken', newToken)
         original.headers.Authorization = `Bearer ${newToken}`
         return api(original)
-      } catch {
+      } catch (err: any) {
+        // If device is offline or server unreachable, preserve session
+        if (!navigator.onLine || !err.response) {
+          console.log('[API Client] Offline or network error during refresh. Retaining session.')
+          return Promise.reject(error)
+        }
         storage.removeItem('accessToken')
         storage.removeItem('user_profile')
         queryClient.clear()

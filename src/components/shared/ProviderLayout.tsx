@@ -1,11 +1,12 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { useAuth } from "../../lib/auth/AuthContext";
 import {
-  LayoutDashboard, Calendar, BarChart2, Users,
+  Home, Calendar, BarChart2, Users,
   Settings, LogOut, Package, ShoppingCart,
-  Zap, Clock, AlertTriangle, User, CircleEllipsis ,
+  Zap, Clock, AlertTriangle, User, CircleEllipsis,
   Lock, Shield, X, Terminal, ShieldCheck, Receipt, CreditCard,
-  Hotel, Building, CalendarCheck, Sparkles
+  Hotel, Building, CalendarCheck, Sparkles, PlusCircle, DollarSign,
+  Tag, Wrench, TrendingUp, Wallet, Grid, MoreHorizontal
 } from "lucide-react";
 import { useLocation, Outlet, NavLink, Link, useNavigate } from "react-router-dom";
 import TopNav from "./TopNav";
@@ -14,6 +15,7 @@ import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { MobileGestures } from "./MobileGestures";
 import { hasOfflinePin } from "../../lib/offline/offlinePin";
+import { Modal } from "./Modal";
 
 const EtimsIcon = ({ className, size = 20 }: { className?: string, size?: number }) => (
   <img src="https://etims.kra.go.ke/assets/images/logo.jpg" alt="eTIMS" style={{ width: size, height: size }} className={`${className || ''} object-contain mix-blend-darken shrink-0`} />
@@ -56,13 +58,15 @@ function useIsDesktop() {
 }
 
 export default function ProviderLayout() {
-  const { user, logout } = useAuth();
+  const { user, logout, lock } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
   const isDesktop = useIsDesktop();
 
   const [isCollapsed, setIsCollapsed] = useState(true);
   const [isHovered, setIsHovered] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [showProfileModal, setShowProfileModal] = useState(false);
 
   useEffect(() => { setMobileOpen(false); }, [location.pathname]);
 
@@ -90,49 +94,53 @@ export default function ProviderLayout() {
 
   const navGroups: NavGroup[] = [
     {
-      label: 'Sales & Revenue',
+      label: 'Main',
       items: [
-        { to: '/dashboard/sales/new', label: 'New Sale', icon: Zap, permission: 'sales', module: 'POS' },
-        { to: '/dashboard/sales', label: 'History', icon: Package, end: true, permission: 'sales', module: 'POS' },
-        { to: '/dashboard/expenses', label: 'Expenses', icon: ShoppingCart, permission: 'sales', module: 'POS' },
+        { to: '/dashboard', label: 'Home', icon: Home, end: true, permission: 'overview' },
       ],
     },
     {
-      label: 'Catalogue & CRM',
+      label: 'Sales & Money',
       items: [
-        { to: '/dashboard', label: 'Home', icon: LayoutDashboard, end: true, permission: 'overview' },
-        { to: '/dashboard/products', label: 'Items & Pricing', icon: Package, permission: 'products', module: 'POS' },
-        { to: '/dashboard/customers', label: 'Customers', icon: Users, permission: 'customers' },
+        { to: '/dashboard/sales/new', label: 'Make a Sale', icon: PlusCircle, permission: 'sales', module: 'POS' },
+        { to: '/dashboard/sales', label: 'Sales History', icon: Receipt, end: true, permission: 'sales', module: 'POS' },
+        { to: '/dashboard/expenses', label: 'Expenses & Costs', icon: DollarSign, permission: 'sales', module: 'POS' },
       ],
     },
     {
-      label: 'Bookings, Rentals & Services',
+      label: 'Products & Clients',
       items: [
-        { to: '/dashboard/hospitality', label: 'Overview', icon: CalendarCheck, end: true, permission: 'hospitality', module: 'HOSPITALITY' },
+        { to: '/dashboard/products', label: 'Products & Pricing', icon: Tag, permission: 'products', module: 'POS' },
+        { to: '/dashboard/customers', label: 'Customers & Clients', icon: Users, permission: 'customers' },
+      ],
+    },
+    {
+      label: 'Bookings & Rentals',
+      items: [
+        { to: '/dashboard/hospitality', label: 'Rental Overview', icon: Hotel, end: true, permission: 'hospitality', module: 'HOSPITALITY' },
         { to: '/dashboard/hospitality/bookings', label: 'Bookings & Reservations', icon: CalendarCheck, permission: 'hospitality', module: 'HOSPITALITY' },
-        { to: '/dashboard/hospitality/properties', label: 'Units, Assets & Rates', icon: Building, permission: 'properties', module: 'HOSPITALITY' },
-        { to: '/dashboard/hospitality/operations', label: 'Tasks & Maintenance', icon: Sparkles, permission: 'operations', module: 'HOSPITALITY' },
+        { to: '/dashboard/hospitality/properties', label: 'Rooms, Vehicles & Assets', icon: Building, permission: 'properties', module: 'HOSPITALITY' },
+        { to: '/dashboard/hospitality/operations', label: 'Housekeeping & Tasks', icon: Wrench, permission: 'operations', module: 'HOSPITALITY' },
       ],
     },
     {
-      label: 'Performance',
+      label: 'Analytics & Growth',
       items: [
-        { to: '/dashboard/reports', label: 'View Growth', icon: BarChart2, permission: 'reports', plan: 'PLUS' }
+        { to: '/dashboard/reports', label: 'Reports & Growth', icon: TrendingUp, permission: 'reports', plan: 'PLUS' }
       ],
     },
     {
-      label: 'Team',
+      label: 'Staff & Team',
       items: [
-        { to: '/dashboard/staff', label: 'Manage Staff', icon: Users, permission: 'staff', plan: 'PLUS' },
+        { to: '/dashboard/staff', label: 'Staff & Team', icon: Users, permission: 'staff', plan: 'PLUS' },
       ],
     },
     {
-      label: 'Settings',
+      label: 'Account & Settings',
       items: [
-        { to: '/dashboard/logs', label: 'Staff Activity', icon: ShieldCheck, permission: 'logs', plan: 'MAX' },
-        { to: '/dashboard/subscription', label: 'My Plan', icon: Calendar, role: 'PROVIDER' },
-        { to: '/dashboard/developer', label: 'Payment Gateway', icon: CreditCard, role: 'PROVIDER', plan: 'PLUS' },
-        // { to: '/dashboard/etims', label: 'KRA eTIMS', icon: EtimsIcon, role: 'PROVIDER', isComingSoon: true },
+        { to: '/dashboard/logs', label: 'Audit & Staff Activity', icon: ShieldCheck, permission: 'logs', plan: 'MAX' },
+        { to: '/dashboard/subscription', label: 'Subscription Plan', icon: CreditCard, role: 'PROVIDER' },
+        { to: '/dashboard/developer', label: 'M-Pesa & Payments', icon: Wallet, role: 'PROVIDER', plan: 'PLUS' },
       ],
     },
   ];
@@ -335,16 +343,12 @@ export default function ProviderLayout() {
           )}
         </AnimatePresence>
 
-        {/* Profile (Desktop) */}
+        {/* Profile (Desktop & Sidebar) */}
         <div className="group relative w-full flex justify-center mt-2">
           <button
-            onClick={() => {
-              if (window.confirm("Are you sure you want to log out?")) {
-                logout();
-              }
-            }}
+            onClick={() => setShowProfileModal(true)}
             className={`flex items-center gap-3 transition-colors ${sidebarExpanded ? 'w-full hover:bg-slate-100 p-2 rounded-md border border-slate-100/50' : 'hover:scale-110 p-1 bg-slate-50 rounded-md border border-slate-100'}`}
-            title="Log Out"
+            title="Profile & Options"
           >
             <div className="relative flex-shrink-0">
               <img
@@ -361,15 +365,15 @@ export default function ProviderLayout() {
               <div className="flex-1 min-w-0 text-left flex justify-between items-center pr-1">
                 <div className="min-w-0 truncate">
                   <p className="text-xs font-bold text-slate-900 truncate">{user?.name || 'Provider'}</p>
-                  <p className="text-[10px] font-semibold text-slate-500 truncate mt-0.5 group-hover:text-red-500 transition-colors">Log out</p>
+                  <p className="text-[10px] font-semibold text-slate-500 truncate mt-0.5 group-hover:text-emerald-700 transition-colors">Profile & Options</p>
                 </div>
-                <LogOut size={14} className="text-slate-400 group-hover:text-red-500 flex-shrink-0 transition-colors" />
+                <User size={14} className="text-slate-400 group-hover:text-emerald-700 flex-shrink-0 transition-colors" />
               </div>
             )}
           </button>
           {!sidebarExpanded && isDesktop && (
             <div className="absolute left-[calc(100%+10px)] top-1/2 -translate-y-1/2 bg-slate-900 text-white px-3 py-1.5 rounded-md text-xs font-semibold opacity-0 group-hover:opacity-100 invisible group-hover:visible transition-all pointer-events-none whitespace-nowrap z-[200] shadow-sm">
-              Log Out
+              Account & Profile
               <div className="absolute top-1/2 -left-1 -translate-y-1/2 border-y-4 border-y-transparent border-r-4 border-r-slate-900" />
             </div>
           )}
@@ -390,14 +394,14 @@ export default function ProviderLayout() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-[65] bg-slate-900/40 backdrop-blur-[2px] lg:hidden"
+            className="fixed inset-0 z-[65] bg-slate-900/40 lg:hidden"
             onClick={() => setMobileOpen(false)}
             aria-label="Close sidebar"
           />
         )}
       </AnimatePresence>
 
-      {isDesktop ? (
+      {isDesktop && (
         <motion.aside
           animate={{ width: sidebarExpanded ? FULL_W : RAIL_W }}
           transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
@@ -414,20 +418,6 @@ export default function ProviderLayout() {
             {sidebarContent}
           </motion.div>
         </motion.aside>
-      ) : (
-        <AnimatePresence>
-          {mobileOpen && (
-            <motion.aside
-              initial={{ x: "-100%" }}
-              animate={{ x: 0 }}
-              exit={{ x: "-100%" }}
-              transition={{ type: "spring", damping: 25, stiffness: 220 }}
-              className="fixed inset-y-0 left-0 z-[70] w-[280px] bg-white border-r border-slate-100 shadow-2xl overflow-hidden flex flex-col"
-            >
-              {sidebarContent}
-            </motion.aside>
-          )}
-        </AnimatePresence>
       )}
 
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
@@ -490,6 +480,71 @@ export default function ProviderLayout() {
         daysRemaining={daysRemaining}
         isCritical={isCritical}
       />
+
+      <Modal
+        isOpen={showProfileModal}
+        onClose={() => setShowProfileModal(false)}
+        title="Account & Profile Options"
+        maxWidth="sm"
+      >
+        <div className="space-y-3">
+          <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl border border-slate-100">
+            <img
+              src={user?.photoUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || '')}&background=0D4A3E&color=fff`}
+              alt="Profile"
+              className="w-10 h-10 rounded-full object-cover border border-emerald-600/20 shrink-0"
+            />
+            <div className="min-w-0">
+              <p className="text-xs font-bold text-slate-900 truncate">{user?.name || user?.businessName}</p>
+              <p className="text-[10px] text-slate-500 truncate">{user?.email}</p>
+              <span className="inline-block mt-0.5 text-[9px] font-black uppercase tracking-wider text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full">
+                {user?.role === 'SUPER_ADMIN' ? 'Admin' : (user?.subscription?.planName || 'Business')}
+              </span>
+            </div>
+          </div>
+
+          <div className="space-y-1.5 pt-1">
+            <button
+              onClick={() => {
+                setShowProfileModal(false);
+                navigate(user?.role === 'SUPER_ADMIN' ? '/admin/settings' : '/dashboard/settings');
+              }}
+              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold text-slate-700 bg-slate-50 hover:bg-emerald-50 hover:text-emerald-800 transition-colors border border-slate-100"
+            >
+              <User size={16} className="text-emerald-600" /> View Profile & Business Info
+            </button>
+
+            {hasOfflinePin() && (
+              <button
+                onClick={() => {
+                  setShowProfileModal(false);
+                  lock();
+                }}
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold text-slate-700 bg-slate-50 hover:bg-slate-100 transition-colors border border-slate-100"
+              >
+                <Lock size={16} className="text-slate-500" /> Lock Screen (PIN)
+              </button>
+            )}
+
+            <button
+              onClick={async () => {
+                setShowProfileModal(false);
+                if (window.confirm("Are you sure you want to log out?")) {
+                  await logout();
+                  if (navigator.onLine) {
+                    navigate('/login');
+                  } else {
+                    toast.info('Session locked. Enter your PIN to continue.');
+                  }
+                }
+              }}
+              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold text-red-600 bg-red-50 hover:bg-red-100 transition-colors border border-red-100"
+            >
+              <LogOut size={16} /> Log Out of System
+            </button>
+          </div>
+        </div>
+      </Modal>
       </div>
     </MobileGestures>
   );
@@ -529,21 +584,21 @@ function MobileBottomNav({ user, targetEndDate, filteredGroups = [], onOpenMobil
 
   // 5 Tabs Max: [0: Home] [1: Items/Units] [2: Sell/Book CTA] [3: More] [4: Profile]
   const homeItem = useMemo(() => {
-    return { to: hasHosp && !hasPos ? '/dashboard/hospitality' : '/dashboard', label: 'Home', icon: LayoutDashboard, end: true };
+    return { to: hasHosp && !hasPos ? '/dashboard/hospitality' : '/dashboard', label: 'Home', icon: Home, end: true };
   }, [hasPos, hasHosp]);
 
   const primaryLeftItem = useMemo(() => {
     if (hasHosp && !hasPos) {
-      return { to: '/dashboard/hospitality/properties', label: 'Units', icon: Building, end: false };
+      return { to: '/dashboard/hospitality/properties', label: 'Units & Assets', icon: Building, end: false };
     }
-    return { to: '/dashboard/products', label: 'Items', icon: Package, end: false };
+    return { to: '/dashboard/products', label: 'Products', icon: Tag, end: false };
   }, [hasPos, hasHosp]);
 
   const centerCtaItem = useMemo(() => {
     if (hasHosp && !hasPos) {
-      return { to: '/dashboard/hospitality/bookings', label: 'Book', icon: CalendarCheck, end: false };
+      return { to: '/dashboard/hospitality/bookings', label: 'New Booking', icon: CalendarCheck, end: false };
     }
-    return { to: '/dashboard/sales/new', label: 'Sell', icon: Zap, end: false };
+    return { to: '/dashboard/sales/new', label: 'Make Sale', icon: PlusCircle, end: false };
   }, [hasPos, hasHosp]);
 
   // Overflow items shown in the "More" sheet - computed dynamically from accessible navigation groups
@@ -563,13 +618,13 @@ function MobileBottomNav({ user, targetEndDate, filteredGroups = [], onOpenMobil
 
     // Fallback default list if filteredGroups is empty
     return [
-      { to: '/dashboard/sales',        label: 'Sales History',     icon: Clock },
-      { to: '/dashboard/expenses',     label: 'Expenses & Costs',  icon: ShoppingCart },
-      { to: '/dashboard/staff',        label: 'Manage Staff',      icon: Users },
-      { to: '/dashboard/customers',    label: 'Customers & CRM',   icon: Users },
-      { to: '/dashboard/reports',      label: 'Growth & Reports',  icon: BarChart2 },
-      { to: '/dashboard/developer',    label: 'Payment Gateway',   icon: CreditCard },
-      { to: '/dashboard/subscription', label: 'My Subscription',   icon: Calendar },
+      { to: '/dashboard/sales',        label: 'Sales History',     icon: Receipt },
+      { to: '/dashboard/expenses',     label: 'Expenses & Costs',  icon: DollarSign },
+      { to: '/dashboard/staff',        label: 'Staff & Team',      icon: Users },
+      { to: '/dashboard/customers',    label: 'Customers & Clients', icon: Users },
+      { to: '/dashboard/reports',      label: 'Reports & Growth',  icon: TrendingUp },
+      { to: '/dashboard/developer',    label: 'M-Pesa & Payments', icon: Wallet },
+      { to: '/dashboard/subscription', label: 'Subscription Plan', icon: CreditCard },
     ];
   }, [filteredGroups, homeItem.to, primaryLeftItem.to, centerCtaItem.to]);
 
@@ -611,7 +666,7 @@ function MobileBottomNav({ user, targetEndDate, filteredGroups = [], onOpenMobil
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-[93] bg-slate-900/30 backdrop-blur-[2px] pointer-events-auto"
+            className="fixed inset-0 z-[93] bg-slate-900/25 pointer-events-auto"
             onClick={() => { setShowMoreSheet(false); setShowProfileSheet(false); }}
           />
         )}
@@ -656,19 +711,6 @@ function MobileBottomNav({ user, targetEndDate, filteredGroups = [], onOpenMobil
                   </NavLink>
                 ))}
               </div>
-              {onOpenMobileMenu && (
-                <div className="p-3 border-t border-slate-100 bg-slate-50/50 flex-shrink-0">
-                  <button
-                    onClick={() => {
-                      setShowMoreSheet(false);
-                      onOpenMobileMenu();
-                    }}
-                    className="w-full py-2.5 px-4 bg-emerald-900 text-white rounded-lg text-xs font-bold flex items-center justify-center gap-2 hover:bg-emerald-800 transition-all shadow-md"
-                  >
-                    <LayoutDashboard size={16} /> Open Full Navigation Menu
-                  </button>
-                </div>
-              )}
             </div>
           </motion.div>
         )}
@@ -936,7 +978,7 @@ function FloatingExpiryWidget({
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <div className={`h-2.5 w-2.5 rounded-full ${isCritical ? 'bg-red-500 animate-ping' : 'bg-emerald-400'}`} />
-                <span className="text-[10px] font-black uppercase tracking-widest text-emerald-400">
+                <span className="text-[10px] font-black tracking-widest text-emerald-400">
                   {isTrial ? 'Free Trial' : (user?.subscription?.planName || 'Standard')} Tier
                 </span>
               </div>

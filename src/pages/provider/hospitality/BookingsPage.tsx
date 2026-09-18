@@ -7,11 +7,15 @@ import { eventsApi, resourcesApi, UniversalEvent, Resource } from "../../../lib/
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { Modal } from "../../../components/shared/Modal";
+import { useLocation } from "react-router-dom";
 
 export default function BookingsPage() {
   const [bookings, setBookings] = useState<UniversalEvent[]>([]);
   const [rooms, setRooms] = useState<Resource[]>([]);
+  const [properties, setProperties] = useState<Resource[]>([]);
   const [loading, setLoading] = useState(true);
+  const [highlightedId, setHighlightedId] = useState<string | null>(null);
+  const location = useLocation();
 
   // Filters
   const [searchTerm, setSearchTerm] = useState("");
@@ -43,12 +47,15 @@ export default function BookingsPage() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [bookingData, unitData] = await Promise.all([
+      const [bookingData, allResources, propData] = await Promise.all([
         eventsApi.getEvents({ eventType: 'BOOKING' }),
-        resourcesApi.getResources({})
+        resourcesApi.getResources({}),
+        resourcesApi.getResources({ type: 'PROPERTY' })
       ]);
       setBookings(bookingData);
-      setRooms(unitData);
+      setProperties(propData);
+      // Exclude property group containers so only actual units appear in booking dropdown
+      setRooms(allResources.filter(r => r.type !== 'PROPERTY'));
     } catch (err: any) {
       toast.error("Failed to load bookings", { description: err.message });
     } finally {
@@ -59,6 +66,17 @@ export default function BookingsPage() {
   useEffect(() => {
     fetchData();
   }, []);
+
+  // Auto-highlight booking from notification deep-link
+  useEffect(() => {
+    const highlightId = (location.state as any)?.highlightId;
+    if (highlightId) {
+      setHighlightedId(highlightId);
+      // Clear highlight after 5 seconds
+      const t = setTimeout(() => setHighlightedId(null), 5000);
+      return () => clearTimeout(t);
+    }
+  }, [location.state]);
 
   // When room is selected, auto fill rate
   useEffect(() => {
@@ -392,12 +410,21 @@ export default function BookingsPage() {
               className="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-sm font-bold text-slate-800 outline-none focus:border-emerald-600"
             >
               <option value="">Select Unit or Vehicle...</option>
-              {rooms.map(r => (
-                <option key={r.id} value={r.id}>
-                  {r.title} ({r.status}) - KES {Number(r.basePrice).toLocaleString()}/rate
-                </option>
-              ))}
+              {rooms.map(r => {
+                const group = properties.find(p => p.id === r.parentId);
+                const groupName = group ? ` [Group: ${group.title}]` : '';
+                return (
+                  <option key={r.id} value={r.id}>
+                    {r.title}{groupName} ({r.status}) - KES {Number(r.basePrice).toLocaleString()}/rate
+                  </option>
+                );
+              })}
             </select>
+            {rooms.length === 0 && (
+              <p className="text-[11px] text-amber-700 bg-amber-50 p-2.5 rounded-lg border border-amber-200 mt-2 font-medium">
+                ⚠️ No units or vehicles found. Go to <strong>Units, Assets & Rates</strong> page to add your bookable units or cars first!
+              </p>
+            )}
 
             {/* Selected Unit Visual Card */}
             {selectedRoomId && (() => {

@@ -9,6 +9,7 @@ export interface ModalProps {
   subtitle?: string;
   icon?: React.ComponentType<{ size?: number; className?: string }>;
   maxWidth?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl';
+  closeOnOverlayClick?: boolean;
   children: React.ReactNode;
 }
 
@@ -28,6 +29,7 @@ export function Modal({
   subtitle,
   icon: Icon,
   maxWidth = 'md',
+  closeOnOverlayClick = false,
   children,
 }: ModalProps) {
   useEffect(() => {
@@ -51,7 +53,9 @@ export function Modal({
             exit={{ opacity: 0 }}
             transition={{ duration: 0.18 }}
             className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm"
-            onClick={onClose}
+            onClick={() => {
+              if (closeOnOverlayClick) onClose();
+            }}
           />
 
           {/* Modal Card */}

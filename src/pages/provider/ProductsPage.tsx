@@ -11,7 +11,7 @@ import { getLocalDateString, formatLocalDate } from '../../lib/utils/date'
 import { exportToCSV } from '../../lib/utils/export'
 import FeatureGate, { canAccessFeature } from '../../components/shared/FeatureGate'
 import { useAuth } from '../../lib/auth/AuthContext'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 
 import { useEffect } from 'react'
 import { keepPreviousData } from '@tanstack/react-query'
@@ -44,6 +44,7 @@ const PRESET_PRODUCT_PHOTOS = [
 export default function ProductsPage() {
   const { user } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   const [editingProduct, setEditingProduct] = useState<any>(null)
   const [search, setSearch] = useState('')
@@ -72,6 +73,13 @@ export default function ProductsPage() {
   const publicStoreUrl = slug ? `${window.location.origin}/store/${slug}` : null;
 
   const [isOrdersOpen, setIsOrdersOpen] = useState(false)
+
+  // Auto-open client orders drawer when deep-linking from notification
+  useEffect(() => {
+    if (location.state && ((location.state as any).openOrders || (location.state as any).highlightId)) {
+      setIsOrdersOpen(true)
+    }
+  }, [location.state])
 
   const { data: requestsData, refetch: refetchRequests } = useQuery({
     queryKey: ['requests'],
