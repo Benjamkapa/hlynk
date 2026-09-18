@@ -3,23 +3,33 @@
   <!-- Core Public Pages -->
   <url>
     <loc>https://hlynk.co.ke/</loc>
-    <changefreq>weekly</changefreq>
+    <lastmod>2026-09-18</lastmod>
+    <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
     <loc>https://hlynk.co.ke/login</loc>
+    <lastmod>2026-09-18</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://hlynk.co.ke/partners</loc>
+    <lastmod>2026-09-18</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://hlynk.co.ke/privacy-policy</loc>
+    <lastmod>2026-09-18</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
     <loc>https://hlynk.co.ke/terms-conditions</loc>
+    <lastmod>2026-09-18</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
-  <!-- Add additional public pages here as they are created -->
 </urlset>
+

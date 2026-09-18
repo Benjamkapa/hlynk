@@ -28,8 +28,12 @@ const faqs = [
     answer: "Every new account gets a 14-day free trial with no credit card required. Subscriptions are billed flexibly month-to-month, or discounted for 6-month (-5%) and 1-year (-10%) billing cycles."
   },
   {
+    question: "What are the exact pricing plans for hlynk?",
+    answer: "hlynk offers two transparent subscription tiers: Starter at KES 4,450 / month for growing single-store businesses (up to 60 inventory items, STK push checkout, 1 staff account), and Business Pro at KES 8,200 / month for hotels, rentals, stores, and multi-branch teams (unlimited items, stay booking pages, direct bank settlements). All plans include a free 14-day trial."
+  },
+  {
     question: "How do I get started with Hlynk?",
-    answer: "Every new account gets a 14-day free trial with no credit card required. Subscriptions are billed flexibly month-to-month, or discounted for 6-month (-5%) and 1-year (-10%) billing cycles."
+    answer: "Getting started takes under 2 minutes! Create your account, choose your business type (Retail POS, Hospitality/Stays, Services), set up your products or rooms, and start processing sales or bookings instantly."
   },
   {
     question: "Can I install hlynk as an app on my iPhone or Android device?",

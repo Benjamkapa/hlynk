@@ -91,6 +91,7 @@ export default function Pricing() {
                 : basePrice
 
             const formattedTotal = total.toLocaleString()
+            const monthlyEquivalent = months > 1 ? Math.round(total / months).toLocaleString() : null
 
             return (
               <FadeUp key={p.name} delay={i * 0.15}>
@@ -114,6 +115,11 @@ export default function Pricing() {
                       KES {formattedTotal}
                     </span>
                     <span className="text-xs font-bold text-[#14181A]/50 ml-1.5">/ {daysReward} days</span>
+                    {monthlyEquivalent && (
+                      <div className="text-[11px] font-bold text-[#14181A]/70 mt-1">
+                        ~ KES {monthlyEquivalent} / month billed upfront
+                      </div>
+                    )}
                   </div>
 
                   <ul className="space-y-2 mb-8 flex-1">
