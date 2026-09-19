@@ -1,31 +1,31 @@
 import { useState, useEffect } from "react";
-import {
-  CalendarCheck, Plus, Search, Filter, Loader2, CheckCircle2, Clock,
-  AlertCircle, DollarSign, User, Phone, X, CreditCard, LogOut
-} from "lucide-react";
+import { CalendarCheck, Plus, Search, Loader2, LogOut, ChevronDown, X } from "lucide-react";
 import { eventsApi, resourcesApi, UniversalEvent, Resource } from "../../../lib/api/universal";
 import { toast } from "sonner";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { Modal } from "../../../components/shared/Modal";
 import { useLocation } from "react-router-dom";
+
+const STATUS_LABELS: Record<string, { label: string; color: string }> = {
+  CONFIRMED:   { label: "Confirmed",   color: "bg-emerald-100 text-emerald-800" },
+  CHECKED_IN:  { label: "Active",      color: "bg-blue-100 text-blue-800" },
+  CHECKED_OUT: { label: "Completed",   color: "bg-slate-100 text-slate-600" },
+  CANCELLED:   { label: "Cancelled",   color: "bg-red-100 text-red-700" },
+};
 
 export default function BookingsPage() {
   const [bookings, setBookings] = useState<UniversalEvent[]>([]);
   const [rooms, setRooms] = useState<Resource[]>([]);
-  const [properties, setProperties] = useState<Resource[]>([]);
   const [loading, setLoading] = useState(true);
   const [highlightedId, setHighlightedId] = useState<string | null>(null);
   const location = useLocation();
 
-  // Filters
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
 
-  // Booking Modal
   const [showBookingModal, setShowBookingModal] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
-  // Form State
   const [selectedRoomId, setSelectedRoomId] = useState("");
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
@@ -38,24 +38,23 @@ export default function BookingsPage() {
   const [paymentMethod, setPaymentMethod] = useState("MPESA");
   const [bookingSource, setBookingSource] = useState("Direct");
 
-  // Payment Modal
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [selectedBooking, setSelectedBooking] = useState<UniversalEvent | null>(null);
   const [topupAmount, setTopupAmount] = useState("");
   const [topupMethod, setTopupMethod] = useState("MPESA");
 
+  // Only show available rooms for new bookings
+  const availableRooms = rooms.filter(r => r.status === "AVAILABLE" || r.status === "RESERVED");
+
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [bookingData, allResources, propData] = await Promise.all([
-        eventsApi.getEvents({ eventType: 'BOOKING' }),
+      const [bookingData, allResources] = await Promise.all([
+        eventsApi.getEvents({ eventType: "BOOKING" }),
         resourcesApi.getResources({}),
-        resourcesApi.getResources({ type: 'PROPERTY' })
       ]);
       setBookings(bookingData);
-      setProperties(propData);
-      // Exclude property group containers so only actual units appear in booking dropdown
-      setRooms(allResources.filter(r => r.type !== 'PROPERTY'));
+      setRooms(allResources.filter((r) => r.type !== "PROPERTY"));
     } catch (err: any) {
       toast.error("Failed to load bookings", { description: err.message });
     } finally {
@@ -63,70 +62,55 @@ export default function BookingsPage() {
     }
   };
 
-  useEffect(() => {
-    fetchData();
-  }, []);
+  useEffect(() => { fetchData(); }, []);
 
-  // Auto-highlight booking from notification deep-link
   useEffect(() => {
     const highlightId = (location.state as any)?.highlightId;
     if (highlightId) {
       setHighlightedId(highlightId);
-      // Clear highlight after 5 seconds
       const t = setTimeout(() => setHighlightedId(null), 5000);
       return () => clearTimeout(t);
     }
   }, [location.state]);
 
-  // When room is selected, auto fill rate
   useEffect(() => {
     if (selectedRoomId) {
-      const r = rooms.find(room => room.id === selectedRoomId);
+      const r = rooms.find((room) => room.id === selectedRoomId);
       if (r) {
         setRatePerUnit(r.basePrice.toString());
-        recalculateTotal(r.basePrice, duration);
+        setTotalAmount((r.basePrice * duration).toString());
       }
     }
   }, [selectedRoomId]);
 
-  const recalculateTotal = (rate: number, numUnits: number) => {
-    const tot = rate * numUnits;
-    setTotalAmount(tot.toString());
-  };
+  const recalcTotal = (rate: number, n: number) => setTotalAmount((rate * n).toString());
 
   const handleDurationChange = (n: number) => {
     setDuration(n);
-    const rate = parseFloat(ratePerUnit) || 0;
-    recalculateTotal(rate, n);
+    recalcTotal(parseFloat(ratePerUnit) || 0, n);
   };
 
   const handleCreateBooking = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedRoomId || !customerName.trim() || !customerPhone.trim()) {
-      return toast.error("Unit, Customer Name, and Phone are required");
+      return toast.error("Unit, name, and phone are required");
     }
-
     setSubmitting(true);
     try {
       await eventsApi.createEvent({
         resourceId: selectedRoomId,
         guestName: customerName,
         guestPhone: customerPhone,
-        eventType: 'BOOKING',
-        status: 'CONFIRMED',
+        eventType: "BOOKING",
+        status: "CONFIRMED",
         startTime: startDate ? `${startDate} 12:00:00` : undefined,
         endTime: endDate ? `${endDate} 12:00:00` : undefined,
         totalAmount: parseFloat(totalAmount) || 0,
         paidAmount: parseFloat(paidAmount) || 0,
         paymentMethod,
-        meta: {
-          bookingSource,
-          duration,
-          ratePerUnit: parseFloat(ratePerUnit) || 0
-        }
+        meta: { bookingSource, duration, ratePerUnit: parseFloat(ratePerUnit) || 0 },
       });
-
-      toast.success("Booking created successfully!");
+      toast.success("Booking created!");
       setShowBookingModal(false);
       resetForm();
       fetchData();
@@ -138,32 +122,24 @@ export default function BookingsPage() {
   };
 
   const resetForm = () => {
-    setSelectedRoomId("");
-    setCustomerName("");
-    setCustomerPhone("");
-    setStartDate("");
-    setEndDate("");
-    setDuration(1);
-    setRatePerUnit("");
-    setTotalAmount("");
-    setPaidAmount("");
+    setSelectedRoomId(""); setCustomerName(""); setCustomerPhone("");
+    setStartDate(""); setEndDate(""); setDuration(1);
+    setRatePerUnit(""); setTotalAmount(""); setPaidAmount("");
   };
 
   const handleRecordPayment = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedBooking || !topupAmount || parseFloat(topupAmount) <= 0) {
-      return toast.error("Please enter a valid payment amount");
+      return toast.error("Enter a valid amount");
     }
-
     setSubmitting(true);
     try {
       await eventsApi.recordPayment(selectedBooking.id, {
         amount: parseFloat(topupAmount),
         paymentMethod: topupMethod,
-        notes: `Balance payment for ${selectedBooking.guestName || 'Customer'}`
+        notes: `Balance for ${selectedBooking.guestName || "Customer"}`,
       });
-
-      toast.success("Payment recorded & synced to Core Revenue!");
+      toast.success("Payment recorded!");
       setShowPaymentModal(false);
       setTopupAmount("");
       fetchData();
@@ -177,475 +153,345 @@ export default function BookingsPage() {
   const handleStatusChange = async (bookingId: string, newStatus: string) => {
     try {
       await eventsApi.updateStatus(bookingId, newStatus);
-      toast.success(`Booking status updated to ${newStatus}`);
+      toast.success(`Status updated`);
       fetchData();
     } catch (err: any) {
-      toast.error("Failed to update status", { description: err.message });
+      toast.error("Failed to update status");
     }
   };
 
-  // Filtered List
-  const filteredBookings = bookings.filter(b => {
-    const matchesSearch =
-      (b.customerName || b.guestName || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (b.customerPhone || '').includes(searchTerm) ||
-      (b.resourceTitle || '').toLowerCase().includes(searchTerm.toLowerCase());
-
-    const matchesStatus = statusFilter === 'ALL' || b.status === statusFilter;
-    return matchesSearch && matchesStatus;
+  const filtered = bookings.filter((b) => {
+    const q = searchTerm.toLowerCase();
+    const matchSearch =
+      (b.customerName || b.guestName || "").toLowerCase().includes(q) ||
+      (b.customerPhone || "").includes(q) ||
+      (b.resourceTitle || "").toLowerCase().includes(q);
+    const matchStatus = statusFilter === "ALL" || b.status === statusFilter;
+    return matchSearch && matchStatus;
   });
 
-  return (
-    <div className="space-y-6 max-w-7xl mx-auto pb-12">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-[1.2rem] border border-slate-100 shadow-sm">
-        <div>
-          <h1 className="text-xl font-bold text-slate-900 flex items-center gap-2">
-            <CalendarCheck className="text-emerald-700" size={22} /> Bookings, Hires & Reservations
-          </h1>
-          <p className="text-xs text-slate-500 font-medium mt-0.5">
-            Manage reservations, vehicle hires, rental periods, deposits, booking sources, and service completion.
-          </p>
-        </div>
+  const selectedRoom = rooms.find((r) => r.id === selectedRoomId);
 
+  return (
+    <div className="max-w-5xl mx-auto pb-20 px-1">
+      {/* Page Header */}
+      <div className="flex items-center justify-between py-5">
+        <div>
+          <h1 className="text-xl font-semibold text-slate-900">Bookings</h1>
+        </div>
         <button
           onClick={() => setShowBookingModal(true)}
-          className="px-4 py-2.5 bg-[#0D4A3E] text-white font-black text-xs uppercase tracking-wider rounded-[.5rem] hover:bg-[#08362D] transition-all flex items-center gap-2 shadow-lg"
+          className="flex items-center gap-1.5 bg-slate-900 text-white text-sm font-medium px-4 py-2.5 rounded-full hover:bg-slate-700 transition-colors"
         >
-          <Plus size={16} /> New Booking / Hire
+          <Plus size={15} /> New booking
         </button>
       </div>
 
-      {/* Filter Bar */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-white p-4 rounded-[1.2rem] border border-slate-100 shadow-sm">
-        <div className="relative w-full sm:w-80">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+      {/* Search + Filter */}
+      <div className="flex flex-col sm:flex-row gap-3 mb-5">
+        <div className="relative flex-1">
+          <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
           <input
             type="text"
-            placeholder="Search customer, phone, reg number, or unit..."
+            placeholder="Search guest, phone or unit..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full bg-slate-50 border border-slate-200 rounded-lg pl-9 pr-4 py-2 text-xs font-bold text-slate-800 outline-none focus:border-emerald-600"
+            className="w-full pl-9 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm text-slate-800 outline-none focus:border-slate-400 transition-colors"
           />
         </div>
-
-        <div className="flex items-center gap-2 w-full sm:w-auto overflow-x-auto">
-          <span className="text-xs font-bold text-slate-400">Status:</span>
-          {['ALL', 'CONFIRMED', 'CHECKED_IN', 'CHECKED_OUT', 'CANCELLED'].map((st) => (
+        <div className="flex gap-1.5 overflow-x-auto">
+          {["ALL", "CONFIRMED", "CHECKED_IN", "CHECKED_OUT", "CANCELLED"].map((st) => (
             <button
               key={st}
               onClick={() => setStatusFilter(st)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+              className={`px-3 py-2 rounded-xl text-xs font-medium whitespace-nowrap transition-colors ${
                 statusFilter === st
-                  ? 'bg-slate-900 text-white'
-                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                  ? "bg-slate-900 text-white"
+                  : "bg-white border border-slate-200 text-slate-600 hover:border-slate-300"
               }`}
             >
-              {st}
+              {st === "ALL" ? "All" : STATUS_LABELS[st]?.label || st}
             </button>
           ))}
         </div>
       </div>
 
-      {/* Bookings Table */}
-      <div className="bg-white rounded-[1.2rem] border border-slate-100 shadow-sm overflow-hidden">
-        {loading ? (
-          <div className="h-64 flex items-center justify-center">
-            <Loader2 className="animate-spin text-emerald-600" size={28} />
-          </div>
-        ) : filteredBookings.length === 0 ? (
-          <div className="text-center py-16 p-8">
-            <CalendarCheck size={40} className="mx-auto text-slate-300 mb-3" />
-            <h3 className="text-base font-bold text-slate-800">No Bookings or Hires Found</h3>
-            <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto font-medium">
-              No reservations or hires match your current search criteria.
-            </p>
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="bg-slate-50 border-b border-slate-100 text-[10px] font-black uppercase tracking-widest text-slate-400">
-                  <th className="p-4">Customer / Client</th>
-                  <th className="p-4">Unit / Vehicle / Asset</th>
-                  <th className="p-4">Channel</th>
-                  <th className="p-4">Dates / Period</th>
-                  <th className="p-4">Total Amount</th>
-                  <th className="p-4">Paid / Balance</th>
-                  <th className="p-4">Status</th>
-                  <th className="p-4 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 text-xs font-medium text-slate-700">
-                {filteredBookings.map((b) => {
-                  const hasBalance = Number(b.balance) > 0;
-                  const isCheckedOut = b.status === 'CHECKED_OUT';
+      {/* Bookings List */}
+      {loading ? (
+        <div className="flex items-center justify-center h-48">
+          <Loader2 className="animate-spin text-slate-400" size={24} />
+        </div>
+      ) : filtered.length === 0 ? (
+        <div className="text-center py-20 bg-white rounded-2xl border border-slate-100">
+          <CalendarCheck size={32} className="mx-auto text-slate-300 mb-3" />
+          <p className="text-slate-500 text-sm font-medium">No bookings found</p>
+          <button
+            onClick={() => setShowBookingModal(true)}
+            className="mt-4 text-sm font-medium text-slate-900 underline underline-offset-2"
+          >
+            Create your first booking
+          </button>
+        </div>
+      ) : (
+        <div className="space-y-2">
+          {filtered.map((b) => {
+            const hasBalance = Number(b.balance) > 0;
+            const badge = STATUS_LABELS[b.status] || { label: b.status, color: "bg-slate-100 text-slate-600" };
+            const isHighlighted = b.id === highlightedId;
 
-                  return (
-                    <tr key={b.id} className="hover:bg-slate-50/50 transition-colors">
-                      <td className="p-4">
-                        <div className="font-bold text-slate-900">{b.customerName || b.guestName || 'Customer'}</div>
-                        <div className="text-[11px] text-slate-400 font-medium">{b.customerPhone || 'No Phone'}</div>
-                      </td>
-
-                      <td className="p-4">
-                        {(() => {
-                          const matchedRoom = rooms.find(r => r.id === b.resourceId);
-                          const roomImg = matchedRoom?.meta?.imageUrl || (Array.isArray(matchedRoom?.meta?.images) ? matchedRoom?.meta?.images[0] : null);
-                          return (
-                            <div className="flex items-center gap-2.5">
-                              {roomImg ? (
-                                <img src={roomImg} alt="unit" className="w-9 h-9 rounded-lg object-cover border border-slate-200 shrink-0 shadow-sm" />
-                              ) : (
-                                <div className="w-9 h-9 rounded-lg bg-emerald-50 text-emerald-700 font-bold text-xs flex items-center justify-center border border-emerald-100 shrink-0">
-                                  {(b.resourceTitle || 'U').slice(0, 2).toUpperCase()}
-                                </div>
-                              )}
-                              <div>
-                                <span className="font-bold text-slate-900 block leading-tight">{b.resourceTitle || 'Unit'}</span>
-                                <span className="text-[10px] text-slate-400 font-semibold uppercase">{b.resourceType || 'Resource'}</span>
-                              </div>
-                            </div>
-                          );
-                        })()}
-                      </td>
-
-                      <td className="p-4">
-                        <span className="font-bold text-slate-700 bg-slate-100 px-2 py-0.5 rounded-md text-[10px] uppercase">
-                          {b.meta?.bookingSource || 'Direct'}
-                        </span>
-                      </td>
-
-                      <td className="p-4 text-[11px] font-medium text-slate-600">
-                        {b.startTime ? new Date(b.startTime).toLocaleDateString() : 'N/A'} - {b.endTime ? new Date(b.endTime).toLocaleDateString() : 'N/A'}
-                        <div className="text-[10px] text-emerald-700 font-bold">{b.meta?.duration || b.meta?.nights || 1} Unit(s)</div>
-                      </td>
-
-                      <td className="p-4 font-bold text-slate-900">
-                        KES {Number(b.totalAmount).toLocaleString()}
-                      </td>
-
-                      <td className="p-4">
-                        <div className="text-emerald-700 font-bold">
-                          Paid: KES {Number(b.paidAmount).toLocaleString()}
-                        </div>
-                        {hasBalance ? (
-                          <div className="text-amber-600 font-bold text-[10px]">
-                            Bal: KES {Number(b.balance).toLocaleString()}
-                          </div>
-                        ) : (
-                          <div className="text-emerald-600 text-[10px] font-bold">Fully Cleared</div>
-                        )}
-                      </td>
-
-                      <td className="p-4">
-                        <span className={`text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full ${
-                          b.status === 'CHECKED_IN'
-                            ? 'bg-blue-100 text-blue-800'
-                            : b.status === 'CHECKED_OUT'
-                            ? 'bg-purple-100 text-purple-800'
-                            : b.status === 'CANCELLED'
-                            ? 'bg-red-100 text-red-800'
-                            : 'bg-emerald-100 text-emerald-800'
-                        }`}>
-                          {b.status}
-                        </span>
-                      </td>
-
-                      <td className="p-4 text-right space-x-2">
-                        {hasBalance && (
-                          <button
-                            onClick={() => {
-                              setSelectedBooking(b);
-                              setShowPaymentModal(true);
-                            }}
-                            className="px-2.5 py-1 bg-emerald-50 text-emerald-700 font-bold text-[10px] rounded-lg hover:bg-emerald-100 transition-colors"
-                          >
-                            + Pay Balance
-                          </button>
-                        )}
-
-                        {b.status === 'CONFIRMED' && (
-                          <button
-                            onClick={() => handleStatusChange(b.id, 'CHECKED_IN')}
-                            className="px-2.5 py-1 bg-blue-50 text-blue-700 font-bold text-[10px] rounded-lg hover:bg-blue-100 transition-colors"
-                          >
-                            Start / Handover
-                          </button>
-                        )}
-
-                        {b.status === 'CHECKED_IN' && (
-                          <button
-                            onClick={() => handleStatusChange(b.id, 'CHECKED_OUT')}
-                            className="px-2.5 py-1 bg-purple-50 text-purple-700 font-bold text-[10px] rounded-lg hover:bg-purple-100 transition-colors flex items-center gap-1 inline-flex"
-                          >
-                            <LogOut size={12} /> Complete / Return
-                          </button>
-                        )}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
-
-      {/* New Booking / Hire Modal */}
-      <Modal
-        isOpen={showBookingModal}
-        onClose={() => setShowBookingModal(false)}
-        title="New Booking / Vehicle Hire / Reservation"
-        maxWidth="lg"
-      >
-        <form onSubmit={handleCreateBooking} className="space-y-4">
-          {/* Select Room/Vehicle */}
-          <div>
-            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Select Unit / Vehicle / Asset *</label>
-            <select
-              required
-              value={selectedRoomId}
-              onChange={(e) => setSelectedRoomId(e.target.value)}
-              className="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-sm font-bold text-slate-800 outline-none focus:border-emerald-600"
-            >
-              <option value="">Select Unit or Vehicle...</option>
-              {rooms.map(r => {
-                const group = properties.find(p => p.id === r.parentId);
-                const groupName = group ? ` [Group: ${group.title}]` : '';
-                return (
-                  <option key={r.id} value={r.id}>
-                    {r.title}{groupName} ({r.status}) - KES {Number(r.basePrice).toLocaleString()}/rate
-                  </option>
-                );
-              })}
-            </select>
-            {rooms.length === 0 && (
-              <p className="text-[11px] text-amber-700 bg-amber-50 p-2.5 rounded-lg border border-amber-200 mt-2 font-medium">
-                ⚠️ No units or vehicles found. Go to <strong>Units, Assets & Rates</strong> page to add your bookable units or cars first!
-              </p>
-            )}
-
-            {/* Selected Unit Visual Card */}
-            {selectedRoomId && (() => {
-              const room = rooms.find(r => r.id === selectedRoomId);
-              if (!room) return null;
-              const img = room.meta?.imageUrl || (Array.isArray(room.meta?.images) ? room.meta.images[0] : null);
-              return (
-                <div className="mt-2.5 p-3 bg-emerald-50/80 rounded-xl border border-emerald-100 flex items-center gap-3">
-                  {img ? (
-                    <img src={img} alt={room.title} className="w-14 h-14 rounded-lg object-cover border border-emerald-200 shrink-0 shadow-sm" />
-                  ) : (
-                    <div className="w-14 h-14 rounded-lg bg-emerald-800 text-white font-black text-sm flex items-center justify-center shrink-0">
-                      {room.title.slice(0, 2).toUpperCase()}
-                    </div>
-                  )}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-black text-slate-900 truncate">{room.title}</span>
-                      <span className="text-[9px] font-bold uppercase tracking-wider bg-emerald-200 text-emerald-900 px-2 py-0.5 rounded-md shrink-0">
-                        {room.status}
+            return (
+              <motion.div
+                key={b.id}
+                layout
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                className={`bg-white border rounded-2xl p-4 transition-shadow hover:shadow-sm ${
+                  isHighlighted ? "border-emerald-400 shadow-md" : "border-slate-100"
+                }`}
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-semibold text-slate-900 text-sm">
+                        {b.customerName || b.guestName || "Guest"}
+                      </span>
+                      <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full ${badge.color}`}>
+                        {badge.label}
                       </span>
                     </div>
-                    <p className="text-[11px] text-emerald-800 font-bold mt-0.5">
-                      KES {Number(room.basePrice).toLocaleString()} / unit rate
+                    <p className="text-xs text-slate-500 mt-0.5">
+                      {b.customerPhone || "No phone"} · {b.resourceTitle || "Unit"}
                     </p>
-                    {Array.isArray(room.meta?.amenities) && room.meta.amenities.length > 0 && (
-                      <p className="text-[10px] text-slate-500 font-medium truncate mt-0.5">
-                        ✨ {room.meta.amenities.join(' • ')}
-                      </p>
+                    <div className="flex items-center gap-3 mt-2 flex-wrap">
+                      <span className="text-sm font-semibold text-slate-800">
+                        KES {Number(b.totalAmount).toLocaleString()}
+                      </span>
+                      {hasBalance ? (
+                        <span className="text-xs text-amber-600">
+                          Bal: KES {Number(b.balance).toLocaleString()}
+                        </span>
+                      ) : (
+                        <span className="text-xs text-emerald-600">Fully paid</span>
+                      )}
+                      {b.startTime && (
+                        <span className="text-xs text-slate-400">
+                          {new Date(b.startTime).toLocaleDateString()} – {b.endTime ? new Date(b.endTime).toLocaleDateString() : "?"}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex flex-col gap-1.5 shrink-0">
+                    {hasBalance && (
+                      <button
+                        onClick={() => { setSelectedBooking(b); setShowPaymentModal(true); }}
+                        className="text-xs font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 px-2.5 py-1.5 rounded-lg transition-colors"
+                      >
+                        Pay balance
+                      </button>
+                    )}
+                    {b.status === "CONFIRMED" && (
+                      <button
+                        onClick={() => handleStatusChange(b.id, "CHECKED_IN")}
+                        className="text-xs font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 px-2.5 py-1.5 rounded-lg transition-colors"
+                      >
+                        Check in
+                      </button>
+                    )}
+                    {b.status === "CHECKED_IN" && (
+                      <button
+                        onClick={() => handleStatusChange(b.id, "CHECKED_OUT")}
+                        className="text-xs font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 px-2.5 py-1.5 rounded-lg transition-colors flex items-center gap-1"
+                      >
+                        <LogOut size={11} /> Check out
+                      </button>
                     )}
                   </div>
                 </div>
-              );
-            })()}
+              </motion.div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* New Booking Modal */}
+      <Modal
+        isOpen={showBookingModal}
+        onClose={() => { setShowBookingModal(false); resetForm(); }}
+        title="New booking"
+        maxWidth="md"
+      >
+        <form onSubmit={handleCreateBooking} className="space-y-4">
+          {/* Unit selector */}
+          <div>
+            <label className="text-xs font-medium text-slate-500 block mb-1.5">Unit *</label>
+            {availableRooms.length === 0 ? (
+              <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-800">
+                No available units right now.
+              </div>
+            ) : (
+              <select
+                required
+                value={selectedRoomId}
+                onChange={(e) => setSelectedRoomId(e.target.value)}
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-800 outline-none focus:border-slate-400"
+              >
+                <option value="">Select unit...</option>
+                {availableRooms.map((r) => (
+                  <option key={r.id} value={r.id}>
+                    {r.title} — KES {Number(r.basePrice).toLocaleString()}
+                  </option>
+                ))}
+              </select>
+            )}
+            {selectedRoom && (
+              <div className="mt-2 flex items-center gap-2 p-2.5 bg-slate-50 rounded-xl border border-slate-100">
+                {(selectedRoom.meta?.imageUrl || selectedRoom.meta?.images?.[0]) ? (
+                  <img
+                    src={selectedRoom.meta.imageUrl || selectedRoom.meta.images[0]}
+                    alt={selectedRoom.title}
+                    className="w-10 h-10 rounded-lg object-cover shrink-0"
+                  />
+                ) : (
+                  <div className="w-10 h-10 rounded-lg bg-slate-200 flex items-center justify-center text-slate-500 text-xs font-bold shrink-0">
+                    {selectedRoom.title.slice(0, 2).toUpperCase()}
+                  </div>
+                )}
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold text-slate-900 truncate">{selectedRoom.title}</p>
+                  <p className="text-xs text-slate-500">KES {Number(selectedRoom.basePrice).toLocaleString()}</p>
+                </div>
+              </div>
+            )}
           </div>
 
-          {/* Guest / Customer Details */}
+          {/* Guest info */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Customer / Client Name *</label>
+              <label className="text-xs font-medium text-slate-500 block mb-1.5">Name *</label>
               <input
-                type="text"
                 required
-                placeholder="e.g. John Doe"
+                type="text"
+                placeholder="John Doe"
                 value={customerName}
                 onChange={(e) => setCustomerName(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-sm font-bold text-slate-800 outline-none focus:border-emerald-600"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-slate-400"
               />
             </div>
             <div>
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Customer / Client Phone *</label>
+              <label className="text-xs font-medium text-slate-500 block mb-1.5">Phone *</label>
               <input
-                type="text"
                 required
-                placeholder="e.g. 0712345678"
+                type="text"
+                placeholder="0712345678"
                 value={customerPhone}
                 onChange={(e) => setCustomerPhone(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-sm font-bold text-slate-800 outline-none focus:border-emerald-600"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-slate-400"
               />
             </div>
           </div>
 
-          {/* Dates & Duration */}
+          {/* Dates */}
           <div className="grid grid-cols-3 gap-3">
             <div>
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Start Date / Pickup</label>
-              <input
-                type="date"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-xs font-bold text-slate-800 outline-none focus:border-emerald-600"
-              />
+              <label className="text-xs font-medium text-slate-500 block mb-1.5">Start date</label>
+              <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)}
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-slate-400" />
             </div>
             <div>
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">End Date / Return</label>
-              <input
-                type="date"
-                value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-xs font-bold text-slate-800 outline-none focus:border-emerald-600"
-              />
+              <label className="text-xs font-medium text-slate-500 block mb-1.5">End date</label>
+              <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)}
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-slate-400" />
             </div>
             <div>
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Duration (Days / Units)</label>
-              <input
-                type="number"
-                min="1"
-                value={duration}
+              <label className="text-xs font-medium text-slate-500 block mb-1.5">Duration</label>
+              <input type="number" min="1" value={duration}
                 onChange={(e) => handleDurationChange(parseInt(e.target.value) || 1)}
-                className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-xs font-bold text-slate-800 outline-none focus:border-emerald-600"
-              />
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-slate-400" />
             </div>
           </div>
 
-          {/* Pricing & Booking Source */}
+          {/* Pricing */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Rate / Unit (KES)</label>
-              <input
-                type="number"
-                value={ratePerUnit}
-                onChange={(e) => {
-                  const r = parseFloat(e.target.value) || 0;
-                  setRatePerUnit(e.target.value);
-                  recalculateTotal(r, duration);
-                }}
-                className="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-sm font-bold text-slate-800 outline-none focus:border-emerald-600"
-              />
+              <label className="text-xs font-medium text-slate-500 block mb-1.5">Source</label>
+              <select value={bookingSource} onChange={(e) => setBookingSource(e.target.value)}
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-slate-400">
+                <option value="Direct">Direct</option>
+                <option value="WhatsApp">WhatsApp</option>
+                <option value="Online">Online</option>
+                <option value="Agent">Agent</option>
+                <option value="Other">Other</option>
+              </select>
             </div>
             <div>
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Channel / Source</label>
-              <select
-                value={bookingSource}
-                onChange={(e) => setBookingSource(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-sm font-bold text-slate-800 outline-none focus:border-emerald-600"
-              >
-                <option value="Direct">Direct / Walk-in / Showroom</option>
-                <option value="WhatsApp">WhatsApp / Phone</option>
-                <option value="Online">Online Platform</option>
-                <option value="Agent">Agent / Referral</option>
-                <option value="Other">Other</option>
+              <label className="text-xs font-medium text-slate-500 block mb-1.5">Payment</label>
+              <select value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value)}
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-slate-400">
+                <option value="MPESA">M-Pesa</option>
+                <option value="CASH">Cash</option>
+                <option value="BANK">Bank Transfer</option>
+                <option value="CARD">Card</option>
               </select>
             </div>
           </div>
 
-          {/* Total & Deposit Paid */}
-          <div className="grid grid-cols-2 gap-3 p-4 bg-emerald-50 rounded-xl border border-emerald-100">
+          {/* Total + Deposit */}
+          <div className="bg-slate-50 rounded-xl p-4 border border-slate-100 flex items-center justify-between gap-4">
             <div>
-              <label className="text-[10px] font-black text-emerald-900 uppercase tracking-widest block mb-1">Total Amount</label>
-              <div className="text-xl font-black text-emerald-900">
-                KES {Number(totalAmount).toLocaleString()}
-              </div>
+              <p className="text-xs text-slate-500 font-medium">Total</p>
+              <p className="text-xl font-bold text-slate-900">KES {Number(totalAmount || 0).toLocaleString()}</p>
             </div>
-            <div>
-              <label className="text-[10px] font-black text-emerald-900 uppercase tracking-widest block mb-1">Amount Paid Now (Deposit)</label>
-              <input
-                type="number"
-                placeholder="e.g. 5000"
-                value={paidAmount}
-                onChange={(e) => setPaidAmount(e.target.value)}
-                className="w-full bg-white border border-emerald-200 rounded-lg p-2.5 text-sm font-bold text-slate-900 outline-none focus:border-emerald-600"
-              />
+            <div className="flex-1">
+              <label className="text-xs font-medium text-slate-500 block mb-1">Deposit</label>
+              <input type="number" placeholder="0" value={paidAmount} onChange={(e) => setPaidAmount(e.target.value)}
+                className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-slate-400" />
             </div>
           </div>
 
-          {/* Payment Method */}
-          <div>
-            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Payment Method</label>
-            <select
-              value={paymentMethod}
-              onChange={(e) => setPaymentMethod(e.target.value)}
-              className="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-sm font-bold text-slate-800 outline-none focus:border-emerald-600"
-            >
-              <option value="MPESA">M-Pesa</option>
-              <option value="CASH">Cash</option>
-              <option value="BANK">Bank Transfer</option>
-              <option value="CARD">Card</option>
-            </select>
-          </div>
-
-          <button
-            type="submit"
-            disabled={submitting}
-            className="w-full h-12 bg-[#0D4A3E] text-white font-black text-xs uppercase tracking-wider rounded-lg hover:bg-[#08362D] transition-all flex items-center justify-center shadow-lg disabled:opacity-50"
-          >
-            {submitting ? <Loader2 className="animate-spin" size={18} /> : 'Save Booking / Hire'}
+          <button type="submit" disabled={submitting || availableRooms.length === 0}
+            className="w-full bg-slate-900 text-white py-3 rounded-full text-sm font-semibold hover:bg-slate-700 transition-colors disabled:opacity-40 flex items-center justify-center gap-2">
+            {submitting ? <Loader2 className="animate-spin" size={16} /> : "Save booking"}
           </button>
         </form>
       </Modal>
 
-      {/* Record Payment Modal */}
+      {/* Payment Modal */}
       <Modal
         isOpen={showPaymentModal && !!selectedBooking}
         onClose={() => setShowPaymentModal(false)}
-        title="Record Payment"
-        maxWidth="md"
+        title="Record payment"
+        maxWidth="sm"
       >
         {selectedBooking && (
-          <div className="space-y-4">
-            <div className="p-3 bg-amber-50 rounded-lg border border-amber-100 text-amber-900 text-xs">
-              <div className="font-bold">{selectedBooking.guestName || 'Customer'} ({selectedBooking.resourceTitle})</div>
-              <div>Outstanding Balance: <span className="font-black">KES {Number(selectedBooking.balance).toLocaleString()}</span></div>
+          <form onSubmit={handleRecordPayment} className="space-y-4">
+            <div className="p-3 bg-amber-50 border border-amber-100 rounded-xl text-sm text-amber-800">
+              <span className="font-semibold">{selectedBooking.guestName || "Customer"}</span>
+              {" "}· Outstanding: <span className="font-bold">KES {Number(selectedBooking.balance).toLocaleString()}</span>
             </div>
-
-            <form onSubmit={handleRecordPayment} className="space-y-4">
-              <div>
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Payment Amount (KES) *</label>
-                <input
-                  type="number"
-                  required
-                  max={selectedBooking.balance}
-                  placeholder={`Max KES ${selectedBooking.balance}`}
-                  value={topupAmount}
-                  onChange={(e) => setTopupAmount(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-sm font-bold text-slate-800 outline-none focus:border-emerald-600"
-                />
-              </div>
-
-              <div>
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Payment Method</label>
-                <select
-                  value={topupMethod}
-                  onChange={(e) => setTopupMethod(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-sm font-bold text-slate-800 outline-none focus:border-emerald-600"
-                >
-                  <option value="MPESA">M-Pesa</option>
-                  <option value="CASH">Cash</option>
-                  <option value="BANK">Bank Transfer</option>
-                  <option value="CARD">Card</option>
-                </select>
-              </div>
-
-              <button
-                type="submit"
-                disabled={submitting}
-                className="w-full h-12 bg-[#0D4A3E] text-white font-black text-xs uppercase tracking-wider rounded-lg hover:bg-[#08362D] transition-all flex items-center justify-center shadow-lg disabled:opacity-50"
-              >
-                {submitting ? <Loader2 className="animate-spin" size={18} /> : 'Record Payment & Sync Revenue'}
-              </button>
-            </form>
-          </div>
+            <div>
+              <label className="text-xs font-medium text-slate-500 block mb-1.5">Amount (KES)</label>
+              <input required type="number" max={selectedBooking.balance}
+                placeholder={`Max ${selectedBooking.balance}`} value={topupAmount}
+                onChange={(e) => setTopupAmount(e.target.value)}
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-slate-400" />
+            </div>
+            <div>
+              <label className="text-xs font-medium text-slate-500 block mb-1.5">Payment</label>
+              <select value={topupMethod} onChange={(e) => setTopupMethod(e.target.value)}
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-slate-400">
+                <option value="MPESA">M-Pesa</option>
+                <option value="CASH">Cash</option>
+                <option value="BANK">Bank Transfer</option>
+                <option value="CARD">Card</option>
+              </select>
+            </div>
+            <button type="submit" disabled={submitting}
+              className="w-full bg-slate-900 text-white py-3 rounded-full text-sm font-semibold hover:bg-slate-700 transition-colors disabled:opacity-40 flex items-center justify-center gap-2">
+              {submitting ? <Loader2 className="animate-spin" size={16} /> : "Record payment"}
+            </button>
+          </form>
         )}
       </Modal>
     </div>

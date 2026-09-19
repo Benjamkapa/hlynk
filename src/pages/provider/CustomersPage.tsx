@@ -73,7 +73,7 @@ export default function CustomersPage() {
       </div>
 
       {/* Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-px bg-gray-100 rounded-[.5rem] overflow-hidden border border-gray-100">
+      <div className="grid grid-cols-3 md:grid-cols-3 gap-px bg-gray-100 rounded-[.5rem] overflow-hidden border border-gray-100">
         <StatCell icon={Users} label="Total database" value={String(stats.total)} sub="Registered customers" />
         <StatCell icon={Star} label="Active today" value={String(stats.activeToday)} sub="Visiting customers" />
         <StatCell icon={Star} label="Top spender" value={String(stats.topSpender)} sub="High value profile" />

@@ -1,29 +1,23 @@
 import { useState, useEffect } from "react";
-import {
-  Sparkles, Wrench, Plus, CheckCircle2, Clock, AlertTriangle, Loader2, DollarSign, X
-} from "lucide-react";
+import { Sparkles, Wrench, Plus, CheckCircle2, Loader2 } from "lucide-react";
 import { operationsApi, resourcesApi, OperationTask, Resource } from "../../../lib/api/universal";
 import { toast } from "sonner";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { Modal } from "../../../components/shared/Modal";
 
 export default function OperationsPage() {
   const [operations, setOperations] = useState<OperationTask[]>([]);
   const [rooms, setRooms] = useState<Resource[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'CLEANING' | 'MAINTENANCE'>('CLEANING');
+  const [activeTab, setActiveTab] = useState<"CLEANING" | "MAINTENANCE">("CLEANING");
 
-  // Modal State
   const [showModal, setShowModal] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-
-  // Form State
   const [selectedRoomId, setSelectedRoomId] = useState("");
-  const [opType, setOpType] = useState<'CLEANING' | 'MAINTENANCE'>('CLEANING');
+  const [opType, setOpType] = useState<"CLEANING" | "MAINTENANCE">("CLEANING");
   const [title, setTitle] = useState("");
   const [estimatedCost, setEstimatedCost] = useState("");
 
-  // Complete Task Modal
   const [showCompleteModal, setShowCompleteModal] = useState(false);
   const [selectedTask, setSelectedTask] = useState<OperationTask | null>(null);
   const [actualCost, setActualCost] = useState("");
@@ -33,41 +27,34 @@ export default function OperationsPage() {
     try {
       const [opData, roomData] = await Promise.all([
         operationsApi.getOperations(),
-        resourcesApi.getResources({})
+        resourcesApi.getResources({}),
       ]);
       setOperations(opData);
       setRooms(roomData);
     } catch (err: any) {
-      toast.error("Failed to load operations tasks", { description: err.message });
+      toast.error("Failed to load tasks", { description: err.message });
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => {
-    fetchData();
-  }, []);
+  useEffect(() => { fetchData(); }, []);
 
   const handleCreateTask = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedRoomId || !title.trim()) {
-      return toast.error("Please select a unit/vehicle and enter a task title");
-    }
-
+    if (!selectedRoomId || !title.trim()) return toast.error("Select a unit and enter a task description");
     setSubmitting(true);
     try {
       await operationsApi.createOperation({
         resourceId: selectedRoomId,
         opType,
         title,
-        status: 'PENDING',
-        estimatedCost: parseFloat(estimatedCost) || 0
+        status: "PENDING",
+        estimatedCost: parseFloat(estimatedCost) || 0,
       });
-
-      toast.success(`${opType === 'CLEANING' ? 'Cleaning / Detailing' : 'Maintenance / Servicing'} task created!`);
+      toast.success("Task logged");
       setShowModal(false);
-      setTitle("");
-      setEstimatedCost("");
+      setTitle(""); setEstimatedCost("");
       fetchData();
     } catch (err: any) {
       toast.error(err.message || "Failed to create task");
@@ -79,209 +66,207 @@ export default function OperationsPage() {
   const handleCompleteTask = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedTask) return;
-
     setSubmitting(true);
     try {
       const cost = parseFloat(actualCost) || 0;
-      await operationsApi.updateOperation(selectedTask.id, {
-        status: 'COMPLETED',
-        actualCost: cost
-      });
-
-      if (cost > 0) {
-        toast.success("Task completed & expense auto-synced to Core Ledger!");
-      } else {
-        toast.success("Task marked as completed!");
-      }
-
+      await operationsApi.updateOperation(selectedTask.id, { status: "COMPLETED", actualCost: cost });
+      toast.success(cost > 0 ? "Task done — expense logged!" : "Task marked complete");
       setShowCompleteModal(false);
       setActualCost("");
       fetchData();
     } catch (err: any) {
-      const msg = err?.response?.data?.message || err?.message || "Failed to complete task";
-      toast.error(msg);
+      toast.error(err?.response?.data?.message || err?.message || "Failed to complete task");
     } finally {
       setSubmitting(false);
     }
   };
 
-  const filteredTasks = operations.filter(o => o.opType === activeTab);
+  const filteredTasks = operations.filter((o) => o.opType === activeTab);
+  const pendingCleaning = operations.filter((o) => o.opType === "CLEANING" && o.status !== "COMPLETED").length;
+  const pendingMaintenance = operations.filter((o) => o.opType === "MAINTENANCE" && o.status !== "COMPLETED").length;
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto pb-12">
+    <div className="max-w-3xl mx-auto pb-20 px-1">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-[1.2rem] border border-slate-100 shadow-sm">
+      <div className="flex items-center justify-between py-5">
         <div>
-          <h1 className="text-xl font-bold text-slate-900 flex items-center gap-2">
-            <Sparkles className="text-purple-600" size={22} /> Cleaning, Servicing & Maintenance
-          </h1>
-          <p className="text-xs text-slate-500 font-medium mt-0.5">
-            Track unit detailing, housekeeping queues, car servicing, and maintenance tickets. Repairs auto-feed into Core Expenses.
-          </p>
+          <h1 className="text-xl font-semibold text-slate-900">Tasks</h1>
+          <p className="text-sm text-slate-500 mt-0.5">Cleaning, maintenance & servicing</p>
         </div>
-
         <button
-          onClick={() => {
-            setOpType(activeTab);
-            setShowModal(true);
-          }}
-          className="px-4 py-2.5 bg-[#0D4A3E] text-white font-black text-xs uppercase tracking-wider rounded-[.5rem] hover:bg-[#08362D] transition-all flex items-center gap-2 shadow-lg"
+          onClick={() => { setOpType(activeTab); setShowModal(true); }}
+          className="flex items-center gap-1.5 bg-slate-900 text-white text-sm font-medium px-4 py-2.5 rounded-full hover:bg-slate-700 transition-colors"
         >
-          <Plus size={16} /> Log {activeTab === 'CLEANING' ? 'Cleaning / Detailing' : 'Maintenance / Servicing'}
+          <Plus size={15} /> Log task
         </button>
       </div>
 
       {/* Tabs */}
-      <div className="flex items-center gap-2 border-b border-slate-200">
+      <div className="flex gap-2 mb-5">
         <button
-          onClick={() => setActiveTab('CLEANING')}
-          className={`pb-3 px-4 font-bold text-xs flex items-center gap-2 transition-all border-b-2 ${
-            activeTab === 'CLEANING'
-              ? 'border-purple-600 text-purple-700'
-              : 'border-transparent text-slate-400 hover:text-slate-700'
+          onClick={() => setActiveTab("CLEANING")}
+          className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+            activeTab === "CLEANING"
+              ? "bg-slate-900 text-white"
+              : "bg-white border border-slate-200 text-slate-600 hover:border-slate-300"
           }`}
         >
-          <Sparkles size={16} /> Cleaning & Detailing ({operations.filter(o => o.opType === 'CLEANING' && o.status !== 'COMPLETED').length})
+          <Sparkles size={13} /> Cleaning
+          {pendingCleaning > 0 && (
+            <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${activeTab === "CLEANING" ? "bg-white/20" : "bg-slate-100"}`}>
+              {pendingCleaning}
+            </span>
+          )}
         </button>
-
         <button
-          onClick={() => setActiveTab('MAINTENANCE')}
-          className={`pb-3 px-4 font-bold text-xs flex items-center gap-2 transition-all border-b-2 ${
-            activeTab === 'MAINTENANCE'
-              ? 'border-amber-600 text-amber-700'
-              : 'border-transparent text-slate-400 hover:text-slate-700'
+          onClick={() => setActiveTab("MAINTENANCE")}
+          className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+            activeTab === "MAINTENANCE"
+              ? "bg-slate-900 text-white"
+              : "bg-white border border-slate-200 text-slate-600 hover:border-slate-300"
           }`}
         >
-          <Wrench size={16} /> Maintenance & Servicing ({operations.filter(o => o.opType === 'MAINTENANCE' && o.status !== 'COMPLETED').length})
+          <Wrench size={13} /> Maintenance
+          {pendingMaintenance > 0 && (
+            <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${activeTab === "MAINTENANCE" ? "bg-white/20" : "bg-slate-100"}`}>
+              {pendingMaintenance}
+            </span>
+          )}
         </button>
       </div>
 
-      {/* Operations List */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {loading ? (
-          <div className="col-span-full h-48 flex items-center justify-center">
-            <Loader2 className="animate-spin text-emerald-600" size={28} />
-          </div>
-        ) : filteredTasks.length === 0 ? (
-          <div className="col-span-full text-center py-16 bg-white rounded-[1.2rem] border-2 border-dashed border-slate-200 p-8">
-            <CheckCircle2 size={40} className="mx-auto text-slate-300 mb-3" />
-            <h3 className="text-base font-bold text-slate-800">
-              No Pending {activeTab === 'CLEANING' ? 'Cleaning or Detailing' : 'Maintenance or Servicing'} Tasks
-            </h3>
-            <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto font-medium">
-              All units and vehicles are currently in good condition and ready for use.
-            </p>
-          </div>
-        ) : (
-          filteredTasks.map((task) => {
-            const isCompleted = task.status === 'COMPLETED';
-            const taskTitle = task.meta?.title || `${task.opType} for Unit`;
-
+      {/* Tasks */}
+      {loading ? (
+        <div className="flex items-center justify-center h-48">
+          <Loader2 className="animate-spin text-slate-400" size={24} />
+        </div>
+      ) : filteredTasks.length === 0 ? (
+        <div className="text-center py-20 bg-white rounded-2xl border border-slate-100">
+          <CheckCircle2 size={32} className="mx-auto text-slate-300 mb-3" />
+          <p className="text-slate-500 text-sm font-medium">
+            No {activeTab === "CLEANING" ? "cleaning" : "maintenance"} tasks
+          </p>
+          <button
+            onClick={() => { setOpType(activeTab); setShowModal(true); }}
+            className="mt-4 text-sm font-medium text-slate-900 underline underline-offset-2"
+          >
+            Log a task
+          </button>
+        </div>
+      ) : (
+        <div className="space-y-2">
+          {filteredTasks.map((task) => {
+            const done = task.status === "COMPLETED";
+            const taskTitle = task.meta?.title || `${task.opType} task`;
             return (
               <motion.div
                 key={task.id}
-                initial={{ opacity: 0, y: 10 }}
+                initial={{ opacity: 0, y: 6 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="bg-white rounded-[1.2rem] border border-slate-100 shadow-sm p-5 flex flex-col justify-between"
+                className="bg-white border border-slate-100 rounded-2xl p-4 hover:shadow-sm transition-shadow"
               >
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700">
-                      {task.resourceTitle || 'Item'}
-                    </span>
-                    <span className={`text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md ${
-                      isCompleted ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
-                    }`}>
-                      {task.status}
-                    </span>
-                  </div>
-
-                  <h3 className="text-base font-bold text-slate-900 leading-tight">{taskTitle}</h3>
-                  <p className="text-xs text-slate-500 font-medium mt-1">
-                    Logged on: {new Date(task.createdAt).toLocaleDateString()}
-                  </p>
-
-                  {task.actualCost > 0 && (
-                    <div className="mt-3 p-2 bg-emerald-50 rounded-lg border border-emerald-100 text-xs font-bold text-emerald-800">
-                      Actual Cost: KES {Number(task.actualCost).toLocaleString()} (Synced to Core Expenses)
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-medium text-slate-900 text-sm">{taskTitle}</span>
+                      <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full ${
+                        done ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"
+                      }`}>
+                        {done ? "Done" : "Pending"}
+                      </span>
                     </div>
-                  )}
-                </div>
-
-                <div className="mt-5 pt-3 border-t border-slate-100 flex items-center justify-between">
-                  <span className="text-[10px] font-bold text-slate-400">ID: {task.id.slice(-8)}</span>
-                  {!isCompleted && (
+                    <p className="text-xs text-slate-500 mt-0.5">
+                      {task.resourceTitle || "Unit"} · {new Date(task.createdAt).toLocaleDateString()}
+                    </p>
+                    {task.actualCost > 0 && (
+                      <p className="text-xs text-emerald-700 mt-1 font-medium">
+                        Cost: KES {Number(task.actualCost).toLocaleString()}
+                      </p>
+                    )}
+                  </div>
+                  {!done && (
                     <button
-                      onClick={() => {
-                        setSelectedTask(task);
-                        setShowCompleteModal(true);
-                      }}
-                      className="px-3 py-1.5 bg-emerald-700 text-white font-bold text-xs rounded-lg hover:bg-emerald-800 transition-colors flex items-center gap-1.5 shadow-sm"
+                      onClick={() => { setSelectedTask(task); setShowCompleteModal(true); }}
+                      className="text-xs font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded-lg transition-colors shrink-0"
                     >
-                      <CheckCircle2 size={14} /> Mark Resolved
+                      Mark done
                     </button>
                   )}
                 </div>
               </motion.div>
             );
-          })
-        )}
-      </div>
+          })}
+        </div>
+      )}
 
       {/* New Task Modal */}
       <Modal
         isOpen={showModal}
-        onClose={() => setShowModal(false)}
-        title={`Log ${opType === 'CLEANING' ? 'Cleaning / Detailing Task' : 'Maintenance / Servicing Ticket'}`}
-        maxWidth="md"
+        onClose={() => { setShowModal(false); setTitle(""); setEstimatedCost(""); }}
+        title="Log a task"
+        maxWidth="sm"
       >
         <form onSubmit={handleCreateTask} className="space-y-4">
           <div>
-            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Select Unit / Vehicle / Asset *</label>
+            <label className="text-xs font-medium text-slate-500 block mb-1.5">Unit *</label>
             <select
               required
               value={selectedRoomId}
               onChange={(e) => setSelectedRoomId(e.target.value)}
-              className="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-sm font-bold text-slate-800 outline-none focus:border-emerald-600"
+              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-slate-400"
             >
-              <option value="">Select Unit / Vehicle...</option>
-              {rooms.map(r => (
+              <option value="">Select unit...</option>
+              {rooms.filter(r => r.type !== "PROPERTY").map((r) => (
                 <option key={r.id} value={r.id}>{r.title} ({r.status})</option>
               ))}
             </select>
           </div>
-
           <div>
-            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Title / Description *</label>
+            <label className="text-xs font-medium text-slate-500 block mb-1.5">Task type</label>
+            <div className="flex gap-2">
+              {(["CLEANING", "MAINTENANCE"] as const).map((t) => (
+                <button
+                  key={t}
+                  type="button"
+                  onClick={() => setOpType(t)}
+                  className={`flex-1 py-2 rounded-xl text-xs font-medium transition-colors border ${
+                    opType === t ? "bg-slate-900 text-white border-slate-900" : "bg-slate-50 border-slate-200 text-slate-600"
+                  }`}
+                >
+                  {t === "CLEANING" ? "Cleaning" : "Maintenance"}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div>
+            <label className="text-xs font-medium text-slate-500 block mb-1.5">Description *</label>
             <input
-              type="text"
               required
-              placeholder={opType === 'CLEANING' ? "e.g. Car detailing / Deep clean after rental return" : "e.g. Oil change, Brake pad replacement, Leaking shower"}
+              type="text"
+              placeholder={opType === "CLEANING" ? "e.g. Deep clean after checkout" : "e.g. Oil change, broken AC"}
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-sm font-bold text-slate-800 outline-none focus:border-emerald-600"
+              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-slate-400"
             />
           </div>
-
-          {opType === 'MAINTENANCE' && (
+          {opType === "MAINTENANCE" && (
             <div>
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Estimated Cost (KES)</label>
+              <label className="text-xs font-medium text-slate-500 block mb-1.5">Estimated cost (KES)</label>
               <input
                 type="number"
                 placeholder="e.g. 1500"
                 value={estimatedCost}
                 onChange={(e) => setEstimatedCost(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-sm font-bold text-slate-800 outline-none focus:border-emerald-600"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-slate-400"
               />
             </div>
           )}
-
           <button
             type="submit"
             disabled={submitting}
-            className="w-full h-12 bg-[#0D4A3E] text-white font-black text-xs uppercase tracking-wider rounded-lg hover:bg-[#08362D] transition-all flex items-center justify-center shadow-lg disabled:opacity-50"
+            className="w-full bg-slate-900 text-white py-3 rounded-full text-sm font-semibold hover:bg-slate-700 transition-colors disabled:opacity-40 flex items-center justify-center gap-2"
           >
-            {submitting ? <Loader2 className="animate-spin" size={18} /> : 'Save Task'}
+            {submitting ? <Loader2 className="animate-spin" size={16} /> : "Save task"}
           </button>
         </form>
       </Modal>
@@ -289,37 +274,36 @@ export default function OperationsPage() {
       {/* Complete Task Modal */}
       <Modal
         isOpen={showCompleteModal && !!selectedTask}
-        onClose={() => setShowCompleteModal(false)}
-        title="Resolve & Complete Task"
-        subtitle={selectedTask ? `Resource: ${selectedTask.resourceTitle}` : undefined}
-        maxWidth="md"
+        onClose={() => { setShowCompleteModal(false); setActualCost(""); }}
+        title="Complete task"
+        maxWidth="sm"
       >
-        <form onSubmit={handleCompleteTask} className="space-y-4">
-          <div>
-            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">
-              Actual Expense Cost (KES)
-            </label>
-            <input
-              type="number"
-              min="0"
-              placeholder="Enter cost (e.g. 1500) or leave 0 for free"
-              value={actualCost}
-              onChange={(e) => setActualCost(e.target.value)}
-              className="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-sm font-bold text-slate-800 outline-none focus:border-emerald-600"
-            />
-            <p className="text-[10px] text-slate-400 font-medium mt-1">
-              If cost &gt; 0, it will automatically record an entry in hlynk Core Expenses.
+        {selectedTask && (
+          <form onSubmit={handleCompleteTask} className="space-y-4">
+            <p className="text-sm text-slate-600 bg-slate-50 rounded-xl p-3 border border-slate-100">
+              <span className="font-semibold text-slate-900">{selectedTask.resourceTitle}</span> · {selectedTask.meta?.title || "Task"}
             </p>
-          </div>
-
-          <button
-            type="submit"
-            disabled={submitting}
-            className="w-full h-12 bg-emerald-700 text-white font-black text-xs uppercase tracking-wider rounded-lg hover:bg-emerald-800 transition-all flex items-center justify-center shadow-lg disabled:opacity-50"
-          >
-            {submitting ? <Loader2 className="animate-spin" size={18} /> : 'Complete & Free Up Asset'}
-          </button>
-        </form>
+            <div>
+              <label className="text-xs font-medium text-slate-500 block mb-1.5">Actual cost (KES)</label>
+              <input
+                type="number"
+                min="0"
+                placeholder="0 if no cost"
+                value={actualCost}
+                onChange={(e) => setActualCost(e.target.value)}
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-slate-400"
+              />
+              <p className="text-xs text-slate-400 mt-1">Cost will be logged to expenses.</p>
+            </div>
+            <button
+              type="submit"
+              disabled={submitting}
+              className="w-full bg-slate-900 text-white py-3 rounded-full text-sm font-semibold hover:bg-slate-700 transition-colors disabled:opacity-40 flex items-center justify-center gap-2"
+            >
+              {submitting ? <Loader2 className="animate-spin" size={16} /> : "Complete task"}
+            </button>
+          </form>
+        )}
       </Modal>
     </div>
   );
