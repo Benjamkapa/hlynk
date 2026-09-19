@@ -641,6 +641,15 @@
     box-shadow: 0 1px 0 rgba(15, 23, 42, 0.06), inset 0 1px 0 rgba(255,255,255,0.9);
   }
 
+  /* Glass Dock — Edge-to-edge mobile bottom navigation bar */
+  .glass-dock {
+    background: rgba(255, 255, 255, 0.88);
+    backdrop-filter: blur(32px) saturate(210%);
+    -webkit-backdrop-filter: blur(32px) saturate(210%);
+    border-top: 1px solid rgba(255, 255, 255, 0.75);
+    box-shadow: 0 -12px 40px rgba(15, 23, 42, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.95);
+  }
+
   /* Glass modal backdrop — for overlays / drawers */
   .glass-modal {
     background: rgba(15, 23, 42, 0.45);
@@ -663,9 +672,11 @@
  * Push them below the safe area inset with a minimum of 16px on non-notch devices.
  * ─────────────────────────────────────────────────────────────────────────── */
 [data-sonner-toaster][data-position*="top"] {
-  top: max(16px, calc(env(safe-area-inset-top) + 8px)) !important;
+  top: max(28px, calc(env(safe-area-inset-top, 0px) + 16px)) !important;
+  z-index: 999999 !important;
 }
 [data-sonner-toaster][data-position*="bottom"] {
-  bottom: max(16px, calc(env(safe-area-inset-bottom) + 8px)) !important;
+  bottom: max(28px, calc(env(safe-area-inset-bottom, 0px) + 16px)) !important;
+  z-index: 999999 !important;
 }
 

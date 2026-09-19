@@ -206,7 +206,7 @@ function AdminMobileBottomNav({ onOpenDrawer, onLogout }: { onOpenDrawer: () => 
   );
 
   return (
-    <div className="fixed inset-x-0 bottom-0 z-[95] lg:hidden flex flex-col items-center pointer-events-none pb-[max(0.25rem,env(safe-area-inset-bottom,0.25rem))]">
+    <div className="fixed inset-x-0 bottom-0 z-[95] lg:hidden flex flex-col items-center pointer-events-none">
       {/* Backdrop */}
       <AnimatePresence>
         {showMoreSheet && (
@@ -216,7 +216,7 @@ function AdminMobileBottomNav({ onOpenDrawer, onLogout }: { onOpenDrawer: () => 
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-[93] bg-slate-900/30 pointer-events-auto"
+            className="fixed inset-0 z-[93] bg-slate-900/30 backdrop-blur-xs pointer-events-auto"
             onClick={() => setShowMoreSheet(false)}
           />
         )}
@@ -231,7 +231,7 @@ function AdminMobileBottomNav({ onOpenDrawer, onLogout }: { onOpenDrawer: () => 
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 16, scale: 0.97 }}
             transition={{ duration: 0.22, ease: [0.32, 0.72, 0, 1] }}
-            className="fixed inset-x-3 z-[94] bottom-[calc(4.75rem+env(safe-area-inset-bottom,0px))] pointer-events-auto max-h-[75vh] flex flex-col"
+            className="fixed inset-x-3 z-[94] bottom-[calc(4.85rem+env(safe-area-inset-bottom,0px))] pointer-events-auto max-h-[75vh] flex flex-col"
           >
             <div className="glass-sheet rounded-[1rem] overflow-hidden border border-white/60 flex flex-col max-h-full p-2 shadow-2xl">
               <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100 flex-shrink-0">
@@ -287,9 +287,9 @@ function AdminMobileBottomNav({ onOpenDrawer, onLogout }: { onOpenDrawer: () => 
         )}
       </AnimatePresence>
 
-      {/* Floating Bottom Nav Bar */}
-      <div className="w-full px-3 pointer-events-auto">
-        <div className="relative py-2 glass-bar rounded-[2rem] flex items-center justify-between px-3 shadow-xl border border-white/60">
+      {/* Bottom Nav Glass Dock — Edge-to-edge frosted glass anchored to absolute bottom */}
+      <div className="w-full pointer-events-auto glass-dock rounded-t-3xl pt-2 pb-[max(0.75rem,env(safe-area-inset-bottom,0.75rem))] px-3 border-t border-white/80 shadow-[0_-12px_40px_rgba(0,0,0,0.15)]">
+        <div className="flex items-center justify-between w-full max-w-md mx-auto">
           {primaryTabs.map((tab) => (
             <NavLink
               key={tab.label}
@@ -299,10 +299,10 @@ function AdminMobileBottomNav({ onOpenDrawer, onLogout }: { onOpenDrawer: () => 
             >
               {({ isActive }) => (
                 <>
-                  <div className={`w-9 h-9 rounded-full flex items-center justify-center transition-all duration-200 ${isActive ? 'bg-emerald-100/80 text-emerald-800' : 'bg-transparent text-slate-400'}`}>
-                    <tab.icon className="w-[18px] h-[18px]" strokeWidth={isActive ? 2.5 : 2} />
+                  <div className={`w-9 h-9 rounded-full flex items-center justify-center transition-all duration-200 ${isActive ? 'bg-emerald-100/80 text-[#00694B]' : 'bg-transparent text-slate-500'}`}>
+                    <tab.icon className="w-[19px] h-[19px]" strokeWidth={isActive ? 2.5 : 2} />
                   </div>
-                  <span className={`text-[9px] font-bold transition-all truncate w-full text-center ${isActive ? 'text-emerald-800' : 'text-slate-500'}`}>
+                  <span className={`text-[10px] font-extrabold transition-all truncate w-full text-center ${isActive ? 'text-[#00694B]' : 'text-slate-500'}`}>
                     {tab.label}
                   </span>
                 </>
@@ -315,10 +315,10 @@ function AdminMobileBottomNav({ onOpenDrawer, onLogout }: { onOpenDrawer: () => 
             onClick={() => setShowMoreSheet(v => !v)}
             className="flex-1 min-w-0 flex flex-col items-center gap-0.5 py-1 no-tap-highlight"
           >
-            <div className={`w-9 h-9 rounded-full flex items-center justify-center transition-all duration-200 ${showMoreSheet ? 'bg-emerald-100/80 text-emerald-800' : 'bg-transparent text-slate-400'}`}>
-              <MoreHorizontal className="w-[18px] h-[18px]" strokeWidth={2} />
+            <div className={`w-9 h-9 rounded-full flex items-center justify-center transition-all duration-200 ${showMoreSheet ? 'bg-emerald-100/80 text-[#00694B]' : 'bg-transparent text-slate-500'}`}>
+              <MoreHorizontal className="w-[19px] h-[19px]" strokeWidth={showMoreSheet ? 2.5 : 2} />
             </div>
-            <span className={`text-[9px] font-bold transition-all truncate w-full text-center ${showMoreSheet ? 'text-emerald-800' : 'text-slate-500'}`}>
+            <span className={`text-[10px] font-extrabold transition-all truncate w-full text-center ${showMoreSheet ? 'text-[#00694B]' : 'text-slate-500'}`}>
               More
             </span>
           </button>

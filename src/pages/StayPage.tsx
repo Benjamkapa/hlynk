@@ -833,8 +833,15 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
       className="min-h-screen bg-[#f7f7f5] pb-28 text-slate-900"
       style={{ fontFamily: "'DM Sans', Inter, sans-serif" }}
     >
-      {/* HEADER — iOS frosted-glass bar */}
-      <header className="sticky top-0 z-40 border-b border-white/40 bg-white/60 backdrop-blur-2xl shadow-sm" style={{ paddingTop: 'env(safe-area-inset-top)', paddingLeft: 'env(safe-area-inset-left)', paddingRight: 'env(safe-area-inset-right)' }}>
+      {/* HEADER — Sticky iOS frosted-glass bar with safe notch inset */}
+      <header
+        className="sticky top-0 z-40 border-b border-slate-200/80 bg-white/85 backdrop-blur-2xl shadow-sm transition-all"
+        style={{
+          paddingTop: 'max(1.5rem, calc(env(safe-area-inset-top, 0px) + 0.75rem))',
+          paddingLeft: 'max(1rem, env(safe-area-inset-left, 1rem))',
+          paddingRight: 'max(1rem, env(safe-area-inset-right, 1rem))',
+        }}
+      >
         <div className="mx-auto flex h-[68px] max-w-[1440px] items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
           <div className="flex min-w-0 items-center gap-3">
             {/* Glass back button */}
