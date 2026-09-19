@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { NavLink, Outlet, useNavigate, Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { NavLink, Outlet, useNavigate, Link, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard,
   Activity,
@@ -18,7 +18,10 @@ import {
   ChevronLeft,
   ChevronRight,
   Shield,
+  MoreHorizontal,
+  X,
 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../lib/auth/AuthContext';
 import TopNav from './TopNav';
 
@@ -48,8 +51,13 @@ const adminNavItems: AdminNavItem[] = [
 export default function AdminLayout() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [location.pathname]);
 
   const handleLogout = async () => {
     if (window.confirm('Are you sure you want to log out of the Admin portal?')) {
@@ -59,33 +67,33 @@ export default function AdminLayout() {
   };
 
   return (
-    <div className="flex h-screen h-[100dvh] overflow-hidden bg-slate-900 text-slate-100">
+    <div className="flex h-screen h-[100dvh] overflow-hidden bg-slate-50/50 text-slate-900">
       {/* Mobile backdrop */}
       {mobileOpen && (
         <div
-          className="fixed inset-0 z-40 bg-slate-950/60 backdrop-blur-sm lg:hidden"
+          className="fixed inset-0 z-40 bg-slate-900/40 backdrop-blur-sm lg:hidden"
           onClick={() => setMobileOpen(false)}
         />
       )}
 
       {/* Sidebar */}
       <aside
-        className={`fixed lg:static inset-y-0 left-0 z-50 flex flex-col bg-slate-950 border-r border-slate-800 transition-all duration-300 ease-in-out ${
+        className={`fixed lg:static inset-y-0 left-0 z-50 flex flex-col bg-white border-r border-slate-200/80 shadow-sm transition-all duration-300 ease-in-out ${
           isCollapsed ? 'w-20' : 'w-64'
         } ${mobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}
       >
         {/* Header / Brand */}
-        <div className="h-16 lg:h-20 flex items-center justify-between px-4 border-b border-slate-800 flex-shrink-0">
+        <div className="h-16 lg:h-20 flex items-center justify-between px-4 border-b border-slate-100 flex-shrink-0 pt-[env(safe-area-inset-top,0px)] min-h-[calc(4rem+env(safe-area-inset-top,0px))]">
           <div className="flex items-center gap-3 overflow-hidden">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-500 flex items-center justify-center text-white font-black shadow-lg flex-shrink-0">
+            <div className="w-10 h-10 rounded-xl bg-emerald-700 flex items-center justify-center text-white font-black shadow-md flex-shrink-0">
               <Shield size={22} />
             </div>
             {!isCollapsed && (
               <div className="flex flex-col min-w-0">
-                <span className="text-sm font-extrabold text-white tracking-wider uppercase leading-none">
+                <span className="text-sm font-extrabold text-slate-900 tracking-wider uppercase leading-none">
                   Hlynk Admin
                 </span>
-                <span className="text-[10px] font-semibold text-emerald-400 uppercase tracking-widest mt-1">
+                <span className="text-[10px] font-semibold text-emerald-700 uppercase tracking-widest mt-1">
                   Super Admin
                 </span>
               </div>
@@ -94,7 +102,7 @@ export default function AdminLayout() {
 
           <button
             onClick={() => setIsCollapsed(v => !v)}
-            className="hidden lg:flex p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+            className="hidden lg:flex p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
             title={isCollapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
           >
             {isCollapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
@@ -114,8 +122,8 @@ export default function AdminLayout() {
                 className={({ isActive }) =>
                   `flex items-center gap-3 px-3 py-2.5 rounded-xl font-semibold text-xs transition-all ${
                     isActive
-                      ? 'bg-emerald-600 text-white shadow-md shadow-emerald-900/30'
-                      : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900'
+                      ? 'bg-emerald-50 text-[#00694B] font-bold border border-emerald-100/60 shadow-sm'
+                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
                   } ${isCollapsed ? 'justify-center' : ''}`
                 }
                 title={isCollapsed ? item.label : undefined}
@@ -128,16 +136,16 @@ export default function AdminLayout() {
         </nav>
 
         {/* Sidebar Footer / User Info & Logout */}
-        <div className="p-3 border-t border-slate-800 flex-shrink-0">
+        <div className="p-3 border-t border-slate-100 flex-shrink-0">
           {!isCollapsed && (
             <div className="mb-3 px-2 flex items-center justify-between">
               <div className="min-w-0">
-                <p className="text-xs font-bold text-slate-200 truncate">{user?.name || 'Administrator'}</p>
+                <p className="text-xs font-bold text-slate-900 truncate">{user?.name || 'Administrator'}</p>
                 <p className="text-[10px] text-slate-500 truncate">{user?.email}</p>
               </div>
               <Link
                 to="/dashboard"
-                className="text-[10px] font-bold text-emerald-400 hover:underline flex-shrink-0"
+                className="text-[10px] font-bold text-emerald-700 hover:underline flex-shrink-0"
               >
                 Provider UI
               </Link>
@@ -146,7 +154,7 @@ export default function AdminLayout() {
 
           <button
             onClick={handleLogout}
-            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold text-red-400 hover:text-red-300 bg-red-950/40 hover:bg-red-900/40 transition-colors ${
+            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold text-red-600 bg-red-50 hover:bg-red-100 border border-red-100/60 transition-colors ${
               isCollapsed ? 'justify-center' : ''
             }`}
             title="Log Out"
@@ -158,18 +166,165 @@ export default function AdminLayout() {
       </aside>
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden bg-slate-900">
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden bg-slate-50/50">
         <TopNav
-          isMobileOpen={mobileOpen}
-          onMobileMenuToggle={() => setMobileOpen(v => !v)}
           isCollapsed={isCollapsed}
           onToggleCollapse={() => setIsCollapsed(v => !v)}
         />
 
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 bg-slate-900 text-slate-100">
+        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 bg-slate-50/30 text-slate-900 pb-28 lg:pb-8 max-w-full overflow-x-hidden">
           <Outlet />
         </main>
+      </div>
+
+      {/* Mobile Bottom Navigation for Admin Portal */}
+      <AdminMobileBottomNav onOpenDrawer={() => setMobileOpen(true)} onLogout={handleLogout} />
+    </div>
+  );
+}
+
+// ─── Admin Mobile Bottom Navigation Bar ───────────────────────────────────────
+function AdminMobileBottomNav({ onOpenDrawer, onLogout }: { onOpenDrawer: () => void; onLogout: () => void }) {
+  const [showMoreSheet, setShowMoreSheet] = useState(false);
+  const location = useLocation();
+
+  useEffect(() => {
+    setShowMoreSheet(false);
+  }, [location.pathname]);
+
+  // Primary 4 tabs + 1 More tab
+  const primaryTabs = [
+    { to: '/admin', label: 'Overview', icon: LayoutDashboard, end: true },
+    { to: '/admin/system-performance', label: 'Performance', icon: Activity },
+    { to: '/admin/businesses', label: 'Providers', icon: Building2 },
+    { to: '/admin/financials', label: 'Financials', icon: DollarSign },
+  ];
+
+  // Overflow items shown in "More Options" bottom sheet
+  const overflowTabs = adminNavItems.filter(
+    item => !primaryTabs.some(p => p.to === item.to)
+  );
+
+  return (
+    <div className="fixed inset-x-0 bottom-0 z-[95] lg:hidden flex flex-col items-center pointer-events-none pb-[max(0.25rem,env(safe-area-inset-bottom,0.25rem))]">
+      {/* Backdrop */}
+      <AnimatePresence>
+        {showMoreSheet && (
+          <motion.div
+            key="admin-sheet-backdrop"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 z-[93] bg-slate-900/30 pointer-events-auto"
+            onClick={() => setShowMoreSheet(false)}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* "More Options" Sheet */}
+      <AnimatePresence>
+        {showMoreSheet && (
+          <motion.div
+            key="admin-more-sheet"
+            initial={{ opacity: 0, y: 24, scale: 0.97 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 16, scale: 0.97 }}
+            transition={{ duration: 0.22, ease: [0.32, 0.72, 0, 1] }}
+            className="fixed inset-x-3 z-[94] bottom-[calc(4.75rem+env(safe-area-inset-bottom,0px))] pointer-events-auto max-h-[75vh] flex flex-col"
+          >
+            <div className="glass-sheet rounded-[1rem] overflow-hidden border border-white/60 flex flex-col max-h-full p-2 shadow-2xl">
+              <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100 flex-shrink-0">
+                <p className="text-xs font-extrabold text-slate-700">Admin Modules & Control</p>
+                <button
+                  onClick={() => setShowMoreSheet(false)}
+                  className="glass-btn w-7 h-7 rounded-full flex items-center justify-center text-slate-400 transition-all"
+                >
+                  <X size={14} />
+                </button>
+              </div>
+
+              <div className="p-2 grid grid-cols-2 gap-2 overflow-y-auto max-h-[50vh] custom-scrollbar">
+                {overflowTabs.map((item) => (
+                  <NavLink
+                    key={item.label}
+                    to={item.to}
+                    onClick={() => setShowMoreSheet(false)}
+                    className={({ isActive }) =>
+                      `flex items-center gap-3 px-3.5 py-3 rounded-xl transition-all no-tap-highlight ${
+                        isActive
+                          ? 'bg-emerald-50 text-emerald-800 font-bold border border-emerald-100'
+                          : 'bg-slate-50 text-slate-700 hover:bg-emerald-50 hover:text-emerald-800'
+                      }`
+                    }
+                  >
+                    <item.icon className="w-[18px] h-[18px] text-emerald-700 flex-shrink-0" strokeWidth={2} />
+                    <span className="text-[11px] leading-tight font-bold truncate">{item.label}</span>
+                  </NavLink>
+                ))}
+              </div>
+
+              <div className="p-2 border-t border-slate-100 flex gap-2 pt-2">
+                <Link
+                  to="/dashboard"
+                  onClick={() => setShowMoreSheet(false)}
+                  className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 transition-colors"
+                >
+                  Provider UI
+                </Link>
+                <button
+                  onClick={() => {
+                    setShowMoreSheet(false);
+                    onLogout();
+                  }}
+                  className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-xs font-bold text-red-600 bg-red-50 hover:bg-red-100 transition-colors"
+                >
+                  <LogOut size={15} /> Log Out
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Floating Bottom Nav Bar */}
+      <div className="w-full px-3 pointer-events-auto">
+        <div className="relative py-2 glass-bar rounded-[2rem] flex items-center justify-between px-3 shadow-xl border border-white/60">
+          {primaryTabs.map((tab) => (
+            <NavLink
+              key={tab.label}
+              to={tab.to}
+              end={tab.end}
+              className="flex-1 min-w-0 flex flex-col items-center gap-0.5 py-1 no-tap-highlight"
+            >
+              {({ isActive }) => (
+                <>
+                  <div className={`w-9 h-9 rounded-full flex items-center justify-center transition-all duration-200 ${isActive ? 'bg-emerald-100/80 text-emerald-800' : 'bg-transparent text-slate-400'}`}>
+                    <tab.icon className="w-[18px] h-[18px]" strokeWidth={isActive ? 2.5 : 2} />
+                  </div>
+                  <span className={`text-[9px] font-bold transition-all truncate w-full text-center ${isActive ? 'text-emerald-800' : 'text-slate-500'}`}>
+                    {tab.label}
+                  </span>
+                </>
+              )}
+            </NavLink>
+          ))}
+
+          {/* More Options Tab */}
+          <button
+            onClick={() => setShowMoreSheet(v => !v)}
+            className="flex-1 min-w-0 flex flex-col items-center gap-0.5 py-1 no-tap-highlight"
+          >
+            <div className={`w-9 h-9 rounded-full flex items-center justify-center transition-all duration-200 ${showMoreSheet ? 'bg-emerald-100/80 text-emerald-800' : 'bg-transparent text-slate-400'}`}>
+              <MoreHorizontal className="w-[18px] h-[18px]" strokeWidth={2} />
+            </div>
+            <span className={`text-[9px] font-bold transition-all truncate w-full text-center ${showMoreSheet ? 'text-emerald-800' : 'text-slate-500'}`}>
+              More
+            </span>
+          </button>
+        </div>
       </div>
     </div>
   );
 }
+

@@ -3,7 +3,7 @@ import { useAuth } from "../../lib/auth/AuthContext";
 import {
   Home, Calendar, BarChart2, Users,
   Settings, LogOut, Package, ShoppingCart,
-  Zap, Clock, AlertTriangle, User, CircleEllipsis,
+  Zap, Clock, LibraryBig, AlertTriangle, User, CircleEllipsis,
   Lock, Shield, X, Terminal, ShieldCheck, Receipt, CreditCard,
   Hotel, Building, CalendarCheck, Sparkles, PlusCircle, DollarSign,
   Tag, Wrench, TrendingUp, Wallet, Grid, MoreHorizontal
@@ -130,9 +130,9 @@ export default function ProviderLayout() {
       ],
     },
     {
-      label: 'Staff & Team',
+      label: 'Team Management',
       items: [
-        { to: '/dashboard/staff', label: 'Staff & Team', icon: Users, permission: 'staff', plan: 'PLUS' },
+        { to: '/dashboard/staff', label: 'Staff & Roles', icon: Users, permission: 'staff', plan: 'PLUS' },
       ],
     },
     {
@@ -367,7 +367,7 @@ export default function ProviderLayout() {
                   <p className="text-xs font-bold text-slate-900 truncate">{user?.name || 'Provider'}</p>
                   <p className="text-[10px] font-semibold text-slate-500 truncate mt-0.5 group-hover:text-emerald-700 transition-colors">Profile & Options</p>
                 </div>
-                <User size={14} className="text-slate-400 group-hover:text-emerald-700 flex-shrink-0 transition-colors" />
+                <LibraryBig size={14} className="text-slate-400 group-hover:text-emerald-700 flex-shrink-0 transition-colors" />
               </div>
             )}
           </button>
@@ -445,8 +445,6 @@ export default function ProviderLayout() {
         )}
 
         <TopNav
-          isMobileOpen={mobileOpen}
-          onMobileMenuToggle={() => setMobileOpen(v => !v)}
           isCollapsed={isCollapsed}
           onToggleCollapse={() => { setIsCollapsed(v => !v); setIsHovered(false); }}
           extraActions={
