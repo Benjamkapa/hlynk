@@ -5,7 +5,7 @@ import {
   Settings, LogOut, Package, ShoppingCart,
   Zap, Clock, LibraryBig, AlertTriangle, User, CircleEllipsis,
   Lock, Shield, X, Terminal, ShieldCheck, Receipt, CreditCard,
-  Hotel, Building, CalendarCheck, Sparkles, PlusCircle, DollarSign,
+  Hotel, Building, CalendarCheck, Sparkles, Plus, DollarSign,
   Tag, Wrench, TrendingUp, Wallet, Grid, MoreHorizontal
 } from "lucide-react";
 import { useLocation, Outlet, NavLink, Link, useNavigate } from "react-router-dom";
@@ -100,7 +100,7 @@ export default function ProviderLayout() {
     {
       label: 'Sales & Money',
       items: [
-        { to: '/dashboard/sales/new', label: 'Make a Sale', icon: PlusCircle, permission: 'sales', module: 'POS' },
+        { to: '/dashboard/sales/new', label: 'Make a Sale', icon: Plus, permission: 'sales', module: 'POS' },
         { to: '/dashboard/sales', label: 'Sales History', icon: Receipt, end: true, permission: 'sales', module: 'POS' },
         { to: '/dashboard/expenses', label: 'Expenses & Costs', icon: DollarSign, permission: 'sales', module: 'POS' },
       ],
@@ -589,7 +589,7 @@ function MobileBottomNav({ user, targetEndDate, filteredGroups = [], onOpenMobil
     if (hasHosp && !hasPos) {
       return { to: '/dashboard/hospitality/bookings', label: 'New Booking', icon: CalendarCheck, end: false };
     }
-    return { to: '/dashboard/sales/new', label: 'Make Sale', icon: PlusCircle, end: false };
+    return { to: '/dashboard/sales/new', label: 'Make Sale', icon: Plus, end: false };
   }, [hasPos, hasHosp]);
 
   const overflowItems = useMemo(() => {

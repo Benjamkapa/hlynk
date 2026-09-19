@@ -1703,13 +1703,6 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
                       <p className="text-[11px] text-amber-800 leading-snug">
                         An M-Pesa prompt was sent to your phone. Enter your PIN to complete instant payment.
                       </p>
-                      <button
-                        type="button"
-                        onClick={() => setOrderSuccess((prev: any) => prev ? { ...prev, paymentStatus: "CANCELLED" } : null)}
-                        className="text-[11px] font-semibold text-amber-900 underline hover:text-amber-950"
-                      >
-                        Cancelled on phone or didn't receive prompt?
-                      </button>
                     </div>
                   )}
                 </div>
