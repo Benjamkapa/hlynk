@@ -186,7 +186,7 @@ export default function ProviderLayout() {
 
   const sidebarContent = useMemo(() => (
     <div className="flex flex-col h-full">
-      <div className={`h-16 lg:h-20 flex items-center flex-shrink-0 ${sidebarExpanded ? 'px-5' : 'justify-center'}`}>
+      <div className={`h-16 lg:h-20 flex items-center flex-shrink-0 pt-[max(1.5rem,calc(env(safe-area-inset-top,0px)+0.75rem))] lg:pt-0 ${sidebarExpanded ? 'px-5' : 'justify-center'}`}>
         <AnimatePresence mode="wait" initial={false}>
           {sidebarExpanded ? (
             <motion.div
