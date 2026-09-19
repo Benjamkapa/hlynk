@@ -10,7 +10,6 @@ import {
 } from "lucide-react";
 import { useLocation, Outlet, NavLink, Link, useNavigate } from "react-router-dom";
 import TopNav from "./TopNav";
-import { providersApi } from "../../lib/api/providers";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { MobileGestures } from "./MobileGestures";
@@ -46,7 +45,6 @@ interface NavGroup {
   items: NavItem[];
 }
 
-// ─── Breakpoint hook ───────────────────────────────────────────────────────────
 function useIsDesktop() {
   const [isDesktop, setIsDesktop] = useState(() => window.innerWidth >= 1024);
   useEffect(() => {
@@ -150,7 +148,6 @@ export default function ProviderLayout() {
   const filteredGroups = navGroups.map(group => ({
     ...group,
     items: group.items.map(item => {
-      // Module relativity filter
       if (item.module && !userModules.includes(item.module)) return null;
 
       if (user?.role === 'SUPER_ADMIN') return { ...item, isLocked: false };
@@ -343,7 +340,6 @@ export default function ProviderLayout() {
           )}
         </AnimatePresence>
 
-        {/* Profile (Desktop & Sidebar) */}
         <div className="group relative w-full flex justify-center mt-2">
           <button
             onClick={() => setShowProfileModal(true)}
@@ -548,7 +544,6 @@ export default function ProviderLayout() {
   );
 }
 
-// ─── Mobile Bottom Nav (floating, 5 Tabs Max) ──────────────────────────────────
 function MobileBottomNav({ user, targetEndDate, filteredGroups = [], onOpenMobileMenu }: {
   user: any;
   targetEndDate: string | undefined;
@@ -561,7 +556,6 @@ function MobileBottomNav({ user, targetEndDate, filteredGroups = [], onOpenMobil
   const navigate = useNavigate();
   const { logout, lock } = useAuth();
 
-  // Close sheets on navigation
   useEffect(() => {
     setShowMoreSheet(false);
     setShowProfileSheet(false);
@@ -580,7 +574,6 @@ function MobileBottomNav({ user, targetEndDate, filteredGroups = [], onOpenMobil
   const hasPos = userModules.includes('POS');
   const hasHosp = userModules.includes('HOSPITALITY');
 
-  // 5 Tabs Max: [0: Home] [1: Items/Units] [2: Sell/Book CTA] [3: More] [4: Profile]
   const homeItem = useMemo(() => {
     return { to: hasHosp && !hasPos ? '/dashboard/hospitality' : '/dashboard', label: 'Home', icon: Home, end: true };
   }, [hasPos, hasHosp]);
@@ -599,7 +592,6 @@ function MobileBottomNav({ user, targetEndDate, filteredGroups = [], onOpenMobil
     return { to: '/dashboard/sales/new', label: 'Make Sale', icon: PlusCircle, end: false };
   }, [hasPos, hasHosp]);
 
-  // Overflow items shown in the "More" sheet - computed dynamically from accessible navigation groups
   const overflowItems = useMemo(() => {
     const mainPaths = [homeItem.to, primaryLeftItem.to, centerCtaItem.to];
     const items: NavItem[] = [];
@@ -614,7 +606,6 @@ function MobileBottomNav({ user, targetEndDate, filteredGroups = [], onOpenMobil
 
     if (items.length > 0) return items;
 
-    // Fallback default list if filteredGroups is empty
     return [
       { to: '/dashboard/sales',        label: 'Sales History',     icon: Receipt },
       { to: '/dashboard/expenses',     label: 'Expenses & Costs',  icon: DollarSign },
@@ -639,13 +630,13 @@ function MobileBottomNav({ user, targetEndDate, filteredGroups = [], onOpenMobil
     >
       {({ isActive }) => (
         <>
-          <div className={`w-9 h-9 rounded-full flex items-center justify-center transition-all duration-200 ${isActive ? 'bg-emerald-100/80 text-[#00694B]' : 'bg-transparent text-slate-500'}`}>
+          <div className={`w-9 h-9 rounded-full flex items-center justify-center transition-all duration-200 ${isActive ? 'bg-emerald-50' : 'bg-transparent'}`}>
             <item.icon
-              className={`w-[19px] h-[19px] transition-colors ${isActive ? 'text-[#00694B]' : 'text-slate-500'}`}
+              className={`w-[18px] h-[18px] transition-colors ${isActive ? 'text-[#0D4A3E]' : 'text-[#0D4A3E] opacity-35'}`}
               strokeWidth={isActive ? 2.5 : 2}
             />
           </div>
-          <span className={`text-[10px] font-extrabold transition-all truncate w-full text-center ${isActive ? 'text-[#00694B]' : 'text-slate-500'}`}>
+          <span className={`text-[9px] font-bold transition-all truncate w-full text-center ${isActive ? 'text-[#0D4A3E]' : 'text-slate-400'}`}>
             {item.label}
           </span>
         </>
@@ -655,7 +646,6 @@ function MobileBottomNav({ user, targetEndDate, filteredGroups = [], onOpenMobil
 
   return (
     <div className="fixed inset-x-0 bottom-0 z-[95] lg:hidden flex flex-col items-center pointer-events-none">
-      {/* "More" & "Profile" Bottom Sheet Backdrop */}
       <AnimatePresence>
         {(showMoreSheet || showProfileSheet) && (
           <motion.div
@@ -670,7 +660,6 @@ function MobileBottomNav({ user, targetEndDate, filteredGroups = [], onOpenMobil
         )}
       </AnimatePresence>
 
-      {/* "More" Bottom Sheet Panel */}
       <AnimatePresence>
         {showMoreSheet && (
           <motion.div
@@ -681,8 +670,8 @@ function MobileBottomNav({ user, targetEndDate, filteredGroups = [], onOpenMobil
             transition={{ duration: 0.22, ease: [0.32, 0.72, 0, 1] }}
             className="fixed inset-x-3 z-[94] bottom-[calc(4.75rem+env(safe-area-inset-bottom,0px))] pointer-events-auto max-h-[75vh] flex flex-col"
           >
-            <div className="glass-sheet rounded-[.75rem] overflow-hidden border border-white/40 flex flex-col max-h-full">
-              <div className="flex items-center justify-between px-5 pt-4 pb-3 border-b border-slate-50 flex-shrink-0">
+            <div className="glass-sheet rounded-[.75rem] overflow-hidden border border-white/40 flex flex-col max-h-full bg-white/95 backdrop-blur-xl">
+              <div className="flex items-center justify-between px-5 pt-4 pb-3 border-b border-slate-100 flex-shrink-0">
                 <p className="text-xs font-semibold text-slate-400">All Features & Options</p>
                 <button
                   onClick={() => setShowMoreSheet(false)}
@@ -691,7 +680,7 @@ function MobileBottomNav({ user, targetEndDate, filteredGroups = [], onOpenMobil
                   <X size={12} />
                 </button>
               </div>
-              <div className="p-3 grid grid-cols-3 gap-2 overflow-y-auto max-h-[50vh] custom-scrollbar">
+              <div className="p-3 grid grid-cols-2 gap-2 overflow-y-auto max-h-[50vh] custom-scrollbar">
                 {overflowItems.map((item) => (
                   <NavLink
                     key={item.label}
@@ -714,7 +703,6 @@ function MobileBottomNav({ user, targetEndDate, filteredGroups = [], onOpenMobil
         )}
       </AnimatePresence>
 
-      {/* Profile Pop-up Bottom Sheet Panel */}
       <AnimatePresence>
         {showProfileSheet && (
           <motion.div
@@ -725,7 +713,7 @@ function MobileBottomNav({ user, targetEndDate, filteredGroups = [], onOpenMobil
             transition={{ duration: 0.22, ease: [0.32, 0.72, 0, 1] }}
             className="fixed inset-x-3 z-[94] bottom-[calc(4.75rem+env(safe-area-inset-bottom,0px))] pointer-events-auto"
           >
-            <div className="glass-sheet rounded-[1rem] overflow-hidden border border-white/40 p-3 shadow-2xl">
+            <div className="glass-sheet rounded-[1rem] overflow-hidden border border-white/40 p-3 shadow-2xl bg-white/95 backdrop-blur-xl">
               <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100/60">
                 <div className="flex items-center gap-3 min-w-0">
                   <img
@@ -788,16 +776,10 @@ function MobileBottomNav({ user, targetEndDate, filteredGroups = [], onOpenMobil
         )}
       </AnimatePresence>
 
-      {/* Bottom Nav Glass Dock — Edge-to-edge frosted glass anchored to absolute bottom */}
-      <div className="w-full pointer-events-auto glass-dock rounded-t-3xl pt-2 pb-[max(0.75rem,env(safe-area-inset-bottom,0.75rem))] px-3 border-t border-white/80 shadow-[0_-12px_40px_rgba(0,0,0,0.15)]">
-        <div className="flex items-center justify-between w-full max-w-md mx-auto">
-          {/* Tab 1: Home (Far Left) */}
+      <div className="w-full pointer-events-auto bg-white rounded-t-[1.5rem] pt-2 pb-[max(0.6rem,env(safe-area-inset-bottom,0.6rem))] border-t border-slate-100 shadow-[0_-10px_35px_rgba(0,0,0,0.06)]">
+        <div className="flex items-end justify-evenly w-full px-4">
           {renderNavItem(homeItem)}
-
-          {/* Tab 2: Items / Units (Middle Left) */}
           {renderNavItem(primaryLeftItem)}
-
-          {/* Tab 3: Sell / Book CTA Button (Center) */}
           <NavLink
             key={centerCtaItem.label}
             to={centerCtaItem.to}
@@ -806,19 +788,17 @@ function MobileBottomNav({ user, targetEndDate, filteredGroups = [], onOpenMobil
           >
             {({ isActive }) => (
               <>
-                <div className={`w-11 h-11 rounded-full flex items-center justify-center transition-all duration-300 active:scale-95 -mt-3.5
-                  ${isActive ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/40 ring-2 ring-emerald-300' : 'bg-[#00694B] text-white shadow-md shadow-emerald-950/30'}`}
+                <div className={`w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 active:scale-95 -mt-2 shadow-md
+                  ${isActive ? 'bg-emerald-500 shadow-emerald-500/40 text-white' : 'bg-[#0D4A3E] text-white shadow-emerald-900/30 hover:bg-emerald-800'}`}
                 >
-                  <centerCtaItem.icon className="w-5 h-5 text-white" strokeWidth={2.5} />
+                  <centerCtaItem.icon className="w-6 h-6" strokeWidth={2.5} />
                 </div>
-                <span className={`text-[10px] font-extrabold transition-all truncate w-full text-center ${isActive ? 'text-[#00694B]' : 'text-slate-600'}`}>
+                <span className={`text-[9px] font-bold transition-all truncate w-full text-center mt-0.5 ${isActive ? 'text-[#0D4A3E]' : 'text-slate-400'}`}>
                   {centerCtaItem.label}
                 </span>
               </>
             )}
           </NavLink>
-
-          {/* Tab 4: More Sheet (Middle Right) */}
           <button
             key="more-btn"
             onClick={() => {
@@ -827,13 +807,11 @@ function MobileBottomNav({ user, targetEndDate, filteredGroups = [], onOpenMobil
             }}
             className="flex-1 min-w-0 flex flex-col items-center gap-0.5 py-1 no-tap-highlight"
           >
-            <div className={`w-9 h-9 rounded-full flex items-center justify-center transition-all duration-200 ${showMoreSheet || isOverflowActive ? 'bg-emerald-100/80 text-[#00694B]' : 'bg-transparent text-slate-500'}`}>
-              <CircleEllipsis className={`w-[19px] h-[19px] transition-colors ${showMoreSheet || isOverflowActive ? 'text-[#00694B]' : 'text-slate-500'}`} strokeWidth={showMoreSheet || isOverflowActive ? 2.5 : 2} />
+            <div className={`w-9 h-9 rounded-full flex items-center justify-center transition-all duration-200 ${showMoreSheet || isOverflowActive ? 'bg-emerald-50' : 'bg-transparent'}`}>
+              <CircleEllipsis className={`w-[18px] h-[18px] transition-colors ${showMoreSheet || isOverflowActive ? 'text-[#0D4A3E]' : 'text-[#0D4A3E] opacity-35'}`} />
             </div>
-            <span className={`text-[10px] font-extrabold transition-all truncate w-full text-center ${showMoreSheet || isOverflowActive ? 'text-[#00694B]' : 'text-slate-500'}`}>More</span>
+            <span className={`text-[9px] font-bold transition-all truncate w-full text-center ${showMoreSheet || isOverflowActive ? 'text-[#0D4A3E]' : 'text-slate-400'}`}>More</span>
           </button>
-
-          {/* Tab 5: Profile (Far Right) */}
           <button
             key="profile-btn"
             onClick={() => {
@@ -842,14 +820,14 @@ function MobileBottomNav({ user, targetEndDate, filteredGroups = [], onOpenMobil
             }}
             className="flex-1 min-w-0 flex flex-col items-center gap-0.5 py-1 no-tap-highlight"
           >
-            <div className={`w-9 h-9 rounded-full flex items-center justify-center transition-all duration-200 overflow-hidden ${showProfileSheet || location.pathname.includes('/settings') ? 'ring-2 ring-emerald-600 ring-offset-1' : ''}`}>
+            <div className={`w-9 h-9 rounded-full flex items-center justify-center transition-all duration-200 overflow-hidden ${showProfileSheet || location.pathname.includes('/settings') ? 'ring-2 ring-emerald-500 ring-offset-1' : ''}`}>
               <img
                 src={user?.photoUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || '')}&background=0D4A3E&color=fff`}
                 alt="Profile"
                 className="w-7 h-7 rounded-full object-cover"
               />
             </div>
-            <span className={`text-[10px] font-extrabold transition-all truncate w-full text-center ${showProfileSheet || location.pathname.includes('/settings') ? 'text-[#00694B]' : 'text-slate-500'}`}>Profile</span>
+            <span className={`text-[9px] font-bold transition-all truncate w-full text-center ${showProfileSheet || location.pathname.includes('/settings') ? 'text-[#0D4A3E]' : 'text-slate-400'}`}>Profile</span>
           </button>
         </div>
       </div>
@@ -857,9 +835,6 @@ function MobileBottomNav({ user, targetEndDate, filteredGroups = [], onOpenMobil
   );
 }
 
-
-
-// ─── Mini countdown (banner) ──────────────────────────────────────────────────
 function MiniCountdown({ expiryDate }: { expiryDate: string }) {
   const calc = (d: string) => {
     const dist = new Date(d).getTime() - Date.now();
@@ -896,7 +871,6 @@ function MiniCountdown({ expiryDate }: { expiryDate: string }) {
   );
 }
 
-// ─── Countdown timer (desktop sidebar) ───────────────────────────────────────
 function CountdownTimer({ expiryDate }: { expiryDate: string | undefined }) {
   const calc = (d: string) => {
     const dist = new Date(d).getTime() - Date.now();
@@ -942,7 +916,6 @@ function CountdownTimer({ expiryDate }: { expiryDate: string | undefined }) {
   );
 }
 
-// ─── Floating Subscription Expiry Circle Widget ─────────────────────────────
 function FloatingExpiryWidget({
   user,
   targetEndDate,

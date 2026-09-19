@@ -20,7 +20,9 @@ import {
   Shield,
   MoreHorizontal,
   X,
+  Home,
 } from 'lucide-react';
+
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../lib/auth/AuthContext';
 import TopNav from './TopNav';
@@ -192,17 +194,22 @@ function AdminMobileBottomNav({ onOpenDrawer, onLogout }: { onOpenDrawer: () => 
     setShowMoreSheet(false);
   }, [location.pathname]);
 
-  // Primary 4 tabs + 1 More tab
-  const primaryTabs = [
-    { to: '/admin', label: 'Overview', icon: LayoutDashboard, end: true },
-    { to: '/admin/system-performance', label: 'Performance', icon: Activity },
-    { to: '/admin/businesses', label: 'Providers', icon: Building2 },
-    { to: '/admin/financials', label: 'Financials', icon: DollarSign },
+  // Primary tabs (Overview will be injected at the center manually)
+  const leftTabs = [
+    { to: '/admin/system-performance', label: 'Performance', icon: Activity, end: false },
+    { to: '/admin/businesses', label: 'Providers', icon: Building2, end: false },
+  ];
+  
+  const rightTab = [
+    { to: '/admin/financials', label: 'Financials', icon: DollarSign, end: false },
   ];
 
   // Overflow items shown in "More Options" bottom sheet
   const overflowTabs = adminNavItems.filter(
-    item => !primaryTabs.some(p => p.to === item.to)
+    item => 
+      item.to !== '/admin' && 
+      !leftTabs.some(p => p.to === item.to) && 
+      !rightTab.some(p => p.to === item.to)
   );
 
   return (
@@ -288,9 +295,47 @@ function AdminMobileBottomNav({ onOpenDrawer, onLogout }: { onOpenDrawer: () => 
       </AnimatePresence>
 
       {/* Bottom Nav Glass Dock — Edge-to-edge frosted glass anchored to absolute bottom */}
-      <div className="w-full pointer-events-auto glass-dock rounded-t-3xl pt-2 pb-[max(0.75rem,env(safe-area-inset-bottom,0.75rem))] px-3 border-t border-white/80 shadow-[0_-12px_40px_rgba(0,0,0,0.15)]">
-        <div className="flex items-center justify-between w-full max-w-md mx-auto">
-          {primaryTabs.map((tab) => (
+      <div className="w-full pointer-events-auto bg-white rounded-t-[1.5rem] pt-2 pb-[max(0.6rem,env(safe-area-inset-bottom,0.6rem))] border-t border-slate-100 shadow-[0_-10px_35px_rgba(0,0,0,0.06)]">
+        <div className="flex items-end justify-evenly w-full px-4 relative">
+          {leftTabs.map((tab) => (
+            <NavLink
+              key={tab.label}
+              to={tab.to}
+              end={tab.end}
+              className="flex-1 min-w-0 flex flex-col items-center gap-0.5 py-1 no-tap-highlight"
+            >
+              {({ isActive }) => (
+                <>
+                  <div className={`w-9 h-9 rounded-full flex items-center justify-center transition-all duration-200 ${isActive ? 'bg-emerald-100/80 text-[#00694B]' : 'bg-transparent text-slate-500'}`}>
+                    <tab.icon className="w-[19px] h-[19px]" strokeWidth={isActive ? 2.5 : 2} />
+                  </div>
+                  <span className={`text-[10px] font-extrabold transition-all truncate w-full text-center ${isActive ? 'text-[#00694B]' : 'text-slate-500'}`}>
+                    {tab.label}
+                  </span>
+                </>
+              )}
+            </NavLink>
+          ))}
+
+          {/* Centered Overview (Home) Tab */}
+          <NavLink
+            to="/admin"
+            end
+            className="flex-1 min-w-0 flex flex-col items-center gap-0.5 py-1 no-tap-highlight"
+          >
+            {({ isActive }) => (
+              <>
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 active:scale-95 ${isActive ? 'bg-emerald-500 shadow-lg shadow-emerald-500/30 text-white' : 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100/80'}`}>
+                  <Home className="w-5 h-5" strokeWidth={2.5} />
+                </div>
+                <span className={`text-[9px] font-bold mt-0.5 transition-all truncate w-full text-center ${isActive ? 'text-[#0D4A3E]' : 'text-slate-400'}`}>
+                  Overview
+                </span>
+              </>
+            )}
+          </NavLink>
+
+          {rightTab.map((tab) => (
             <NavLink
               key={tab.label}
               to={tab.to}

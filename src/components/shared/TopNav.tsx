@@ -85,15 +85,11 @@ export default function TopNav({
               {isCollapsed ? <PanelLeft size={20} /> : <PanelLeftClose size={20} />}
             </button>
           )}
-
-          {/* Title display:
-              On desktop: display page title (sidebar already displays logo & business name).
-              On mobile: display hlynk logo & business name (sidebar is hidden). */}
           <div className="flex items-center gap-2.5 min-w-0">
             <img src="/fav.png" alt="hlynk" className="h-7 w-7 object-contain shrink-0 lg:hidden" />
             <h1 className="text-base sm:text-lg font-extrabold text-[#00694B] tracking-tight leading-tight truncate">
               <span className="lg:hidden">{businessName}</span>
-              <span className="hidden lg:inline">{pageTitle}</span>
+              {/* <span className="hidden lg:inline">{pageTitle}</span> */}
             </h1>
           </div>
         </div>

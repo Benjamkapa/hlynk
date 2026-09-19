@@ -44,7 +44,10 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
             richColors
             expand={false}
             toastOptions={{
-              style: { fontFamily: 'Inter, sans-serif' },
+              style: { 
+                fontFamily: 'Inter, sans-serif',
+                marginTop: 'calc(env(safe-area-inset-top, 0px) + 16px)'
+              },
               classNames: {
                 toast: 'bg-white/95 backdrop-blur-md border-gray-100 shadow-2xl rounded-2xl',
                 success: 'border-green-200 bg-green-50 text-green-900',

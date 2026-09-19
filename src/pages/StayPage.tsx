@@ -833,9 +833,9 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
       className="min-h-screen bg-[#f7f7f5] pb-28 text-slate-900"
       style={{ fontFamily: "'DM Sans', Inter, sans-serif" }}
     >
-      {/* HEADER — Sticky iOS frosted-glass bar with safe notch inset */}
+      {/* HEADER — Fixed iOS frosted-glass bar with safe notch inset */}
       <header
-        className="sticky top-0 z-40 border-b border-slate-200/80 bg-white/85 backdrop-blur-2xl shadow-sm transition-all"
+        className="fixed inset-x-0 top-0 z-[100] border-b border-slate-200/80 bg-white/85 backdrop-blur-2xl shadow-sm transition-all"
         style={{
           paddingTop: 'max(1.5rem, calc(env(safe-area-inset-top, 0px) + 0.75rem))',
           paddingLeft: 'max(1rem, env(safe-area-inset-left, 1rem))',
@@ -897,7 +897,12 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
         </div>
       </header>
 
-      <main className="mx-auto max-w-[1440px] px-4 py-5 sm:px-6 lg:px-8 lg:py-7">
+      <main 
+        className="mx-auto max-w-[1440px] px-4 pb-5 sm:px-6 lg:px-8 lg:pb-7"
+        style={{
+          paddingTop: 'calc(env(safe-area-inset-top, 0px) + 100px)',
+        }}
+      >
         {/* UNIVERSAL STOREFRONT BANNER
             Product/service photos stay exclusively inside the catalogue. */}
         <section className="relative mt-1 overflow-hidden rounded-[26px] bg-slate-950">
