@@ -714,6 +714,19 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
     [cart]
   );
 
+  // ── Sticky header show/hide on scroll ──────────────────────────────────────
+  const [headerVisible, setHeaderVisible] = useState(true);
+  const lastScrollYRef = typeof window !== 'undefined' ? { current: window.scrollY } : { current: 0 };
+
+  useEffect(() => {
+    const onScroll = () => {
+      const currentY = window.scrollY;
+      setHeaderVisible(currentY <= 10 || currentY < lastScrollYRef.current);
+      lastScrollYRef.current = currentY;
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
 
 
   if (loading) {
@@ -828,21 +841,23 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
       ? "Choose the space that fits your visit."
       : "Explore what is available in store.";
 
+
   return (
     <div
       className="min-h-screen bg-[#f7f7f5] pb-28 text-slate-900"
       style={{ fontFamily: "'DM Sans', Inter, sans-serif" }}
     >
-      {/* HEADER — Fixed iOS frosted-glass bar with safe notch inset */}
+      {/* HEADER — Sticky hide-on-scroll-down / show-on-swipe-up glass bar */}
       <header
-        className="fixed inset-x-0 top-0 z-[100] border-b border-slate-200/80 bg-white/85 backdrop-blur-2xl shadow-sm transition-all"
+        className="sticky top-0 z-[100] border-b border-slate-200/80 bg-white/85 backdrop-blur-2xl shadow-sm transition-transform duration-300"
         style={{
-          paddingTop: 'max(1.5rem, calc(env(safe-area-inset-top, 0px) + 0.75rem))',
+          paddingTop: 'max(0.75rem, env(safe-area-inset-top, 0px))',
           paddingLeft: 'max(1rem, env(safe-area-inset-left, 1rem))',
           paddingRight: 'max(1rem, env(safe-area-inset-right, 1rem))',
+          transform: headerVisible ? 'translateY(0)' : 'translateY(-100%)',
         }}
       >
-        <div className="mx-auto flex h-[68px] max-w-[1440px] items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto flex h-[56px] max-w-[1440px] items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
           <div className="flex min-w-0 items-center gap-3">
             {/* Glass back button */}
             <button
@@ -899,9 +914,6 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
 
       <main 
         className="mx-auto max-w-[1440px] px-4 pb-5 sm:px-6 lg:px-8 lg:pb-7"
-        style={{
-          paddingTop: 'calc(env(safe-area-inset-top, 0px) + 100px)',
-        }}
       >
         {/* UNIVERSAL STOREFRONT BANNER
             Product/service photos stay exclusively inside the catalogue. */}
@@ -1340,7 +1352,10 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
               className="ml-auto flex h-full w-full max-w-[520px] flex-col bg-white/80 backdrop-blur-2xl shadow-2xl"
             >
               {/* Glass drawer header */}
-              <div className="flex items-center justify-between border-b border-white/50 bg-white/60 px-5 pb-5 pt-10 backdrop-blur-xl sm:px-7">
+              <div
+                className="flex items-center justify-between border-b border-white/50 bg-white/60 px-5 pb-5 backdrop-blur-xl sm:px-7"
+                style={{ paddingTop: 'max(1.75rem, calc(env(safe-area-inset-top, 0px) + 1.25rem))' }}
+              >
                 <div>
                   <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-slate-400">
                     {isOrdering ? "Checkout" : "Your selection"}
