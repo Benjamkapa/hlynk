@@ -90,7 +90,7 @@ export default function StaffManagementPage() {
           <div className="flex justify-end gap-3 w-full sm:w-auto">
             <button 
               onClick={() => setIsAddModalOpen(true)} 
-              className="sm:w-auto bg-[#0D4A3E] text-white h-12 px-6 rounded-[.5em] font-bold text-sm hover:bg-[#0A3D33] transition-all flex items-center justify-center gap-2 shadow-md active:scale-95"
+              className="sm:w-auto bg-[#0D4A3E] text-white h-12 px-6 rounded-full font-bold text-sm hover:bg-[#0A3D33] transition-all flex items-center justify-center gap-2 shadow-md active:scale-95"
             >
               <Plus size={18} /> Add Member
             </button>
@@ -498,7 +498,7 @@ function StaffForm({ userModules, staff, onClose }: { userModules: string[]; sta
       <button 
         onClick={handleSubmit}
         disabled={loading}
-        className="w-full py-5 mt-6 bg-[#0D4A3E] text-white rounded-[.5em] font-black text-xs uppercase tracking-widest hover:bg-[#0A3D33] transition-all shadow-2xl shadow-emerald-900/20 flex items-center justify-center disabled:opacity-50"
+        className="w-full py-5 mt-6 bg-[#0D4A3E] text-white rounded-full font-black text-xs uppercase tracking-widest hover:bg-[#0A3D33] transition-all shadow-2xl shadow-emerald-900/20 flex items-center justify-center disabled:opacity-50"
       >
         {loading ? 'Saving...' : staff ? 'Update Team Member' : 'Add Team Member'}
       </button>

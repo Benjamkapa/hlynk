@@ -179,7 +179,7 @@ export default function ProviderLayout() {
 
   const sidebarExpanded = isDesktop ? (!isCollapsed || isHovered) : mobileOpen;
   const RAIL_W = isDesktop ? 68 : 60;
-  const FULL_W = 280;
+  const FULL_W = 220;
 
   const sidebarContent = useMemo(() => (
     <div className="flex flex-col h-full">
@@ -446,9 +446,9 @@ export default function ProviderLayout() {
           extraActions={
             <Link
               to="/dashboard/sales/new"
-            className="hidden lg:flex items-center gap-2 px-5 py-2.5 glass-btn-primary rounded-xl font-black text-xs uppercase tracking-widest hover:-translate-y-0.5 transition-all"
+            // className="hidden lg:flex items-center gap-2 px-5 py-2.5 glass-btn-primary rounded-xl font-black text-xs uppercase tracking-widest hover:-translate-y-0.5 transition-all"
             >
-              <Zap size={15} /> Record Sale
+              {/* <Zap size={15} /> Record Sale */}
             </Link>
           }
         />

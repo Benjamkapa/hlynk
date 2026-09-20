@@ -24,7 +24,7 @@
     --border: 214 16% 89%;
     --input: 214 16% 89%;
     --ring: 161 63% 46%;
-    --radius: 0.5rem;
+    --radius: 0.75rem;
 
     /* Sidebar specific */
     --sidebar-bg: 160 40% 10%;        /* #0d2419 very dark green */
@@ -212,7 +212,7 @@
     color: hsl(var(--sidebar-muted));
   }
   .nav-item {
-    @apply flex items-center gap-3 mx-2 px-3 py-2 rounded-lg text-sm font-medium cursor-pointer transition-all duration-150;
+    @apply flex items-center gap-3 mx-2 px-3 py-2 rounded-xl text-sm font-medium cursor-pointer transition-all duration-150;
     color: hsl(var(--sidebar-muted));
   }
   .nav-item:hover {
@@ -232,7 +232,7 @@
     -webkit-backdrop-filter: blur(20px) saturate(180%);
     border: 1px solid rgba(255, 255, 255, 0.55);
     box-shadow: 0 4px 24px rgba(15, 23, 42, 0.06), inset 0 1px 0 rgba(255,255,255,0.7);
-    @apply rounded-xl transition-all duration-200;
+    @apply rounded-2xl transition-all duration-200;
   }
   .card:hover {
     box-shadow: 0 8px 32px rgba(15, 23, 42, 0.10), inset 0 1px 0 rgba(255,255,255,0.8);
@@ -252,7 +252,7 @@
     -webkit-backdrop-filter: blur(20px) saturate(180%);
     border: 1px solid rgba(255, 255, 255, 0.55);
     box-shadow: 0 4px 24px rgba(15, 23, 42, 0.06), inset 0 1px 0 rgba(255,255,255,0.7);
-    @apply rounded-xl p-6 transition-all duration-200;
+    @apply rounded-2xl p-6 transition-all duration-200;
   }
   .stat-box:hover { box-shadow: 0 8px 32px rgba(15, 23, 42, 0.10), inset 0 1px 0 rgba(255,255,255,0.8); transform: translateY(-1px); }
   .stat-box-label { @apply text-[10px] font-bold text-muted-foreground uppercase tracking-widest; font-family: 'JetBrains Mono', monospace; }
@@ -283,7 +283,7 @@
     -webkit-backdrop-filter: blur(12px) saturate(160%);
     border: 1px solid rgba(255,255,255,0.22);
     box-shadow: 0 2px 12px rgba(32, 201, 151, 0.30), inset 0 1px 0 rgba(255,255,255,0.20);
-    @apply flex items-center gap-2 px-4 py-2.5 rounded-xl text-white text-sm font-semibold transition-all duration-150 active:scale-95;
+    @apply flex items-center gap-2 px-4 py-2.5 rounded-full text-white text-sm font-semibold transition-all duration-150 active:scale-95;
   }
   .btn-primary:hover {
     filter: brightness(1.08);
@@ -296,7 +296,7 @@
     -webkit-backdrop-filter: blur(14px) saturate(160%);
     border: 1px solid rgba(255, 255, 255, 0.50);
     box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06), inset 0 1px 0 rgba(255,255,255,0.7);
-    @apply flex items-center gap-2 px-4 py-2.5 rounded-xl text-foreground text-sm font-medium transition-all duration-150 active:scale-[0.97];
+    @apply flex items-center gap-2 px-4 py-2.5 rounded-full text-foreground text-sm font-medium transition-all duration-150 active:scale-[0.97];
   }
   .btn-secondary:hover {
     background: rgba(255, 255, 255, 0.80);
@@ -324,13 +324,13 @@
 
   /* Search input */
   .search-input {
-    @apply h-9 pl-9 pr-4 rounded-lg border border-input bg-background text-sm
+    @apply h-9 pl-9 pr-4 rounded-xl border border-input bg-background text-sm
            focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors;
   }
 
   /* Form input */
   .form-input {
-    @apply w-full px-3 py-2.5 rounded-lg border border-input bg-background text-sm
+    @apply w-full px-3 py-2.5 rounded-xl border border-input bg-background text-sm
            focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors;
   }
   .form-label { @apply text-sm font-medium text-foreground block mb-1.5; }
@@ -362,7 +362,7 @@
     -webkit-backdrop-filter: blur(16px) saturate(160%);
     border: 1px solid rgba(255, 255, 255, 0.50);
     box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06), inset 0 1px 0 rgba(255,255,255,0.7);
-    @apply relative h-10 w-10 flex items-center justify-center rounded-xl text-muted-foreground hover:text-primary transition-all;
+    @apply relative h-10 w-10 flex items-center justify-center rounded-2xl text-muted-foreground hover:text-primary transition-all;
   }
   .nav-icon-btn:hover {
     background: rgba(255, 255, 255, 0.88);
@@ -382,7 +382,7 @@
     -webkit-backdrop-filter: blur(20px) saturate(180%);
     border: 1px solid rgba(255, 255, 255, 0.55);
     box-shadow: 0 4px 24px rgba(15, 23, 42, 0.06), inset 0 1px 0 rgba(255,255,255,0.7);
-    border-radius: 0.75rem;
+    border-radius: 1.25rem;
     transition: all 0.2s ease;
   }
   .hl-card:hover {
@@ -396,7 +396,7 @@
     backdrop-filter: blur(12px) saturate(150%);
     -webkit-backdrop-filter: blur(12px) saturate(150%);
     border: 1px solid rgba(255, 255, 255, 0.50);
-    border-radius: 0.625rem;
+    border-radius: 0.75rem;
     padding: 12px 16px;
     font-size: 14px;
     font-weight: 600;
@@ -434,7 +434,7 @@
     color: #fff;
     font-weight: 700;
     padding: 12px 24px;
-    border-radius: 0.625rem;
+    border-radius: 9999px;
     cursor: pointer;
     transition: all 0.18s ease;
     display: inline-flex;
@@ -452,7 +452,7 @@
 
   .hl-badge {
     padding: 4px 10px;
-    border-radius: 0.5rem;
+    border-radius: 9999px;
     font-size: 11px;
     font-weight: 800;
     text-transform: uppercase;
@@ -464,7 +464,7 @@
     align-items: center;
     gap: 8px;
     padding: 8px 12px;
-    border-radius: 0.5rem;
+    border-radius: 0.75rem;
     font-size: 13px;
     font-weight: 600;
     color: var(--ink2, #475569);

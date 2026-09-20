@@ -173,7 +173,9 @@ export default function BookingsPage() {
   const selectedRoom = rooms.find((r) => r.id === selectedRoomId);
 
   return (
-    <div className="max-w-5xl mx-auto pb-20 px-1">
+    // space-y-8 pt-4
+    <div className="space-y-8 pt-4">
+    {/* <div className="max-w-5xl mx-auto pb-20 px-1"> */}
       {/* Page Header */}
       <div className="flex items-center justify-between py-5">
         <div>
@@ -181,7 +183,7 @@ export default function BookingsPage() {
         </div>
         <button
           onClick={() => setShowBookingModal(true)}
-          className="flex items-center gap-1.5 bg-slate-900 text-white text-sm font-medium px-4 py-2.5 rounded-full hover:bg-slate-700 transition-colors"
+          className="flex items-center gap-1.5 bg-[#0D4A3E] text-white text-sm font-medium px-4 py-2.5 rounded-full hover:bg-[#0A3D33] transition-colors"
         >
           <Plus size={15} /> New booking
         </button>
@@ -206,7 +208,7 @@ export default function BookingsPage() {
               onClick={() => setStatusFilter(st)}
               className={`px-3 py-2 rounded-xl text-xs font-medium whitespace-nowrap transition-colors ${
                 statusFilter === st
-                  ? "bg-slate-900 text-white"
+                  ? "bg-[#0D4A3E] text-white"
                   : "bg-white border border-slate-200 text-slate-600 hover:border-slate-300"
               }`}
             >
@@ -451,7 +453,7 @@ export default function BookingsPage() {
           </div>
 
           <button type="submit" disabled={submitting || availableRooms.length === 0}
-            className="w-full bg-slate-900 text-white py-3 rounded-full text-sm font-semibold hover:bg-slate-700 transition-colors disabled:opacity-40 flex items-center justify-center gap-2">
+            className="w-full bg-[#0D4A3E] text-white py-3 rounded-full text-sm font-semibold hover:bg-[#0A3D33] transition-colors flex items-center justify-center gap-2">
             {submitting ? <Loader2 className="animate-spin" size={16} /> : "Save booking"}
           </button>
         </form>

@@ -370,7 +370,7 @@ export default function SettingsPage() {
                   <button
                     onClick={handleSave}
                     disabled={updateMutation.isPending}
-                    className="bg-[#0D4A3E] text-white h-11 px-8 rounded-[.5rem] font-black text-sm hover:bg-[#0A3D33] transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                    className="bg-[#0D4A3E] text-white h-11 px-8 rounded-full font-black text-sm hover:bg-[#0A3D33] transition-all flex items-center justify-center gap-2 disabled:opacity-50"
                   >
                     {updateMutation.isPending ? <Loader2 className="animate-spin" size={16} /> : <Save size={16} />}
                     Save Profile
@@ -554,10 +554,10 @@ export default function SettingsPage() {
                   <button
                     onClick={handleSave}
                     disabled={updateMutation.isPending}
-                    className="bg-[#0D4A3E] text-white h-11 px-8 rounded-[.5rem] font-black text-sm hover:bg-[#0A3D33] transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                    className="bg-[#0D4A3E] text-white h-11 px-8 rounded-full font-black text-sm hover:bg-[#0A3D33] transition-all flex items-center justify-center gap-2 disabled:opacity-50"
                   >
                     {updateMutation.isPending ? <Loader2 className="animate-spin" size={16} /> : <Save size={16} />}
-                    Save Business Info
+                    Save
                   </button>
                 </div>
               </div>

@@ -94,7 +94,6 @@ export default function RecordSalePage() {
       if (!isOnline) {
         console.log('[POS] Offline: Loading inventory from IndexedDB')
         const cached = await getCachedInventory()
-        // Simple client-side search if offline
         const filtered = search
           ? cached.filter(p => p.name.toLowerCase().includes(search.toLowerCase()) || p.category.toLowerCase().includes(search.toLowerCase()))
           : cached
@@ -109,7 +108,6 @@ export default function RecordSalePage() {
 
       const res = await inventoryApi.list({ search, page, limit: 100 })
 
-      // Background cache if it was a broad search (page 1, no search or just a few chars)
       if (res.items && page === 1 && !search) {
         cacheInventory(res.items).catch(err => console.error('Failed to cache inventory:', err))
       }
@@ -124,7 +122,6 @@ export default function RecordSalePage() {
     if (productsError) toast.error(getErrorMessage(productsError))
   }, [productsError])
 
-  // Reset to page 1 on search
   useEffect(() => {
     setPage(1)
   }, [search])
@@ -142,7 +139,6 @@ export default function RecordSalePage() {
 
       const res = await customersApi.list({ search: customerSearch, limit: 10 })
 
-      // Cache customers in background if we fetched them
       if (res.items && !customerSearch) {
         cacheCustomers(res.items).catch(err => console.error('Failed to cache customers:', err))
       }
@@ -226,7 +222,6 @@ export default function RecordSalePage() {
     }),
     onSuccess: (data: any, variables: any) => {
       const saleId = data.data?.saleId || data.data?.sale?.id || data.data?.id || data.id;
-      // console.log('[MUTATION SUCCESS] Got saleId:', saleId);
 
       if (variables?.status === 2) {
         if (saleId) {
@@ -252,7 +247,6 @@ export default function RecordSalePage() {
           icon: <CheckCircle2 className="text-emerald-500" />
         })
 
-        // Prepare completed sale for receipt view
         setCompletedSale({
           id: saleId,
           createdAt: Date.now(),
@@ -281,10 +275,8 @@ export default function RecordSalePage() {
   useEffect(() => {
     if (handleCompleteSale.error) {
       const errorMsg = getErrorMessage(handleCompleteSale.error)
-
-      // If it's a network error and we are offline, it's already handled or should be
       if (!navigator.onLine) {
-        // Silently consume or handle differently
+        // silently consume
       } else {
         toast.error(errorMsg)
       }
@@ -305,7 +297,7 @@ export default function RecordSalePage() {
       customerId: selectedCustomerId,
       customerName: selectedCustomer?.name || null,
       customerPhone: mpesaPhone || undefined,
-      status: 0, // Recorded as cash/completed offline
+      status: 0,
       source: saleSource
     }
 
@@ -323,7 +315,6 @@ export default function RecordSalePage() {
       icon: <RefreshCcw className="text-amber-500 animate-spin-slow" />
     })
 
-    // Reset UI
     setCart([])
     localStorage.removeItem('hlynk_pos_cart')
     setMpesaPhone('')
@@ -339,7 +330,7 @@ export default function RecordSalePage() {
         setWaitingMpesaSaleId(null);
         setIsProcessingMpesa(false);
         toast.error('Payment polling timed out. Please check the transaction status in Sales History.');
-      }, 60000); // 60s safety cutoff
+      }, 60000);
     }
     return () => clearTimeout(timeout);
   }, [waitingMpesaSaleId, isProcessingMpesa]);
@@ -352,7 +343,6 @@ export default function RecordSalePage() {
     enabled: !!waitingMpesaSaleId,
     refetchInterval: (query) => {
       const sale = query.state.data?.data;
-      // Stop on all terminal states: 0 (Paid), 1 (Failed), 3 (Cancelled), 4 (Error)
       if (sale && [0, 1, 3, 4].includes(sale.status)) {
         return false;
       }
@@ -366,7 +356,6 @@ export default function RecordSalePage() {
   useEffect(() => {
     if (waitingMpesaSaleId && pendingSaleData?.data) {
       const sale = pendingSaleData.data;
-      // console.log('[POLLING] Current Sale Status:', sale.status);
 
       if ([0, 1, 3, 4].includes(sale.status)) {
         const status = sale.status;
@@ -448,7 +437,6 @@ export default function RecordSalePage() {
         reference: `KCB-${Date.now().toString().slice(-6)}`
       })
 
-      // KCB Buni UAT wraps ids in a "response" object
       const checkoutId = res?.data?.response?.CheckoutRequestID
         || res?.data?.CheckoutRequestID
         || res?.CheckoutRequestID;
@@ -462,18 +450,17 @@ export default function RecordSalePage() {
 
   return (
     <div className="relative min-h-[calc(100vh-100px)] pb-32 xl:pb-0">
-      <div className="flex flex-col xl:flex-row gap-6 lg:gap-12 mx-auto items-start animate-in fade-in slide-in-from-bottom-4 duration-700">
+      <div className="flex flex-col xl:flex-row gap-5 lg:gap-8 mx-auto items-start animate-in fade-in slide-in-from-bottom-4 duration-700">
 
-        {/* Left: Product Selection */}
-        <div className={`flex-1 space-y-6 md:space-y-10 min-w-0 w-full ${activeTab === 'cart' ? 'hidden xl:block' : 'block'}`}>
-          {/* Sticky Header and Search */}
+        {/* ── Left: Product catalogue ── */}
+        <div className={`flex-1 space-y-4 min-w-0 w-full ${activeTab === 'cart' ? 'hidden xl:block' : 'block'}`}>
 
-          <div className="sticky top-0 z-30 backdrop-blur-md py-2 rounded-l-full rounded-r-[5rem]">
-            <div className="flex items-center justify-between px-2 w-full">
-
-              {/* Search wrapper — constrained width, not full stretch */}
-              <div className="relative group w-64 md:w-80">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-emerald-500 transition-colors" size={16} />
+          {/* Search + actions bar */}
+          <div className="sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-slate-100 -mx-1 px-1 py-3 rounded-b-2xl">
+            <div className="flex items-center justify-between gap-3">
+              {/* Search */}
+              <div className="relative group flex-1 max-w-xs">
+                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-emerald-600 transition-colors" size={15} />
                 <input
                   type="text"
                   placeholder="Search items..."
@@ -486,110 +473,135 @@ export default function RecordSalePage() {
                       setSearch('')
                     }
                   }}
-                  className="w-full bg-slate-50 border border-slate-200 shadow-sm rounded-full py-1.5 pl-9 pr-4 text-sm font-normal focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all placeholder:text-slate-300"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-full py-2 pl-9 pr-4 text-sm outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-400 transition-all placeholder:text-slate-300"
                 />
               </div>
 
-              {/* Actions & Grid/List toggle — on the far right */}
+              {/* Actions */}
               <div className="flex items-center gap-2">
                 <button
                   onClick={handleShareStore}
-                  className="bg-emerald-50 text-emerald-800 px-3 py-1.5 rounded-full border border-emerald-200 font-bold text-xs hover:bg-emerald-100 transition-all flex items-center gap-1.5"
-                  title="Share your online store link with a customer"
+                  className="flex items-center gap-1.5 text-xs font-medium text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-2 rounded-full hover:bg-emerald-100 transition-colors"
+                  title="Share your online store link"
                 >
                   <Share2 size={13} />
                   <span className="hidden sm:inline">Share Store</span>
                 </button>
-                <div className="flex bg-slate-100 p-1 shrink-0 rounded-md">
+                <div className="flex bg-slate-100 p-1 rounded-lg gap-0.5">
                   <button
                     onClick={() => setViewMode('grid')}
-                    className={`p-1 rounded transition-all ${viewMode === 'grid' ? 'bg-white shadow-sm text-emerald-600' : 'text-slate-400 hover:text-slate-600'}`}
+                    className={`p-1.5 rounded-md transition-all ${viewMode === 'grid' ? 'bg-white shadow-sm text-emerald-600' : 'text-slate-400 hover:text-slate-600'}`}
                   >
-                    <LayoutGrid size={15} />
+                    <LayoutGrid size={14} />
                   </button>
                   <button
                     onClick={() => setViewMode('list')}
-                    className={`p-1 rounded transition-all ${viewMode === 'list' ? 'bg-white shadow-sm text-emerald-600' : 'text-slate-400 hover:text-slate-600'}`}
+                    className={`p-1.5 rounded-md transition-all ${viewMode === 'list' ? 'bg-white shadow-sm text-emerald-600' : 'text-slate-400 hover:text-slate-600'}`}
                   >
-                    <List size={15} />
+                    <List size={14} />
                   </button>
                 </div>
               </div>
-
             </div>
           </div>
 
-          {/* Product Listing */}
+          {/* Product listing */}
           {productsLoading ? (
-            <div className="py-32 flex flex-col items-center justify-center text-slate-400 gap-4">
-              <Loader2 className="animate-spin" size={48} />
-              <p className="font-black uppercase tracking-widest text-xs">Indexing Inventory...</p>
+            <div className="py-24 flex flex-col items-center justify-center text-slate-300 gap-3">
+              <Loader2 className="animate-spin" size={32} />
+              <p className="text-xs font-medium text-slate-400">Loading inventory...</p>
             </div>
           ) : filteredProducts.length === 0 ? (
-            <div className="py-32 flex flex-col items-center justify-center text-slate-400 gap-6 bg-slate-50 rounded-[.5rem] border-2 border-dashed border-slate-200">
-              <div className="h-20 w-20 rounded-full bg-slate-100 flex items-center justify-center">
-                <Package size={40} className="opacity-20" />
+            <div className="py-24 flex flex-col items-center justify-center gap-4 bg-white rounded-2xl border border-slate-100">
+              <div className="h-16 w-16 rounded-2xl bg-slate-50 flex items-center justify-center">
+                <Package size={28} className="text-slate-300" />
               </div>
-              <p className="font-black uppercase tracking-widest text-xs">No products found matching</p>
+              <div className="text-center">
+                <p className="text-sm font-medium text-slate-500">No products found</p>
+                {search && <p className="text-xs text-slate-400 mt-1">Try a different search term</p>}
+              </div>
             </div>
           ) : viewMode === 'grid' ? (
-            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-8">
+            /* ── Grid view — StayPage-style cards ── */
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
               {filteredProducts.map(product => {
                 const cartQty = cart.find(i => i.id === product.id)?.quantity || 0;
                 const availableStock = product.stockLevel - cartQty;
+                const inCart = cartQty > 0;
                 return (
-                  <div
+                  <article
                     key={product.id}
                     onClick={() => addToCart(product)}
-                    className="group relative bg-white rounded-[.5rem] md:rounded-[.5rem] cursor-pointer transition-all hover:shadow-2xl hover:shadow-emerald-900/20 overflow-hidden border border-slate-100 h-[240px] md:h-[380px]"
+                    className="group relative bg-white rounded-2xl border border-slate-100 overflow-hidden cursor-pointer transition-all duration-300 hover:-translate-y-0.5 hover:border-slate-200 hover:shadow-[0_12px_28px_rgba(15,23,42,0.07)]"
                   >
-                    {/* Image Region */}
-                    {product.imageUrl ? (
-                      <img src={product.imageUrl} alt={product.name} className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110" />
-                    ) : (
-                      <div className="h-full w-full bg-slate-50 flex items-center justify-center text-slate-200">
-                        <Package size={80} />
-                      </div>
-                    )}
-
-                    {/* Stock/Service Badge */}
-                    <div className="absolute top-4 right-4 z-20">
-                      {product.type === 'SERVICE' ? (
-                        <span className="px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest shadow-lg bg-emerald-100 text-emerald-800 border border-emerald-200">
-                          Service
-                        </span>
+                    {/* Image region */}
+                    <div className="relative aspect-[1.1/1] w-full bg-slate-50 overflow-hidden">
+                      {product.imageUrl ? (
+                        <img
+                          src={product.imageUrl}
+                          alt={product.name}
+                          className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.04]"
+                        />
                       ) : (
-                        <span className={`px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest shadow-lg ${availableStock <= 0 ? 'bg-red-600 text-white animate-pulse' : availableStock < 10 ? 'bg-amber-500 text-white' : 'bg-white/90 backdrop-blur-md text-slate-900'}`}>
-                          {availableStock <= 0 ? 'Out of Stock' : `${availableStock} in stock`}
+                        <div className="h-full w-full flex items-center justify-center text-slate-200">
+                          <Package size={40} />
+                        </div>
+                      )}
+
+                      {/* Category badge */}
+                      {product.category && (
+                        <span className="absolute left-2 top-2 rounded-full bg-white/95 shadow-sm px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.08em] text-slate-600 backdrop-blur z-10">
+                          {product.category}
                         </span>
+                      )}
+
+                      {/* Stock badge */}
+                      <span className={`absolute top-2 right-2 px-2 py-0.5 rounded-full text-[9px] font-bold z-10 ${
+                        product.type === 'SERVICE'
+                          ? 'bg-emerald-100 text-emerald-700'
+                          : availableStock <= 0
+                            ? 'bg-red-100 text-red-700'
+                            : availableStock < 10
+                              ? 'bg-amber-100 text-amber-700'
+                              : 'bg-slate-100 text-slate-500'
+                      }`}>
+                        {product.type === 'SERVICE' ? 'Service' : availableStock <= 0 ? 'Out of stock' : `${availableStock} left`}
+                      </span>
+
+                      {/* Cart-in-bag indicator */}
+                      {inCart && (
+                        <div className="absolute bottom-2 left-2 flex items-center gap-1 bg-emerald-600 text-white rounded-full px-2 py-0.5 text-[9px] font-bold z-10">
+                          <CheckCircle2 size={10} />
+                          {cartQty} in cart
+                        </div>
                       )}
                     </div>
 
-                    {/* Faded Detail Overlay */}
-                    <div className="absolute inset-x-0 bottom-0 p-4 md:p-8 bg-gradient-to-t from-slate-900 via-slate-900/60 to-transparent pt-12 md:pt-20">
-                      <p className="text-[8px] md:text-[10px] text-emerald-400 font-black uppercase tracking-widest mb-0.5 md:mb-1">{product.category}</p>
-                      <h4 className="text-sm md:text-xl font-black text-white mb-1 md:mb-2 line-clamp-1">{product.name}</h4>
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm md:text-2xl font-black text-white hl-mono">KES {Number(product.price).toLocaleString()}</span>
-                        <div className="h-8 w-8 md:h-12 md:w-12 rounded-[.5rem] md:rounded-[.5rem] bg-emerald-500 text-white flex items-center justify-center shadow-lg shadow-emerald-500/40 opacity-0 md:group-hover:opacity-100 transition-all transform translate-y-2 group-hover:translate-y-0">
-                          <Plus size={16} />
+                    {/* Info */}
+                    <div className="p-3">
+                      <h4 className="text-[13px] font-semibold text-slate-900 truncate leading-tight">{product.name}</h4>
+                      <div className="flex items-center justify-between mt-2">
+                        <span className="text-sm font-bold text-slate-900">KES {Number(product.price).toLocaleString()}</span>
+                        <div className="h-7 w-7 rounded-full bg-slate-900 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all translate-y-1 group-hover:translate-y-0 shadow">
+                          <Plus size={14} />
                         </div>
                       </div>
                     </div>
-                  </div>
+                  </article>
                 )
               })}
             </div>
           ) : (
-            <div className="bg-white rounded-[.5rem] border border-slate-100 shadow-xl shadow-slate-900/5 overflow-hidden">
+            /* ── List view ── */
+            <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
               <table className="w-full text-left">
                 <thead>
-                  <tr className="border-b border-slate-50 bg-slate-50/50">
-                    <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400">Product</th>
-                    <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400">Category</th>
-                    <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400">Stock</th>
-                    <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400 text-right">Price</th>
-                    <th className="px-8 py-5"></th>
+                  <tr className="border-b border-slate-50 bg-slate-50/60">
+                    <th className="px-5 py-3.5 text-[10px] font-semibold uppercase tracking-widest text-slate-400">Product</th>
+                    <th className="px-5 py-3.5 text-[10px] font-semibold uppercase tracking-widest text-slate-400">Category</th>
+                    <th className="px-5 py-3.5 text-[10px] font-semibold uppercase tracking-widest text-slate-400">Stock</th>
+                    <th className="px-5 py-3.5 text-[10px] font-semibold uppercase tracking-widest text-slate-400 text-right">Price</th>
+                    <th className="px-5 py-3.5" />
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-50">
@@ -600,36 +612,36 @@ export default function RecordSalePage() {
                       <tr
                         key={product.id}
                         onClick={() => addToCart(product)}
-                        className="hover:bg-emerald-50/30 cursor-pointer transition-colors group"
+                        className="hover:bg-slate-50 cursor-pointer transition-colors group"
                       >
-                        <td className="px-8 py-5">
+                        <td className="px-5 py-3.5">
                           <div className="flex items-center gap-3">
                             {product.imageUrl ? (
-                              <img src={product.imageUrl} alt={product.name} className="h-8 w-8 rounded-[.5rem] object-cover border border-slate-100" />
+                              <img src={product.imageUrl} alt={product.name} className="h-9 w-9 rounded-xl object-cover border border-slate-100" />
                             ) : (
-                              <div className="h-8 w-8 rounded-[.5rem] bg-slate-50 flex items-center justify-center text-slate-300">
+                              <div className="h-9 w-9 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-300">
                                 <Package size={14} />
                               </div>
                             )}
-                            <span className="text-sm font-black text-slate-900">{product.name}</span>
+                            <span className="text-sm font-semibold text-slate-900">{product.name}</span>
                           </div>
                         </td>
-                        <td className="px-8 py-5">
-                          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{product.category}</span>
+                        <td className="px-5 py-3.5">
+                          <span className="text-xs font-medium text-slate-400">{product.category}</span>
                         </td>
-                        <td className="px-8 py-5">
+                        <td className="px-5 py-3.5">
                           {product.type === 'SERVICE' ? (
-                            <span className="text-[10px] font-black text-emerald-600 uppercase tracking-widest">Service</span>
+                            <span className="text-[10px] font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">Service</span>
                           ) : (
-                            <span className={`text-[10px] font-black hl-mono ${availableStock < 10 ? 'text-red-600' : 'text-slate-600'}`}>{availableStock}</span>
+                            <span className={`text-xs font-semibold ${availableStock < 10 ? 'text-red-500' : 'text-slate-600'}`}>{availableStock}</span>
                           )}
                         </td>
-                        <td className="px-8 py-5 text-right">
-                          <span className="text-sm font-black text-[#0D4A3E] hl-mono">KES {Number(product.price).toLocaleString()}</span>
+                        <td className="px-5 py-3.5 text-right">
+                          <span className="text-sm font-bold text-slate-900">KES {Number(product.price).toLocaleString()}</span>
                         </td>
-                        <td className="px-8 py-5 text-right">
-                          <div className="inline-flex h-8 w-8 rounded-full bg-slate-100 text-slate-400 items-center justify-center group-hover:bg-emerald-500 group-hover:text-white transition-all">
-                            <Plus size={16} />
+                        <td className="px-5 py-3.5 text-right">
+                          <div className="inline-flex h-8 w-8 rounded-full bg-slate-100 text-slate-400 items-center justify-center group-hover:bg-emerald-600 group-hover:text-white transition-all">
+                            <Plus size={14} />
                           </div>
                         </td>
                       </tr>
@@ -642,80 +654,79 @@ export default function RecordSalePage() {
 
           {/* Pagination */}
           {productsData && productsData.pages > 1 && (
-            <div className="flex justify-center items-center gap-6 py-12">
+            <div className="flex justify-center items-center gap-4 py-8">
               <button
                 disabled={page === 1}
                 onClick={() => setPage(p => Math.max(1, p - 1))}
-                className="h-12 w-12 rounded-[.5rem] bg-white border border-slate-200 flex items-center justify-center text-slate-400 hover:text-emerald-600 disabled:opacity-30 transition-all shadow-sm"
+                className="h-10 w-10 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-400 hover:text-emerald-600 disabled:opacity-30 transition-all shadow-sm"
               >
-                <ChevronLeft size={24} />
+                <ChevronLeft size={18} />
               </button>
-              <div className="flex items-center gap-2">
-                <span className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Page</span>
-                <span className="h-10 w-10 flex items-center justify-center bg-slate-900 text-white rounded-[.5rem] text-sm font-black hl-mono">{page}</span>
-                <span className="text-[11px] font-black text-slate-400 uppercase tracking-widest">of {productsData.pages}</span>
-              </div>
+              <span className="text-sm font-medium text-slate-500">
+                Page <span className="text-slate-900 font-bold">{page}</span> of {productsData.pages}
+              </span>
               <button
                 disabled={page === productsData.pages}
                 onClick={() => setPage(p => Math.min(productsData.pages, p + 1))}
-                className="h-12 w-12 rounded-[.5rem] bg-white border border-slate-200 flex items-center justify-center text-slate-400 hover:text-emerald-600 disabled:opacity-30 transition-all shadow-sm"
+                className="h-10 w-10 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-400 hover:text-emerald-600 disabled:opacity-30 transition-all shadow-sm"
               >
-                <ChevronRight size={24} />
+                <ChevronRight size={18} />
               </button>
             </div>
           )}
         </div>
 
-        {/* Right: Cart & Payment (Sticky) */}
-        <div className={`w-full xl:w-[450px] flex flex-col gap-6 lg:gap-8 sticky top-8 ${activeTab === 'products' ? 'hidden xl:flex' : 'flex'}`}>
-          {/* Back button for mobile cart view */}
+        {/* ── Right: Cart & Payment (Sticky) ── */}
+        <div className={`w-full xl:w-[420px] flex flex-col gap-4 sticky top-4 ${activeTab === 'products' ? 'hidden xl:flex' : 'flex'}`}>
+
+          {/* Mobile back */}
           <button
             onClick={() => setActiveTab('products')}
-            className="xl:hidden flex items-center gap-2 text-slate-400 font-black text-[10px] tracking-widest mb-2"
+            className="xl:hidden flex items-center gap-1.5 text-slate-500 font-medium text-sm mb-1"
           >
             <ChevronLeft size={16} /> Back to Products
           </button>
-          <div className="bg-white p-10 rounded-[.5rem] border border-slate-100 shadow-xl shadow-slate-900/5 flex-1 flex flex-col min-h-[500px] max-h-[calc(100vh-200px)] relative overflow-hidden">
-            <div className="flex items-center justify-between mb-10 relative z-10">
-              <h3 className="text-2xl font-black text-slate-900 tracking-tighter">Cart Summary</h3>
-              <span className="bg-[#0D4A3E] text-white px-4 py-1.5 rounded-[.5rem] text-[11px] font-black uppercase tracking-widest hl-mono shadow-lg shadow-emerald-900/20">
-                {cart.reduce((sum, item) => sum + item.quantity, 0)} ITEMS
+
+          {/* Cart panel */}
+          <div className="bg-white rounded-2xl border border-slate-100 shadow-sm flex flex-col min-h-[460px] max-h-[calc(100vh-180px)] overflow-hidden">
+
+            {/* Cart header */}
+            <div className="flex items-center justify-between px-5 py-4 border-b border-slate-50">
+              <h3 className="text-base font-semibold text-slate-900">Cart</h3>
+              <span className="bg-slate-100 text-slate-600 px-3 py-1 rounded-full text-xs font-semibold">
+                {cart.reduce((sum, item) => sum + item.quantity, 0)} items
               </span>
             </div>
 
-            {/* Customer Selection */}
-            <div className={`mb-6 transition-all duration-500 relative z-30 ${isSearchingCustomer ? 'scale-[1.02]' : ''}`}>
+            {/* Customer association */}
+            <div className={`px-5 py-3 border-b border-slate-50 relative z-30 transition-all ${isSearchingCustomer ? 'scale-[1.01]' : ''}`}>
               {!selectedCustomerId ? (
                 <div className="relative">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-[.2em] mb-3 block px-1">Customer Association</label>
+                  <label className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest mb-2 block">Customer</label>
                   <div className="relative group">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-emerald-500 transition-colors" size={14} />
                     <input
                       type="text"
                       onFocus={() => setIsSearchingCustomer(true)}
-                      onBlur={() => {
-                        // Small delay to allow clicking a result
-                        setTimeout(() => setIsSearchingCustomer(false), 200);
-                      }}
-                      placeholder="Find or Create Customer..."
+                      onBlur={() => setTimeout(() => setIsSearchingCustomer(false), 200)}
+                      placeholder="Find or create customer..."
                       value={customerSearchInput}
                       onChange={(e) => setCustomerSearchInput(e.target.value)}
-                      className="w-full bg-slate-50 border border-slate-100 rounded-[.5rem] py-4 pl-12 pr-6 text-sm font-bold focus:ring-4 focus:ring-emerald-500/5 outline-none transition-all placeholder:text-slate-300"
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 pl-9 pr-4 text-sm outline-none focus:ring-2 focus:ring-emerald-500/10 focus:border-emerald-400 transition-all placeholder:text-slate-300"
                     />
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-emerald-500 transition-colors" size={18} />
-
                     {isSearchingCustomer && (
                       <button
                         onClick={() => { setCustomerSearchInput(''); setIsSearchingCustomer(false); }}
-                        className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-1"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5"
                       >
-                        <X size={14} />
+                        <X size={12} />
                       </button>
                     )}
                   </div>
 
                   {(customerSearch.length > 0 || isSearchingCustomer) && (
-                    <div className={`absolute top-full left-0 right-0 z-50 mt-2 bg-white rounded-[.5rem] border border-slate-100 shadow-2xl shadow-slate-900/10 overflow-hidden transition-all ${isSearchingCustomer ? 'max-h-[60vh] opacity-100' : 'max-h-0 opacity-0'}`}>
-                      <div className="max-h-64 overflow-y-auto divide-y divide-slate-50">
+                    <div className={`absolute top-full left-0 right-0 z-50 mt-1 bg-white rounded-xl border border-slate-100 shadow-xl overflow-hidden transition-all ${isSearchingCustomer ? 'max-h-[50vh] opacity-100' : 'max-h-0 opacity-0'}`}>
+                      <div className="max-h-48 overflow-y-auto divide-y divide-slate-50">
                         {customersData?.items?.map((customer: any) => (
                           <button
                             key={customer.id}
@@ -724,54 +735,52 @@ export default function RecordSalePage() {
                               setCustomerSearch('');
                               setIsSearchingCustomer(false);
                             }}
-                            className="w-full flex items-center gap-3 p-4 hover:bg-emerald-50 transition-colors text-left group"
+                            className="w-full flex items-center gap-3 px-4 py-3 hover:bg-emerald-50 transition-colors text-left group"
                           >
-                            <div className="h-8 w-8 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center text-xs font-black group-hover:bg-emerald-500 group-hover:text-white transition-all">
+                            <div className="h-8 w-8 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center text-xs font-bold group-hover:bg-emerald-500 group-hover:text-white transition-all">
                               {customer.name.charAt(0)}
                             </div>
                             <div>
-                              <p className="text-sm font-black text-slate-900">{customer.name}</p>
-                              <p className="text-[10px] text-slate-400 font-medium">{customer.phone || 'No Phone'}</p>
+                              <p className="text-sm font-semibold text-slate-900">{customer.name}</p>
+                              <p className="text-[10px] text-slate-400">{customer.phone || 'No phone'}</p>
                             </div>
                           </button>
                         ))}
                       </div>
-
-                      <button
-                        className="w-full py-4 bg-slate-50 hover:bg-emerald-500 hover:text-white text-[10px] font-black uppercase tracking-widest text-slate-400 border-t border-slate-100 transition-all flex items-center justify-center gap-2"
-                      >
-                        <Plus size={14} /> Create New Customer
+                      <button className="w-full py-3 bg-slate-50 hover:bg-emerald-600 hover:text-white text-xs font-semibold text-slate-500 border-t border-slate-100 transition-all flex items-center justify-center gap-1.5">
+                        <Plus size={12} /> Create New Customer
                       </button>
                     </div>
                   )}
                 </div>
               ) : (
-                <div className="flex items-center justify-between p-3 bg-emerald-50 border border-emerald-100 rounded-[.5rem]">
-                  <div className="flex items-center gap-3">
-                    <div className="h-8 w-8 rounded-full bg-emerald-500 text-white flex items-center justify-center text-xs font-black">
+                <div className="flex items-center justify-between p-3 bg-emerald-50 border border-emerald-100 rounded-xl">
+                  <div className="flex items-center gap-2.5">
+                    <div className="h-8 w-8 rounded-full bg-emerald-500 text-white flex items-center justify-center text-xs font-bold">
                       {selectedCustomer?.name?.charAt(0) || 'C'}
                     </div>
                     <div>
-                      <p className="text-xs font-black text-slate-900">{selectedCustomer?.name || 'Loading...'}</p>
-                      <p className="text-[10px] text-emerald-600 font-bold uppercase tracking-widest">Linked</p>
+                      <p className="text-xs font-semibold text-slate-900">{selectedCustomer?.name || 'Loading...'}</p>
+                      <p className="text-[10px] text-emerald-600 font-medium">Linked</p>
                     </div>
                   </div>
                   <button
                     onClick={() => setSelectedCustomerId(null)}
-                    className="h-8 w-8 rounded-[.5rem] hover:bg-white hover:text-red-500 text-slate-400 transition-all flex items-center justify-center"
+                    className="h-7 w-7 rounded-lg hover:bg-white hover:text-red-500 text-slate-400 transition-all flex items-center justify-center"
                   >
-                    <Trash2 size={16} />
+                    <Trash2 size={13} />
                   </button>
                 </div>
               )}
             </div>
 
-            <div className="mb-6 relative z-20">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-[.2em] mb-3 block px-1">Sales Channel / Source</label>
+            {/* Sales channel */}
+            <div className="px-5 py-3 border-b border-slate-50 relative z-20">
+              <label className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest mb-2 block">Sales Channel</label>
               <select
                 value={saleSource}
                 onChange={(e) => setSaleSource(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-100 rounded-[.5rem] py-3 pl-4 pr-6 text-sm font-bold focus:ring-4 focus:ring-emerald-500/5 outline-none transition-all cursor-pointer"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-sm font-medium text-slate-700 outline-none focus:ring-2 focus:ring-emerald-500/10 focus:border-emerald-400 transition-all cursor-pointer"
               >
                 {configuredSources.map((s: string) => (
                   <option key={s} value={s}>{s}</option>
@@ -779,32 +788,31 @@ export default function RecordSalePage() {
               </select>
             </div>
 
-            <div className={`flex-1 transition-all duration-300 overflow-y-auto space-y-4 mb-8 pr-2 custom-scrollbar relative z-10 ${isSearchingCustomer ? 'opacity-5 bg-slate-50 scale-95 pointer-events-none' : 'opacity-100'}`}>
+            {/* Cart items */}
+            <div className={`flex-1 overflow-y-auto px-5 py-3 space-y-2 relative z-10 transition-all duration-200 ${isSearchingCustomer ? 'opacity-[0.04] pointer-events-none' : 'opacity-100'}`}>
               {cart.length === 0 ? (
-                <div className="h-full flex flex-col items-center justify-center text-slate-200 py-20">
-                  <div className="h-24 w-24 rounded-full bg-slate-20 flex items-center justify-center mb-6">
-                    <ShoppingCart size={48} className="opacity-90" />
-                  </div>
-                  <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Cart is empty</p>
+                <div className="h-full flex flex-col items-center justify-center text-slate-300 py-16">
+                  <ShoppingCart size={36} className="mb-3" />
+                  <p className="text-xs font-medium text-slate-400">Cart is empty</p>
                 </div>
               ) : (
                 cart.map(item => (
-                  <div key={item.id} className="flex items-center gap-4 p-4 rounded-[.5rem] bg-slate-50/50 border border-slate-100 hover:bg-white hover:shadow-xl hover:shadow-slate-900/5 transition-all group">
+                  <div key={item.id} className="flex items-center gap-3 p-3 rounded-xl border border-slate-100 bg-slate-50/60 hover:bg-white hover:shadow-sm transition-all group">
                     <div className="flex-1 min-w-0">
-                      <h5 className="text-sm font-black text-slate-900 truncate">{item.name}</h5>
-                      <div className="flex flex-col gap-1 mt-1">
+                      <h5 className="text-sm font-semibold text-slate-900 truncate">{item.name}</h5>
+                      <div className="flex gap-3 mt-1">
                         <div className="flex items-center gap-1">
-                          <span className="text-[10px] text-slate-400 font-bold hl-mono uppercase tracking-widest w-12">Sell:</span>
+                          <span className="text-[9px] text-slate-400 font-medium uppercase tracking-wider w-8">Sell</span>
                           <input
                             type="number"
                             value={item.price}
                             onChange={(e) => updatePrice(item.id, e.target.value === '' ? '' : parseFloat(e.target.value))}
                             onBlur={(e) => { if (e.target.value === '') updatePrice(item.id, 0); }}
-                            className="bg-transparent border-b border-dashed border-slate-300 w-20 text-xs text-[#0D4A3E] font-black hl-mono focus:outline-none focus:border-emerald-500 transition-colors"
+                            className="bg-transparent border-b border-dashed border-slate-300 w-16 text-xs text-slate-700 font-semibold focus:outline-none focus:border-emerald-500 transition-colors"
                           />
                         </div>
                         <div className="flex items-center gap-1">
-                          <span className="text-[10px] text-slate-400 font-bold hl-mono uppercase tracking-widest w-12">Cost:</span>
+                          <span className="text-[9px] text-slate-400 font-medium uppercase tracking-wider w-8">Cost</span>
                           <input
                             type="number"
                             value={item.buyingPrice !== undefined ? item.buyingPrice : (item.type === 'SERVICE' ? 0 : '')}
@@ -812,51 +820,53 @@ export default function RecordSalePage() {
                             onChange={(e) => {
                               setCart(cart.map(i => i.id === item.id ? { ...i, buyingPrice: e.target.value === '' ? undefined : parseFloat(e.target.value) } : i))
                             }}
-                            className="bg-transparent border-b border-dashed border-slate-300 w-20 text-xs text-amber-700 font-black hl-mono focus:outline-none focus:border-amber-500 transition-colors"
-                            title="Associated expense/cost for this sale (Leave auto if normal)"
+                            className="bg-transparent border-b border-dashed border-slate-300 w-16 text-xs text-amber-600 font-semibold focus:outline-none focus:border-amber-400 transition-colors"
+                            title="Cost / expense for this item"
                           />
                         </div>
                       </div>
                     </div>
-                    <div className="flex items-center gap-3">
-                      <button onClick={(e) => { e.stopPropagation(); updateQuantity(item.id, -1); }} className="h-8 w-8 rounded-[.5rem] bg-white border border-slate-200 flex items-center justify-center text-slate-400 hover:text-emerald-600 transition-all shadow-sm">
-                        <Minus size={14} />
+                    <div className="flex items-center gap-2 shrink-0">
+                      <button onClick={(e) => { e.stopPropagation(); updateQuantity(item.id, -1); }} className="h-7 w-7 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-400 hover:text-emerald-600 transition-colors shadow-sm">
+                        <Minus size={12} />
                       </button>
-                      <span className="text-xs font-black w-5 text-center hl-mono text-slate-900">{item.quantity}</span>
-                      <button onClick={(e) => { e.stopPropagation(); updateQuantity(item.id, 1); }} className="h-8 w-8 rounded-[.5rem] bg-white border border-slate-200 flex items-center justify-center text-slate-400 hover:text-emerald-600 transition-all shadow-sm">
-                        <Plus size={14} />
+                      <span className="text-xs font-bold text-slate-900 w-5 text-center">{item.quantity}</span>
+                      <button onClick={(e) => { e.stopPropagation(); updateQuantity(item.id, 1); }} className="h-7 w-7 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-400 hover:text-emerald-600 transition-colors shadow-sm">
+                        <Plus size={12} />
+                      </button>
+                      <button onClick={(e) => { e.stopPropagation(); removeFromCart(item.id); }} className="h-7 w-7 rounded-full text-slate-300 hover:text-red-500 hover:bg-red-50 transition-all flex items-center justify-center">
+                        <Trash2 size={13} />
                       </button>
                     </div>
-                    <button onClick={(e) => { e.stopPropagation(); removeFromCart(item.id); }} className="h-8 w-8 rounded-[.5rem] text-slate-400 hover:text-red-500 hover:bg-red-50 transition-all flex items-center justify-center border border-transparent hover:border-red-100">
-                      <Trash2 size={16} />
-                    </button>
                   </div>
                 ))
               )}
             </div>
 
-            <div className="space-y-5 pt-8 border-t-2 border-dashed border-slate-100 relative z-10">
-              <div className="flex justify-between items-center px-2">
-                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Subtotal</span>
-                <span className="text-sm font-black text-slate-900 hl-mono">KES {subtotal.toLocaleString()}</span>
+            {/* Totals */}
+            <div className="px-5 py-4 border-t border-slate-100 space-y-3">
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-slate-500 font-medium">Subtotal</span>
+                <span className="font-semibold text-slate-900">KES {subtotal.toLocaleString()}</span>
               </div>
-              <div className="flex justify-between items-center p-6 bg-[#0D4A3E] rounded-[.5rem] text-white shadow-2xl shadow-emerald-900/20">
-                <span className="text-xs font-black uppercase tracking-widest opacity-80">Payable</span>
-                <span className="text-3xl font-black hl-mono tracking-tighter">KES {total.toLocaleString()}</span>
+              <div className="flex justify-between items-center p-3.5 bg-slate-900 rounded-xl text-white">
+                <span className="text-xs font-semibold opacity-70">Total payable</span>
+                <span className="text-xl font-bold">KES {total.toLocaleString()}</span>
               </div>
             </div>
-
-            <div className="absolute top-0 right-0 h-64 w-64 bg-slate-50 rounded-full blur-[100px] -mr-32 -mt-32 opacity-50" />
           </div>
 
-          {/* Payment & Action */}
-          <div className="bg-white p-1 rounded-[.5rem] border border-slate-100 shadow-xl shadow-slate-900/5 space-y-5">
-            <div className="grid grid-cols-2 gap-1">
+          {/* Payment method panel */}
+          <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4 space-y-4">
+            <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest">Payment method</p>
+
+            {/* Payment buttons */}
+            <div className="grid grid-cols-2 gap-2">
               {[
                 { id: 'CASH', label: 'Cash', icon: Banknote, feature: null },
                 { id: 'MPESA', label: 'Express', icon: MpesaBankIcon, feature: 'mpesa_stk' },
                 { id: 'KCB', label: 'Mobile', icon: KcbBankIcon, feature: 'kcb_settlement' },
-                { id: 'MPESA_MANUAL', label: 'M-Pesa [Pochi/Till]', icon: Wallet, feature: null },
+                { id: 'MPESA_MANUAL', label: 'M-Pesa Till/Pochi', icon: Wallet, feature: null },
               ].map(method => (
                 <FeatureGate
                   key={method.id}
@@ -865,17 +875,15 @@ export default function RecordSalePage() {
                     method.feature ? (
                       <button
                         onClick={() => toast.info(`${method.label} requires the Growth Plan. Please upgrade to unlock.`)}
-                        className="relative group flex flex-col items-center justify-center gap-2 py-5 rounded-[.5rem] border-2 border-slate-50 bg-slate-50/50 text-slate-300 cursor-not-allowed overflow-hidden"
+                        className="relative flex flex-col items-center justify-center gap-1.5 py-4 rounded-xl border-2 border-slate-100 bg-slate-50 text-slate-300 cursor-not-allowed overflow-hidden"
                       >
-                        <div className="flex items-center gap-3">
-                          <method.icon size={['MPESA', 'KCB'].includes(method.id) ? 64 : 20} />
-                          <span className="text-[10px] font-black uppercase tracking-widest">{method.label}</span>
-                        </div>
-                        <span className="text-[8px] font-black bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full uppercase tracking-tighter">
+                        <method.icon size={['MPESA', 'KCB'].includes(method.id) ? 48 : 18} />
+                        <span className="text-[10px] font-semibold">{method.label}</span>
+                        <span className="text-[8px] font-bold bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-full">
                           Requires {(FEATURE_PLANS as any)[method.feature as string][0]}
                         </span>
-                        <div className="absolute top-0 right-0 p-2 opacity-20">
-                          <Lock size={12} />
+                        <div className="absolute top-1.5 right-1.5 opacity-20">
+                          <Lock size={11} />
                         </div>
                       </button>
                     ) : null
@@ -883,115 +891,95 @@ export default function RecordSalePage() {
                 >
                   <button
                     onClick={() => setPaymentMethod(method.id)}
-                    className={`flex items-center justify-center gap-3 py-1 rounded-[.5rem] border-2 transition-all ${paymentMethod === method.id
-                      ? 'border-[#0D4A3E] bg-emerald-50/50 text-[#0D4A3E] shadow-lg shadow-emerald-900/5'
-                      : 'border-slate-50 bg-white text-slate-400 hover:bg-slate-50 hover:text-slate-600'
+                    className={`flex flex-col items-center justify-center gap-1.5 py-4 rounded-xl border-2 transition-all ${paymentMethod === method.id
+                      ? 'border-slate-900 bg-slate-50 text-slate-900'
+                      : 'border-slate-100 bg-white text-slate-400 hover:bg-slate-50 hover:text-slate-600'
                       }`}
                   >
-                    <method.icon size={['MPESA', 'KCB'].includes(method.id) ? 64 : 20} />
-                    <span className="text-[10px] font-black uppercase tracking-widest">{method.label}</span>
+                    <method.icon size={['MPESA', 'KCB'].includes(method.id) ? 48 : 18} />
+                    <span className="text-[10px] font-semibold">{method.label}</span>
                   </button>
                 </FeatureGate>
               ))}
             </div>
 
-
+            {/* Payment sub-details */}
             {paymentMethod === 'MPESA_MANUAL' && (
-              <div className="space-y-4 animate-in slide-in-from-top-2 duration-300">
-                <div className="bg-emerald-50 border border-emerald-100 rounded-[.5rem] p-5 space-y-4">
-                  <div className="flex items-center gap-4">
-                    <div className="h-10 w-10 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center">
-                      <Smartphone size={20} />
-                    </div>
-                    <div>
-                      <p className="text-xs font-black text-emerald-900 uppercase tracking-tight">Manual M-Pesa Mode</p>
-                      <p className="text-[10px] text-emerald-700 font-medium leading-tight">Accept payment via Pochi, Personal # or Till, then record here.</p>
-                    </div>
+              <div className="space-y-3 animate-in slide-in-from-top-1 duration-200">
+                <div className="bg-emerald-50 border border-emerald-100 rounded-xl p-4 flex items-start gap-3">
+                  <Smartphone size={16} className="text-emerald-600 mt-0.5 shrink-0" />
+                  <div>
+                    <p className="text-xs font-semibold text-emerald-900">Manual M-Pesa</p>
+                    <p className="text-[10px] text-emerald-700 mt-0.5 leading-relaxed">
+                      {profile?.data?.operationalSettings?.manualMpesa?.instructions || 'Ask the client to pay to your Till or Pochi, then confirm receipt before completing.'}
+                    </p>
                   </div>
-
-                  <div className="space-y-3 pt-2 border-t border-emerald-200/50">
-                    <div className="bg-white/50 p-3 rounded-lg border border-emerald-200">
-                      <p className="text-[10px] font-medium text-emerald-800 text-center italic">
-                        {profile?.data?.operationalSettings?.manualMpesa?.instructions || `"Ask the client to pay to your Till or Pochi number, then confirm you have received the SMS before completing."`}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-                <div className="bg-slate-50 border border-slate-100 rounded-[.5rem] p-4 text-center">
-                  <p className="text-[10px] font-bold text-slate-500 mb-1 uppercase tracking-widest">Recording as</p>
-                  <p className="text-sm font-black text-slate-900">M-Pesa Transaction</p>
                 </div>
               </div>
             )}
 
             {paymentMethod === 'MPESA' && (
               isOnline ? (
-                <div className="space-y-4 animate-in slide-in-from-top-2 duration-300">
-                  <div className="bg-emerald-50 border border-emerald-100 rounded-[.5rem] p-4 flex items-center gap-4">
-                    <MpesaBankIcon size={20} className="text-[#0D4A3E]" />
+                <div className="space-y-3 animate-in slide-in-from-top-1 duration-200">
+                  <div className="bg-emerald-50 border border-emerald-100 rounded-xl p-3 flex items-center gap-3">
+                    <MpesaBankIcon size={16} />
                     <p className="text-[10px] font-medium text-emerald-800 leading-tight">
-                      STK Push will be sent to the customer's phone for instant verification.
+                      STK Push sent to customer's phone for instant verification.
                     </p>
                   </div>
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1 block mb-2">Customer M-Pesa Number</label>
+                  <div>
+                    <label className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest block mb-1.5">Customer M-Pesa Number</label>
                     <input
                       type="number"
                       placeholder="07..."
                       value={mpesaPhone}
                       onChange={(e) => setMpesaPhone(e.target.value)}
-                      className="w-full bg-slate-50 border border-slate-100 rounded-[.5rem] py-4 px-6 text-sm font-bold focus:ring-4 focus:ring-emerald-500/5 outline-none transition-all hl-mono"
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-4 text-sm font-medium outline-none focus:ring-2 focus:ring-emerald-500/10 focus:border-emerald-400 transition-all"
                     />
                   </div>
                 </div>
               ) : (
-                <div className="space-y-4 animate-in slide-in-from-top-2 duration-300">
-                  <div className="bg-amber-50 border border-amber-100 rounded-[.5rem] p-5 space-y-4">
-                    <div className="flex items-center gap-4">
-                      <div className="h-10 w-10 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center">
-                        <Wifi size={20} className="animate-pulse" />
-                      </div>
-                      <div>
-                        <p className="text-xs font-black text-amber-900 uppercase tracking-tight">Manual M-Pesa Mode</p>
-                        <p className="text-[10px] text-amber-700 font-medium leading-tight">Accept payment via Pochi la Biashara or Paybill, then record here.</p>
-                      </div>
-                    </div>
+                <div className="bg-amber-50 border border-amber-100 rounded-xl p-4 flex items-start gap-3 animate-in slide-in-from-top-1 duration-200">
+                  <Wifi size={16} className="text-amber-600 animate-pulse mt-0.5 shrink-0" />
+                  <div>
+                    <p className="text-xs font-semibold text-amber-800">Offline mode</p>
+                    <p className="text-[10px] text-amber-700 mt-0.5">Accept payment via Pochi la Biashara or Paybill, then record here.</p>
                   </div>
                 </div>
               )
             )}
 
             {paymentMethod === 'KCB' && isOnline && (
-              <div className="space-y-4 animate-in slide-in-from-top-2 duration-300">
-                <div className="bg-indigo-50 border border-indigo-100 rounded-[.5rem] p-4 flex items-center gap-4">
-                  <KcbBankIcon size={20} />
+              <div className="space-y-3 animate-in slide-in-from-top-1 duration-200">
+                <div className="bg-indigo-50 border border-indigo-100 rounded-xl p-3 flex items-center gap-3">
+                  <KcbBankIcon size={16} />
                   <p className="text-[10px] font-medium text-indigo-800 leading-tight">
-                    KCB Mobile STK Push will be sent to the customer for direct settlement.
+                    KCB Mobile STK Push sent to customer for direct settlement.
                   </p>
                 </div>
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1 block mb-2">Customer Phone Number</label>
+                <div>
+                  <label className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest block mb-1.5">Customer Phone Number</label>
                   <input
                     type="text"
                     placeholder="254..."
                     value={mpesaPhone}
                     onChange={(e) => setMpesaPhone(e.target.value)}
-                    className="w-full bg-indigo-50/20 border border-indigo-100 rounded-[.5rem] py-4 px-6 text-sm font-bold focus:ring-4 focus:ring-indigo-500/5 outline-none transition-all hl-mono"
+                    className="w-full bg-slate-50 border border-indigo-200 rounded-xl py-2.5 px-4 text-sm font-medium outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-400 transition-all"
                   />
                 </div>
               </div>
             )}
 
             {paymentMethod === 'CASH' && (
-              <div className="bg-amber-50 border border-amber-100 rounded-[.5rem] p-4 flex items-center gap-4 animate-in slide-in-from-top-2 duration-300">
-                <Banknote size={20} className="text-amber-700" />
+              <div className="bg-amber-50 border border-amber-100 rounded-xl p-3 flex items-center gap-3 animate-in slide-in-from-top-1 duration-200">
+                <Banknote size={16} className="text-amber-600 shrink-0" />
                 <p className="text-[10px] font-medium text-amber-800 leading-tight">
-                  Recording as Cash. Ensure you have received the funds physically before completing.
+                  Cash payment. Ensure funds received before completing.
                 </p>
               </div>
             )}
 
-
+            {/* Complete button */}
             <button
               disabled={cart.length === 0 || handleCompleteSale.isPending || isProcessingMpesa}
               onClick={() => {
@@ -1005,26 +993,26 @@ export default function RecordSalePage() {
                   handleCompleteSale.mutate(undefined)
                 }
               }}
-              className={`w-full py-6 rounded-[.5rem] font-black text-sm uppercase tracking-widest shadow-2xl transition-all flex items-center justify-center gap-4 ${cart.length === 0 || handleCompleteSale.isPending || isProcessingMpesa
-                ? 'bg-slate-100 text-slate-300 cursor-not-allowed shadow-none'
+              className={`w-full py-3.5 rounded-full font-semibold text-sm transition-all flex items-center justify-center gap-2 ${cart.length === 0 || handleCompleteSale.isPending || isProcessingMpesa
+                ? 'bg-slate-100 text-slate-300 cursor-not-allowed'
                 : isOnline
-                  ? 'bg-slate-900 text-white hover:bg-black shadow-slate-900/20 active:scale-[0.98]'
-                  : 'bg-amber-600 text-white hover:bg-amber-700 shadow-amber-900/20 active:scale-[0.98]'
+                  ? 'bg-slate-900 text-white hover:bg-slate-800 active:scale-[0.98] shadow-sm'
+                  : 'bg-amber-600 text-white hover:bg-amber-700 active:scale-[0.98] shadow-sm'
                 }`}
             >
               {handleCompleteSale.isPending || isProcessingMpesa ? (
-                <div className="flex items-center gap-3">
-                  <Loader2 size={20} className="animate-spin" />
+                <div className="flex items-center gap-2">
+                  <Loader2 size={16} className="animate-spin" />
                   <span>Processing...</span>
                 </div>
               ) : (
                 <>
                   {!isOnline ? (
-                    <>Record Offline <RefreshCcw size={20} /></>
+                    <>Record Offline <RefreshCcw size={16} /></>
                   ) : paymentMethod === 'MPESA' || paymentMethod === 'KCB' ? (
-                    <>Send STK Prompt <ArrowRight size={20} /></>
+                    <>Send STK Prompt <ArrowRight size={16} /></>
                   ) : (
-                    <span className="flex items-center gap-2">Complete Sale <ArrowRight size={20} /></span>
+                    <>Complete Sale <ArrowRight size={16} /></>
                   )}
                 </>
               )}
@@ -1033,36 +1021,36 @@ export default function RecordSalePage() {
         </div>
       </div>
 
-      {/* ── Mobile Cart Floating Bar ── */}
+      {/* ── Mobile floating cart bar ── */}
       {cart.length > 0 && activeTab === 'products' && (
-        <div className="fixed bottom-28 left-6 right-6 z-[100] xl:hidden animate-in slide-in-from-bottom-8 duration-500">
+        <div className="fixed bottom-28 left-4 right-4 z-[100] xl:hidden animate-in slide-in-from-bottom-6 duration-400">
           <div className="flex items-center gap-2">
             <button
               onClick={() => setActiveTab('cart')}
-              className="flex-1 bg-[#0D4A3E] text-white p-3 rounded-[.5rem] shadow-2xl shadow-emerald-900/40 flex items-center justify-between backdrop-blur-md"
+              className="flex-1 bg-slate-900 text-white p-3.5 rounded-2xl shadow-xl shadow-slate-900/20 flex items-center justify-between"
             >
-              <div className="flex items-center gap-4">
-                <div className="h-10 w-10 bg-white/20 rounded-[.5rem] flex items-center justify-center relative">
-                  <ShoppingCart size={20} />
-                  <span className="absolute -top-2 -right-2 h-5 w-5 bg-red-500 text-white text-[10px] font-black rounded-full flex items-center justify-center border-2 border-[#0D4A3E]">
+              <div className="flex items-center gap-3">
+                <div className="h-9 w-9 bg-white/15 rounded-xl flex items-center justify-center relative">
+                  <ShoppingCart size={18} />
+                  <span className="absolute -top-1.5 -right-1.5 h-4 w-4 bg-emerald-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center">
                     {cart.reduce((sum, item) => sum + item.quantity, 0)}
                   </span>
                 </div>
                 <div className="text-left">
-                  <p className="text-[9px] font-black uppercase tracking-[0.2em] opacity-60">Ready to Checkout</p>
-                  <p className="text-lg font-black hl-mono leading-none">KES {total.toLocaleString()}</p>
+                  <p className="text-[9px] font-semibold opacity-60 uppercase tracking-wider">Ready to checkout</p>
+                  <p className="text-base font-bold leading-tight">KES {total.toLocaleString()}</p>
                 </div>
               </div>
-              <div className="h-10 w-10 bg-white text-[#0D4A3E] rounded-[.5rem] flex items-center justify-center">
-                <ArrowRight size={20} />
+              <div className="h-9 w-9 bg-white/15 rounded-xl flex items-center justify-center">
+                <ArrowRight size={18} />
               </div>
             </button>
             <button
               onClick={() => { setCart([]); localStorage.removeItem('hlynk_pos_cart'); }}
-              className="bg-red-500 text-white p-3 rounded-full shadow-2xl shadow-red-900/40 flex items-center justify-center backdrop-blur-md hover:bg-red-600 transition-colors shrink-0"
+              className="bg-red-500 text-white p-3.5 rounded-2xl shadow-xl shadow-red-900/20 hover:bg-red-600 transition-colors"
               title="Clear Cart"
             >
-              <X size={24} />
+              <X size={20} />
             </button>
           </div>
         </div>
@@ -1075,14 +1063,14 @@ export default function RecordSalePage() {
         title="Transaction Finalized"
       >
         {completedSale && (
-          <div className="space-y-6">
-            <div className="bg-emerald-50 border border-emerald-100 p-4 rounded-[.5rem] flex items-center gap-3 animate-in zoom-in-95 duration-500">
-              <div className="h-10 w-10 rounded-full bg-emerald-500 text-white flex items-center justify-center">
-                <CheckCircle2 size={24} />
+          <div className="space-y-5">
+            <div className="bg-emerald-50 border border-emerald-100 p-4 rounded-2xl flex items-center gap-3 animate-in zoom-in-95 duration-400">
+              <div className="h-10 w-10 rounded-full bg-emerald-500 text-white flex items-center justify-center shrink-0">
+                <CheckCircle2 size={20} />
               </div>
               <div>
-                <p className="text-xs font-black text-emerald-900 uppercase tracking-tight">Success</p>
-                <p className="text-[10px] text-emerald-700 font-medium">The sale has been recorded and tax calculated.</p>
+                <p className="text-sm font-semibold text-emerald-900">Sale recorded</p>
+                <p className="text-xs text-emerald-700 mt-0.5">Tax calculated and inventory updated.</p>
               </div>
             </div>
 
@@ -1091,10 +1079,10 @@ export default function RecordSalePage() {
               autoPrint={profile?.data?.operationalSettings?.autoPrint}
             />
 
-            <div className="pt-4 grid grid-cols-1 gap-3 no-print">
+            <div className="pt-2 no-print">
               <button
                 onClick={() => setCompletedSale(null)}
-                className="w-full py-4 bg-slate-900 text-white rounded-[.5rem] font-black text-xs uppercase tracking-widest shadow-xl hover:shadow-2xl transition-all"
+                className="w-full py-3.5 bg-slate-900 text-white rounded-full font-semibold text-sm shadow-sm hover:bg-slate-800 transition-colors"
               >
                 Acknowledge & Continue
               </button>

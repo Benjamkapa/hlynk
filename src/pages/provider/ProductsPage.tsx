@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Plus, Search, Filter, Edit, Trash2, Package, TrendingDown, Activity, AlertTriangle, LayoutGrid, List, Camera, FileText, Eye, Share2, ShoppingBag, Phone, MessageSquare, Check, CheckCircle2, Clock, CreditCard } from 'lucide-react'
+import { Plus, Search, Filter, Edit, Trash2, Package, TrendingDown, Activity, AlertTriangle, LayoutGrid, List, Camera, FileText, Eye, Share2, ShoppingBag, Phone, MessageSquare, Check, CheckCircle2, Clock, CreditCard, Upload, Trash, CandyCaneIcon, Ban } from 'lucide-react'
 import { CameraCapture } from '../../components/shared/CameraCapture'
 import { ConfirmModal } from '../../components/shared/ConfirmModal'
 import { SlideOver } from '../../components/shared/SlideOver'
@@ -189,7 +189,7 @@ export default function ProductsPage() {
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:flex lg:flex-wrap gap-2 w-full md:w-auto">
           <button
             onClick={() => setIsOrdersOpen(true)}
-            className="relative h-9 px-4 rounded-[.5rem] border border-gray-100 font-medium text-sm text-gray-600 hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"
+            className="relative h-9 px-4 rounded-full shadow font-medium text-sm text-gray-600 hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"
             title="View orders placed by clients via public link"
           >
             <ShoppingBag size={15} /> Orders
@@ -214,7 +214,7 @@ export default function ProductsPage() {
                 }
                 window.open(publicStoreUrl, '_blank');
               }}
-              className="h-9 px-4 rounded-[.5rem] border border-gray-100 font-medium text-sm text-gray-600 hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"
+              className="h-9 px-4 rounded-full shadow font-medium text-sm text-gray-600 hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"
               title="Preview your public store catalog"
             >
               <Eye size={15} /> Preview
@@ -222,14 +222,14 @@ export default function ProductsPage() {
           )}
           <button
             onClick={handleShareStore}
-            className="h-9 px-4 rounded-[.5rem] border border-gray-100 font-medium text-sm text-gray-600 hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"
+            className="h-9 px-4 rounded-full shadow font-medium text-sm text-gray-600 hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"
             title="Copy your store link to share with clients"
           >
             <Share2 size={15} /> Share
           </button>
           <button
             onClick={handleExport}
-            className="h-9 px-4 rounded-[.5rem] border border-gray-100 font-medium text-sm text-gray-600 hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"
+            className="h-9 px-4 rounded-full shadow font-medium text-sm text-gray-600 hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"
           >
             <FileText size={15} /> CSV
           </button>
@@ -239,7 +239,7 @@ export default function ProductsPage() {
               setIsAddModalOpen(true);
             }}
             title="Add Product"
-            className="bg-[#0D4A3E] text-white h-9 px-5 rounded-[.5rem] font-medium text-sm hover:bg-[#0A3D33] transition-colors flex items-center justify-center gap-2 col-span-2 sm:col-span-1"
+            className="bg-[#0D4A3E] text-white h-9 px-5 rounded-full font-medium text-sm hover:bg-[#0A3D33] transition-colors flex items-center justify-center gap-2 col-span-2 sm:col-span-1"
           >
             <Plus size={16} /> Add item
           </button>
@@ -877,7 +877,7 @@ function ProductForm({ onClose }: { onClose: () => void }) {
             onClick={() => document.getElementById('image-upload')?.click()}
             className="px-4 py-2 bg-gray-50 text-gray-600 rounded-[.5rem] text-xs font-medium hover:bg-gray-100 transition-colors"
           >
-            Upload
+            <Upload size={14}/>
           </button>
           <button
             type="button"
@@ -885,7 +885,6 @@ function ProductForm({ onClose }: { onClose: () => void }) {
             className="px-4 py-2 bg-gray-50 text-gray-600 rounded-[.5rem] text-xs font-medium hover:bg-gray-100 transition-colors flex items-center gap-1.5"
           >
             <Camera size={14} />
-            Camera
           </button>
           {form.imageUrl && (
             <button
@@ -893,7 +892,7 @@ function ProductForm({ onClose }: { onClose: () => void }) {
               onClick={() => setForm({ ...form, imageUrl: '', file: null })}
               className="px-4 py-2 bg-red-50 text-red-600 rounded-[.5rem] text-xs font-medium hover:bg-red-100 transition-colors"
             >
-              Remove
+              <Ban size={14}/>
             </button>
           )}
         </div>
@@ -1092,7 +1091,7 @@ function ProductForm({ onClose }: { onClose: () => void }) {
           })
         }}
         disabled={mutation.isPending}
-        className="w-full py-3.5 mt-4 bg-[#0D4A3E] text-white rounded-[.5rem] text-sm font-medium hover:bg-[#0A3D33] transition-colors"
+        className="w-full py-3.5 mt-4 bg-[#0D4A3E] text-white rounded-full text-sm font-medium hover:bg-[#0A3D33] transition-colors"
       >
         {mutation.isPending ? 'Saving…' : 'Save inventory item'}
       </button>
@@ -1144,7 +1143,7 @@ function EditProductForm({ product, onClose }: { product: any; onClose: () => vo
       <div className="flex flex-col items-center gap-4">
         <div
           className="h-28 w-28 rounded-[.5rem] bg-gray-50 border border-dashed border-gray-200 flex items-center justify-center overflow-hidden cursor-pointer hover:border-gray-300 transition-colors group relative"
-        >
+         >
           {form.imageUrl ? (
             <>
               <img src={form.imageUrl} alt="Preview" className="h-full w-full object-cover" />
@@ -1175,13 +1174,13 @@ function EditProductForm({ product, onClose }: { product: any; onClose: () => vo
           />
         </div>
 
-        <div className="flex gap-2">
+        <div className="flex flex-col-3 gap-2">
           <button
             type="button"
             onClick={() => document.getElementById('image-edit-upload')?.click()}
             className="px-4 py-2 bg-gray-50 text-gray-600 rounded-[.5rem] text-xs font-medium hover:bg-gray-100 transition-colors"
           >
-            Upload
+            <Upload size={14}/>
           </button>
           <button
             type="button"
@@ -1189,7 +1188,6 @@ function EditProductForm({ product, onClose }: { product: any; onClose: () => vo
             className="px-4 py-2 bg-gray-50 text-gray-600 rounded-[.5rem] text-xs font-medium hover:bg-gray-100 transition-colors flex items-center gap-1.5"
           >
             <Camera size={14} />
-            Camera
           </button>
           {form.imageUrl && (
             <button
@@ -1197,7 +1195,7 @@ function EditProductForm({ product, onClose }: { product: any; onClose: () => vo
               onClick={() => setForm({ ...form, imageUrl: '', file: null })}
               className="px-4 py-2 bg-red-50 text-red-600 rounded-[.5rem] text-xs font-medium hover:bg-red-100 transition-colors"
             >
-              Remove
+              <Trash size={14} />
             </button>
           )}
         </div>

@@ -61,7 +61,8 @@ export default function HospitalityOverviewPage() {
   const pendingTasks   = operations.filter(o => o.status === "PENDING" || o.status === "IN_PROGRESS");
 
   return (
-    <div className="max-w-4xl mx-auto pb-20 px-1">
+    // <div className="max-w-4xl mx-auto pb-20 px-1">
+    <div className="space-y-8 pt-4">
       {/* Header */}
       <div className="flex items-center justify-between py-5">
         <div>
@@ -78,7 +79,7 @@ export default function HospitalityOverviewPage() {
           </button>
           <Link
             to="/dashboard/hospitality/bookings"
-            className="flex items-center gap-1.5 bg-slate-900 text-white text-sm font-medium px-4 py-2.5 rounded-full hover:bg-slate-700 transition-colors"
+            className="flex items-center gap-1.5 bg-[#0D4A3E] text-white text-sm font-medium px-4 py-2.5 rounded-full hover:bg-[#0A3D33] transition-colors"
           >
             <Plus size={15} /> New booking
           </Link>

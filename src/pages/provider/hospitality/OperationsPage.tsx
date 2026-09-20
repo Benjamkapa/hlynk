@@ -86,7 +86,8 @@ export default function OperationsPage() {
   const pendingMaintenance = operations.filter((o) => o.opType === "MAINTENANCE" && o.status !== "COMPLETED").length;
 
   return (
-    <div className="max-w-3xl mx-auto pb-20 px-1">
+    // <div className="max-w-3xl mx-auto pb-20 px-1">
+    <div className="space-y-8 pt-4">
       {/* Header */}
       <div className="flex items-center justify-between py-5">
         <div>
@@ -95,7 +96,7 @@ export default function OperationsPage() {
         </div>
         <button
           onClick={() => { setOpType(activeTab); setShowModal(true); }}
-          className="flex items-center gap-1.5 bg-slate-900 text-white text-sm font-medium px-4 py-2.5 rounded-full hover:bg-slate-700 transition-colors"
+          className="flex items-center gap-1.5 bg-[#0D4A3E] text-white text-sm font-medium px-4 py-2.5 rounded-full hover:bg-slate-700 transition-colors"
         >
           <Plus size={15} /> Log task
         </button>
@@ -107,7 +108,7 @@ export default function OperationsPage() {
           onClick={() => setActiveTab("CLEANING")}
           className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium transition-colors ${
             activeTab === "CLEANING"
-              ? "bg-slate-900 text-white"
+              ? "bg-[#0D4A3E] text-white"
               : "bg-white border border-slate-200 text-slate-600 hover:border-slate-300"
           }`}
         >
@@ -122,7 +123,7 @@ export default function OperationsPage() {
           onClick={() => setActiveTab("MAINTENANCE")}
           className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium transition-colors ${
             activeTab === "MAINTENANCE"
-              ? "bg-slate-900 text-white"
+              ? "bg-[#0D4A3E] text-white"
               : "bg-white border border-slate-200 text-slate-600 hover:border-slate-300"
           }`}
         >
@@ -230,7 +231,7 @@ export default function OperationsPage() {
                   type="button"
                   onClick={() => setOpType(t)}
                   className={`flex-1 py-2 rounded-xl text-xs font-medium transition-colors border ${
-                    opType === t ? "bg-slate-900 text-white border-slate-900" : "bg-slate-50 border-slate-200 text-slate-600"
+                    opType === t ? "bg-[#0D4A3E] text-white border-slate-900" : "bg-slate-50 border-slate-200 text-slate-600"
                   }`}
                 >
                   {t === "CLEANING" ? "Cleaning" : "Maintenance"}
@@ -264,7 +265,7 @@ export default function OperationsPage() {
           <button
             type="submit"
             disabled={submitting}
-            className="w-full bg-slate-900 text-white py-3 rounded-full text-sm font-semibold hover:bg-slate-700 transition-colors disabled:opacity-40 flex items-center justify-center gap-2"
+            className="w-full bg-[#0D4A3E] text-white py-3 rounded-full text-sm font-semibold hover:bg-slate-700 transition-colors disabled:opacity-40 flex items-center justify-center gap-2"
           >
             {submitting ? <Loader2 className="animate-spin" size={16} /> : "Save task"}
           </button>

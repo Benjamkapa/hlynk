@@ -301,7 +301,8 @@ export default function PropertiesPage() {
   };
 
   return (
-    <div className="max-w-5xl mx-auto pb-20 px-1">
+    // <div className="max-w-5xl mx-auto pb-20 px-1">
+    <div className="space-y-8 pt-4">
       {/* Header */}
       <div className="flex items-center justify-between py-5">
         <div>
@@ -332,7 +333,7 @@ export default function PropertiesPage() {
           </button>
           <button
             onClick={openAddUnitModal}
-            className="flex items-center gap-1.5 bg-slate-900 text-white text-sm font-medium px-4 py-2.5 rounded-full hover:bg-slate-700 transition-colors"
+            className="flex items-center gap-1.5 bg-[#0D4A3E] text-white text-sm font-medium px-4 py-2.5 rounded-full hover:bg-[#0A3D33] transition-colors"
           >
             <Plus size={15} /> Add unit
           </button>
@@ -447,7 +448,7 @@ export default function PropertiesPage() {
                         disabled={room.status === st}
                         className={`text-[10px] font-medium px-2 py-1 rounded-full transition-colors ${
                           room.status === st
-                            ? "bg-slate-900 text-white cursor-default"
+                            ? "bg-[#0D4A3E] text-white cursor-default"
                             : "bg-slate-100 text-slate-600 hover:bg-slate-200"
                         }`}
                       >
@@ -488,7 +489,7 @@ export default function PropertiesPage() {
               className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-slate-400" />
           </div>
           <button type="submit" disabled={submitting}
-            className="w-full bg-slate-900 text-white py-3 rounded-full text-sm font-semibold hover:bg-slate-700 disabled:opacity-40 flex items-center justify-center gap-2">
+            className="w-full bg-[#0D4A3E] text-white py-3 rounded-full text-sm font-semibold hover:bg-slate-700 disabled:opacity-40 flex items-center justify-center gap-2">
             {submitting ? <Loader2 className="animate-spin" size={16} /> : "Save group"}
           </button>
         </form>
@@ -585,11 +586,11 @@ export default function PropertiesPage() {
             </div>
 
             {/* Dropzone */}
-            <div onClick={() => fileInputRef.current?.click()}
+            {/* <div onClick={() => fileInputRef.current?.click()}
               className="border-2 border-dashed border-slate-200 hover:border-slate-400 rounded-xl p-5 text-center cursor-pointer transition-colors">
               <UploadCloud size={22} className="mx-auto text-slate-300 mb-1" />
               <p className="text-xs text-slate-500">Click to upload photos</p>
-            </div>
+            </div> */}
 
             {/* Thumbnails */}
             {roomPhotos.length > 0 && (
@@ -647,7 +648,7 @@ export default function PropertiesPage() {
           </div>
 
           <button type="submit" disabled={submitting}
-            className="w-full bg-slate-900 text-white py-3 rounded-full text-sm font-semibold hover:bg-slate-700 disabled:opacity-40 flex items-center justify-center gap-2">
+            className="w-full bg-[#0D4A3E] text-white py-3 rounded-full text-sm font-semibold hover:bg-slate-700 disabled:opacity-40 flex items-center justify-center gap-2">
             {submitting ? <Loader2 className="animate-spin" size={16} /> : (editingResource ? "Save changes" : "Add unit")}
           </button>
         </form>

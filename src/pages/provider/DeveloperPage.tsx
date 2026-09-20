@@ -83,26 +83,26 @@ export default function DeveloperPage() {
           <button
             onClick={handleSave}
             disabled={updateMutation.isPending}
-            className="bg-[#0D4A3E] text-white h-9 px-4 rounded-[.5rem] text-sm font-medium hover:bg-[#0A3D33] transition-colors flex items-center gap-2 disabled:opacity-50"
+            className="bg-[#0D4A3E] text-white h-9 px-4 rounded-full text-sm font-medium hover:bg-[#0A3D33] transition-colors flex items-center gap-2 disabled:opacity-50"
           >
             {updateMutation.isPending ? <Loader2 className="animate-spin" size={15} /> : <Save size={15} />}
-            Save integration
+            Save
           </button>
           </div>
         </div>
 
         {/* Tabs */}
-        <div className="flex bg-gray-50 p-1 rounded-[.5rem] w-fit border border-gray-100">
+        <div className="flex bg-gray-50 p-1 rounded-[.5rem] w-fit">
           <button
             onClick={() => handleTabChange('mpesa')}
-            className={`px-5 py-2 rounded-[.5rem] text-xs font-medium transition-colors ${activeTab === 'mpesa' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
+            className={`px-5 py-2 rounded-[.5rem] text-xs font-medium transition-colors ${activeTab === 'mpesa' ? 'bg-white text-gray-900 shadow-lg' : 'text-gray-400 hover:text-gray-600'}`}
           >
             Safaricom Daraja
           </button>
           <FeatureGate feature="kcb_settlement" variant="inline">
             <button
               onClick={() => handleTabChange('kcb')}
-              className={`px-5 py-2 rounded-[.5rem] text-xs font-medium transition-colors ${activeTab === 'kcb' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
+              className={`px-5 py-2 rounded-[.5rem] text-xs font-medium transition-colors ${activeTab === 'kcb' ? 'bg-white text-gray-900 shadow-lg' : 'text-gray-400 hover:text-gray-600'}`}
             >
               KCB Bank Buni
             </button>
@@ -165,18 +165,18 @@ export default function DeveloperPage() {
                   <>
                     <div>
                       <label className="text-xs text-gray-500 mb-3 block">Environment selection</label>
-                      <div className="flex bg-gray-50 p-1 rounded-[.5rem] gap-1 border border-gray-100">
+                      <div className="flex bg-gray-50 p-1 rounded-full gap-1 border border-gray-100">
                         <button
                           type="button"
                           onClick={() => setFormData({ ...formData, operationalSettings: { ...formData.operationalSettings, mpesa: { ...formData.operationalSettings?.mpesa, env: 'sandbox' } } })}
-                          className={`flex-1 py-2.5 rounded-[.5rem] text-xs font-medium transition-colors ${formData.operationalSettings?.mpesa?.env === 'sandbox' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
+                          className={`flex-1 py-2.5 rounded-full text-xs font-medium transition-colors ${formData.operationalSettings?.mpesa?.env === 'sandbox' ? 'bg-[#0D4A3E] text-white shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
                         >
                           Testing (Sandbox)
                         </button>
                         <button
                           type="button"
                           onClick={() => setFormData({ ...formData, operationalSettings: { ...formData.operationalSettings, mpesa: { ...formData.operationalSettings?.mpesa, env: 'production' } } })}
-                          className={`flex-1 py-2.5 rounded-[.5rem] text-xs font-medium transition-colors ${formData.operationalSettings?.mpesa?.env !== 'sandbox' ? 'bg-[#0D4A3E] text-white' : 'text-gray-400 hover:text-gray-600'}`}
+                          className={`flex-1 py-2.5 rounded-full text-xs font-medium transition-colors ${formData.operationalSettings?.mpesa?.env !== 'sandbox' ? 'bg-[#0D4A3E] text-white' : 'text-gray-400 hover:text-gray-600'}`}
                         >
                           Live (Production)
                         </button>
@@ -247,7 +247,7 @@ export default function DeveloperPage() {
                         <button
                           type="button"
                           onClick={() => setFormData({ ...formData, operationalSettings: { ...formData.operationalSettings, kcb: { ...formData.operationalSettings?.kcb, env: 'sandbox' } } })}
-                          className={`flex-1 py-2.5 rounded-[.5rem] text-xs font-medium transition-colors ${formData.operationalSettings?.kcb?.env === 'sandbox' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
+                          className={`flex-1 py-2.5 rounded-[.5rem] text-xs font-medium transition-colors ${formData.operationalSettings?.kcb?.env === 'sandbox' ? 'bg-[#0D4A3E] text-white shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
                         >
                           Testing (Sandbox)
                         </button>

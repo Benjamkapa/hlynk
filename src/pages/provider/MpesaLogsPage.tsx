@@ -79,7 +79,7 @@ export default function MpesaLogsPage() {
         </div>
         <button
           onClick={exportLogs}
-          className="flex items-center gap-2 px-6 py-3 bg-white rounded-[.5rem] text-xs font-black uppercase tracking-widest text-slate-600 hover:bg-slate-100 transition-all shadow-md active:scale-95"
+          className="flex items-center gap-2 px-6 py-3 bg-white rounded-full text-xs font-black uppercase tracking-widest text-slate-600 hover:bg-slate-100 transition-all shadow-md active:scale-95"
         >
           <Download size={16} className="text-emerald-600" />
           Export All Logs

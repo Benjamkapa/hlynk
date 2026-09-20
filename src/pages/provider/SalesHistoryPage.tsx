@@ -165,7 +165,7 @@ export default function SalesHistoryPage() {
         </div>
         <button
           onClick={exportToCSV}
-          className="h-9 px-4 rounded-[.5rem] text-sm font-medium text-gray-500 hover:text-gray-900 hover:bg-gray-50 transition-colors flex items-center gap-2"
+          className="h-9 px-4 rounded-full shadow-lg text-sm font-medium text-gray-500 hover:text-gray-900 hover:bg-gray-50 transition-colors flex items-center gap-2"
         >
           <Save size={15} /> Export
         </button>

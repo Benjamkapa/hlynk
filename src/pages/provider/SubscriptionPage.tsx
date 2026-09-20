@@ -127,13 +127,13 @@ function ReferralsTab() {
           <p className="text-gray-300 text-sm leading-relaxed max-w-xl mb-5">
             Help traditional businesses go digital and earn massive rewards. When a vendor joins via your link, you get a significant share of their first "Season" payment.
           </p>
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 bg-white/5 p-2 rounded-[.5rem] border border-white/10 max-w-2xl">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 bg-white/5 p-2 rounded-[.5rem] sm:rounded-full border border-white/10 max-w-2xl">
             <div className="flex-1 px-3 py-2 font-medium text-gray-100 hl-mono text-xs sm:text-sm truncate">
               {referralLink}
             </div>
             <button
               onClick={copyToClipboard}
-              className="w-full sm:w-auto px-5 py-2.5 bg-white text-gray-900 rounded-[.5rem] text-xs font-medium hover:bg-gray-100 transition-colors"
+              className="w-full sm:w-auto px-5 py-2.5 bg-white text-gray-900 rounded-full text-xs font-medium hover:bg-gray-100 transition-colors"
             >
               Copy link
             </button>
@@ -834,29 +834,29 @@ export default function SubscriptionPage() {
           <p className="text-sm text-gray-400">"Know your real profit. Not just what came in — what stayed."</p>
         </div>
 
-        <div className="flex flex-wrap sm:flex-nowrap bg-gray-100 p-1 rounded-[.5rem] gap-1 overflow-x-auto">
+        <div className="flex flex-wrap sm:flex-nowrap bg-gray-100 p-1 rounded-full gap-1 overflow-x-auto">
           <button
             onClick={() => setActiveTab('current')}
-            className={`px-4 py-2 rounded-[.5rem] text-xs font-medium transition-colors ${activeTab === 'current' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
+            className={`px-4 py-2 rounded-full text-xs font-medium transition-colors ${activeTab === 'current' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
           >
             Manage plan
           </button>
           <button
             onClick={() => setActiveTab('history')}
-            className={`px-4 py-2 rounded-[.5rem] text-xs font-medium transition-colors ${activeTab === 'history' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
+            className={`px-4 py-2 rounded-full text-xs font-medium transition-colors ${activeTab === 'history' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
           >
             Billing history
           </button>
           <button
             onClick={() => setActiveTab('referrals')}
-            className={`px-4 py-2 rounded-[.5rem] text-xs font-medium transition-colors ${activeTab === 'referrals' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
+            className={`px-4 py-2 rounded-full text-xs font-medium transition-colors ${activeTab === 'referrals' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
           >
             Refer & earn
           </button>
           {user?.isRented === 1 && (
             <button
               onClick={() => setActiveTab('payouts')}
-              className={`px-4 py-2 rounded-[.5rem] text-xs font-medium transition-colors ${activeTab === 'payouts' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
+              className={`px-4 py-2 rounded-full text-xs font-medium transition-colors ${activeTab === 'payouts' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
             >
               Payouts hub
             </button>
@@ -893,7 +893,7 @@ export default function SubscriptionPage() {
                 </div>
               </div>
 
-              <div className="flex bg-white p-1 rounded-[.5rem] border border-gray-100">
+              <div className="flex bg-slate-200 p-1 rounded-full">
                 {[
                   { id: '1', label: 'Monthly', days: 28 },
                   { id: '6', label: 'Half year', days: 180, promo: 'Save 5%' },
@@ -902,7 +902,7 @@ export default function SubscriptionPage() {
                   <button
                     key={cycle.id}
                     onClick={() => setBillingCycle(cycle.id as any)}
-                    className={`px-5 py-2.5 rounded-[.5rem] text-xs font-medium transition-colors relative ${billingCycle === cycle.id ? 'bg-[#0D4A3E] text-white' : 'text-gray-400 hover:text-gray-600'}`}
+                    className={`px-5 py-2.5 rounded-full text-xs font-medium transition-colors relative ${billingCycle === cycle.id ? 'bg-[#0D4A3E] text-white' : 'text-gray-400 hover:text-gray-600'}`}
                   >
                     {cycle.label}
                     {cycle.promo && (
@@ -979,13 +979,13 @@ export default function SubscriptionPage() {
                     setMpesaPhone('')
                     setShowRenewModal(true)
                   }}
-                  className="w-full sm:w-auto px-5 py-3 rounded-[.5rem] text-sm font-medium transition-colors bg-[#0D4A3E] text-white hover:bg-[#0A3D33]"
+                  className="w-full sm:w-auto px-5 py-3 rounded-full text-sm font-medium transition-colors bg-[#0D4A3E] text-white hover:bg-[#0A3D33]"
                 >
                   Renew for {billingCycle === '1' ? '1 month' : billingCycle === '6' ? '6 months' : '1 year'}
                 </button>
                 <button
                   onClick={() => setShowChangeModal(true)}
-                  className="w-full sm:w-auto bg-white text-gray-600 px-5 py-3 rounded-[.5rem] text-sm font-medium border border-gray-200 hover:bg-gray-50 transition-colors"
+                  className="w-full sm:w-auto bg-white text-gray-600 px-5 py-3 rounded-full text-sm font-medium border border-gray-200 hover:bg-gray-50 transition-colors"
                 >
                   Change my plan
                 </button>

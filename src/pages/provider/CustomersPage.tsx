@@ -65,7 +65,7 @@ export default function CustomersPage() {
           </button>
           <button
             onClick={() => setIsAddModalOpen(true)}
-            className="bg-[#0D4A3E] text-white h-9 px-4 rounded-[.5rem] text-sm font-medium hover:bg-[#0A3D33] transition-colors flex items-center gap-2"
+            className="bg-[#0D4A3E] text-white h-9 px-4 rounded-full text-sm font-medium hover:bg-[#0A3D33] transition-colors flex items-center gap-2"
           >
             <Plus size={16} /> New customer
           </button>
@@ -248,7 +248,7 @@ function CustomerForm({ customer, onClose }: { customer?: any; onClose: () => vo
       <button
         onClick={() => mutation.mutate(form)}
         disabled={mutation.isPending}
-        className="w-full py-3.5 mt-4 bg-[#0D4A3E] text-white rounded-[.5rem] text-sm font-medium hover:bg-[#0A3D33] transition-colors"
+        className="w-full py-3.5 mt-4 bg-[#0D4A3E] text-white rounded-full text-sm font-medium hover:bg-[#0A3D33] transition-colors"
       >
         {mutation.isPending ? 'Processing…' : customer ? 'Update profile' : 'Register customer'}
       </button>
