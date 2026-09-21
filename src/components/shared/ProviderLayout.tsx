@@ -636,7 +636,7 @@ function MobileBottomNav({ user, targetEndDate, filteredGroups = [], onOpenMobil
               strokeWidth={isActive ? 2.5 : 2}
             />
           </div>
-          <span className={`text-[9px] font-bold transition-all truncate w-full text-center ${isActive ? 'text-[#0D4A3E]' : 'text-slate-400'}`}>
+          <span className={`text-[9px] font-normal transition-all truncate w-full text-center ${isActive ? 'text-[#0D4A3E]' : 'text-slate-400'}`}>
             {item.label}
           </span>
         </>
@@ -688,7 +688,7 @@ function MobileBottomNav({ user, targetEndDate, filteredGroups = [], onOpenMobil
                     className={({ isActive }) =>
                       `flex items-center gap-3 px-3.5 py-3 rounded-md transition-all no-tap-highlight ${
                         isActive
-                          ? 'bg-emerald-50 text-emerald-700 font-bold'
+                          ? 'bg-emerald-50 text-emerald-700 font-normal'
                           : 'bg-slate-50 text-slate-600 hover:bg-emerald-50 hover:text-emerald-700'
                       }`
                     }
@@ -776,7 +776,7 @@ function MobileBottomNav({ user, targetEndDate, filteredGroups = [], onOpenMobil
         )}
       </AnimatePresence>
 
-      <div className="w-full pointer-events-auto glass-dock rounded-t-[1.5rem] pt-2 pb-[max(0.6rem,env(safe-area-inset-bottom,0.6rem))]">
+      <div className="w-full pointer-events-auto glass-dock rounded-t-[2rem] pt-2 pb-[max(0.6rem,env(safe-area-inset-bottom,0.6rem))]">
         <div className="flex items-end justify-evenly w-full px-4">
           {renderNavItem(homeItem)}
           {renderNavItem(primaryLeftItem)}
@@ -793,7 +793,7 @@ function MobileBottomNav({ user, targetEndDate, filteredGroups = [], onOpenMobil
                 >
                   <centerCtaItem.icon className="w-6 h-6" strokeWidth={2.5} />
                 </div>
-                <span className={`text-[9px] font-bold transition-all truncate w-full text-center mt-0.5 ${isActive ? 'text-[#0D4A3E]' : 'text-slate-400'}`}>
+                <span className={`text-[9px] font-normal transition-all truncate w-full text-center mt-0.5 ${isActive ? 'text-[#0D4A3E]' : 'text-slate-400'}`}>
                   {centerCtaItem.label}
                 </span>
               </>
@@ -810,7 +810,7 @@ function MobileBottomNav({ user, targetEndDate, filteredGroups = [], onOpenMobil
             <div className={`w-9 h-9 rounded-full flex items-center justify-center transition-all duration-200 ${showMoreSheet || isOverflowActive ? 'bg-emerald-50' : 'bg-transparent'}`}>
               <CircleEllipsis className={`w-[18px] h-[18px] transition-colors ${showMoreSheet || isOverflowActive ? 'text-[#0D4A3E]' : 'text-[#0D4A3E] opacity-35'}`} />
             </div>
-            <span className={`text-[9px] font-bold transition-all truncate w-full text-center ${showMoreSheet || isOverflowActive ? 'text-[#0D4A3E]' : 'text-slate-400'}`}>More</span>
+            <span className={`text-[9px] font-normal transition-all truncate w-full text-center ${showMoreSheet || isOverflowActive ? 'text-[#0D4A3E]' : 'text-slate-400'}`}>More</span>
           </button>
           <button
             key="profile-btn"
