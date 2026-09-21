@@ -71,7 +71,7 @@ export default function TopNav({
       : 'hlynk');
 
   return (
-    <header className="pt-[max(1.5rem,calc(env(safe-area-inset-top,0px)+0.75rem))] lg:pt-0 border-b border-slate-100 bg-white/80 backdrop-blur-md px-4 sm:px-6 lg:px-8 flex flex-col justify-center z-30 flex-shrink-0 transition-all min-h-[calc(4.5rem+env(safe-area-inset-top,0px))] lg:min-h-[5rem]">
+    <header className="pt-[max(1.5rem,calc(env(safe-area-inset-top,0px)+0.75rem))] lg:pt-0 glass-bar px-4 sm:px-6 lg:px-8 flex flex-col justify-center z-30 flex-shrink-0 transition-all min-h-[calc(4.5rem+env(safe-area-inset-top,0px))] lg:min-h-[5rem] sticky top-0">
       <div className="h-16 lg:h-20 flex items-center justify-between w-full">
         <div className="flex items-center gap-2.5 min-w-0">
           {/* Desktop sidebar collapse toggle button */}

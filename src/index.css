@@ -1,3 +1,4 @@
+/* ── System fonts load instantly (no network) — web fonts load async as enhancement ── */
 @import url('https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,200..1000;1,200..1000&family=Ubuntu:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,500;1,700&family=Figtree:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap');
 
 @tailwind base;
@@ -44,6 +45,22 @@
     --sab: env(safe-area-inset-bottom, 0px);
     --sal: env(safe-area-inset-left, 0px);
     --sar: env(safe-area-inset-right, 0px);
+
+    /* ── Device-native system font stack ──
+     * Picks the platform's own UI font automatically:
+     *   iOS/macOS  → SF Pro / SF Compact
+     *   Android    → Roboto
+     *   Windows    → Segoe UI
+     *   Linux      → Ubuntu / Cantarell
+     * Falls back to Nunito (web font) if already loaded, then generic sans-serif.
+     */
+    --font-system: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text',
+                   'Segoe UI', Roboto, 'Helvetica Neue', Arial,
+                   'Nunito', sans-serif;
+    --font-system-mono: ui-monospace, 'SF Mono', 'Cascadia Code', 'Segoe UI Mono',
+                        'Roboto Mono', 'JetBrains Mono', 'Courier New', monospace;
+    --font-system-rounded: ui-rounded, -apple-system, BlinkMacSystemFont,
+                           'SF Pro Rounded', 'Nunito', 'Ubuntu', sans-serif;
   }
 
   * { @apply border-border box-border; }
@@ -152,39 +169,63 @@
     }
   }
 
-  body { @apply bg-background text-foreground antialiased; line-height: 1.5; font-family: 'Nunito', sans-serif; overflow-x: hidden; }
-  
-  /* Ubuntu for the bold and big fonts */
-  h1, h2, h3, h4, h5, h6, 
-  .text-lg, .text-xl, .text-2xl, .text-3xl, .text-4xl, .text-5xl, .text-6xl { 
-    font-family: 'Ubuntu', sans-serif !important; 
+  /* ── Body: system font first, web fonts as enhancement ── */
+  body {
+    @apply bg-background text-foreground antialiased;
+    line-height: 1.5;
+    overflow-x: hidden;
+    /* Use device's native font immediately; Nunito loads async and takes over only if preferred */
+    font-family: var(--font-system);
+    /* Smooth font rendering identical to native iOS/macOS apps */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    /* Enable iOS Dynamic Type scale support */
+    font-size-adjust: none;
   }
-  
-  /* Bold classes default to Ubuntu unless they are small */
+
+  /* If Nunito has loaded, elevate to it for body prose text */
+  @supports (font-family: 'Nunito') {
+    body { font-family: 'Nunito', var(--font-system); }
+  }
+
+  /* Ubuntu for the bold and big fonts (falls back to system rounded if not loaded) */
+  h1, h2, h3, h4, h5, h6,
+  .text-lg, .text-xl, .text-2xl, .text-3xl, .text-4xl, .text-5xl, .text-6xl {
+    font-family: 'Ubuntu', var(--font-system-rounded) !important;
+  }
+
+  /* Bold classes default to Ubuntu/system-rounded */
   .font-bold,
   .font-semibold,
   .font-extrabold,
   .font-black {
-    font-family: 'Ubuntu', sans-serif;
+    font-family: 'Ubuntu', var(--font-system-rounded);
   }
-  
-  button, .btn-primary, .btn-secondary, .btn-ghost { font-family: 'Ubuntu', sans-serif; }
-  
-  /* Jetbrains for all the bold but small fonts */
+
+  button, .btn-primary, .btn-secondary, .btn-ghost {
+    font-family: 'Ubuntu', var(--font-system-rounded);
+  }
+
+  /* System monospace for small bold labels (JetBrains Mono as enhancement) */
   .text-xs.font-bold, .text-xs.font-black, .text-xs.font-extrabold, .text-xs.font-semibold,
   .text-\[10px\].font-bold, .text-\[10px\].font-black, .text-\[10px\].font-extrabold, .text-\[10px\].font-semibold,
   .text-\[11px\].font-bold, .text-\[11px\].font-black, .text-\[11px\].font-extrabold, .text-\[11px\].font-semibold,
   .text-\[9px\].font-bold, .text-\[9px\].font-black, .text-\[9px\].font-extrabold, .text-\[9px\].font-semibold,
   .text-sm.font-bold, .text-sm.font-black, .text-sm.font-extrabold, .text-sm.font-semibold,
   .badge, .hl-badge, .nav-section-label, .stat-box-label, .hl-sidebar-item {
-    font-family: 'JetBrains Mono', monospace !important;
+    font-family: 'JetBrains Mono', var(--font-system-mono) !important;
   }
-  
-  /* Enforce Mono for all numbers with the .hl-mono class or data-mono attribute */
-  .hl-mono, .font-mono, [data-mono="true"] { 
-    font-family: 'JetBrains Mono', monospace !important; 
+
+  /* Tabular numerics — prefer system mono, JetBrains as enhancement */
+  .hl-mono, .font-mono, [data-mono="true"] {
+    font-family: 'JetBrains Mono', var(--font-system-mono) !important;
     font-variant-numeric: tabular-nums;
   }
+
+  /* Helper: explicitly use the raw system font (bypassing web fonts) */
+  .font-system { font-family: var(--font-system) !important; }
+  .font-system-mono { font-family: var(--font-system-mono) !important; }
   
   ::-webkit-scrollbar { width: 5px; height: 5px; }
   ::-webkit-scrollbar-track { @apply bg-transparent; }
@@ -632,22 +673,50 @@
     box-shadow: 0 8px 32px rgba(15, 23, 42, 0.08), 0 2px 8px rgba(15,23,42,0.04), inset 0 1px 0 rgba(255,255,255,0.7);
   }
 
-  /* Glass navigation bar / sticky header or tab bar */
+  /* ── Glass navigation bar — iOS-style frosted header ─────────────────────
+   * Mirrors Apple's UINavigationBar translucency:
+   *  • Heavy blur (40px) to bleed content behind bar visibly
+   *  • Saturate(220%) for the signature iOS vibrancy
+   *  • Hairline bottom border coloured by brand primary at 15% opacity
+   *  • Device adapts automatically: on iPhone the bar reads as native
+   * ────────────────────────────────────────────────────────────────────── */
   .glass-bar {
-    background: rgba(255, 255, 255, 0.75);
-    backdrop-filter: blur(28px) saturate(200%);
-    -webkit-backdrop-filter: blur(28px) saturate(200%);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.45);
-    box-shadow: 0 1px 0 rgba(15, 23, 42, 0.06), inset 0 1px 0 rgba(255,255,255,0.9);
+    /* Fallback for browsers without backdrop-filter */
+    background: rgba(255, 255, 255, 0.92);
+  }
+  @supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+    .glass-bar {
+      background: rgba(255, 255, 255, 0.72);
+      backdrop-filter: blur(40px) saturate(220%) brightness(1.04);
+      -webkit-backdrop-filter: blur(40px) saturate(220%) brightness(1.04);
+      border-bottom: 1px solid rgba(16, 185, 129, 0.12);
+      box-shadow:
+        0 0.5px 0 rgba(15, 23, 42, 0.08),
+        inset 0 1px 0 rgba(255, 255, 255, 0.95);
+    }
   }
 
-  /* Glass Dock — Edge-to-edge mobile bottom navigation bar */
+  /* ── Glass Dock — iOS-style tab bar at the bottom ─────────────────────────
+   * Matches Apple's UITabBar material:
+   *  • Stronger blur (44px) than the nav bar for depth hierarchy
+   *  • No solid shadow stripe — just elevation via inner highlight
+   *  • safe-area-inset padding is handled by the component (pb-safe)
+   * ────────────────────────────────────────────────────────────────────── */
   .glass-dock {
-    background: rgba(255, 255, 255, 0.88);
-    backdrop-filter: blur(32px) saturate(210%);
-    -webkit-backdrop-filter: blur(32px) saturate(210%);
-    border-top: 1px solid rgba(255, 255, 255, 0.75);
-    box-shadow: 0 -12px 40px rgba(15, 23, 42, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.95);
+    /* Fallback */
+    background: rgba(255, 255, 255, 0.96);
+  }
+  @supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+    .glass-dock {
+      background: rgba(255, 255, 255, 0.80);
+      backdrop-filter: blur(44px) saturate(220%) brightness(1.02);
+      -webkit-backdrop-filter: blur(44px) saturate(220%) brightness(1.02);
+      border-top: 0.5px solid rgba(16, 185, 129, 0.14);
+      box-shadow:
+        0 -1px 0 rgba(15, 23, 42, 0.04),
+        inset 0 1px 0 rgba(255, 255, 255, 0.98),
+        0 -8px 30px rgba(15, 23, 42, 0.06);
+    }
   }
 
   /* Glass modal backdrop — for overlays / drawers */

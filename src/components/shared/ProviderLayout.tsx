@@ -776,7 +776,7 @@ function MobileBottomNav({ user, targetEndDate, filteredGroups = [], onOpenMobil
         )}
       </AnimatePresence>
 
-      <div className="w-full pointer-events-auto bg-white rounded-t-[1.5rem] pt-2 pb-[max(0.6rem,env(safe-area-inset-bottom,0.6rem))] border-t border-slate-100 shadow-[0_-10px_35px_rgba(0,0,0,0.06)]">
+      <div className="w-full pointer-events-auto glass-dock rounded-t-[1.5rem] pt-2 pb-[max(0.6rem,env(safe-area-inset-bottom,0.6rem))]">
         <div className="flex items-end justify-evenly w-full px-4">
           {renderNavItem(homeItem)}
           {renderNavItem(primaryLeftItem)}
