@@ -594,7 +594,7 @@ export default function RecordSalePage() {
 
                     {/* Info */}
                     <div className="p-2.5 sm:p-3 flex flex-col flex-1">
-                      <h4 className="text-[13px] font-semibold text-slate-950 truncate leading-tight">{product.name}</h4>
+                      <h4 className="text-[10px] font-semibold text-slate-950 truncate leading-tight">{product.name}</h4>
                       <div className="mt-auto flex items-end justify-between gap-2 pt-2">
                         <div>
                           <p className="text-[8px] font-bold uppercase tracking-[0.1em] text-slate-400">Price</p>
@@ -1059,15 +1059,15 @@ export default function RecordSalePage() {
               className="flex-1 bg-slate-900 text-white p-3.5 rounded-2xl shadow-xl shadow-slate-900/20 flex items-center justify-between"
             >
               <div className="flex items-center gap-3">
-                <div className="h-9 w-9 bg-white/15 rounded-xl flex items-center justify-center relative">
+                <div className="h-9 w-9 rounded-xl flex items-center justify-center relative">
                   <ShoppingCart size={18} />
-                  <span className="absolute -top-1.5 -right-1.5 h-4 w-4 bg-emerald-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center">
+                  <span className="absolute -top-1.5 -right-1.5 h-4 w-4 bg-emerald-800 text-white text-[9px] font-semibold rounded-full flex items-center justify-center">
                     {cart.reduce((sum, item) => sum + item.quantity, 0)}
                   </span>
                 </div>
                 <div className="text-left">
-                  <p className="text-[9px] font-semibold opacity-60 uppercase tracking-wider">Ready to checkout</p>
-                  <p className="text-base font-bold leading-tight">KES {total.toLocaleString()}</p>
+                  <p className="text-[10px] font-normal opacity-60 tracking-wider">Ready to checkout</p>
+                  <p className="text-base font-normal leading-tight">KES {total.toLocaleString()}</p>
                 </div>
               </div>
               <div className="h-9 w-9 bg-white/15 rounded-xl flex items-center justify-center">
