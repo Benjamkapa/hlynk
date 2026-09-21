@@ -255,7 +255,7 @@ export default function BookingsPage() {
           <p className="text-slate-500 text-sm font-medium">No bookings found</p>
           <button
             onClick={() => setShowBookingModal(true)}
-            className="mt-4 text-sm font-medium text-slate-900 underline underline-offset-2"
+            className="mt-4 text-sm font-normal bg-[#0D4A3E] px-3 py-2 text-white rounded-full text-slate-900"
           >
             Create your first booking
           </button>
