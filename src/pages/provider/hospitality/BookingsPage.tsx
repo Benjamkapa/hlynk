@@ -490,7 +490,7 @@ export default function BookingsPage() {
               </select>
             </div>
             <button type="submit" disabled={submitting}
-              className="w-full bg-slate-900 text-white py-3 rounded-full text-sm font-semibold hover:bg-slate-700 transition-colors disabled:opacity-40 flex items-center justify-center gap-2">
+              className="w-full bg-[#0D4A3E] text-white py-3 rounded-full text-sm font-semibold hover:bg-slate-700 transition-colors disabled:opacity-40 flex items-center justify-center gap-2">
               {submitting ? <Loader2 className="animate-spin" size={16} /> : "Record payment"}
             </button>
           </form>
