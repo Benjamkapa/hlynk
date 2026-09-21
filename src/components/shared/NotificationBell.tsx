@@ -267,7 +267,7 @@ export default function NotificationBell() {
                               <span className="flex-shrink-0 w-2 h-2 rounded-full bg-emerald-500 mt-1" />
                             )}
                           </div>
-                          <p className="text-[11px] text-slate-500 font-medium mt-0.5 line-clamp-2 leading-relaxed">
+                          <p className="text-[11px] text-slate-500 font-normal mt-0.5 line-clamp-2 leading-relaxed">
                             {n.message}
                           </p>
                           <div className="flex items-center gap-2 mt-1.5">

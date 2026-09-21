@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   Building2, MapPin, Phone, Tag,
-  Loader2, Check, ArrowLeft, Star, WifiOff
+  Loader2, Check, ArrowLeft, Star, WifiOff, RefreshCw
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { authApi } from '../../lib/api/auth'
@@ -354,22 +354,9 @@ export default function LoginPage() {
     daysReward: parseInt(requestedDays)
   })
 
-  const handleStartOfflineSession = () => {
-    const offlineUser: any = {
-      id: 'offline-local-user',
-      email: 'offline@hlynk.local',
-      role: 'PROVIDER',
-      name: 'Offline Biashara Owner',
-      businessName: 'My Offline Biashara',
-      subscription: { status: 1, name: 'OFFLINE_STANDALONE' },
-      activeModules: ['POS', 'HOSPITALITY']
-    }
-    login({ accessToken: 'offline-local-access-token' }, offlineUser)
-    toast.success('Offline Mode Activated', {
-      description: 'You are operating as a standalone app. All records save locally to IndexedDB.',
-      icon: <WifiOff className="text-amber-500" />
-    })
-    navigate('/dashboard', { replace: true })
+  // Offline connection checker
+  const handleConnectionRestored = () => {
+    setIsOffline(false)
   }
 
   const handleGoogleAuth = async (credential: string) => {
@@ -701,17 +688,11 @@ export default function LoginPage() {
                     </div>
 
                     {/* Google button — blocker overlay when EULA unchecked */}
-                    <div className={`w-full transition-all text-center duration-300 ${!acceptedEula ? 'opacity-40 grayscale' : 'opacity-100'}`}>
+                    <div className="w-full transition-all text-center duration-300">
                       {isOffline ? (
-                        <button
-                          type="button"
-                          onClick={handleStartOfflineSession}
-                          className="w-full py-3.5 px-4 rounded-xl bg-amber-500 text-slate-950 text-xs font-bold flex items-center justify-center gap-2 hover:bg-amber-400 transition-all shadow-md"
-                        >
-                          <WifiOff size={15} /> Work Offline
-                        </button>
+                        <OfflineRetryWidget onOnline={handleConnectionRestored} />
                       ) : (
-                        <div className="google-btn-wrap">
+                        <div className={`google-btn-wrap ${!acceptedEula ? 'opacity-40 grayscale' : 'opacity-100'}`}>
                           {!acceptedEula && (
                             <div className="google-btn-blocker" onClick={eulaWarning} />
                           )}
@@ -806,15 +787,10 @@ export default function LoginPage() {
                     <div className="auth-card desktop-only">
                       <div className="auth-blur p-6 rounded-2xl">
 
-                        {/* Google button / Offline mode toggle */}
                         {isOffline ? (
-                          <button
-                            type="button"
-                            onClick={handleStartOfflineSession}
-                            className="w-full py-3.5 px-4 rounded-xl bg-amber-500 text-slate-950 text-xs font-bold flex items-center justify-center gap-2 hover:bg-amber-400 transition-all shadow-md mb-6"
-                          >
-                            <WifiOff size={15} /> Work Offline
-                          </button>
+                          <div className="mb-6">
+                            <OfflineRetryWidget onOnline={handleConnectionRestored} />
+                          </div>
                         ) : (
                           <div className={`google-btn-wrap mb-6 transition-all duration-300 ${!acceptedEula ? 'opacity-50 grayscale' : ''}`}>
                             {!acceptedEula && (
@@ -940,5 +916,56 @@ function MobileGoogleAuth({
       disabled={googleLoading || disabled}
       className=""
     />
+  )
+}
+
+function OfflineRetryWidget({ onOnline }: { onOnline: () => void }) {
+  const [countdown, setCountdown] = useState(15)
+  const [attempts, setAttempts] = useState(0)
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCountdown((prev) => {
+        if (prev <= 1) {
+          checkConnection()
+          return 15
+        }
+        return prev - 1
+      })
+    }, 1000)
+    return () => clearInterval(timer)
+  }, [attempts])
+
+  const checkConnection = () => {
+    setAttempts((prev) => prev + 1)
+    if (typeof navigator !== 'undefined' && navigator.onLine) {
+      toast.success('Connection restored!')
+      onOnline()
+    } else {
+      setCountdown(15)
+      toast.error('Still offline', { description: 'Please check your internet connection.' })
+    }
+  }
+
+  return (
+    <div className="w-full p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-center flex flex-col items-center gap-3">
+      <div className="w-10 h-10 rounded-full bg-amber-500/20 flex items-center justify-center text-amber-500">
+        <WifiOff size={20} />
+      </div>
+      <div>
+        <h4 className="text-sm font-semibold text-[#14181A] lg:text-slate-900">Connection Required</h4>
+        <p className="text-xs text-slate-500 mt-0.5">
+          Checking internet connection. Retrying in <span className="font-bold text-amber-600">{countdown}s</span>
+          {attempts > 0 && ` (Attempt ${attempts})`}
+        </p>
+      </div>
+      <button
+        type="button"
+        onClick={checkConnection}
+        className="w-full py-2.5 px-4 rounded-xl bg-amber-500 text-slate-950 text-xs font-bold hover:bg-amber-400 transition-all shadow-sm flex items-center justify-center gap-2 cursor-pointer"
+      >
+        <RefreshCw size={14} /> Try Again Now
+      </button>
+    </div>
   )
 }

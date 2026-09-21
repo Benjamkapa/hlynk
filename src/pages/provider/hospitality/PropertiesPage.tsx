@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import {
   Building, Plus, Edit2, Trash2, Loader2, X, Camera,
   UploadCloud, Star, ChevronLeft, ChevronRight, Link as LinkIcon,
-  Eye, Share2
+  Eye, Share2, Search, LayoutGrid, Grid, List, WifiOff
 } from "lucide-react";
 import { resourcesApi, Resource } from "../../../lib/api/universal";
 import { CameraCapture } from "../../../components/shared/CameraCapture";
@@ -52,6 +52,11 @@ export default function PropertiesPage() {
   const [properties, setProperties] = useState<Resource[]>([]);
   const [rooms, setRooms] = useState<Resource[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isOffline, setIsOffline] = useState(!navigator.onLine);
+
+  // Search & View Mode State
+  const [searchTerm, setSearchTerm] = useState("");
+  const [viewMode, setViewMode] = useState<"grid" | "compact" | "list">("grid");
 
   const { data: profile, isLoading: isProfileLoading } = useQuery({
     queryKey: ["my-profile"],
@@ -92,15 +97,36 @@ export default function PropertiesPage() {
 
   const fetchData = async () => {
     setLoading(true);
+    const offlineNow = typeof navigator !== "undefined" && !navigator.onLine;
+    setIsOffline(offlineNow);
+
+    if (offlineNow) {
+      const cachedProps = localStorage.getItem("hlynk_cached_properties");
+      const cachedUnits = localStorage.getItem("hlynk_cached_units");
+      if (cachedProps) setProperties(JSON.parse(cachedProps));
+      if (cachedUnits) setRooms(JSON.parse(cachedUnits));
+      setLoading(false);
+      return;
+    }
+
     try {
       const [propsData, allResources] = await Promise.all([
         resourcesApi.getResources({ type: "PROPERTY" }),
         resourcesApi.getResources({}),
       ]);
+      const fetchedRooms = allResources.filter((r: Resource) => r.type !== "PROPERTY");
       setProperties(propsData);
-      setRooms(allResources.filter((r: Resource) => r.type !== "PROPERTY"));
+      setRooms(fetchedRooms);
+      localStorage.setItem("hlynk_cached_properties", JSON.stringify(propsData));
+      localStorage.setItem("hlynk_cached_units", JSON.stringify(fetchedRooms));
     } catch (err: any) {
-      toast.error("Failed to load units", { description: err.message });
+      const cachedProps = localStorage.getItem("hlynk_cached_properties");
+      const cachedUnits = localStorage.getItem("hlynk_cached_units");
+      if (cachedProps) setProperties(JSON.parse(cachedProps));
+      if (cachedUnits) setRooms(JSON.parse(cachedUnits));
+      if (navigator.onLine) {
+        toast.error("Failed to load units", { description: err.message });
+      }
     } finally {
       setLoading(false);
     }
@@ -300,13 +326,34 @@ export default function PropertiesPage() {
       .catch(() => toast.info(`Your link: ${publicListingUrl}`));
   };
 
+  const filteredRooms = rooms.filter((room) => {
+    const q = searchTerm.toLowerCase().trim();
+    if (!q) return true;
+    const parentProperty = properties.find((p) => p.id === room.parentId);
+    return (
+      room.title.toLowerCase().includes(q) ||
+      (room.code || "").toLowerCase().includes(q) ||
+      (room.meta?.roomType || "").toLowerCase().includes(q) ||
+      (parentProperty?.title || "").toLowerCase().includes(q) ||
+      (STATUS_LABELS[room.status] || "").toLowerCase().includes(q)
+    );
+  });
+
   return (
-    // <div className="max-w-5xl mx-auto pb-20 px-1">
-    <div className="space-y-8 pt-4">
+    <div className="space-y-6 pt-4">
+      {/* Offline Banner */}
+      {isOffline && (
+        <div className="flex items-center gap-2 p-3 bg-amber-50 border border-amber-200 rounded-xl text-xs font-medium text-amber-800">
+          <WifiOff size={15} className="text-amber-600 shrink-0" />
+          <span>Offline Mode: Operating with cached unit data. Network operations will resume online.</span>
+        </div>
+      )}
+
       {/* Header */}
-      <div className="flex items-center justify-between py-5">
+      <div className="flex items-center justify-between py-2">
         <div>
-          <h1 className="text-xl font-semibold text-slate-900">Units</h1>
+          <h1 className="text-xl font-semibold text-slate-900">Units & Properties</h1>
+          <p className="text-xs text-slate-500 mt-0.5">{rooms.length} unit{rooms.length === 1 ? "" : "s"} total</p>
         </div>
         <div className="flex items-center gap-2">
           {publicListingUrl && (
@@ -340,12 +387,65 @@ export default function PropertiesPage() {
         </div>
       </div>
 
+      {/* Search Bar + View Mode Switcher */}
+      <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between">
+        <div className="relative flex-1">
+          <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+          <input
+            type="text"
+            placeholder="Search unit name, code, group or status..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full pl-9 pr-8 py-2 bg-white border border-slate-200 rounded-xl text-xs text-slate-800 outline-none focus:border-slate-400 transition-colors"
+          />
+          {searchTerm && (
+            <button onClick={() => setSearchTerm("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+              <X size={14} />
+            </button>
+          )}
+        </div>
+
+        {/* View Mode Toggle */}
+        <div className="flex items-center gap-1 bg-white border border-slate-200 p-1 rounded-xl shrink-0 self-end sm:self-auto">
+          <button
+            onClick={() => setViewMode("grid")}
+            className={`p-1.5 rounded-lg text-xs font-medium flex items-center gap-1 transition-colors ${
+              viewMode === "grid" ? "bg-[#0D4A3E] text-white shadow-sm" : "text-slate-600 hover:bg-slate-50"
+            }`}
+            title="Grid View (Standard)"
+          >
+            <LayoutGrid size={14} />
+            <span className="hidden md:inline text-[11px]">Grid</span>
+          </button>
+          <button
+            onClick={() => setViewMode("compact")}
+            className={`p-1.5 rounded-lg text-xs font-medium flex items-center gap-1 transition-colors ${
+              viewMode === "compact" ? "bg-[#0D4A3E] text-white shadow-sm" : "text-slate-600 hover:bg-slate-50"
+            }`}
+            title="Compact View (Conserve Space)"
+          >
+            <Grid size={14} />
+            <span className="hidden md:inline text-[11px]">Compact</span>
+          </button>
+          <button
+            onClick={() => setViewMode("list")}
+            className={`p-1.5 rounded-lg text-xs font-medium flex items-center gap-1 transition-colors ${
+              viewMode === "list" ? "bg-[#0D4A3E] text-white shadow-sm" : "text-slate-600 hover:bg-slate-50"
+            }`}
+            title="List View (Row Table)"
+          >
+            <List size={14} />
+            <span className="hidden md:inline text-[11px]">List</span>
+          </button>
+        </div>
+      </div>
+
       {/* Groups / Property tags */}
       {properties.length > 0 && (
-        <div className="flex items-center gap-2 mb-5 overflow-x-auto pb-1">
+        <div className="flex items-center gap-2 overflow-x-auto pb-1">
           <span className="text-xs text-slate-400 font-medium shrink-0">Groups:</span>
           {properties.map((p) => (
-            <div key={p.id} className="flex items-center gap-1.5 bg-white border border-slate-200 px-3 py-1.5 rounded-full text-xs font-medium text-slate-700 shrink-0">
+            <div key={p.id} className="flex items-center gap-1.5 bg-white border border-slate-200 px-3 py-1 rounded-full text-xs font-medium text-slate-700 shrink-0">
               <Building size={12} className="text-slate-400" />
               {p.title}
               <button onClick={() => handleDeleteResource(p.id, p.title)} className="text-slate-300 hover:text-red-500 transition-colors ml-0.5">
@@ -356,27 +456,194 @@ export default function PropertiesPage() {
         </div>
       )}
 
-      {/* Units Grid */}
+      {/* Units Display */}
       {loading ? (
         <div className="flex items-center justify-center h-48">
           <Loader2 className="animate-spin text-slate-400" size={24} />
         </div>
-      ) : rooms.length === 0 ? (
-        <div className="text-center py-20 bg-white rounded-2xl border border-slate-100">
+      ) : filteredRooms.length === 0 ? (
+        <div className="text-center py-16 bg-white rounded-2xl border border-slate-100">
           <Building size={32} className="mx-auto text-slate-300 mb-3" />
-          <p className="text-slate-500 text-sm font-medium">No units added yet</p>
-          <p className="text-xs text-slate-400 mt-1">Add rooms, vehicles, or any bookable asset</p>
-          <button
-            onClick={openAddUnitModal}
-            className="mt-4 text-sm font-medium text-slate-900 underline underline-offset-2"
-          >
-            Add your first unit
-          </button>
+          <p className="text-slate-500 text-sm font-medium">
+            {searchTerm ? `No units matching "${searchTerm}"` : "No units added yet"}
+          </p>
+          <p className="text-xs text-slate-400 mt-1">
+            {searchTerm ? "Try searching with a different keyword" : "Add rooms, vehicles, or any bookable asset"}
+          </p>
+          {searchTerm ? (
+            <button onClick={() => setSearchTerm("")} className="mt-3 text-xs font-semibold text-[#0D4A3E] underline">
+              Clear search
+            </button>
+          ) : (
+            <button
+              onClick={openAddUnitModal}
+              className="mt-4 text-sm font-medium text-slate-900 underline underline-offset-2"
+            >
+              Add your first unit
+            </button>
+          )}
+        </div>
+      ) : viewMode === "list" ? (
+        /* ════════════ LIST VIEW ════════════ */
+        <div className="bg-white border border-slate-100 rounded-2xl overflow-hidden shadow-sm">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs">
+              <thead className="bg-slate-50 border-b border-slate-100 text-slate-500 font-semibold uppercase tracking-wider">
+                <tr>
+                  <th className="px-4 py-3">Unit</th>
+                  <th className="px-4 py-3">Group / Type</th>
+                  <th className="px-4 py-3">Rate</th>
+                  <th className="px-4 py-3">Status</th>
+                  <th className="px-4 py-3 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {filteredRooms.map((room) => {
+                  const parentProperty = properties.find((p) => p.id === room.parentId);
+                  const coverImg = room.meta?.imageUrl || (Array.isArray(room.meta?.images) && room.meta.images[0]) || null;
+                  const badgeClass = STATUS_STYLES[room.status] || "bg-slate-100 text-slate-600";
+
+                  return (
+                    <tr key={room.id} className="hover:bg-slate-50/80 transition-colors">
+                      <td className="px-4 py-2.5">
+                        <div className="flex items-center gap-2.5">
+                          {coverImg ? (
+                            <img
+                              src={coverImg}
+                              alt=""
+                              onError={(e) => { (e.currentTarget as HTMLElement).style.display = "none"; }}
+                              className="w-8 h-8 rounded-lg object-cover border border-slate-200 shrink-0"
+                            />
+                          ) : (
+                            <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-400 shrink-0">
+                              <Building size={14} />
+                            </div>
+                          )}
+                          <div className="min-w-0">
+                            <p className="font-semibold text-slate-900 text-xs truncate">{room.title}</p>
+                            {room.code && <p className="text-[10px] text-slate-400">Code: {room.code}</p>}
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-4 py-2.5 text-slate-600">
+                        {parentProperty ? parentProperty.title : (room.meta?.roomType || "Unit")}
+                      </td>
+                      <td className="px-4 py-2.5 font-bold text-slate-900">
+                        KES {Number(room.basePrice).toLocaleString()}
+                      </td>
+                      <td className="px-4 py-2.5">
+                        <div className="flex gap-1 flex-wrap">
+                          {["AVAILABLE", "OCCUPIED", "CLEANING", "MAINTENANCE"].map((st) => (
+                            <button
+                              key={st}
+                              onClick={() => handleStatusChange(room.id, st)}
+                              disabled={room.status === st}
+                              className={`text-[9px] font-semibold px-2 py-0.5 rounded-full transition-colors ${
+                                room.status === st
+                                  ? "bg-[#0D4A3E] text-white shadow-xs cursor-default"
+                                  : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                              }`}
+                            >
+                              {STATUS_LABELS[st]}
+                            </button>
+                          ))}
+                        </div>
+                      </td>
+                      <td className="px-4 py-2.5 text-right">
+                        <div className="flex items-center justify-end gap-2">
+                          <button
+                            onClick={() => openEditUnitModal(room)}
+                            className="p-1.5 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
+                            title="Edit Unit"
+                          >
+                            <Edit2 size={13} />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteResource(room.id, room.title)}
+                            className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                            title="Delete Unit"
+                          >
+                            <Trash2 size={13} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      ) : viewMode === "compact" ? (
+        /* ════════════ COMPACT GRID VIEW (Smaller Grid to Conserve Space) ════════════ */
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+          {filteredRooms.map((room) => {
+            const parentProperty = properties.find((p) => p.id === room.parentId);
+            const coverImg = room.meta?.imageUrl || (Array.isArray(room.meta?.images) && room.meta.images[0]) || null;
+            const badgeClass = STATUS_STYLES[room.status] || "bg-slate-100 text-slate-600";
+
+            return (
+              <motion.div
+                key={room.id}
+                layout
+                initial={{ opacity: 0, y: 4 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="bg-white border border-slate-100 rounded-xl overflow-hidden hover:shadow-xs transition-shadow group flex flex-col justify-between"
+              >
+                <div>
+                  <div className="relative h-28 bg-slate-100 cursor-pointer overflow-hidden">
+                    {coverImg ? (
+                      <img
+                        src={coverImg}
+                        alt={room.title}
+                        onError={(e) => { (e.currentTarget as HTMLElement).style.display = "none"; }}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-slate-300">
+                        <Building size={24} />
+                      </div>
+                    )}
+                    <span className={`absolute top-1.5 left-1.5 text-[9px] font-bold px-1.5 py-0.5 rounded-full ${badgeClass}`}>
+                      {STATUS_LABELS[room.status] || room.status}
+                    </span>
+                  </div>
+
+                  <div className="p-2.5">
+                    <p className="text-xs font-bold text-slate-900 truncate">{room.title}</p>
+                    <p className="text-[10px] text-slate-500 truncate mt-0.5">
+                      {parentProperty ? parentProperty.title : (room.meta?.roomType || "Unit")}
+                      {room.code && ` · ${room.code}`}
+                    </p>
+                    <p className="text-xs font-extrabold text-slate-900 mt-1">
+                      KES {Number(room.basePrice).toLocaleString()}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="p-2 pt-0 border-t border-slate-50 flex items-center justify-between">
+                  <button
+                    onClick={() => openEditUnitModal(room)}
+                    className="text-[10px] font-semibold text-slate-600 hover:text-slate-900 flex items-center gap-1"
+                  >
+                    <Edit2 size={10} /> Edit
+                  </button>
+                  <button
+                    onClick={() => handleDeleteResource(room.id, room.title)}
+                    className="text-[10px] text-slate-400 hover:text-red-600 flex items-center gap-1"
+                  >
+                    <Trash2 size={10} />
+                  </button>
+                </div>
+              </motion.div>
+            );
+          })}
         </div>
       ) : (
+        /* ════════════ STANDARD GRID VIEW ════════════ */
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {rooms.map((room) => {
-            const parentProperty = properties.find(p => p.id === room.parentId);
+          {filteredRooms.map((room) => {
+            const parentProperty = properties.find((p) => p.id === room.parentId);
             const coverImg = room.meta?.imageUrl || (Array.isArray(room.meta?.images) && room.meta.images[0]) || null;
             const allImgs = Array.isArray(room.meta?.images) && room.meta.images.length > 0
               ? room.meta.images
@@ -396,7 +663,12 @@ export default function PropertiesPage() {
                   onClick={() => allImgs.length > 0 && (setGalleryImages(allImgs), setGalleryTitle(room.title), setGalleryIndex(0))}
                 >
                   {coverImg ? (
-                    <img src={coverImg} alt={room.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.03]" />
+                    <img
+                      src={coverImg}
+                      alt={room.title}
+                      onError={(e) => { (e.currentTarget as HTMLElement).style.display = "none"; }}
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+                    />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-slate-300">
                       <Building size={32} />

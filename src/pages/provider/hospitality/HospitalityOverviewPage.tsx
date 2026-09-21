@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import {
   CalendarCheck, Building, TrendingUp, Wallet, Clock, Sparkles,
-  Plus, RefreshCw, Loader2, Users, ArrowRight
+  Plus, RefreshCw, Loader2, Users, ArrowRight, WifiOff
 } from "lucide-react";
 import { resourcesApi, eventsApi, operationsApi, Resource, UniversalEvent, OperationTask } from "../../../lib/api/universal";
 import { toast } from "sonner";
@@ -28,9 +28,24 @@ export default function HospitalityOverviewPage() {
   const [events, setEvents] = useState<UniversalEvent[]>([]);
   const [operations, setOperations] = useState<OperationTask[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isOffline, setIsOffline] = useState(!navigator.onLine);
 
   const fetchData = async () => {
     setLoading(true);
+    const offlineNow = typeof navigator !== "undefined" && !navigator.onLine;
+    setIsOffline(offlineNow);
+
+    if (offlineNow) {
+      const cRes = localStorage.getItem("hlynk_cached_resources");
+      const cEvt = localStorage.getItem("hlynk_cached_events");
+      const cOps = localStorage.getItem("hlynk_cached_operations");
+      if (cRes) setResources(JSON.parse(cRes));
+      if (cEvt) setEvents(JSON.parse(cEvt));
+      if (cOps) setOperations(JSON.parse(cOps));
+      setLoading(false);
+      return;
+    }
+
     try {
       const [resData, evtData, opData] = await Promise.all([
         resourcesApi.getResources({}),
@@ -40,8 +55,19 @@ export default function HospitalityOverviewPage() {
       setResources(resData);
       setEvents(evtData);
       setOperations(opData);
+      localStorage.setItem("hlynk_cached_resources", JSON.stringify(resData));
+      localStorage.setItem("hlynk_cached_events", JSON.stringify(evtData));
+      localStorage.setItem("hlynk_cached_operations", JSON.stringify(opData));
     } catch (err: any) {
-      toast.error("Failed to load data", { description: err.message });
+      const cRes = localStorage.getItem("hlynk_cached_resources");
+      const cEvt = localStorage.getItem("hlynk_cached_events");
+      const cOps = localStorage.getItem("hlynk_cached_operations");
+      if (cRes) setResources(JSON.parse(cRes));
+      if (cEvt) setEvents(JSON.parse(cEvt));
+      if (cOps) setOperations(JSON.parse(cOps));
+      if (navigator.onLine) {
+        toast.error("Failed to load data", { description: err.message });
+      }
     } finally {
       setLoading(false);
     }
@@ -61,8 +87,14 @@ export default function HospitalityOverviewPage() {
   const pendingTasks   = operations.filter(o => o.status === "PENDING" || o.status === "IN_PROGRESS");
 
   return (
-    // <div className="max-w-4xl mx-auto pb-20 px-1">
     <div className="space-y-8 pt-4">
+      {/* Offline Banner */}
+      {isOffline && (
+        <div className="flex items-center gap-2 p-3 bg-amber-50 border border-amber-200 rounded-xl text-xs font-medium text-amber-800">
+          <WifiOff size={15} className="text-amber-600 shrink-0" />
+          <span>Offline Mode: Operating with cached hospitality data.</span>
+        </div>
+      )}
       {/* Header */}
       <div className="flex items-center justify-between py-5">
         <div>

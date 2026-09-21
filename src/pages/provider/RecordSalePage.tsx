@@ -537,59 +537,79 @@ export default function RecordSalePage() {
                   <article
                     key={product.id}
                     onClick={() => addToCart(product)}
-                    className="group relative bg-white rounded-2xl border border-slate-100 overflow-hidden cursor-pointer transition-all duration-300 hover:-translate-y-0.5 hover:border-slate-200 hover:shadow-[0_12px_28px_rgba(15,23,42,0.07)]"
+                    className="group relative bg-white rounded-[16px] border border-slate-200/80 overflow-hidden cursor-pointer transition-all duration-300 hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-[0_12px_28px_rgba(15,23,42,0.06)] flex flex-col"
                   >
                     {/* Image region */}
-                    <div className="relative aspect-[1.1/1] w-full bg-slate-50 overflow-hidden">
+                    <div className="relative aspect-[1.12/1] w-full bg-[#f3f1ec] overflow-hidden">
                       {product.imageUrl ? (
                         <img
                           src={product.imageUrl}
                           alt={product.name}
-                          className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.04]"
+                          onError={(e) => {
+                            (e.currentTarget as HTMLElement).style.display = 'none';
+                            const parent = e.currentTarget.parentElement;
+                            if (parent && !parent.querySelector('.img-fallback-icon')) {
+                              const fallback = document.createElement('div');
+                              fallback.className = 'img-fallback-icon h-full w-full flex items-center justify-center text-slate-300';
+                              fallback.innerHTML = '<svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m16.5 9.4-9-5.19M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.29 7 12 12 20.71 7"/><line x1="12" y1="22" x2="12" y2="12"/></svg>';
+                              parent.appendChild(fallback);
+                            }
+                          }}
+                          className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.035]"
                         />
                       ) : (
-                        <div className="h-full w-full flex items-center justify-center text-slate-200">
-                          <Package size={40} />
+                        <div className="h-full w-full flex items-center justify-center text-slate-300">
+                          <Package size={32} />
                         </div>
                       )}
 
                       {/* Category badge */}
                       {product.category && (
-                        <span className="absolute left-2 top-2 rounded-full bg-white/95 shadow-sm px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.08em] text-slate-600 backdrop-blur z-10">
+                        <span className="absolute left-2 top-2 max-w-[calc(100%-16px)] truncate rounded-full bg-white/95 shadow-sm px-2 py-0.5 text-[8px] font-bold uppercase tracking-[0.08em] text-slate-600 backdrop-blur z-10">
                           {product.category}
                         </span>
                       )}
 
                       {/* Stock badge */}
-                      <span className={`absolute top-2 right-2 px-2 py-0.5 rounded-full text-[9px] font-bold z-10 ${
+                      <span className={`absolute top-2 right-2 px-2 py-0.5 rounded-full text-[8px] font-bold z-10 ${
                         product.type === 'SERVICE'
-                          ? 'bg-emerald-100 text-emerald-700'
+                          ? 'bg-emerald-100/90 text-emerald-800'
                           : availableStock <= 0
-                            ? 'bg-red-100 text-red-700'
+                            ? 'bg-red-100/90 text-red-800'
                             : availableStock < 10
-                              ? 'bg-amber-100 text-amber-700'
-                              : 'bg-slate-100 text-slate-500'
+                              ? 'bg-amber-100/90 text-amber-800'
+                              : 'bg-slate-100/90 text-slate-600'
                       }`}>
-                        {product.type === 'SERVICE' ? 'Service' : availableStock <= 0 ? 'Out of stock' : `${availableStock} left`}
+                        {product.type === 'SERVICE' ? 'Service' : availableStock <= 0 ? 'Out' : `${availableStock} left`}
                       </span>
 
                       {/* Cart-in-bag indicator */}
                       {inCart && (
-                        <div className="absolute bottom-2 left-2 flex items-center gap-1 bg-emerald-600 text-white rounded-full px-2 py-0.5 text-[9px] font-bold z-10">
+                        <div className="absolute bottom-2 left-2 flex items-center gap-1 bg-[#0D4A3E] text-white rounded-full px-2 py-0.5 text-[9px] font-bold z-10 shadow-sm">
                           <CheckCircle2 size={10} />
-                          {cartQty} in cart
+                          {cartQty}
                         </div>
                       )}
                     </div>
 
                     {/* Info */}
-                    <div className="p-3">
-                      <h4 className="text-[13px] font-semibold text-slate-900 truncate leading-tight">{product.name}</h4>
-                      <div className="flex items-center justify-between mt-2">
-                        <span className="text-sm font-bold text-slate-900">KES {Number(product.price).toLocaleString()}</span>
-                        <div className="h-7 w-7 rounded-full bg-slate-900 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all translate-y-1 group-hover:translate-y-0 shadow">
-                          <Plus size={14} />
+                    <div className="p-2.5 sm:p-3 flex flex-col flex-1">
+                      <h4 className="text-[13px] font-semibold text-slate-950 truncate leading-tight">{product.name}</h4>
+                      <div className="mt-auto flex items-end justify-between gap-2 pt-2">
+                        <div>
+                          <p className="text-[8px] font-bold uppercase tracking-[0.1em] text-slate-400">Price</p>
+                          <p className="text-xs sm:text-[13px] font-bold tracking-tight text-slate-950 mt-0.5">
+                            KES {Number(product.price).toLocaleString()}
+                          </p>
                         </div>
+                        <button
+                          type="button"
+                          onClick={(e) => { e.stopPropagation(); addToCart(product); }}
+                          className="inline-flex h-7 items-center gap-1 rounded-full bg-[#0D4A3E] px-2.5 text-[10px] font-semibold text-white transition hover:bg-slate-800 active:scale-95 shadow-sm"
+                        >
+                          <Plus size={11} />
+                          <span>Add</span>
+                        </button>
                       </div>
                     </div>
                   </article>
@@ -622,7 +642,14 @@ export default function RecordSalePage() {
                         <td className="px-5 py-3.5">
                           <div className="flex items-center gap-3">
                             {product.imageUrl ? (
-                              <img src={product.imageUrl} alt={product.name} className="h-9 w-9 rounded-xl object-cover border border-slate-100" />
+                              <img
+                                src={product.imageUrl}
+                                alt={product.name}
+                                onError={(e) => {
+                                  (e.currentTarget as HTMLElement).style.display = 'none';
+                                }}
+                                className="h-9 w-9 rounded-xl object-cover border border-slate-100"
+                              />
                             ) : (
                               <div className="h-9 w-9 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-300">
                                 <Package size={14} />
@@ -807,7 +834,7 @@ export default function RecordSalePage() {
                       <h5 className="text-sm font-semibold text-slate-900 truncate">{item.name}</h5>
                       <div className="flex gap-3 mt-1">
                         <div className="flex items-center gap-1">
-                          <span className="text-[9px] text-slate-400 font-medium uppercase tracking-wider w-8">Sell</span>
+                          <span className="text-[9px] text-slate-400 font-medium tracking-wider w-8">Sell </span>
                           <input
                             type="number"
                             value={item.price}
@@ -817,7 +844,7 @@ export default function RecordSalePage() {
                           />
                         </div>
                         <div className="flex items-center gap-1">
-                          <span className="text-[9px] text-slate-400 font-medium uppercase tracking-wider w-8">Cost</span>
+                          <span className="text-[9px] text-slate-400 font-medium tracking-wider w-8 ">Cost</span>
                           <input
                             type="number"
                             value={item.buyingPrice !== undefined ? item.buyingPrice : (item.type === 'SERVICE' ? 0 : '')}
@@ -862,16 +889,16 @@ export default function RecordSalePage() {
           </div>
 
           {/* Payment method panel */}
-          <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4 space-y-4">
-            <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest">Payment method</p>
+          <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4 space-y-3.5">
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Payment method</p>
 
             {/* Payment buttons */}
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-4 gap-2">
               {[
                 { id: 'CASH', label: 'Cash', icon: Banknote, feature: null },
-                { id: 'MPESA', label: 'Express', icon: MpesaBankIcon, feature: 'mpesa_stk' },
-                { id: 'KCB', label: 'Mobile', icon: KcbBankIcon, feature: 'kcb_settlement' },
-                { id: 'MPESA_MANUAL', label: 'M-Pesa Till/Pochi', icon: Wallet, feature: null },
+                { id: 'MPESA', label: 'M-Pesa STK', icon: MpesaBankIcon, feature: 'mpesa_stk' },
+                { id: 'KCB', label: 'KCB STK', icon: KcbBankIcon, feature: 'kcb_settlement' },
+                { id: 'MPESA_MANUAL', label: 'Till / Pochi', icon: Wallet, feature: null },
               ].map(method => (
                 <FeatureGate
                   key={method.id}
@@ -880,15 +907,12 @@ export default function RecordSalePage() {
                     method.feature ? (
                       <button
                         onClick={() => toast.info(`${method.label} requires the Growth Plan. Please upgrade to unlock.`)}
-                        className="relative flex flex-col items-center justify-center gap-1.5 py-4 rounded-xl border-2 border-slate-100 bg-slate-50 text-slate-300 cursor-not-allowed overflow-hidden"
+                        className="relative flex items-center justify-start gap-2 px-3 py-2.5 rounded-xl border border-slate-100 bg-slate-50 text-slate-400 cursor-not-allowed overflow-hidden text-left"
                       >
-                        <method.icon size={['MPESA', 'KCB'].includes(method.id) ? 48 : 18} />
-                        <span className="text-[10px] font-semibold">{method.label}</span>
-                        <span className="text-[8px] font-bold bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-full">
-                          Requires {(FEATURE_PLANS as any)[method.feature as string][0]}
-                        </span>
-                        <div className="absolute top-1.5 right-1.5 opacity-20">
-                          <Lock size={11} />
+                        <method.icon size={18} className="shrink-0" />
+                        <span className="text-xs font-semibold truncate">{method.label}</span>
+                        <div className="ml-auto opacity-40 shrink-0">
+                          <Lock size={10} />
                         </div>
                       </button>
                     ) : null
@@ -896,13 +920,13 @@ export default function RecordSalePage() {
                 >
                   <button
                     onClick={() => setPaymentMethod(method.id)}
-                    className={`flex flex-col items-center justify-center gap-1.5 py-4 rounded-xl border-2 transition-all ${paymentMethod === method.id
-                      ? 'border-slate-900 bg-slate-50 text-slate-900'
-                      : 'border-slate-100 bg-white text-slate-400 hover:bg-slate-50 hover:text-slate-600'
+                    className={`flex items-center justify-start gap-2.5 px-3 py-2.5 rounded-xl border transition-all text-left ${paymentMethod === method.id
+                      ? 'border-[#0D4A3E] bg-emerald-50/60 text-[#0D4A3E] shadow-sm font-semibold'
+                      : 'border-slate-200/80 bg-white text-slate-600 hover:bg-slate-50 hover:border-slate-300'
                       }`}
                   >
-                    <method.icon size={['MPESA', 'KCB'].includes(method.id) ? 48 : 18} />
-                    <span className="text-[10px] font-semibold">{method.label}</span>
+                    <method.icon size={18} className="shrink-0" />
+                    <span className="text-xs font-medium truncate">{method.label}</span>
                   </button>
                 </FeatureGate>
               ))}
@@ -998,13 +1022,13 @@ export default function RecordSalePage() {
                   handleCompleteSale.mutate(undefined)
                 }
               }}
-              className={`w-full py-3.5 rounded-full font-semibold text-sm transition-all flex items-center justify-center gap-2 ${cart.length === 0 || handleCompleteSale.isPending || isProcessingMpesa
-                ? 'bg-slate-100 text-slate-300 cursor-not-allowed'
+              className={`w-full py-3.5 rounded-full font-semibold text-lg font-thin transition-all flex items-center justify-center gap-2 ${cart.length === 0 || handleCompleteSale.isPending || isProcessingMpesa
+                ? 'bg-slate-100 text-slate-700 cursor-not-allowed'
                 : isOnline
                   ? 'bg-slate-900 text-white hover:bg-slate-800 active:scale-[0.98] shadow-sm'
                   : 'bg-amber-600 text-white hover:bg-amber-700 active:scale-[0.98] shadow-sm'
                 }`}
-            >
+             >
               {handleCompleteSale.isPending || isProcessingMpesa ? (
                 <div className="flex items-center gap-2">
                   <Loader2 size={16} className="animate-spin" />
@@ -1013,11 +1037,11 @@ export default function RecordSalePage() {
               ) : (
                 <>
                   {!isOnline ? (
-                    <>Record Offline <RefreshCcw size={16} /></>
+                    <>Record Offline <RefreshCcw size={14} /></>
                   ) : paymentMethod === 'MPESA' || paymentMethod === 'KCB' ? (
-                    <>Send STK Prompt <ArrowRight size={16} /></>
+                    <>Send STK Prompt <ArrowRight size={14} /></>
                   ) : (
-                    <>Complete Sale <ArrowRight size={16} /></>
+                    <>Complete Sale <ArrowRight size={12} /></>
                   )}
                 </>
               )}
@@ -1052,10 +1076,10 @@ export default function RecordSalePage() {
             </button>
             <button
               onClick={() => { setCart([]); localStorage.removeItem('hlynk_pos_cart'); }}
-              className="bg-red-500 text-white p-3.5 rounded-2xl shadow-xl shadow-red-900/20 hover:bg-red-600 transition-colors"
+              className="bg-red-500 text-white p-3.5 rounded-full shadow-xl shadow-red-900/20 hover:bg-red-600 transition-colors"
               title="Clear Cart"
             >
-              <X size={20} />
+              <X size={15} />
             </button>
           </div>
         </div>

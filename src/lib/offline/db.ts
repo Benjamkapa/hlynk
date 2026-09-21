@@ -133,7 +133,6 @@ export async function cacheInventory(products: CachedProduct[]): Promise<void> {
   return new Promise((resolve, reject) => {
     const tx = db.transaction('inventoryCache', 'readwrite')
     const store = tx.objectStore('inventoryCache')
-    store.clear()
     products.forEach(p => store.put(p))
     tx.oncomplete = () => resolve()
     tx.onerror = () => reject(tx.error)

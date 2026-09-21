@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { CalendarCheck, Plus, Search, Loader2, LogOut, ChevronDown, X } from "lucide-react";
+import { CalendarCheck, Plus, Search, Loader2, LogOut, ChevronDown, X, WifiOff } from "lucide-react";
 import { eventsApi, resourcesApi, UniversalEvent, Resource } from "../../../lib/api/universal";
 import { toast } from "sonner";
 import { AnimatePresence, motion } from "framer-motion";
@@ -7,16 +7,17 @@ import { Modal } from "../../../components/shared/Modal";
 import { useLocation } from "react-router-dom";
 
 const STATUS_LABELS: Record<string, { label: string; color: string }> = {
-  CONFIRMED:   { label: "Confirmed",   color: "bg-emerald-100 text-emerald-800" },
-  CHECKED_IN:  { label: "Active",      color: "bg-blue-100 text-blue-800" },
-  CHECKED_OUT: { label: "Completed",   color: "bg-slate-100 text-slate-600" },
-  CANCELLED:   { label: "Cancelled",   color: "bg-red-100 text-red-700" },
+  CONFIRMED: { label: "Confirmed", color: "bg-emerald-100 text-emerald-800" },
+  CHECKED_IN: { label: "Active", color: "bg-blue-100 text-blue-800" },
+  CHECKED_OUT: { label: "Completed", color: "bg-slate-100 text-slate-600" },
+  CANCELLED: { label: "Cancelled", color: "bg-red-100 text-red-700" },
 };
 
 export default function BookingsPage() {
   const [bookings, setBookings] = useState<UniversalEvent[]>([]);
   const [rooms, setRooms] = useState<Resource[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isOffline, setIsOffline] = useState(!navigator.onLine);
   const [highlightedId, setHighlightedId] = useState<string | null>(null);
   const location = useLocation();
 
@@ -48,15 +49,36 @@ export default function BookingsPage() {
 
   const fetchData = async () => {
     setLoading(true);
+    const offlineNow = typeof navigator !== "undefined" && !navigator.onLine;
+    setIsOffline(offlineNow);
+
+    if (offlineNow) {
+      const cEvt = localStorage.getItem("hlynk_cached_events");
+      const cUnits = localStorage.getItem("hlynk_cached_units");
+      if (cEvt) setBookings(JSON.parse(cEvt));
+      if (cUnits) setRooms(JSON.parse(cUnits));
+      setLoading(false);
+      return;
+    }
+
     try {
       const [bookingData, allResources] = await Promise.all([
         eventsApi.getEvents({ eventType: "BOOKING" }),
         resourcesApi.getResources({}),
       ]);
+      const fetchedRooms = allResources.filter((r) => r.type !== "PROPERTY");
       setBookings(bookingData);
-      setRooms(allResources.filter((r) => r.type !== "PROPERTY"));
+      setRooms(fetchedRooms);
+      localStorage.setItem("hlynk_cached_events", JSON.stringify(bookingData));
+      localStorage.setItem("hlynk_cached_units", JSON.stringify(fetchedRooms));
     } catch (err: any) {
-      toast.error("Failed to load bookings", { description: err.message });
+      const cEvt = localStorage.getItem("hlynk_cached_events");
+      const cUnits = localStorage.getItem("hlynk_cached_units");
+      if (cEvt) setBookings(JSON.parse(cEvt));
+      if (cUnits) setRooms(JSON.parse(cUnits));
+      if (navigator.onLine) {
+        toast.error("Failed to load bookings", { description: err.message });
+      }
     } finally {
       setLoading(false);
     }
@@ -173,9 +195,14 @@ export default function BookingsPage() {
   const selectedRoom = rooms.find((r) => r.id === selectedRoomId);
 
   return (
-    // space-y-8 pt-4
     <div className="space-y-8 pt-4">
-    {/* <div className="max-w-5xl mx-auto pb-20 px-1"> */}
+      {/* Offline Banner */}
+      {isOffline && (
+        <div className="flex items-center gap-2 p-3 bg-amber-50 border border-amber-200 rounded-xl text-xs font-medium text-amber-800">
+          <WifiOff size={15} className="text-amber-600 shrink-0" />
+          <span>Offline Mode: Viewing cached booking records.</span>
+        </div>
+      )}
       {/* Page Header */}
       <div className="flex items-center justify-between py-5">
         <div>
@@ -206,11 +233,10 @@ export default function BookingsPage() {
             <button
               key={st}
               onClick={() => setStatusFilter(st)}
-              className={`px-3 py-2 rounded-xl text-xs font-medium whitespace-nowrap transition-colors ${
-                statusFilter === st
+              className={`px-3 py-2 rounded-xl text-xs font-medium whitespace-nowrap transition-colors ${statusFilter === st
                   ? "bg-[#0D4A3E] text-white"
                   : "bg-white border border-slate-200 text-slate-600 hover:border-slate-300"
-              }`}
+                }`}
             >
               {st === "ALL" ? "All" : STATUS_LABELS[st]?.label || st}
             </button>
@@ -247,9 +273,8 @@ export default function BookingsPage() {
                 layout
                 initial={{ opacity: 0, y: 6 }}
                 animate={{ opacity: 1, y: 0 }}
-                className={`bg-white border rounded-2xl p-4 transition-shadow hover:shadow-sm ${
-                  isHighlighted ? "border-emerald-400 shadow-md" : "border-slate-100"
-                }`}
+                className={`bg-white border rounded-2xl p-4 transition-shadow hover:shadow-sm ${isHighlighted ? "border-emerald-400 shadow-md" : "border-slate-100"
+                  }`}
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0 flex-1">

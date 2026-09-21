@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Sparkles, Wrench, Plus, CheckCircle2, Loader2 } from "lucide-react";
+import { Sparkles, Wrench, Plus, CheckCircle2, Loader2, WifiOff } from "lucide-react";
 import { operationsApi, resourcesApi, OperationTask, Resource } from "../../../lib/api/universal";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
@@ -9,6 +9,7 @@ export default function OperationsPage() {
   const [operations, setOperations] = useState<OperationTask[]>([]);
   const [rooms, setRooms] = useState<Resource[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isOffline, setIsOffline] = useState(!navigator.onLine);
   const [activeTab, setActiveTab] = useState<"CLEANING" | "MAINTENANCE">("CLEANING");
 
   const [showModal, setShowModal] = useState(false);
@@ -24,6 +25,18 @@ export default function OperationsPage() {
 
   const fetchData = async () => {
     setLoading(true);
+    const offlineNow = typeof navigator !== "undefined" && !navigator.onLine;
+    setIsOffline(offlineNow);
+
+    if (offlineNow) {
+      const cOps = localStorage.getItem("hlynk_cached_operations");
+      const cUnits = localStorage.getItem("hlynk_cached_units");
+      if (cOps) setOperations(JSON.parse(cOps));
+      if (cUnits) setRooms(JSON.parse(cUnits));
+      setLoading(false);
+      return;
+    }
+
     try {
       const [opData, roomData] = await Promise.all([
         operationsApi.getOperations(),
@@ -31,8 +44,16 @@ export default function OperationsPage() {
       ]);
       setOperations(opData);
       setRooms(roomData);
+      localStorage.setItem("hlynk_cached_operations", JSON.stringify(opData));
+      localStorage.setItem("hlynk_cached_units", JSON.stringify(roomData));
     } catch (err: any) {
-      toast.error("Failed to load tasks", { description: err.message });
+      const cOps = localStorage.getItem("hlynk_cached_operations");
+      const cUnits = localStorage.getItem("hlynk_cached_units");
+      if (cOps) setOperations(JSON.parse(cOps));
+      if (cUnits) setRooms(JSON.parse(cUnits));
+      if (navigator.onLine) {
+        toast.error("Failed to load tasks", { description: err.message });
+      }
     } finally {
       setLoading(false);
     }
@@ -86,8 +107,14 @@ export default function OperationsPage() {
   const pendingMaintenance = operations.filter((o) => o.opType === "MAINTENANCE" && o.status !== "COMPLETED").length;
 
   return (
-    // <div className="max-w-3xl mx-auto pb-20 px-1">
     <div className="space-y-8 pt-4">
+      {/* Offline Banner */}
+      {isOffline && (
+        <div className="flex items-center gap-2 p-3 bg-amber-50 border border-amber-200 rounded-xl text-xs font-medium text-amber-800">
+          <WifiOff size={15} className="text-amber-600 shrink-0" />
+          <span>Offline Mode: Viewing cached task list.</span>
+        </div>
+      )}
       {/* Header */}
       <div className="flex items-center justify-between py-5">
         <div>
