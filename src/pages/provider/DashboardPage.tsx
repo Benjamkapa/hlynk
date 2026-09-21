@@ -215,7 +215,7 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-px bg-gray-100 rounded-[.5rem] overflow-hidden border border-gray-100">
+          <div className="grid grid-cols-3 sm:grid-cols-3 lg:grid-cols-4 gap-px bg-gray-100 rounded-[.5rem] overflow-hidden border border-gray-100">
             {stats.profitBySource.map((source: any, i: number) => {
               const margin = source.sales > 0 ? Math.round((source.profit / source.sales) * 100) : 0;
               return (

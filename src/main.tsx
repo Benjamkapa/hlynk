@@ -3,13 +3,26 @@ import ReactDOM from 'react-dom/client'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { BrowserRouter } from 'react-router-dom'
-import { Toaster } from 'sonner'
+import { Toaster, toast } from 'sonner'
 import App from './App'
 import { AuthProvider } from './lib/auth/AuthContext'
 import { MobileViewportProvider } from './lib/MobileViewportContext'
 import { queryClient } from './lib/query/queryClient'
 import { syncEngine } from './lib/offline/syncEngine'
 import './index.css'
+
+// Global guard to disallow 'OFFLINE_SILENT' and any error toasts when operating offline
+const originalToastError = toast.error;
+toast.error = (message: any, options?: any) => {
+  if (typeof navigator !== 'undefined' && !navigator.onLine) {
+    return "";
+  }
+  const str = typeof message === 'string' ? message : (message?.message || String(message || ''));
+  if (!str || str.trim() === '' || str.includes('OFFLINE_SILENT') || str === 'Network Error') {
+    return "";
+  }
+  return originalToastError(message, options);
+};
 
 // Start the offline sync engine
 syncEngine.start()

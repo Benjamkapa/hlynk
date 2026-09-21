@@ -420,21 +420,21 @@ export default function ProviderLayout() {
         {isCritical && user?.role === 'PROVIDER' && (
           <div className="bg-red-600 text-white px-6 pb-3 pt-[calc(0.75rem+env(safe-area-inset-top,0px))] flex items-center justify-between z-[60] shadow-2xl flex-shrink-0">
             <div className="flex items-center gap-3">
-              <div className="h-8 w-8 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
+              <div className="h-11 w-11 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
                 <AlertTriangle size={16} className="animate-bounce" />
               </div>
               <div>
-                <p className="text-[11px] font-black uppercase tracking-widest leading-none mb-0.5">
+                <p className="text-[11px] font-black font-thin tracking-widest leading-none mb-0.5">
                   {isTrial ? "Critical: Free Trial Expiry Imminent" : "Critical: Subscription Expiry Imminent"}
                 </p>
-                <p className="text-[9px] font-medium opacity-80 uppercase tracking-widest leading-none">
+                <p className="text-[10px] font-medium opacity-80 tracking-widest leading-none">
                   {isTrial
                     ? `Your free trial expires in ${daysRemaining} ${daysRemaining === 1 ? 'day' : 'days'}. Purchase a plan now to keep your business running smoothly.`
                     : `Your access expires in ${daysRemaining} ${daysRemaining === 1 ? 'day' : 'days'}. Renew now to avoid business disruption.`}
                 </p>
               </div>
             </div>
-            <Link to="/dashboard/subscription" className="ml-4 flex-shrink-0 px-5 py-2 glass-btn text-red-600 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all active:scale-95">
+            <Link to="/dashboard/subscription" className="ml-4 flex-shrink-0 px-5 py-2 glass-btn text-red-600 rounded-full text-[10px] font-black tracking-widest transition-all active:scale-95">
               {isTrial ? "Upgrade Now" : "Top Up Now"}
             </Link>
           </div>

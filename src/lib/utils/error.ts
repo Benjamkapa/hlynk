@@ -1,17 +1,18 @@
 import { toast } from "sonner";
 
 export const getErrorMessage = (err: any): string => {
-  if (!err) return "An unknown error occurred"
-  if (err === "OFFLINE_SILENT") return ""
+  if (!err) return ""
+  if (err === "OFFLINE_SILENT" || (typeof err === "string" && err.includes("OFFLINE_SILENT"))) return ""
+
+  // Suppress errors completely when browser is offline
+  if (typeof navigator !== 'undefined' && !navigator.onLine) {
+    return ""
+  }
 
   // Network error (server down, timeout, etc.)
   if (!err.response) {
-    if (typeof navigator !== 'undefined' && !navigator.onLine) {
-      return "" // Return empty string so offline network errors are completely silent
-    }
     if (err.code === 'ECONNABORTED') return "The request timed out. Please check your internet connection."
     if (err.message === 'Network Error') {
-      if (typeof navigator !== 'undefined' && !navigator.onLine) return ""
       return "Unable to connect to the server!"
     }
     return err.message || "A network error occurred. Please try again."

@@ -942,7 +942,7 @@ export default function SubscriptionPage() {
                   : (PLANS.find(p => p.id === subscription?.planName)?.desc || 'Your current subscription plan details.')}
               </p>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 py-1">
+              <div className="grid grid-cols-2 sm:grid-cols-2 gap-4 py-1">
                 <div className="space-y-1 bg-gray-50 p-4 rounded-[.5rem] border border-gray-100">
                   <p className="text-xs text-gray-400 flex items-center gap-1.5">
                     <Calendar size={13} className="text-gray-300" /> {isTrial ? 'Trial ends' : 'Next billing date'}
@@ -973,7 +973,7 @@ export default function SubscriptionPage() {
                 </div>
               </div>
 
-              <div className="flex flex-col sm:flex-row gap-3 pt-1">
+              <div className="flex flex-col-2 sm:flex-row gap-3 pt-1">
                 <button
                   onClick={() => {
                     setMpesaPhone('')

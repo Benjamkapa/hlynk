@@ -167,7 +167,7 @@ export default function FeatureGate({ feature, children, fallback, variant = 'ca
           </div>
 
           <h4 className="text-2xl font-black text-slate-900 mb-4 tracking-tighter">Premium Business Utility</h4>
-          <p className="text-sm text-slate-500 font-medium mb-12 leading-relaxed opacity-80">
+          <p className="text-slate-500 font-medium mb-12 leading-relaxed opacity-80">
             This advanced tool is reserved for <span className="text-slate-900 font-black">{getPlanName(FEATURE_PLANS[feature][0])}</span> subscribers. Upgrade now to activate full operational control.
           </p>
 
