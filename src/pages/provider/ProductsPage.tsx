@@ -16,7 +16,7 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import { useEffect } from 'react'
 import { keepPreviousData } from '@tanstack/react-query'
 import { PaginatedResponse } from '../../lib/types/api'
-import { cacheInventory } from '../../lib/offline/db'
+import { cacheInventory, getCachedInventory } from '../../lib/offline/db'
 
 const PRESET_PRODUCT_PHOTOS = [
   { name: "Fresh Vegetables", url: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=800" },
@@ -58,9 +58,24 @@ export default function ProductsPage() {
 
   const { data: productsData, isLoading, error } = useQuery<PaginatedResponse<any> & { stats: any }>({
     queryKey: ['inventory', search, page, sortBy, sortOrder, category],
-    queryFn: () => inventoryApi.list({ search, page, limit: 10, sortBy, sortOrder, category: category || undefined, includeStats: true }),
+    queryFn: async () => {
+      if (!navigator.onLine) {
+        const cached = await getCachedInventory()
+        const filtered = search
+          ? cached.filter((p: any) => p.name?.toLowerCase().includes(search.toLowerCase()) || p.category?.toLowerCase().includes(search.toLowerCase()))
+          : cached
+        return {
+          items: filtered,
+          total: filtered.length,
+          page: 1,
+          pages: 1,
+          stats: { totalItems: filtered.length, lowStock: 0, totalValue: 0 }
+        }
+      }
+      return inventoryApi.list({ search, page, limit: 10, sortBy, sortOrder, category: category || undefined, includeStats: true })
+    },
     placeholderData: keepPreviousData,
-    refetchInterval: 15_000
+    refetchInterval: navigator.onLine ? 15_000 : false
   })
 
   const { data: profile } = useQuery({
@@ -186,7 +201,7 @@ export default function ProductsPage() {
           <h1 className="text-xl font-semibold text-gray-900">Products & services</h1>
           <p className="text-gray-400 text-sm mt-0.5">Track inventory, stock levels, and profit margins</p>
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:flex lg:flex-wrap gap-2 w-full md:w-auto">
+        <div className="grid grid-cols-4 sm:grid-cols-3 lg:flex lg:flex-wrap gap-4 w-full md:w-auto">
           <button
             onClick={() => setIsOrdersOpen(true)}
             className="relative h-9 px-4 rounded-full shadow font-medium text-sm text-gray-600 hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"
@@ -239,7 +254,7 @@ export default function ProductsPage() {
               setIsAddModalOpen(true);
             }}
             title="Add Product"
-            className="bg-[#0D4A3E] text-white h-9 px-5 rounded-full font-medium text-sm hover:bg-[#0A3D33] transition-colors flex items-center justify-center gap-2 col-span-2 sm:col-span-1"
+            className="bg-[#0D4A3E] text-white h-9 px-2 rounded-full font-medium text-sm hover:bg-[#0A3D33] transition-colors flex items-center justify-center gap-2 col-span-2 sm:col-span-1"
           >
             <Plus size={16} /> Add item
           </button>

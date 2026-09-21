@@ -392,9 +392,11 @@ export default function RecordSalePage() {
         }
       }
     }
-  }, [pendingSaleData, waitingMpesaSaleId, queryClient])
+  }, [waitingMpesaSaleId, pendingSaleData])
 
   const initiateMpesaPayment = async () => {
+    if (!requireOnline('M-Pesa STK Push')) return
+
     if (!mpesaPhone || mpesaPhone.length < 10) {
       toast.error('Please enter a valid M-Pesa phone number')
       return
@@ -420,6 +422,8 @@ export default function RecordSalePage() {
   }
 
   const initiateKcbPayment = async () => {
+    if (!requireOnline('KCB STK Push')) return
+
     if (!mpesaPhone || mpesaPhone.length < 10) {
       toast.error('Please enter a valid phone number for KCB STK Push')
       return

@@ -9,18 +9,18 @@ class SyncEngine {
   start() {
     if (this.syncInterval) return
     
-    // Check for sync every 30 seconds if online
-    this.syncInterval = window.setInterval(() => {
-      if (navigator.onLine) {
-        this.sync()
-      }
-    }, 30000)
+    // Initial check
+    this.flush()
 
-    // Also sync immediately when coming online
+    // Listen to network changes
     window.addEventListener('online', () => {
-      toast.info('Back online! Syncing pending transactions...')
-      this.sync()
+      this.flush()
     })
+
+    // Periodic check every 15 seconds
+    this.syncInterval = window.setInterval(() => {
+      if (navigator.onLine) this.flush()
+    }, 15000)
   }
 
   stop() {
@@ -30,32 +30,31 @@ class SyncEngine {
     }
   }
 
-  async sync() {
-    if (this.isSyncing || !navigator.onLine) return
+  async flush(): Promise<boolean> {
+    if (this.isSyncing || !navigator.onLine) return false
     
     const pending = await getPendingSales()
-    if (pending.length === 0) return
+    if (pending.length === 0) return true
 
     this.isSyncing = true
-    console.log(`[SyncEngine] Starting sync of ${pending.length} sales.`)
+    console.log(`[SyncEngine] Syncing ${pending.length} offline transactions...`)
+    toast.info(`Syncing ${pending.length} offline transaction(s)...`)
 
+    let successCount = 0
     for (const sale of pending) {
       try {
         await salesApi.create(sale.payload)
         await removePendingSale(sale.id)
-        console.log(`[SyncEngine] Successfully synced sale ${sale.id}`)
-      } catch (error) {
-        console.error(`[SyncEngine] Failed to sync sale ${sale.id}:`, error)
-        
-        // Update retry count
+        successCount++
+      } catch (error: any) {
+        if (error.response?.status === 401) {
+          console.warn('[SyncEngine] Auth required for sync. Redirecting to login.')
+          this.isSyncing = false
+          window.location.href = '/login'
+          return false
+        }
         sale.retries = (sale.retries || 0) + 1
         sale.lastError = error instanceof Error ? error.message : 'Unknown error'
-        
-        if (sale.retries > 5) {
-          // Maybe let the user know this specific one is stuck
-          toast.error(`Sale from ${new Date(sale.createdAt).toLocaleString()} failed to sync after multiple attempts.`)
-        }
-        
         await updatePendingSale(sale)
       }
     }
@@ -64,7 +63,10 @@ class SyncEngine {
     const remaining = await countPendingSales()
     if (remaining === 0) {
       toast.success('All offline transactions synced successfully!')
+    } else if (successCount > 0) {
+      toast.warning(`${successCount} synced, ${remaining} pending sync.`)
     }
+    return remaining === 0
   }
 }
 

@@ -351,7 +351,7 @@ export default function BookingsPage() {
               <div className="mt-2 flex items-center gap-2 p-2.5 bg-slate-50 rounded-xl border border-slate-100">
                 {(selectedRoom.meta?.imageUrl || selectedRoom.meta?.images?.[0]) ? (
                   <img
-                    src={selectedRoom.meta.imageUrl || selectedRoom.meta.images[0]}
+                    src={selectedRoom.meta.imageUrl || selectedRoom.meta.images?.[0]}
                     alt={selectedRoom.title}
                     className="w-10 h-10 rounded-lg object-cover shrink-0"
                   />

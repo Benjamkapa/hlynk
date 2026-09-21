@@ -2,7 +2,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react'
 import { authApi, type AuthUser } from '../api/auth'
 import { queryClient } from '../query/queryClient'
 import { storage } from '../utils/storage'
-import { verifyOfflinePin, clearOfflinePin } from '../offline/offlinePin'
+import { verifyOfflinePin, clearOfflinePin, hasOfflinePin, ensureDefaultOfflinePin } from '../offline/offlinePin'
 
 interface AuthContextValue {
   user: AuthUser | null
@@ -36,7 +36,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (token && (!cached || cached === 'undefined')) return true
     return !!token
   })
-  const [isLocked, setIsLocked] = useState(() => storage.getItem('session_locked') === 'true')
+  const [isLocked, setIsLocked] = useState(() => {
+    const isLockedStored = storage.getItem('session_locked') === 'true'
+    const isOffline = typeof navigator !== 'undefined' && !navigator.onLine
+    return isLockedStored || (isOffline && hasOfflinePin())
+  })
+
+  useEffect(() => {
+    ensureDefaultOfflinePin()
+    const handleOffline = () => {
+      if (hasOfflinePin()) {
+        setIsLocked(true)
+        storage.setItem('session_locked', 'true')
+      }
+    }
+    window.addEventListener('offline', handleOffline)
+    return () => window.removeEventListener('offline', handleOffline)
+  }, [])
 
   useEffect(() => {
     const token = storage.getItem('accessToken')
@@ -91,11 +107,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setIsLocked(false)
     storage.removeItem('session_locked')
     setUser(userData)
+    ensureDefaultOfflinePin()
   }
 
   /**
    * Logout with offline-awareness.
-   * - When ONLINE: full logout — clears all tokens, session and PIN.
+   * - When ONLINE: full logout — clears tokens and session while preserving offline PIN.
    * - When OFFLINE (default): locks the screen instead so the user can
    *   re-authenticate locally via their PIN without needing internet.
    * - Pass { force: true } to force a full logout even when offline
@@ -118,7 +135,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // ignore network errors
     }
 
-    clearOfflinePin()
+    // Preserving offline PIN across logouts so the user only has to set it once
     storage.removeItem('accessToken')
     storage.removeItem('user_profile')
     storage.removeItem('session_locked')

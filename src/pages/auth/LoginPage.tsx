@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   Building2, MapPin, Phone, Tag,
-  Loader2, Check, ArrowLeft, Star
+  Loader2, Check, ArrowLeft, Star, WifiOff
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { authApi } from '../../lib/api/auth'
@@ -322,6 +322,19 @@ export default function LoginPage() {
   const [googleCredential, setGoogleCredential] = useState('')
   const [acceptedEula, setAcceptedEula] = useState(() => localStorage.getItem('hlynk_eula_accepted') === 'true')
 
+  const [isOffline, setIsOffline] = useState(() => typeof navigator !== 'undefined' && !navigator.onLine)
+
+  useEffect(() => {
+    const handleOnline = () => setIsOffline(false)
+    const handleOffline = () => setIsOffline(true)
+    window.addEventListener('online', handleOnline)
+    window.addEventListener('offline', handleOffline)
+    return () => {
+      window.removeEventListener('online', handleOnline)
+      window.removeEventListener('offline', handleOffline)
+    }
+  }, [])
+
   useEffect(() => {
     if (user && !requiresRegistration) {
       navigate(user.role === 'SUPER_ADMIN' ? '/admin' : '/dashboard', { replace: true })
@@ -340,6 +353,24 @@ export default function LoginPage() {
     isTrial: isTrialRequest || !!urlReferralCode,
     daysReward: parseInt(requestedDays)
   })
+
+  const handleStartOfflineSession = () => {
+    const offlineUser: any = {
+      id: 'offline-local-user',
+      email: 'offline@hlynk.local',
+      role: 'PROVIDER',
+      name: 'Offline Biashara Owner',
+      businessName: 'My Offline Biashara',
+      subscription: { status: 1, name: 'OFFLINE_STANDALONE' },
+      activeModules: ['POS', 'HOSPITALITY']
+    }
+    login({ accessToken: 'offline-local-access-token' }, offlineUser)
+    toast.success('Offline Mode Activated', {
+      description: 'You are operating as a standalone app. All records save locally to IndexedDB.',
+      icon: <WifiOff className="text-amber-500" />
+    })
+    navigate('/dashboard', { replace: true })
+  }
 
   const handleGoogleAuth = async (credential: string) => {
     setGoogleLoading(true)
@@ -610,12 +641,12 @@ export default function LoginPage() {
                 >
                   {/* Nav */}
                   <nav className="mob-nav hidden" style={{ display: 'flex' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    {/* <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                       <img src={hlynk} alt="hlynk" style={{ height: 32, objectFit: 'contain' }} />
                     </div>
                     <a href="/" style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.85)', textDecoration: 'none', letterSpacing: '0.14em' }}>
                       <ArrowLeft size={10} /> Website
-                    </a>
+                    </a> */}
                   </nav>
 
                   {/* Hero - Simplified for Mobile but consistent with Desktop */}
@@ -671,12 +702,22 @@ export default function LoginPage() {
 
                     {/* Google button — blocker overlay when EULA unchecked */}
                     <div className={`w-full transition-all text-center duration-300 ${!acceptedEula ? 'opacity-40 grayscale' : 'opacity-100'}`}>
-                      <div className="google-btn-wrap">
-                        {!acceptedEula && (
-                          <div className="google-btn-blocker" onClick={eulaWarning} />
-                        )}
-                        <MobileGoogleAuth googleLoading={googleLoading} handleGoogleAuth={handleGoogleAuth} disabled={!acceptedEula} />
-                      </div>
+                      {isOffline ? (
+                        <button
+                          type="button"
+                          onClick={handleStartOfflineSession}
+                          className="w-full py-3.5 px-4 rounded-xl bg-amber-500 text-slate-950 text-xs font-bold flex items-center justify-center gap-2 hover:bg-amber-400 transition-all shadow-md"
+                        >
+                          <WifiOff size={15} /> Work Offline
+                        </button>
+                      ) : (
+                        <div className="google-btn-wrap">
+                          {!acceptedEula && (
+                            <div className="google-btn-blocker" onClick={eulaWarning} />
+                          )}
+                          <MobileGoogleAuth googleLoading={googleLoading} handleGoogleAuth={handleGoogleAuth} disabled={!acceptedEula} />
+                        </div>
+                      )}
                     </div>
 
                   </div>
@@ -765,17 +806,27 @@ export default function LoginPage() {
                     <div className="auth-card desktop-only">
                       <div className="auth-blur p-6 rounded-2xl">
 
-                        {/* Google button — blocker overlay when EULA unchecked */}
-                        <div className={`google-btn-wrap mb-6 transition-all duration-300 ${!acceptedEula ? 'opacity-50 grayscale' : ''}`}>
-                          {!acceptedEula && (
-                            <div className="google-btn-blocker" onClick={eulaWarning} />
-                          )}
-                          <GoogleAuthButton
-                            text="continue_with"
-                            onCredential={handleGoogleAuth}
-                            disabled={googleLoading || !acceptedEula}
-                          />
-                        </div>
+                        {/* Google button / Offline mode toggle */}
+                        {isOffline ? (
+                          <button
+                            type="button"
+                            onClick={handleStartOfflineSession}
+                            className="w-full py-3.5 px-4 rounded-xl bg-amber-500 text-slate-950 text-xs font-bold flex items-center justify-center gap-2 hover:bg-amber-400 transition-all shadow-md mb-6"
+                          >
+                            <WifiOff size={15} /> Work Offline
+                          </button>
+                        ) : (
+                          <div className={`google-btn-wrap mb-6 transition-all duration-300 ${!acceptedEula ? 'opacity-50 grayscale' : ''}`}>
+                            {!acceptedEula && (
+                              <div className="google-btn-blocker" onClick={eulaWarning} />
+                            )}
+                            <GoogleAuthButton
+                              text="continue_with"
+                              onCredential={handleGoogleAuth}
+                              disabled={googleLoading || !acceptedEula}
+                            />
+                          </div>
+                        )}
 
                         {/* Divider */}
                         <div className="flex items-center gap-4 mb-6">

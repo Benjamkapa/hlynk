@@ -1,13 +1,70 @@
 /// <reference lib="webworker" />
-import { precacheAndRoute } from 'workbox-precaching';
+import { precacheAndRoute, cleanupOutdatedCaches, createHandlerBoundToURL } from 'workbox-precaching';
+import { registerRoute, NavigationRoute } from 'workbox-routing';
+import { CacheFirst, StaleWhileRevalidate, NetworkFirst } from 'workbox-strategies';
+import { ExpirationPlugin } from 'workbox-expiration';
+import { CacheableResponsePlugin } from 'workbox-cacheable-response';
 
+const _self = (self as unknown) as ServiceWorkerGlobalScope & { clients: Clients };
+
+// 1. Clean up outdated caches from previous builds
+cleanupOutdatedCaches();
+
+// 2. Precache static assets generated during Vite build
 // Required by VitePWA's injectManifest strategy — do NOT remove
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 precacheAndRoute((self as any).__WB_MANIFEST || []);
 
-const _self = (self as unknown) as ServiceWorkerGlobalScope & { clients: Clients };
+// 3. Handle SPA Navigation fallback when offline or launching installed PWA standalone
+// Returns the precached index.html for all document navigations (e.g., /login, /dashboard, /stay/xyz)
+try {
+  const handler = createHandlerBoundToURL('/index.html');
+  const navigationRoute = new NavigationRoute(handler, {
+    denylist: [/^\/api\//, /\.[a-z0-9]+$/i], // Ignore API calls and asset file requests
+  });
+  registerRoute(navigationRoute);
+} catch (e) {
+  console.warn('[SW] Could not register navigation route fallback:', e);
+}
 
-// Require skipWaiting to prevent the SW from hanging in the wait state
+// 4. Cache Google Fonts
+registerRoute(
+  /^https:\/\/fonts\.googleapis\.com\/.*/i,
+  new CacheFirst({
+    cacheName: 'google-fonts-stylesheets',
+    plugins: [new ExpirationPlugin({ maxEntries: 10, maxAgeSeconds: 60 * 60 * 24 * 365 })],
+  })
+);
+
+registerRoute(
+  /^https:\/\/fonts\.gstatic\.com\/.*/i,
+  new CacheFirst({
+    cacheName: 'google-fonts-webfonts',
+    plugins: [
+      new CacheableResponsePlugin({ statuses: [0, 200] }),
+      new ExpirationPlugin({ maxEntries: 30, maxAgeSeconds: 60 * 60 * 24 * 365 }),
+    ],
+  })
+);
+
+// 5. Cache external avatars and images
+registerRoute(
+  /^https:\/\/ui-avatars\.com\/api\/.*/i,
+  new StaleWhileRevalidate({
+    cacheName: 'ui-avatars-cache',
+    plugins: [new ExpirationPlugin({ maxEntries: 50, maxAgeSeconds: 60 * 60 * 24 * 30 })],
+  })
+);
+
+registerRoute(
+  /\.(?:png|gif|jpg|jpeg|webp|svg|ico)$/i,
+  new StaleWhileRevalidate({
+    cacheName: 'app-images-cache',
+    plugins: [new ExpirationPlugin({ maxEntries: 60, maxAgeSeconds: 60 * 60 * 24 * 30 })],
+  })
+);
+
+// Require skipWaiting and claim to ensure SW activates immediately
 _self.skipWaiting();
 
 _self.addEventListener('activate', (event) => {
@@ -70,3 +127,4 @@ _self.addEventListener('notificationclick', (event: NotificationEvent) => {
     })
   );
 });
+

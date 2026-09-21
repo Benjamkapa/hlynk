@@ -114,6 +114,18 @@ export async function countPendingSales(): Promise<number> {
   })
 }
 
+const DEFAULT_STARTER_PRODUCTS: CachedProduct[] = [
+  { id: 'item-1', name: 'General Product Item', price: 100, stockLevel: 99, category: 'General', type: 'PRODUCT' },
+  { id: 'item-2', name: 'Fast Moving Item', price: 250, stockLevel: 50, category: 'General', type: 'PRODUCT' },
+  { id: 'item-3', name: 'Soft Drink / Beverage', price: 70, stockLevel: 100, category: 'Beverages', type: 'PRODUCT' },
+  { id: 'item-4', name: 'General Business Service', price: 500, stockLevel: 999, category: 'Services', type: 'SERVICE' },
+  { id: 'item-5', name: 'Snack / Confectionery', price: 50, stockLevel: 80, category: 'Snacks', type: 'PRODUCT' }
+]
+
+const DEFAULT_STARTER_CUSTOMERS: CachedCustomer[] = [
+  { id: 'cust-1', name: 'Walk-in Customer', phone: '0700000000' }
+]
+
 // ── Inventory Cache ────────────────────────────────────────────────────────────
 
 export async function cacheInventory(products: CachedProduct[]): Promise<void> {
@@ -133,7 +145,15 @@ export async function getCachedInventory(): Promise<CachedProduct[]> {
   return new Promise((resolve, reject) => {
     const tx = db.transaction('inventoryCache', 'readonly')
     const req = tx.objectStore('inventoryCache').getAll()
-    req.onsuccess = () => resolve(req.result as CachedProduct[])
+    req.onsuccess = () => {
+      const items = req.result as CachedProduct[]
+      if (!items || items.length === 0) {
+        cacheInventory(DEFAULT_STARTER_PRODUCTS).catch(console.error)
+        resolve(DEFAULT_STARTER_PRODUCTS)
+      } else {
+        resolve(items)
+      }
+    }
     req.onerror = () => reject(req.error)
   })
 }
@@ -157,7 +177,15 @@ export async function getCachedCustomers(): Promise<CachedCustomer[]> {
   return new Promise((resolve, reject) => {
     const tx = db.transaction('customerCache', 'readonly')
     const req = tx.objectStore('customerCache').getAll()
-    req.onsuccess = () => resolve(req.result as CachedCustomer[])
+    req.onsuccess = () => {
+      const items = req.result as CachedCustomer[]
+      if (!items || items.length === 0) {
+        cacheCustomers(DEFAULT_STARTER_CUSTOMERS).catch(console.error)
+        resolve(DEFAULT_STARTER_CUSTOMERS)
+      } else {
+        resolve(items)
+      }
+    }
     req.onerror = () => reject(req.error)
   })
 }

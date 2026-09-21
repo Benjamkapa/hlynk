@@ -102,7 +102,7 @@ export default function OfflineLockScreen() {
       }} />
 
       {/* Offline badge */}
-      <motion.div
+      {/* <motion.div
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.2 }}
@@ -118,7 +118,7 @@ export default function OfflineLockScreen() {
       >
         <WifiOff size={12} />
         Offline Mode
-      </motion.div>
+      </motion.div> */}
 
       {/* Avatar */}
       <motion.div
@@ -172,7 +172,7 @@ export default function OfflineLockScreen() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.45 }}
           style={{
-            maxWidth: 300, textAlign: 'center',
+            maxWidth: 320, textAlign: 'center',
             background: 'rgba(245,158,11,0.1)',
             border: '1px solid rgba(245,158,11,0.2)',
             borderRadius: 16, padding: '20px 24px',
@@ -180,11 +180,11 @@ export default function OfflineLockScreen() {
           }}
         >
           <AlertTriangle size={20} style={{ color: '#f59e0b', margin: '0 auto 10px' }} />
-          <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: 14, lineHeight: 1.6, marginBottom: 12 }}>
-            You don't have an offline PIN set up.
+          <p style={{ color: 'rgba(255,255,255,0.85)', fontSize: 14, fontWeight: 600, lineHeight: 1.5, marginBottom: 8 }}>
+            Using Default Offline PIN
           </p>
-          <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 12, lineHeight: 1.6 }}>
-            Connect to the internet to log back in, then set up an offline PIN from Settings to avoid this next time.
+          <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 12, lineHeight: 1.6 }}>
+            Your default PIN is <code style={{ color: '#34d399', background: 'rgba(255,255,255,0.1)', padding: '1px 6px', borderRadius: 4 }}>123456</code>. Remember to update your PIN to something unique in Settings.
           </p>
         </motion.div>
       ) : (
@@ -195,7 +195,7 @@ export default function OfflineLockScreen() {
               x: [-8, 8, -8, 8, -4, 4, 0],
               transition: { duration: 0.5, ease: 'easeInOut' }
             } : {}}
-            style={{ display: 'flex', gap: 12, marginBottom: 32 }}
+            style={{ display: 'flex', gap: 12, marginBottom: 16 }}
           >
             {Array.from({ length: PIN_LENGTH }).map((_, i) => (
               <motion.div
@@ -216,6 +216,12 @@ export default function OfflineLockScreen() {
               />
             ))}
           </motion.div>
+
+          <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 11, marginBottom: 24, textAlign: 'center', lineHeight: 1.5 }}>
+            Enter 6-digit PIN <span style={{ opacity: 0.7 }}>(Default: <code style={{ color: '#34d399', background: 'rgba(255,255,255,0.1)', padding: '1px 5px', borderRadius: 4 }}>123456</code>)</span>
+            <br />
+            <span style={{ fontSize: 10, opacity: 0.5 }}>Remember to update your PIN to something unique in Settings.</span>
+          </p>
 
           {/* Error message */}
           <AnimatePresence>

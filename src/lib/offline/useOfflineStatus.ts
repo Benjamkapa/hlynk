@@ -6,20 +6,23 @@ export function useOfflineStatus() {
   const [pendingCount, setPendingCount] = useState(0)
 
   useEffect(() => {
-    const handleOnline = () => setIsOnline(true)
-    const handleOffline = () => setIsOnline(false)
+    const handleOnline = () => {
+      setIsOnline(true)
+      countPendingSales().then(setPendingCount)
+    }
+    const handleOffline = () => {
+      setIsOnline(false)
+      countPendingSales().then(setPendingCount)
+    }
 
     window.addEventListener('online', handleOnline)
     window.addEventListener('offline', handleOffline)
 
-    // Check pending count periodically
-    const checkPending = async () => {
-      const count = await countPendingSales()
-      setPendingCount(count)
-    }
+    const interval = setInterval(() => {
+      countPendingSales().then(setPendingCount)
+    }, 5000)
 
-    checkPending()
-    const interval = setInterval(checkPending, 5000)
+    countPendingSales().then(setPendingCount)
 
     return () => {
       window.removeEventListener('online', handleOnline)
@@ -28,5 +31,5 @@ export function useOfflineStatus() {
     }
   }, [])
 
-  return { isOnline, pendingCount }
+  return { isOnline, pendingCount, requiresAuthForSync: false }
 }

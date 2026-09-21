@@ -3,6 +3,7 @@
 const SALT = 'hlynk_pin_v1_2024'
 const PIN_KEY = 'hlynk_offline_pin_hash'
 const PIN_PROMPTED_KEY = 'hlynk_pin_prompted'
+export const DEFAULT_PIN = '123456'
 
 async function hashPin(pin: string): Promise<string> {
   const encoder = new TextEncoder()
@@ -19,8 +20,18 @@ export async function saveOfflinePin(pin: string): Promise<void> {
   localStorage.setItem(PIN_PROMPTED_KEY, 'true')
 }
 
+/** Ensure an offline PIN exists, initializing with default PIN '123456' if none set */
+export async function ensureDefaultOfflinePin(): Promise<void> {
+  if (!hasOfflinePin()) {
+    await saveOfflinePin(DEFAULT_PIN)
+  }
+}
+
 /** Verify if the provided PIN matches the stored one */
 export async function verifyOfflinePin(pin: string): Promise<boolean> {
+  if (!hasOfflinePin()) {
+    await ensureDefaultOfflinePin()
+  }
   const stored = localStorage.getItem(PIN_KEY)
   if (!stored) return false
   const hash = await hashPin(pin)
@@ -42,8 +53,7 @@ export function markPinPrompted(): void {
   localStorage.setItem(PIN_PROMPTED_KEY, 'true')
 }
 
-/** Clear the PIN (called on full logout) */
+/** Clear the PIN (called only when explicitly removed by user in Settings) */
 export function clearOfflinePin(): void {
   localStorage.removeItem(PIN_KEY)
-  // We keep the PIN_PROMPTED_KEY so we don't annoy the user on next login
 }

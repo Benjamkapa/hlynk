@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import {
   Zap, Users, Package,
   TrendingUp, ArrowUpRight,
-  DollarSign, PieChart, Wallet
+  DollarSign, PieChart, Wallet, ChevronUp, ChevronDown
 } from 'lucide-react'
 import {
   ResponsiveContainer, AreaChart, Area,
@@ -307,7 +307,11 @@ function KpiStrip({ stats, threshold, net, netIsPositive }: any) {
         onClick={() => setExpanded(v => !v)}
         className="w-full flex items-center justify-center gap-1.5 py-2 text-[10px] font-semibold text-gray-400 hover:text-gray-600 bg-white border border-t-0 border-gray-100 rounded-b-[.5rem] transition-colors"
       >
-        {expanded ? 'Hide metrics ▲' : 'See all metrics ▾'}
+        {expanded ? (
+          <>Hide metrics <ChevronUp size={12} /></>
+        ) : (
+          <>See all metrics <ChevronDown size={12} /></>
+        )}
       </button>
     </div>
   )

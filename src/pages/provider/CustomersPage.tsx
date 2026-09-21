@@ -10,6 +10,7 @@ import TablePagination from '../../components/shared/TablePagination'
 
 import { keepPreviousData } from '@tanstack/react-query'
 import { PaginatedResponse } from '../../lib/types/api'
+import { getCachedCustomers } from '../../lib/offline/db'
 
 export default function CustomersPage() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
@@ -24,7 +25,22 @@ export default function CustomersPage() {
 
   const { data: customerData, isLoading } = useQuery<PaginatedResponse<any> & { stats: any }>({
     queryKey: ['customers', search, page, sortBy, sortOrder],
-    queryFn: () => customersApi.list({ search, page, limit: 10, sortBy, sortOrder }),
+    queryFn: async () => {
+      if (!navigator.onLine) {
+        const cached = await getCachedCustomers()
+        const filtered = search
+          ? cached.filter((c: any) => c.name?.toLowerCase().includes(search.toLowerCase()) || c.phone?.includes(search))
+          : cached
+        return {
+          items: filtered,
+          total: filtered.length,
+          page: 1,
+          pages: 1,
+          stats: { total: filtered.length, activeToday: 0, topSpender: 'N/A' }
+        }
+      }
+      return customersApi.list({ search, page, limit: 10, sortBy, sortOrder })
+    },
     placeholderData: keepPreviousData,
   })
 

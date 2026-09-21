@@ -89,6 +89,17 @@ function AdminRoute({ children }: { children: React.ReactNode }) {
   return <>{children}</>
 }
 
+function RootRedirect() {
+  const { user, isLoading } = useAuth()
+  if (isLoading) return <LoadingScreen />
+
+  if (user) {
+    return <Navigate to={user.role === 'SUPER_ADMIN' ? '/admin' : '/dashboard'} replace />
+  }
+
+  return <Navigate to="/login" replace />
+}
+
 export default function App() {
   const { isLocked } = useAuth()
 
@@ -103,7 +114,7 @@ export default function App() {
       </AnimatePresence>
       <Routes>
         {/* Public */}
-        <Route path="/" element={<LandingPage />} />
+        <Route path="/" element={<RootRedirect />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<Navigate to="/login" replace />} />
         <Route path="/verify" element={<VerifyOtpPage />} />

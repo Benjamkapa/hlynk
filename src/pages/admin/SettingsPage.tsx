@@ -219,7 +219,7 @@ export default function SettingsPage() {
                 <>
                   <section className="space-y-6">
                     <div className="flex items-center gap-2 text-slate-400 mb-2">
-                      <Settings size={14} />
+                      <Settings size={14} strokeWidth={1}/>
                       <span className="text-[10px] font-black uppercase tracking-widest">Primary Details</span>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

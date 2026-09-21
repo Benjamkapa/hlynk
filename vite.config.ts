@@ -20,7 +20,10 @@ export default defineConfig({
         theme_color: '#0B5ED7',
         background_color: '#F8F9FA',
         display: 'standalone',
-        start_url: '/login',
+        start_url: '/',
+        scope: '/',
+        orientation: 'any',
+        categories: ['business', 'shopping', 'utilities'],
         icons: [
           { src: 'pwa-192x192.png', sizes: '192x192', type: 'image/png' },
           { src: 'pwa-512x512.png', sizes: '512x512', type: 'image/png' },
@@ -28,8 +31,8 @@ export default defineConfig({
         ],
       },
       injectManifest: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
-        maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2,ttf}'],
+        maximumFileSizeToCacheInBytes: 10 * 1024 * 1024,
       },
       workbox: {
         runtimeCaching: [
