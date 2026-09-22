@@ -201,100 +201,6 @@ function ReviewPanel() {
   )
 }
 
-// Mobile: runs once through reviews then disappears
-// function MobileReviewStrip() {
-//   const [reviews, setReviews] = useState<PlatformReview[]>([])
-//   const [idx, setIdx] = useState(0)
-//   const [visible, setVisible] = useState(false)
-//   const [done, setDone] = useState(false)
-
-//   useEffect(() => {
-//     platformApi.getReviews({ limit: 10 })
-//       .then(res => { if (res.items?.length) setReviews(res.items) })
-//       .catch(console.error)
-//   }, [])
-
-//   useEffect(() => {
-//     if (!reviews.length) return
-//     const t = setTimeout(() => setVisible(true), 1200)
-//     return () => clearTimeout(t)
-//   }, [reviews.length])
-
-//   useEffect(() => {
-//     if (!visible || !reviews.length) return
-//     const DURATION = 10000
-//     const FADE = 500
-//     const t = setTimeout(() => {
-//       setVisible(false)
-//       setTimeout(() => {
-//         if (idx >= reviews.length - 1) {
-//           setDone(true)
-//         } else {
-//           setIdx(i => i + 1)
-//           setVisible(true)
-//         }
-//       }, FADE)
-//     }, DURATION)
-//     return () => clearTimeout(t)
-//   }, [visible, idx, reviews.length])
-
-//   if (!reviews.length || done) return null
-
-//   const review = reviews[idx]
-
-//   return (
-//     <div className="lg:hidden mx-5 mb-4 mt-auto rounded-3xl flex flex-col justify-center px-6 py-5 min-h-[130px]"
-//       style={{ background: 'linear-gradient(to bottom, rgba(0,0,0,0.12) 0%, rgba(0,0,0,0.25) 100%)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.1)' }}>
-//       <AnimatePresence mode="wait">
-//         {visible && (
-//           <motion.div
-//             key={idx}
-//             initial={{ opacity: 0, y: 10 }}
-//             animate={{ opacity: 1, y: 0 }}
-//             exit={{ opacity: 0, y: -6 }}
-//             transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-//           >
-//             <div className="flex gap-0.5 mb-3">
-//               {[1, 2, 3, 4, 5].map((s) => (
-//                 <Star
-//                   key={s}
-//                   size={12}
-//                   className={review.rating >= s ? 'text-[#E3A23C] fill-[#E3A23C]' : 'text-white/20'}
-//                 />
-//               ))}
-//             </div>
-//             <p style={{
-//               fontFamily: "'Cormorant Garamond', serif",
-//               fontSize: 18, fontWeight: 300, fontStyle: 'italic',
-//               color: 'rgba(255,255,255,0.92)', lineHeight: 1.65,
-//               textShadow: '0 1px 6px rgba(0,0,0,0.3)', marginBottom: 10,
-//             }}>
-//               "{review.comment}"
-//             </p>
-//             {review.businessName && (
-//               <p style={{
-//                 fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.55)', letterSpacing: '0.2em', marginBottom: 14,
-//               }}>
-//                 — {review.businessName}
-//               </p>
-//             )}
-//             <div style={{ display: 'flex', gap: 4 }}>
-//               {reviews.map((_, i) => (
-//                 <div key={i} style={{
-//                   height: 2, borderRadius: 2,
-//                   width: i === idx ? 20 : 4,
-//                   background: i === idx ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.25)',
-//                   transition: 'all 0.4s ease',
-//                 }} />
-//               ))}
-//             </div>
-//           </motion.div>
-//         )}
-//       </AnimatePresence>
-//     </div>
-//   )
-// }
-
 function Field({ label, icon: Icon, children }: { label: string; icon: any; children: React.ReactNode }) {
   return (
     <div className="flex flex-col gap-1.5 group">
@@ -610,7 +516,7 @@ export default function LoginPage() {
             </div>
             {/* ReviewPanel now always starts immediately */}
             <div className="relative z-10 w-full max-w-[340px]">
-              <ReviewPanel />
+              {/* <ReviewPanel /> */}
             </div>
           </div>
 
@@ -627,13 +533,13 @@ export default function LoginPage() {
                   transition={{ duration: 0.3 }}
                 >
                   {/* Nav */}
-                  <nav className="mob-nav hidden" style={{ display: 'flex' }}>
+                  <nav className="mob-nav hidden" style={{ display: 'flex', float:'right' }}>
                     {/* <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                       <img src={hlynk} alt="hlynk" style={{ height: 32, objectFit: 'contain' }} />
-                    </div>
+                    </div> */}
                     <a href="/" style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.85)', textDecoration: 'none', letterSpacing: '0.14em' }}>
                       <ArrowLeft size={10} /> Website
-                    </a> */}
+                    </a>
                   </nav>
 
                   {/* Hero - Simplified for Mobile but consistent with Desktop */}
@@ -656,8 +562,6 @@ export default function LoginPage() {
                       ))}
                     </div>
                   </div>
-
-                  {/* <MobileReviewStrip /> */}
                   <div className="flex flex-col mt-auto pb-8 z-10 px-6 gap-4">
 
                     {/* EULA card */}
