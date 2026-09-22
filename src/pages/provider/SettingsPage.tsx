@@ -687,7 +687,7 @@ export default function SettingsPage() {
           if (confirmDeleteId === 'clear-workshop') {
             providersApi.clearData()
               .then(() => {
-                toast.success('Workshop data cleared')
+                toast.success('Business data, notifications & requests cleared')
                 queryClient.invalidateQueries()
                 setActiveTab('Profile')
               })
@@ -1031,12 +1031,12 @@ function DataManagementPanel({ onConfirm, profile }: { onConfirm: (id: string) =
   return (
     <div className="space-y-6 lg:space-y-8 animate-in fade-in slide-in-from-top-4 duration-500">
       {/* Primary/Common Action: Reset Workshop Data */}
-      <div className="p-5 lg:p-8 bg-amber-50 border border-amber-100 rounded-[.5rem] flex flex-col sm:flex-row items-start gap-5">
+      <div className="p-5 lg:p-8 bg-amber-50 border border-amber-100 rounded-[.5em] flex flex-col sm:flex-row items-start gap-5">
         <AlertTriangle className="text-amber-600 shrink-0 mt-1" size={24} />
         <div className="w-full">
           <h4 className="text-lg font-black text-amber-900 mb-2">Reset Business Data</h4>
           <p className="text-sm text-amber-800 leading-relaxed max-w-xl">
-            This action will <strong>permanently delete</strong> all your sales records, history, added products, expenses, and customer logs. This is useful for clearing test data before starting real operations.
+            This action will <strong>permanently delete</strong> all your sales records, history, added products, expenses, customer logs, notifications, client orders, and hospitality records. This is useful for clearing test data before starting real operations.
           </p>
           <div className="mt-6 lg:mt-8 flex flex-col sm:flex-row gap-4">
             <button

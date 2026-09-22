@@ -14,6 +14,7 @@ import { providersApi } from "../../../lib/api/providers";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../../lib/auth/AuthContext";
 import { canAccessFeature } from "../../../components/shared/FeatureGate";
+import { enqueueResource } from "../../../lib/offline/db";
 
 const PRESET_PHOTOS = [
   { name: "Luxury Suite",    url: "https://images.unsplash.com/photo-1590490360182-c33d57733427?w=800" },
@@ -193,19 +194,58 @@ export default function PropertiesPage() {
     setShowRoomModal(true);
   };
 
+function fileToDataUrl(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = (err) => reject(err);
+    reader.readAsDataURL(file);
+  });
+}
+
+function withTimeout<T>(promise: Promise<T>, ms = 8000): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error("Network upload timeout")), ms);
+    promise
+      .then((res) => { clearTimeout(timer); resolve(res); })
+      .catch((err) => { clearTimeout(timer); reject(err); });
+  });
+}
+
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     if (!files.length) return;
+
+    if (!navigator.onLine) {
+      toast.warning("Offline Mode — Cloud photo upload requires internet", {
+        description: "Photo(s) attached as local draft preview. No waiting!",
+      });
+      try {
+        const localUrls = await Promise.all(files.map(f => fileToDataUrl(f)));
+        setRoomPhotos(prev => [...prev, ...localUrls]);
+      } catch {
+        toast.error("Failed to read image file");
+      }
+      e.target.value = "";
+      return;
+    }
+
     setUploadingPhotos(true);
     const toastId = toast.loading(`Uploading ${files.length} photo(s)...`);
     try {
-      const uploaded = (await Promise.all(files.map(f => {
+      const uploaded = (await Promise.all(files.map(async f => {
         if (!f.type.startsWith("image/")) { toast.error(`Not an image: ${f.name}`); return null; }
-        return resourcesApi.uploadPhoto(f);
+        try {
+          return await withTimeout(resourcesApi.uploadPhoto(f), 8000);
+        } catch {
+          toast.warning(`Slow network: Attached ${f.name} as local draft preview.`);
+          return await fileToDataUrl(f);
+        }
       }))).filter(Boolean) as string[];
+
       if (uploaded.length) {
         setRoomPhotos(prev => [...prev, ...uploaded]);
-        toast.success(`Uploaded ${uploaded.length} photo(s)`, { id: toastId });
+        toast.success(`Added ${uploaded.length} photo(s)`, { id: toastId });
       } else {
         toast.dismiss(toastId);
       }
@@ -218,13 +258,28 @@ export default function PropertiesPage() {
   };
 
   const handleCameraCapture = async (file: File) => {
+    if (!navigator.onLine) {
+      toast.warning("Offline Mode — Cloud photo upload requires internet", {
+        description: "Photo attached as local draft preview.",
+      });
+      try {
+        const url = await fileToDataUrl(file);
+        setRoomPhotos(prev => [url, ...prev]);
+      } catch {
+        toast.error("Failed to process photo");
+      }
+      return;
+    }
+
     const toastId = toast.loading("Uploading photo...");
     try {
-      const url = await resourcesApi.uploadPhoto(file);
+      const url = await withTimeout(resourcesApi.uploadPhoto(file), 8000);
       setRoomPhotos(prev => [url, ...prev]);
       toast.success("Photo added!", { id: toastId });
     } catch (err: any) {
-      toast.error(err.message || "Upload failed", { id: toastId });
+      toast.warning("Network issue: Photo attached as local draft preview", { id: toastId });
+      const localUrl = await fileToDataUrl(file);
+      setRoomPhotos(prev => [localUrl, ...prev]);
     }
   };
 
@@ -246,14 +301,56 @@ export default function PropertiesPage() {
     e.preventDefault();
     if (!propName.trim()) return toast.error("Group name is required");
     setSubmitting(true);
+    const payload = { type: "PROPERTY", title: propName, meta: { address: propAddress } };
+
+    if (!navigator.onLine) {
+      const offlineId = "offline-prop-" + Date.now();
+      const newProp: Resource = {
+        id: offlineId,
+        tenantId: user?.tenantId || "local",
+        type: "PROPERTY",
+        title: propName,
+        basePrice: 0,
+        status: "AVAILABLE",
+        meta: { address: propAddress },
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+      const updated = [...properties, newProp];
+      setProperties(updated);
+      localStorage.setItem("hlynk_cached_properties", JSON.stringify(updated));
+      await enqueueResource({ id: offlineId, action: "CREATE", payload, createdAt: Date.now() });
+      toast.success("Group created offline!", { description: "Saved locally. Will sync to cloud when connected." });
+      setPropName(""); setPropAddress(""); setShowPropertyModal(false);
+      setSubmitting(false);
+      return;
+    }
+
     try {
-      await resourcesApi.createResource({ type: "PROPERTY", title: propName, meta: { address: propAddress } });
+      await resourcesApi.createResource(payload);
       toast.success("Group created!");
       setPropName(""); setPropAddress("");
       setShowPropertyModal(false);
       fetchData();
     } catch (err: any) {
-      toast.error(err.message || "Failed to create group");
+      const offlineId = "offline-prop-" + Date.now();
+      const newProp: Resource = {
+        id: offlineId,
+        tenantId: user?.tenantId || "local",
+        type: "PROPERTY",
+        title: propName,
+        basePrice: 0,
+        status: "AVAILABLE",
+        meta: { address: propAddress },
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+      const updated = [...properties, newProp];
+      setProperties(updated);
+      localStorage.setItem("hlynk_cached_properties", JSON.stringify(updated));
+      await enqueueResource({ id: offlineId, action: "CREATE", payload, createdAt: Date.now() });
+      toast.success("Group saved offline (network issue)");
+      setPropName(""); setPropAddress(""); setShowPropertyModal(false);
     } finally {
       setSubmitting(false);
     }
@@ -263,17 +360,46 @@ export default function PropertiesPage() {
     e.preventDefault();
     if (!roomTitle.trim() || !roomPrice) return toast.error("Title and rate are required");
     setSubmitting(true);
+    const amenitiesList = roomAmenities.split(",").map(a => a.trim()).filter(Boolean);
+    const payload = {
+      type: "ROOM",
+      title: roomTitle,
+      code: roomCode,
+      parentId: roomParentId || undefined,
+      basePrice: parseFloat(roomPrice) || 0,
+      status: editingResource ? editingResource.status : "AVAILABLE",
+      meta: { ...(editingResource?.meta || {}), roomType, amenities: amenitiesList, description: roomDescription, imageUrl: roomPhotos[0] || "", images: roomPhotos },
+    };
+
+    if (!navigator.onLine) {
+      if (editingResource) {
+        const updatedRooms = rooms.map(r => r.id === editingResource.id ? ({ ...r, ...payload, updatedAt: new Date().toISOString() } as Resource) : r);
+        setRooms(updatedRooms);
+        localStorage.setItem("hlynk_cached_units", JSON.stringify(updatedRooms));
+        await enqueueResource({ id: "edit-" + Date.now(), action: "UPDATE", targetId: editingResource.id, payload, createdAt: Date.now() });
+        toast.success("Unit updated offline!");
+      } else {
+        const offlineId = "offline-unit-" + Date.now();
+        const newRoom: Resource = {
+          id: offlineId,
+          tenantId: user?.tenantId || "local",
+          ...payload,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        } as Resource;
+        const updatedRooms = [...rooms, newRoom];
+        setRooms(updatedRooms);
+        localStorage.setItem("hlynk_cached_units", JSON.stringify(updatedRooms));
+        await enqueueResource({ id: offlineId, action: "CREATE", payload, createdAt: Date.now() });
+        toast.success("Unit added offline!", { description: "Stored locally. Will sync to cloud when connected." });
+      }
+      localStorage.removeItem("hlynk_unit_draft");
+      setShowRoomModal(false);
+      setSubmitting(false);
+      return;
+    }
+
     try {
-      const amenitiesList = roomAmenities.split(",").map(a => a.trim()).filter(Boolean);
-      const payload = {
-        type: "ROOM",
-        title: roomTitle,
-        code: roomCode,
-        parentId: roomParentId || undefined,
-        basePrice: parseFloat(roomPrice) || 0,
-        status: editingResource ? editingResource.status : "AVAILABLE",
-        meta: { ...(editingResource?.meta || {}), roomType, amenities: amenitiesList, description: roomDescription, imageUrl: roomPhotos[0] || "", images: roomPhotos },
-      };
       if (editingResource) {
         await resourcesApi.updateResource(editingResource.id, payload);
         toast.success("Unit updated!");
@@ -285,30 +411,75 @@ export default function PropertiesPage() {
       setShowRoomModal(false);
       fetchData();
     } catch (err: any) {
-      toast.error(err.message || "Failed to save unit");
+      if (editingResource) {
+        const updatedRooms = rooms.map(r => r.id === editingResource.id ? ({ ...r, ...payload, updatedAt: new Date().toISOString() } as Resource) : r);
+        setRooms(updatedRooms);
+        localStorage.setItem("hlynk_cached_units", JSON.stringify(updatedRooms));
+        await enqueueResource({ id: "edit-" + Date.now(), action: "UPDATE", targetId: editingResource.id, payload, createdAt: Date.now() });
+        toast.success("Unit updated offline!");
+      } else {
+        const offlineId = "offline-unit-" + Date.now();
+        const newRoom: Resource = {
+          id: offlineId,
+          tenantId: user?.tenantId || "local",
+          ...payload,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        } as Resource;
+        const updatedRooms = [...rooms, newRoom];
+        setRooms(updatedRooms);
+        localStorage.setItem("hlynk_cached_units", JSON.stringify(updatedRooms));
+        await enqueueResource({ id: offlineId, action: "CREATE", payload, createdAt: Date.now() });
+        toast.success("Unit saved offline (network issue)");
+      }
+      localStorage.removeItem("hlynk_unit_draft");
+      setShowRoomModal(false);
     } finally {
       setSubmitting(false);
     }
   };
 
   const handleStatusChange = async (roomId: string, newStatus: string) => {
+    const updatedRooms = rooms.map(r => r.id === roomId ? { ...r, status: newStatus } : r);
+    setRooms(updatedRooms);
+    localStorage.setItem("hlynk_cached_units", JSON.stringify(updatedRooms));
+
+    if (!navigator.onLine) {
+      await enqueueResource({ id: "st-" + Date.now(), action: "UPDATE", targetId: roomId, payload: { status: newStatus }, createdAt: Date.now() });
+      toast.success(`Marked ${STATUS_LABELS[newStatus] || newStatus} (offline)`);
+      return;
+    }
+
     try {
       await resourcesApi.updateResource(roomId, { status: newStatus });
       toast.success(`Marked ${STATUS_LABELS[newStatus] || newStatus}`);
-      fetchData();
     } catch (err: any) {
-      toast.error(err?.response?.data?.message || err?.message || "Failed to update");
+      await enqueueResource({ id: "st-" + Date.now(), action: "UPDATE", targetId: roomId, payload: { status: newStatus }, createdAt: Date.now() });
+      toast.success(`Marked ${STATUS_LABELS[newStatus] || newStatus} (saved offline)`);
     }
   };
 
   const handleDeleteResource = async (id: string, title: string) => {
     if (!confirm(`Delete "${title}"?`)) return;
+    const updatedRooms = rooms.filter(r => r.id !== id);
+    const updatedProps = properties.filter(p => p.id !== id);
+    setRooms(updatedRooms);
+    setProperties(updatedProps);
+    localStorage.setItem("hlynk_cached_units", JSON.stringify(updatedRooms));
+    localStorage.setItem("hlynk_cached_properties", JSON.stringify(updatedProps));
+
+    if (!navigator.onLine) {
+      await enqueueResource({ id: "del-" + Date.now(), action: "DELETE", targetId: id, payload: {}, createdAt: Date.now() });
+      toast.success("Deleted offline");
+      return;
+    }
+
     try {
       await resourcesApi.deleteResource(id);
       toast.success("Deleted");
-      fetchData();
     } catch (err: any) {
-      toast.error(err.message || "Failed to delete");
+      await enqueueResource({ id: "del-" + Date.now(), action: "DELETE", targetId: id, payload: {}, createdAt: Date.now() });
+      toast.success("Deleted offline");
     }
   };
 

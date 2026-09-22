@@ -873,7 +873,6 @@ function ProductForm({ onClose }: { onClose: () => void }) {
             id="image-upload"
             type="file"
             accept="image/*"
-            capture="environment"
             className="hidden"
             onChange={(e) => {
               const file = e.target.files?.[0]
@@ -1176,7 +1175,6 @@ function EditProductForm({ product, onClose }: { product: any; onClose: () => vo
             id="image-edit-upload"
             type="file"
             accept="image/*"
-            capture="environment"
             className="hidden"
             onChange={(e) => {
               const file = e.target.files?.[0]

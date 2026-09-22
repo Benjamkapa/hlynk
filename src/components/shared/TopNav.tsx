@@ -67,7 +67,7 @@ export default function TopNav({
   const businessName =
     user?.businessName ||
     (user?.role === 'SUPER_ADMIN' || location.pathname.startsWith('/admin')
-      ? 'Hlynk Admin'
+      ? 'hlynk Admin'
       : 'hlynk');
 
   return (

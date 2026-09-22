@@ -4,6 +4,7 @@ import { operationsApi, resourcesApi, OperationTask, Resource } from "../../../l
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 import { Modal } from "../../../components/shared/Modal";
+import { enqueueOperation } from "../../../lib/offline/db";
 
 export default function OperationsPage() {
   const [operations, setOperations] = useState<OperationTask[]>([]);
@@ -65,20 +66,63 @@ export default function OperationsPage() {
     e.preventDefault();
     if (!selectedRoomId || !title.trim()) return toast.error("Select a unit and enter a task description");
     setSubmitting(true);
+    const room = rooms.find(r => r.id === selectedRoomId);
+    const payload = {
+      resourceId: selectedRoomId,
+      opType,
+      title,
+      status: "PENDING",
+      estimatedCost: parseFloat(estimatedCost) || 0,
+    };
+
+    if (!navigator.onLine) {
+      const offlineId = "offline-task-" + Date.now();
+      const newTask: OperationTask = {
+        id: offlineId,
+        tenantId: "local",
+        resourceTitle: room?.title || "Unit",
+        actualCost: 0,
+        meta: {},
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        ...payload,
+      };
+      const updated = [newTask, ...operations];
+      setOperations(updated);
+      localStorage.setItem("hlynk_cached_operations", JSON.stringify(updated));
+      await enqueueOperation({ id: offlineId, action: "CREATE", payload, createdAt: Date.now() });
+      toast.success("Task logged offline!", { description: "Stored locally. Will sync when back online." });
+      setShowModal(false);
+      setTitle(""); setEstimatedCost("");
+      setSubmitting(false);
+      return;
+    }
+
     try {
-      await operationsApi.createOperation({
-        resourceId: selectedRoomId,
-        opType,
-        title,
-        status: "PENDING",
-        estimatedCost: parseFloat(estimatedCost) || 0,
-      });
+      await operationsApi.createOperation(payload);
       toast.success("Task logged");
       setShowModal(false);
       setTitle(""); setEstimatedCost("");
       fetchData();
     } catch (err: any) {
-      toast.error(err.message || "Failed to create task");
+      const offlineId = "offline-task-" + Date.now();
+      const newTask: OperationTask = {
+        id: offlineId,
+        tenantId: "local",
+        resourceTitle: room?.title || "Unit",
+        actualCost: 0,
+        meta: {},
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        ...payload,
+      };
+      const updated = [newTask, ...operations];
+      setOperations(updated);
+      localStorage.setItem("hlynk_cached_operations", JSON.stringify(updated));
+      await enqueueOperation({ id: offlineId, action: "CREATE", payload, createdAt: Date.now() });
+      toast.success("Task saved offline (network issue)");
+      setShowModal(false);
+      setTitle(""); setEstimatedCost("");
     } finally {
       setSubmitting(false);
     }
@@ -88,15 +132,35 @@ export default function OperationsPage() {
     e.preventDefault();
     if (!selectedTask) return;
     setSubmitting(true);
+    const cost = parseFloat(actualCost) || 0;
+    const payload = { status: "COMPLETED", actualCost: cost };
+
+    if (!navigator.onLine) {
+      const updated = operations.map(o => o.id === selectedTask.id ? { ...o, status: "COMPLETED", actualCost: cost } : o);
+      setOperations(updated);
+      localStorage.setItem("hlynk_cached_operations", JSON.stringify(updated));
+      await enqueueOperation({ id: "comp-" + Date.now(), action: "UPDATE", targetId: selectedTask.id, payload, createdAt: Date.now() });
+      toast.success(cost > 0 ? "Task done — expense logged (offline)!" : "Task marked complete (offline)");
+      setShowCompleteModal(false);
+      setActualCost("");
+      setSubmitting(false);
+      return;
+    }
+
     try {
-      const cost = parseFloat(actualCost) || 0;
-      await operationsApi.updateOperation(selectedTask.id, { status: "COMPLETED", actualCost: cost });
+      await operationsApi.updateOperation(selectedTask.id, payload);
       toast.success(cost > 0 ? "Task done — expense logged!" : "Task marked complete");
       setShowCompleteModal(false);
       setActualCost("");
       fetchData();
     } catch (err: any) {
-      toast.error(err?.response?.data?.message || err?.message || "Failed to complete task");
+      const updated = operations.map(o => o.id === selectedTask.id ? { ...o, status: "COMPLETED", actualCost: cost } : o);
+      setOperations(updated);
+      localStorage.setItem("hlynk_cached_operations", JSON.stringify(updated));
+      await enqueueOperation({ id: "comp-" + Date.now(), action: "UPDATE", targetId: selectedTask.id, payload, createdAt: Date.now() });
+      toast.success("Task completed (saved offline)");
+      setShowCompleteModal(false);
+      setActualCost("");
     } finally {
       setSubmitting(false);
     }

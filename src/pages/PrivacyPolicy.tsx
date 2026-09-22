@@ -126,11 +126,22 @@ export default function PrivacyPolicy() {
             </section>
 
             <section>
-              <h2 className="text-xl font-black text-slate-900 mb-4">7. How We Protect Your Data</h2>
+              <h2 className="text-xl font-black text-slate-900 mb-4">7. How We Protect Your Data & Remote Support Access</h2>
               <p className="mb-3">
                 We implement technical and organisational measures to protect your data, including encrypted data transmission (HTTPS), access controls that limit who within our team can access your data, session security measures, and audit logging on Business Pro accounts.
               </p>
-              <p>
+              <div className="bg-emerald-50 border border-emerald-100 p-5 rounded-[.5rem] my-4">
+                <h3 className="font-black text-emerald-900 text-sm mb-2">7.1 Remote Technical Assistance & Administrative Access Mode</h3>
+                <p className="text-xs text-emerald-800 leading-relaxed mb-2">
+                  To assist business owners with setup, troubleshooting, software diagnostics, or requested technical support, authorised hlynk platform administrators possess the capability to remotely access a provider's account in <strong>Support Mode</strong>.
+                </p>
+                <ul className="list-disc pl-5 text-xs text-emerald-800 space-y-1">
+                  <li><strong>Positive Assistance Purpose:</strong> Support remote access is strictly restricted to positive, helpful operational purposes — such as diagnosing technical issues, helping configure modules, resolving inventory or billing glitches, and verifying system health.</li>
+                  <li><strong>Security & Audit Logging:</strong> Every remote support access session is automatically logged in system security audit logs with the administrator's identity, timestamp, and actions performed.</li>
+                  <li><strong>Data Confidentiality:</strong> All administrative access is bound by strict confidentiality obligations and complies with the Kenya Data Protection Act 2019 (DPA 2019).</li>
+                </ul>
+              </div>
+              <p className="mt-3">
                 No system connected to the internet can be guaranteed as completely secure. We encourage you to maintain the security of the Google account you use to log in to hlynk, and to notify us immediately at <a href="mailto:info@hlynk.co.ke" className="text-emerald-600 underline">info@hlynk.co.ke</a> if you suspect any unauthorised access.
               </p>
             </section>

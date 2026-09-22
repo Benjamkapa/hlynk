@@ -156,13 +156,23 @@ export default function TermsConditions() {
             </section>
 
             <section>
-              <h2 className="text-xl font-black text-slate-900 mb-4">8. Your Data and Our Role</h2>
+              <h2 className="text-xl font-black text-slate-900 mb-4">8. Your Data, Ownership, and Remote Administrative Assistance</h2>
               <p className="mb-3">
                 All business data, inventory records, transaction histories, and customer information that you enter into hlynk remains yours. We do not claim ownership of it.
               </p>
               <p className="mb-3">
                 By using the Service, you grant hlynk a limited licence to host, store, and process your data for the sole purpose of delivering the platform's features to you. We do not use your business data for advertising or share it with third parties for commercial purposes.
               </p>
+              <div className="bg-slate-50 border border-slate-200 p-5 rounded-[.5rem] my-4">
+                <h3 className="font-bold text-slate-900 text-sm mb-2">8.1 Remote Technical Assistance & Impersonation Support</h3>
+                <p className="text-xs text-slate-700 leading-relaxed mb-2">
+                  You acknowledge and agree that authorised hlynk system administrators may access your business account remotely in <strong>Support Assistance Mode</strong> when necessary to provide technical support, resolve technical glitches, configure settings upon your request, or verify system security.
+                </p>
+                <ul className="list-disc pl-5 text-xs text-slate-700 space-y-1">
+                  <li><strong>Helpful Purpose Only:</strong> Administrative support access is conducted strictly for positive operational, troubleshooting, and assistance reasons.</li>
+                  <li><strong>Audit Compliance:</strong> Every administrative support session is automatically audited and recorded in security activity logs for transparency and accountability under Kenyan law.</li>
+                </ul>
+              </div>
               <p>
                 If your account is terminated or you cancel your subscription, you may request an export of your data within <strong>30 days</strong> of termination. After that period, your data may be permanently deleted from our systems, subject to any mandatory retention requirements under Kenyan law.
               </p>

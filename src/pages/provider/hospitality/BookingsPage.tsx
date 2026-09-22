@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { AnimatePresence, motion } from "framer-motion";
 import { Modal } from "../../../components/shared/Modal";
 import { useLocation } from "react-router-dom";
+import { enqueueEvent } from "../../../lib/offline/db";
 
 const STATUS_LABELS: Record<string, { label: string; color: string }> = {
   CONFIRMED: { label: "Confirmed", color: "bg-emerald-100 text-emerald-800" },
@@ -114,30 +115,80 @@ export default function BookingsPage() {
 
   const handleCreateBooking = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedRoomId || !customerName.trim() || !customerPhone.trim()) {
-      return toast.error("Unit, name, and phone are required");
+    if (!selectedRoomId || !customerName.trim()) {
+      return toast.error("Select a unit and enter guest name");
     }
     setSubmitting(true);
+    const room = rooms.find(r => r.id === selectedRoomId);
+    const payload = {
+      resourceId: selectedRoomId,
+      guestName: customerName,
+      guestPhone: customerPhone,
+      customerName: customerName,
+      customerPhone: customerPhone,
+      eventType: "BOOKING",
+      status: "CONFIRMED",
+      startTime: startDate ? `${startDate} 12:00:00` : new Date().toISOString(),
+      endTime: endDate ? `${endDate} 12:00:00` : new Date().toISOString(),
+      totalAmount: parseFloat(totalAmount) || 0,
+      paidAmount: parseFloat(paidAmount) || 0,
+      paymentMethod,
+      meta: { bookingSource, duration, ratePerUnit: parseFloat(ratePerUnit) || 0 },
+    };
+
+    if (!navigator.onLine) {
+      const offlineId = "offline-booking-" + Date.now();
+      const newBooking: UniversalEvent = {
+        id: offlineId,
+        tenantId: "local",
+        resourceTitle: room?.title || "Unit",
+        balance: (parseFloat(totalAmount) || 0) - (parseFloat(paidAmount) || 0),
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        ...payload,
+      };
+      const updatedBookings = [newBooking, ...bookings];
+      setBookings(updatedBookings);
+      localStorage.setItem("hlynk_cached_events", JSON.stringify(updatedBookings));
+
+      if (room) {
+        const updatedRooms = rooms.map(r => r.id === selectedRoomId ? { ...r, status: "OCCUPIED" } : r);
+        setRooms(updatedRooms);
+        localStorage.setItem("hlynk_cached_units", JSON.stringify(updatedRooms));
+      }
+
+      await enqueueEvent({ id: offlineId, action: "CREATE", payload, createdAt: Date.now() });
+      toast.success("Booking recorded offline!", { description: "Stored locally and unit updated. Will sync when back online." });
+      setShowBookingModal(false);
+      resetForm();
+      setSubmitting(false);
+      return;
+    }
+
     try {
-      await eventsApi.createEvent({
-        resourceId: selectedRoomId,
-        guestName: customerName,
-        guestPhone: customerPhone,
-        eventType: "BOOKING",
-        status: "CONFIRMED",
-        startTime: startDate ? `${startDate} 12:00:00` : undefined,
-        endTime: endDate ? `${endDate} 12:00:00` : undefined,
-        totalAmount: parseFloat(totalAmount) || 0,
-        paidAmount: parseFloat(paidAmount) || 0,
-        paymentMethod,
-        meta: { bookingSource, duration, ratePerUnit: parseFloat(ratePerUnit) || 0 },
-      });
+      await eventsApi.createEvent(payload);
       toast.success("Booking created!");
       setShowBookingModal(false);
       resetForm();
       fetchData();
     } catch (err: any) {
-      toast.error(err.message || "Failed to create booking");
+      const offlineId = "offline-booking-" + Date.now();
+      const newBooking: UniversalEvent = {
+        id: offlineId,
+        tenantId: "local",
+        resourceTitle: room?.title || "Unit",
+        balance: (parseFloat(totalAmount) || 0) - (parseFloat(paidAmount) || 0),
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        ...payload,
+      };
+      const updatedBookings = [newBooking, ...bookings];
+      setBookings(updatedBookings);
+      localStorage.setItem("hlynk_cached_events", JSON.stringify(updatedBookings));
+      await enqueueEvent({ id: offlineId, action: "CREATE", payload, createdAt: Date.now() });
+      toast.success("Booking saved offline (network issue)");
+      setShowBookingModal(false);
+      resetForm();
     } finally {
       setSubmitting(false);
     }
@@ -155,30 +206,71 @@ export default function BookingsPage() {
       return toast.error("Enter a valid amount");
     }
     setSubmitting(true);
-    try {
-      await eventsApi.recordPayment(selectedBooking.id, {
-        amount: parseFloat(topupAmount),
-        paymentMethod: topupMethod,
-        notes: `Balance for ${selectedBooking.guestName || "Customer"}`,
+    const amount = parseFloat(topupAmount);
+    const payload = { amount, paymentMethod: topupMethod, notes: `Balance for ${selectedBooking.guestName || "Customer"}` };
+
+    if (!navigator.onLine) {
+      const updatedBookings = bookings.map(b => {
+        if (b.id === selectedBooking.id) {
+          const newPaid = b.paidAmount + amount;
+          const newBal = Math.max(0, b.totalAmount - newPaid);
+          return { ...b, paidAmount: newPaid, balance: newBal };
+        }
+        return b;
       });
+      setBookings(updatedBookings);
+      localStorage.setItem("hlynk_cached_events", JSON.stringify(updatedBookings));
+      await enqueueEvent({ id: "pay-" + Date.now(), action: "RECORD_PAYMENT", targetId: selectedBooking.id, payload, createdAt: Date.now() });
+      toast.success("Payment recorded offline!");
+      setShowPaymentModal(false);
+      setTopupAmount("");
+      setSubmitting(false);
+      return;
+    }
+
+    try {
+      await eventsApi.recordPayment(selectedBooking.id, payload);
       toast.success("Payment recorded!");
       setShowPaymentModal(false);
       setTopupAmount("");
       fetchData();
     } catch (err: any) {
-      toast.error(err.message || "Failed to record payment");
+      const updatedBookings = bookings.map(b => {
+        if (b.id === selectedBooking.id) {
+          const newPaid = b.paidAmount + amount;
+          const newBal = Math.max(0, b.totalAmount - newPaid);
+          return { ...b, paidAmount: newPaid, balance: newBal };
+        }
+        return b;
+      });
+      setBookings(updatedBookings);
+      localStorage.setItem("hlynk_cached_events", JSON.stringify(updatedBookings));
+      await enqueueEvent({ id: "pay-" + Date.now(), action: "RECORD_PAYMENT", targetId: selectedBooking.id, payload, createdAt: Date.now() });
+      toast.success("Payment recorded offline (saved locally)");
+      setShowPaymentModal(false);
+      setTopupAmount("");
     } finally {
       setSubmitting(false);
     }
   };
 
   const handleStatusChange = async (bookingId: string, newStatus: string) => {
+    const updatedBookings = bookings.map(b => b.id === bookingId ? { ...b, status: newStatus } : b);
+    setBookings(updatedBookings);
+    localStorage.setItem("hlynk_cached_events", JSON.stringify(updatedBookings));
+
+    if (!navigator.onLine) {
+      await enqueueEvent({ id: "st-" + Date.now(), action: "UPDATE", targetId: bookingId, payload: { status: newStatus }, createdAt: Date.now() });
+      toast.success("Status updated (offline)");
+      return;
+    }
+
     try {
       await eventsApi.updateStatus(bookingId, newStatus);
       toast.success(`Status updated`);
-      fetchData();
     } catch (err: any) {
-      toast.error("Failed to update status");
+      await enqueueEvent({ id: "st-" + Date.now(), action: "UPDATE", targetId: bookingId, payload: { status: newStatus }, createdAt: Date.now() });
+      toast.success("Status updated (saved offline)");
     }
   };
 

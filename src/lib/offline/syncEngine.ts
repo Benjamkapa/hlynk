@@ -1,5 +1,11 @@
-import { getPendingSales, removePendingSale, updatePendingSale, countPendingSales } from './db'
+import {
+  getPendingSales, removePendingSale, updatePendingSale, countPendingSales,
+  getPendingResources, removePendingResource,
+  getPendingEvents, removePendingEvent,
+  getPendingOperations, removePendingOperation
+} from './db'
 import { salesApi } from '../api/providers'
+import { resourcesApi, eventsApi, operationsApi } from '../api/universal'
 import { toast } from 'sonner'
 
 class SyncEngine {
@@ -33,22 +39,30 @@ class SyncEngine {
   async flush(): Promise<boolean> {
     if (this.isSyncing || !navigator.onLine) return false
     
-    const pending = await getPendingSales()
-    if (pending.length === 0) return true
+    const [pendingSales, pendingRes, pendingEvt, pendingOps] = await Promise.all([
+      getPendingSales(),
+      getPendingResources(),
+      getPendingEvents(),
+      getPendingOperations(),
+    ])
+
+    const totalPending = pendingSales.length + pendingRes.length + pendingEvt.length + pendingOps.length
+    if (totalPending === 0) return true
 
     this.isSyncing = true
-    console.log(`[SyncEngine] Syncing ${pending.length} offline transactions...`)
-    toast.info(`Syncing ${pending.length} offline transaction(s)...`)
+    console.log(`[SyncEngine] Syncing ${totalPending} offline records...`)
+    toast.info(`Syncing ${totalPending} offline record(s)...`)
 
     let successCount = 0
-    for (const sale of pending) {
+
+    // 1. Flush Sales
+    for (const sale of pendingSales) {
       try {
         await salesApi.create(sale.payload)
         await removePendingSale(sale.id)
         successCount++
       } catch (error: any) {
         if (error.response?.status === 401) {
-          console.warn('[SyncEngine] Auth required for sync. Redirecting to login.')
           this.isSyncing = false
           window.location.href = '/login'
           return false
@@ -59,15 +73,70 @@ class SyncEngine {
       }
     }
 
-    this.isSyncing = false
-    const remaining = await countPendingSales()
-    if (remaining === 0) {
-      toast.success('All offline transactions synced successfully!')
-    } else if (successCount > 0) {
-      toast.warning(`${successCount} synced, ${remaining} pending sync.`)
+    // 2. Flush Hospitality Resources
+    for (const item of pendingRes) {
+      try {
+        if (item.action === 'CREATE') {
+          await resourcesApi.createResource(item.payload)
+        } else if (item.action === 'UPDATE' && item.targetId) {
+          await resourcesApi.updateResource(item.targetId, item.payload)
+        } else if (item.action === 'DELETE' && item.targetId) {
+          await resourcesApi.deleteResource(item.targetId)
+        }
+        await removePendingResource(item.id)
+        successCount++
+      } catch (err: any) {
+        console.error('[SyncEngine] Failed resource sync:', err)
+      }
     }
-    return remaining === 0
+
+    // 3. Flush Hospitality Events (Bookings)
+    for (const item of pendingEvt) {
+      try {
+        if (item.action === 'CREATE') {
+          await eventsApi.createEvent(item.payload)
+        } else if (item.action === 'UPDATE' && item.targetId) {
+          await eventsApi.updateStatus(item.targetId, item.payload.status)
+        } else if (item.action === 'RECORD_PAYMENT' && item.targetId) {
+          await eventsApi.recordPayment(item.targetId, item.payload)
+        }
+        await removePendingEvent(item.id)
+        successCount++
+      } catch (err: any) {
+        console.error('[SyncEngine] Failed event sync:', err)
+      }
+    }
+
+    // 4. Flush Hospitality Tasks (Operations)
+    for (const item of pendingOps) {
+      try {
+        if (item.action === 'CREATE') {
+          await operationsApi.createOperation(item.payload)
+        } else if (item.action === 'UPDATE' && item.targetId) {
+          await operationsApi.updateOperation(item.targetId, item.payload)
+        }
+        await removePendingOperation(item.id)
+        successCount++
+      } catch (err: any) {
+        console.error('[SyncEngine] Failed operation sync:', err)
+      }
+    }
+
+    this.isSyncing = false
+    const remainingSales = await countPendingSales()
+    const remainingRes = (await getPendingResources()).length
+    const remainingEvt = (await getPendingEvents()).length
+    const remainingOps = (await getPendingOperations()).length
+    const remainingTotal = remainingSales + remainingRes + remainingEvt + remainingOps
+
+    if (remainingTotal === 0) {
+      toast.success('All offline records synced successfully!')
+    } else if (successCount > 0) {
+      toast.warning(`${successCount} synced, ${remainingTotal} pending sync.`)
+    }
+    return remainingTotal === 0
   }
 }
 
 export const syncEngine = new SyncEngine()
+

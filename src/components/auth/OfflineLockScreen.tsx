@@ -101,25 +101,6 @@ export default function OfflineLockScreen() {
         pointerEvents: 'none',
       }} />
 
-      {/* Offline badge */}
-      {/* <motion.div
-        initial={{ y: -20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 0.2 }}
-        style={{
-          display: 'flex', alignItems: 'center', gap: 6,
-          background: 'rgba(255,255,255,0.06)',
-          border: '1px solid rgba(255,255,255,0.1)',
-          borderRadius: 100, padding: '6px 14px',
-          marginBottom: 32, fontSize: 11, fontWeight: 600,
-          color: 'rgba(255,255,255,0.5)', letterSpacing: '0.08em',
-          textTransform: 'uppercase',
-        }}
-      >
-        <WifiOff size={12} />
-        Offline Mode
-      </motion.div> */}
-
       {/* Avatar */}
       <motion.div
         initial={{ scale: 0.7, opacity: 0 }}
@@ -247,7 +228,7 @@ export default function OfflineLockScreen() {
             transition={{ delay: 0.5 }}
             style={{
               display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)',
-              gap: 10, width: '100%', maxWidth: 260, marginBottom: 28,
+              gap: 10, width: '40%', maxWidth: 260, marginBottom: 28,
             }}
           >
             {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(n => (

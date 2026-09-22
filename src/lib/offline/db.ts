@@ -4,7 +4,7 @@
  */
 
 const DB_NAME = 'hlynk-offline'
-const DB_VERSION = 1
+const DB_VERSION = 2
 
 export interface PendingSale {
   id: string          // client-generated UUID
@@ -19,6 +19,36 @@ export interface PendingSale {
     status: number
   }
   retries: number
+  lastError?: string
+}
+
+export interface PendingResource {
+  id: string
+  action: 'CREATE' | 'UPDATE' | 'DELETE'
+  targetId?: string
+  payload: any
+  createdAt: number
+  retries?: number
+  lastError?: string
+}
+
+export interface PendingEvent {
+  id: string
+  action: 'CREATE' | 'UPDATE' | 'RECORD_PAYMENT'
+  targetId?: string
+  payload: any
+  createdAt: number
+  retries?: number
+  lastError?: string
+}
+
+export interface PendingOperation {
+  id: string
+  action: 'CREATE' | 'UPDATE'
+  targetId?: string
+  payload: any
+  createdAt: number
+  retries?: number
   lastError?: string
 }
 
@@ -49,11 +79,26 @@ function openDB(): Promise<IDBDatabase> {
         const store = db.createObjectStore('pendingSales', { keyPath: 'id' })
         store.createIndex('createdAt', 'createdAt')
       }
+      if (!db.objectStoreNames.contains('pendingResources')) {
+        db.createObjectStore('pendingResources', { keyPath: 'id' })
+      }
+      if (!db.objectStoreNames.contains('pendingEvents')) {
+        db.createObjectStore('pendingEvents', { keyPath: 'id' })
+      }
+      if (!db.objectStoreNames.contains('pendingOperations')) {
+        db.createObjectStore('pendingOperations', { keyPath: 'id' })
+      }
       if (!db.objectStoreNames.contains('inventoryCache')) {
         db.createObjectStore('inventoryCache', { keyPath: 'id' })
       }
       if (!db.objectStoreNames.contains('customerCache')) {
         db.createObjectStore('customerCache', { keyPath: 'id' })
+      }
+      if (!db.objectStoreNames.contains('resourceCache')) {
+        db.createObjectStore('resourceCache', { keyPath: 'id' })
+      }
+      if (!db.objectStoreNames.contains('eventCache')) {
+        db.createObjectStore('eventCache', { keyPath: 'id' })
       }
     }
 
@@ -188,3 +233,100 @@ export async function getCachedCustomers(): Promise<CachedCustomer[]> {
     req.onerror = () => reject(req.error)
   })
 }
+
+// ── Pending Resources ─────────────────────────────────────────────────────────
+
+export async function enqueueResource(item: PendingResource): Promise<void> {
+  const db = await openDB()
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction('pendingResources', 'readwrite')
+    tx.objectStore('pendingResources').put(item)
+    tx.oncomplete = () => resolve()
+    tx.onerror = () => reject(tx.error)
+  })
+}
+
+export async function getPendingResources(): Promise<PendingResource[]> {
+  const db = await openDB()
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction('pendingResources', 'readonly')
+    const req = tx.objectStore('pendingResources').getAll()
+    req.onsuccess = () => resolve(req.result as PendingResource[])
+    req.onerror = () => reject(req.error)
+  })
+}
+
+export async function removePendingResource(id: string): Promise<void> {
+  const db = await openDB()
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction('pendingResources', 'readwrite')
+    tx.objectStore('pendingResources').delete(id)
+    tx.oncomplete = () => resolve()
+    tx.onerror = () => reject(tx.error)
+  })
+}
+
+// ── Pending Events (Bookings) ──────────────────────────────────────────────────
+
+export async function enqueueEvent(item: PendingEvent): Promise<void> {
+  const db = await openDB()
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction('pendingEvents', 'readwrite')
+    tx.objectStore('pendingEvents').put(item)
+    tx.oncomplete = () => resolve()
+    tx.onerror = () => reject(tx.error)
+  })
+}
+
+export async function getPendingEvents(): Promise<PendingEvent[]> {
+  const db = await openDB()
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction('pendingEvents', 'readonly')
+    const req = tx.objectStore('pendingEvents').getAll()
+    req.onsuccess = () => resolve(req.result as PendingEvent[])
+    req.onerror = () => reject(req.error)
+  })
+}
+
+export async function removePendingEvent(id: string): Promise<void> {
+  const db = await openDB()
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction('pendingEvents', 'readwrite')
+    tx.objectStore('pendingEvents').delete(id)
+    tx.oncomplete = () => resolve()
+    tx.onerror = () => reject(tx.error)
+  })
+}
+
+// ── Pending Operations (Tasks) ─────────────────────────────────────────────────
+
+export async function enqueueOperation(item: PendingOperation): Promise<void> {
+  const db = await openDB()
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction('pendingOperations', 'readwrite')
+    tx.objectStore('pendingOperations').put(item)
+    tx.oncomplete = () => resolve()
+    tx.onerror = () => reject(tx.error)
+  })
+}
+
+export async function getPendingOperations(): Promise<PendingOperation[]> {
+  const db = await openDB()
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction('pendingOperations', 'readonly')
+    const req = tx.objectStore('pendingOperations').getAll()
+    req.onsuccess = () => resolve(req.result as PendingOperation[])
+    req.onerror = () => reject(req.error)
+  })
+}
+
+export async function removePendingOperation(id: string): Promise<void> {
+  const db = await openDB()
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction('pendingOperations', 'readwrite')
+    tx.objectStore('pendingOperations').delete(id)
+    tx.oncomplete = () => resolve()
+    tx.onerror = () => reject(tx.error)
+  })
+}
+

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Search, Zap, Package, Users, TrendingUp, X, CheckCircle2, ChevronRight } from 'lucide-react'
+import { Search, Zap, Package, Users, TrendingUp, X, CheckCircle2, ChevronRight, ShieldCheck } from 'lucide-react'
 
 export default function HelpPage() {
   const [selectedGuide, setSelectedGuide] = useState<null | typeof guides[0]>(null)
@@ -55,6 +55,18 @@ export default function HelpPage() {
         'Check the "Revenue Trajectory" chart to see your daily growth.',
         'For deeper details, go to the "Reports" page.',
         'You can download a full summary of your sales and expenses there.'
+      ]
+    },
+    { 
+      id: 'support-access',
+      title: 'Remote Support Access & Assistance', 
+      desc: 'Understand how hlynk admins safely assist your portal.', 
+      icon: ShieldCheck,
+      steps: [
+        'When you request technical support or encounter an issue, an authorised hlynk administrator can remotely access your account in Support Mode.',
+        'Support access is used strictly for positive assistance — such as troubleshooting settings, resolving payment or inventory glitches, and verifying system health.',
+        'Every support access session is automatically logged in system audit logs with full timestamp and administrator details.',
+        'All administrative assistance is conducted in accordance with the Kenya Data Protection Act 2019 and our Privacy Policy.'
       ]
     },
   ]
