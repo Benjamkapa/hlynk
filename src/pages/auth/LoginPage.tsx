@@ -375,7 +375,7 @@ export default function LoginPage() {
       } else {
         login({ accessToken: res.data.accessToken, refreshToken: res.data.refreshToken }, res.data.user)
         navigate(res.data.user.role === 'SUPER_ADMIN' ? '/admin' : '/dashboard', { replace: true })
-        toast.success('Welcome Back!')
+        // toast.success('Welcome Back!')
       }
     } catch (err: any) { toast.error(getErrorMessage(err)) }
     finally { setGoogleLoading(false) }
