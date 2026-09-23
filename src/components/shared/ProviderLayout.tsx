@@ -934,7 +934,7 @@ function FloatingExpiryWidget({
   if (user?.role !== 'PROVIDER' || !targetEndDate) return null;
 
   return (
-    <div className="fixed bottom-32 lg:bottom-8 right-4 lg:right-8 z-[90] pointer-events-auto">
+    <div className="fixed bottom-32 lg:bottom-8 right-0 lg:right-0 z-[90] pointer-events-auto">
       <AnimatePresence>
         {isOpen && (
           <motion.div
@@ -942,7 +942,7 @@ function FloatingExpiryWidget({
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 10 }}
             transition={{ duration: 0.2 }}
-            className="absolute bottom-14 right-0 w-72 rounded-2xl bg-slate-900 text-white p-5 shadow-2xl border border-slate-800 space-y-4"
+            className="absolute bottom-14 right-0 w-72 rounded-tl-[2em] rounded-bl-[2em] bg-slate-900 text-white p-5 shadow-2xl border border-slate-800 space-y-4"
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
@@ -969,13 +969,13 @@ function FloatingExpiryWidget({
               Expiry Date: <span className="text-slate-200 font-semibold">{new Date(targetEndDate).toLocaleDateString(undefined, { dateStyle: 'medium' })}</span>
             </div>
 
-            <Link
+            {/* <Link
               to="/dashboard/subscription"
               onClick={() => setIsOpen(false)}
               className="block w-full text-center py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs transition-colors shadow-lg shadow-emerald-500/20"
             >
               {isTrial ? 'Upgrade Subscription' : 'Manage / Top Up Plan'}
-            </Link>
+            </Link> */}
           </motion.div>
         )}
       </AnimatePresence>
