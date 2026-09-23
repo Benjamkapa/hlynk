@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Sparkles, Wrench, Plus, CheckCircle2, Loader2, WifiOff } from "lucide-react";
+import { MopSparkles, Wrench, Plus, CheckCircle2, Loader2, WifiOff } from "lucide-react";
 import { operationsApi, resourcesApi, OperationTask, Resource } from "../../../lib/api/universal";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
@@ -203,7 +203,7 @@ export default function OperationsPage() {
               : "bg-white border border-slate-200 text-slate-600 hover:border-slate-300"
           }`}
         >
-          <Sparkles size={13} /> Cleaning
+          <MopSparkles size={13} /> Cleaning
           {pendingCleaning > 0 && (
             <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${activeTab === "CLEANING" ? "bg-white/20" : "bg-slate-100"}`}>
               {pendingCleaning}
@@ -240,7 +240,7 @@ export default function OperationsPage() {
           </p>
           <button
             onClick={() => { setOpType(activeTab); setShowModal(true); }}
-            className="mt-4 text-sm font-medium text-slate-900 underline underline-offset-2"
+            className="mt-4 text-sm font-medium text-slate-900 bg-emerald-900 hover:bg-emerald-700 text-white font-bold px-4 py-2 rounded-full"
           >
             Log a task
           </button>

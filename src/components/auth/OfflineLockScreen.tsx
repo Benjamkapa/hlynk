@@ -199,7 +199,7 @@ export default function OfflineLockScreen() {
           </motion.div>
 
           <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 11, marginBottom: 24, textAlign: 'center', lineHeight: 1.5 }}>
-            Enter 6-digit PIN <span style={{ opacity: 0.7 }}>(Default: <code style={{ color: '#34d399', background: 'rgba(255,255,255,0.1)', padding: '1px 5px', borderRadius: 4 }}>123456</code>)</span>
+            Enter 6-digit PIN to proceed offline operations.<span style={{ opacity: 0.7 }}>(Default: <code style={{ color: '#34d399', background: 'rgba(255,255,255,0.1)', padding: '1px 5px', borderRadius: 4 }}>123456</code>)</span>
             <br />
             <span style={{ fontSize: 10, opacity: 0.5 }}>Remember to update your PIN to something unique in Settings.</span>
           </p>

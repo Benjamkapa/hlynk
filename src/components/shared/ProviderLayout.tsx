@@ -98,47 +98,47 @@ export default function ProviderLayout() {
       ],
     },
     {
-      label: 'Sales & Money',
+      label: 'Sales',
       items: [
         { to: '/dashboard/sales/new', label: 'Make a Sale', icon: Plus, permission: 'sales', module: 'POS' },
-        { to: '/dashboard/sales', label: 'Sales History', icon: Receipt, end: true, permission: 'sales', module: 'POS' },
-        { to: '/dashboard/expenses', label: 'Expenses & Costs', icon: DollarSign, permission: 'sales', module: 'POS' },
+        { to: '/dashboard/sales', label: 'History', icon: Receipt, end: true, permission: 'sales', module: 'POS' },
+        { to: '/dashboard/expenses', label: 'Expenses', icon: DollarSign, permission: 'sales', module: 'POS' },
       ],
     },
     {
-      label: 'Products & Clients',
+      label: 'Products',
       items: [
-        { to: '/dashboard/products', label: 'Products & Pricing', icon: Tag, permission: 'products', module: 'POS' },
-        { to: '/dashboard/customers', label: 'Customers & Clients', icon: Users, permission: 'customers' },
+        { to: '/dashboard/products', label: 'Products', icon: Tag, permission: 'products', module: 'POS' },
+        { to: '/dashboard/customers', label: 'Customers', icon: Users, permission: 'customers' },
       ],
     },
     {
-      label: 'Bookings & Rentals',
+      label: 'Rentals',
       items: [
-        { to: '/dashboard/hospitality', label: 'Rental Overview', icon: Hotel, end: true, permission: 'hospitality', module: 'HOSPITALITY' },
-        { to: '/dashboard/hospitality/bookings', label: 'Bookings & Reservations', icon: CalendarCheck, permission: 'hospitality', module: 'HOSPITALITY' },
-        { to: '/dashboard/hospitality/properties', label: 'Rooms, Vehicles & Assets', icon: Building, permission: 'properties', module: 'HOSPITALITY' },
-        { to: '/dashboard/hospitality/operations', label: 'Housekeeping & Tasks', icon: Wrench, permission: 'operations', module: 'HOSPITALITY' },
+        { to: '/dashboard/hospitality', label: 'Overview', icon: Hotel, end: true, permission: 'hospitality', module: 'HOSPITALITY' },
+        { to: '/dashboard/hospitality/bookings', label: 'Bookings', icon: CalendarCheck, permission: 'hospitality', module: 'HOSPITALITY' },
+        { to: '/dashboard/hospitality/properties', label: 'Rooms', icon: Building, permission: 'properties', module: 'HOSPITALITY' },
+        { to: '/dashboard/hospitality/operations', label: 'Tasks', icon: Wrench, permission: 'operations', module: 'HOSPITALITY' },
       ],
     },
     {
-      label: 'Analytics & Growth',
+      label: 'Analytics',
       items: [
-        { to: '/dashboard/reports', label: 'Reports & Growth', icon: TrendingUp, permission: 'reports', plan: 'PLUS' }
+        { to: '/dashboard/reports', label: 'Reports', icon: TrendingUp, permission: 'reports', plan: 'PLUS' }
       ],
     },
     {
-      label: 'Team Management',
+      label: 'Team',
       items: [
-        { to: '/dashboard/staff', label: 'Staff & Roles', icon: Users, permission: 'staff', plan: 'PLUS' },
+        { to: '/dashboard/staff', label: 'Staff', icon: Users, permission: 'staff', plan: 'PLUS' },
       ],
     },
     {
-      label: 'Account & Settings',
+      label: 'Account',
       items: [
-        { to: '/dashboard/logs', label: 'Audit & Staff Activity', icon: ShieldCheck, permission: 'logs', plan: 'MAX' },
-        { to: '/dashboard/subscription', label: 'Subscription Plan', icon: CreditCard, role: 'PROVIDER' },
-        { to: '/dashboard/developer', label: 'M-Pesa & Payments', icon: Wallet, role: 'PROVIDER', plan: 'PLUS' },
+        { to: '/dashboard/logs', label: 'Audit Log', icon: ShieldCheck, permission: 'logs', plan: 'MAX' },
+        { to: '/dashboard/subscription', label: 'Subscription', icon: CreditCard, role: 'PROVIDER' },
+        { to: '/dashboard/developer', label: 'M-Pesa', icon: Wallet, role: 'PROVIDER', plan: 'PLUS' },
       ],
     },
   ];
@@ -592,30 +592,20 @@ function MobileBottomNav({ user, targetEndDate, filteredGroups = [], onOpenMobil
     return { to: '/dashboard/sales/new', label: 'Make Sale', icon: Plus, end: false };
   }, [hasPos, hasHosp]);
 
-  const overflowItems = useMemo(() => {
+  const overflowGroups = useMemo(() => {
     const mainPaths = [homeItem.to, primaryLeftItem.to, centerCtaItem.to];
-    const items: NavItem[] = [];
-
-    filteredGroups.forEach(group => {
-      group.items.forEach(item => {
-        if (!mainPaths.includes(item.to) && !items.some(x => x.to === item.to)) {
-          items.push(item);
-        }
-      });
-    });
-
-    if (items.length > 0) return items;
-
-    return [
-      { to: '/dashboard/sales',        label: 'Sales History',     icon: Receipt },
-      { to: '/dashboard/expenses',     label: 'Expenses & Costs',  icon: DollarSign },
-      { to: '/dashboard/staff',        label: 'Staff & Team',      icon: Users },
-      { to: '/dashboard/customers',    label: 'Customers & Clients', icon: Users },
-      { to: '/dashboard/reports',      label: 'Reports & Growth',  icon: TrendingUp },
-      { to: '/dashboard/developer',    label: 'M-Pesa & Payments', icon: Wallet },
-      { to: '/dashboard/subscription', label: 'Subscription Plan', icon: CreditCard },
-    ];
+    return filteredGroups
+      .map(group => ({
+        ...group,
+        items: group.items.filter(item => !mainPaths.includes(item.to)),
+      }))
+      .filter(group => group.items.length > 0);
   }, [filteredGroups, homeItem.to, primaryLeftItem.to, centerCtaItem.to]);
+
+  const overflowItems = useMemo(() =>
+    overflowGroups.flatMap(g => g.items),
+    [overflowGroups]
+  );
 
   const isOverflowActive = overflowItems.some(item =>
     location.pathname === item.to || location.pathname.startsWith(item.to + '/')
@@ -654,7 +644,7 @@ function MobileBottomNav({ user, targetEndDate, filteredGroups = [], onOpenMobil
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-[93] bg-slate-900/25 pointer-events-auto"
+            className="fixed inset-0 z-[96] bg-slate-900/40 pointer-events-auto"
             onClick={() => { setShowMoreSheet(false); setShowProfileSheet(false); }}
           />
         )}
@@ -664,38 +654,74 @@ function MobileBottomNav({ user, targetEndDate, filteredGroups = [], onOpenMobil
         {showMoreSheet && (
           <motion.div
             key="more-sheet"
-            initial={{ opacity: 0, y: 24, scale: 0.97 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 16, scale: 0.97 }}
-            transition={{ duration: 0.22, ease: [0.32, 0.72, 0, 1] }}
-            className="fixed inset-x-3 z-[94] bottom-[calc(4.75rem+env(safe-area-inset-bottom,0px))] pointer-events-auto max-h-[75vh] flex flex-col"
+            initial={{ y: '100%' }}
+            animate={{ y: 0 }}
+            exit={{ y: '100%' }}
+            transition={{ duration: 0.3, ease: [0.32, 0.72, 0, 1] }}
+            className="fixed inset-x-0 bottom-0 z-[97] pointer-events-auto"
+            style={{ maxHeight: '70vh' }}
           >
-            <div className="glass-sheet rounded-[.75rem] overflow-hidden border border-white/40 flex flex-col max-h-full bg-white/95 backdrop-blur-xl">
-              <div className="flex items-center justify-between px-5 pt-4 pb-3 border-b border-slate-100 flex-shrink-0">
-                <p className="text-xs font-semibold text-slate-400">All Features & Options</p>
+            <div className="bg-white rounded-t-[1.25rem] flex flex-col overflow-hidden shadow-[0_-4px_24px_rgba(0,0,0,0.1)]">
+              {/* Drag handle */}
+              <div className="flex justify-center pt-2.5 pb-0.5 flex-shrink-0">
+                <div className="w-8 h-[3px] rounded-full bg-slate-200" />
+              </div>
+
+              {/* Header */}
+              <div className="flex items-center justify-between px-4 py-2 flex-shrink-0">
+                <p className="text-[13px] font-medium text-slate-800">More</p>
                 <button
                   onClick={() => setShowMoreSheet(false)}
-                  className="glass-btn w-6 h-6 rounded-full flex items-center justify-center text-slate-400 transition-all"
+                  className="text-[13px] font-normal text-emerald-700 active:opacity-50 transition-opacity"
                 >
-                  <X size={12} />
+                  Done
                 </button>
               </div>
-              <div className="p-3 grid grid-cols-2 gap-2 overflow-y-auto max-h-[50vh] custom-scrollbar">
-                {overflowItems.map((item) => (
-                  <NavLink
-                    key={item.label}
-                    to={item.to}
-                    className={({ isActive }) =>
-                      `flex items-center gap-3 px-3.5 py-3 rounded-md transition-all no-tap-highlight ${
-                        isActive
-                          ? 'bg-emerald-50 text-emerald-700 font-normal'
-                          : 'bg-slate-50 text-slate-600 hover:bg-emerald-50 hover:text-emerald-700'
-                      }`
-                    }
-                  >
-                    <item.icon className="w-[18px] h-[18px] flex-shrink-0" strokeWidth={2} />
-                    <span className="text-[11px] leading-tight truncate">{item.label}</span>
-                  </NavLink>
+
+              {/* Compact grouped icon grid */}
+              <div className="overflow-y-auto custom-scrollbar pb-[max(1rem,env(safe-area-inset-bottom,1rem))]">
+                {overflowGroups.map((group, gi) => (
+                  <div key={group.label} className={gi > 0 ? 'border-t border-slate-100/80' : ''}>
+                    <p className="px-4 pt-2 pb-1 text-[9px] font-normal uppercase tracking-[0.12em] text-slate-400">
+                      {group.label}
+                    </p>
+                    <div className="grid grid-cols-4 gap-0 px-2 pb-1">
+                      {group.items.map((item) => (
+                        <NavLink
+                          key={item.to}
+                          to={item.to}
+                          className={({ isActive }) =>
+                            `relative flex flex-col items-center gap-1 py-2 px-1 rounded-xl transition-all no-tap-highlight active:scale-[0.93] ${
+                              isActive ? 'bg-emerald-50/80' : 'hover:bg-slate-50'
+                            }`
+                          }
+                        >
+                          {({ isActive }) => (
+                            <>
+                              <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${
+                                isActive ? 'bg-emerald-100' : 'bg-slate-100'
+                              }`}>
+                                <item.icon
+                                  className={`w-[17px] h-[17px] transition-colors ${isActive ? 'text-emerald-700' : 'text-slate-600'}`}
+                                  strokeWidth={1.6}
+                                />
+                              </div>
+                              <span className={`text-[9.5px] font-normal leading-snug text-center w-full truncate px-0.5 ${
+                                isActive ? 'text-emerald-700' : 'text-slate-500'
+                              }`}>
+                                {item.label}
+                              </span>
+                              {(item as any).isLocked && (
+                                <div className="absolute top-1.5 right-1.5 w-3 h-3 bg-amber-400 rounded-full flex items-center justify-center">
+                                  <Lock size={5} className="text-white fill-white" />
+                                </div>
+                              )}
+                            </>
+                          )}
+                        </NavLink>
+                      ))}
+                    </div>
+                  </div>
                 ))}
               </div>
             </div>
@@ -707,14 +733,18 @@ function MobileBottomNav({ user, targetEndDate, filteredGroups = [], onOpenMobil
         {showProfileSheet && (
           <motion.div
             key="profile-sheet"
-            initial={{ opacity: 0, y: 24, scale: 0.97 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 16, scale: 0.97 }}
-            transition={{ duration: 0.22, ease: [0.32, 0.72, 0, 1] }}
-            className="fixed inset-x-3 z-[94] bottom-[calc(4.75rem+env(safe-area-inset-bottom,0px))] pointer-events-auto"
+            initial={{ y: '100%' }}
+            animate={{ y: 0 }}
+            exit={{ y: '100%' }}
+            transition={{ duration: 0.32, ease: [0.32, 0.72, 0, 1] }}
+            className="fixed inset-x-0 bottom-0 z-[97] pointer-events-auto"
           >
-            <div className="glass-sheet rounded-[1rem] overflow-hidden border border-white/40 p-3 shadow-2xl bg-white/95 backdrop-blur-xl">
-              <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100/60">
+            <div className="bg-white rounded-t-[1.5rem] overflow-hidden shadow-[0_-8px_40px_rgba(0,0,0,0.12)] pb-[max(1rem,env(safe-area-inset-bottom,1rem))]">
+              {/* Drag handle */}
+              <div className="flex justify-center pt-3 pb-1">
+                <div className="w-9 h-1 rounded-full bg-slate-300" />
+              </div>
+              <div className="flex items-center justify-between px-5 py-3 border-b border-slate-100/60">
                 <div className="flex items-center gap-3 min-w-0">
                   <img
                     src={user?.photoUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || '')}&background=0D4A3E&color=fff`}
@@ -729,17 +759,17 @@ function MobileBottomNav({ user, targetEndDate, filteredGroups = [], onOpenMobil
                 </div>
                 <button
                   onClick={() => setShowProfileSheet(false)}
-                  className="glass-btn w-7 h-7 rounded-full flex items-center justify-center text-slate-400 transition-all flex-shrink-0"
+                  className="text-emerald-700 text-sm font-semibold active:opacity-60 transition-opacity flex-shrink-0"
                 >
-                  <X size={14} />
+                  Cancel
                 </button>
               </div>
 
-              <div className="p-2 space-y-1.5 mt-1">
+              <div className="p-4 space-y-2">
                 <Link
                   to={user?.role === 'SUPER_ADMIN' ? '/admin/settings' : '/dashboard/settings'}
                   onClick={() => setShowProfileSheet(false)}
-                  className="flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold text-slate-700 bg-slate-50 hover:bg-emerald-50 hover:text-emerald-700 transition-colors"
+                  className="flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-semibold text-slate-700 bg-slate-50 hover:bg-emerald-50 hover:text-emerald-700 transition-colors"
                 >
                   <User size={16} className="text-emerald-600" /> My Profile & Settings
                 </Link>
@@ -750,7 +780,7 @@ function MobileBottomNav({ user, targetEndDate, filteredGroups = [], onOpenMobil
                       setShowProfileSheet(false);
                       lock();
                     }}
-                    className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold text-slate-700 bg-slate-50 hover:bg-slate-100 transition-colors"
+                    className="w-full flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-semibold text-slate-700 bg-slate-50 hover:bg-slate-100 transition-colors"
                   >
                     <Lock size={16} className="text-slate-500" /> Lock Screen (PIN)
                   </button>
@@ -766,7 +796,7 @@ function MobileBottomNav({ user, targetEndDate, filteredGroups = [], onOpenMobil
                       toast.info('Session locked. Enter your PIN to continue.');
                     }
                   }}
-                  className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold text-red-600 bg-red-50 hover:bg-red-100 transition-colors"
+                  className="w-full flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-semibold text-red-600 bg-red-50 hover:bg-red-100 transition-colors"
                 >
                   <LogOut size={16} /> Log Out
                 </button>
@@ -827,7 +857,7 @@ function MobileBottomNav({ user, targetEndDate, filteredGroups = [], onOpenMobil
                 className="w-7 h-7 rounded-full object-cover"
               />
             </div>
-            <span className={`text-[9px] font-bold transition-all truncate w-full text-center ${showProfileSheet || location.pathname.includes('/settings') ? 'text-[#0D4A3E]' : 'text-slate-400'}`}>Profile</span>
+            <span className={`text-[9px] font-bold transition-all truncate w-full text-center ${showProfileSheet || location.pathname.includes('/settings') ? 'text-[#0D4A3E]' : 'text-slate-400'}`}>You</span>
           </button>
         </div>
       </div>
