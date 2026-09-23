@@ -247,16 +247,6 @@ export default function ProductsPage() {
           >
             <FileText size={15} /> CSV
           </button>
-          <button
-            onClick={() => {
-              setEditingProduct(null);
-              setIsAddModalOpen(true);
-            }}
-            title="Add Product"
-            className="bg-[#0D4A3E] text-white h-9 px-2 rounded-full font-medium text-sm hover:bg-[#0A3D33] transition-colors flex items-center justify-center gap-2 col-span-2 sm:col-span-1"
-          >
-            <Plus size={16} /> Add item
-          </button>
         </div>
       </div>
 
@@ -269,6 +259,18 @@ export default function ProductsPage() {
         <SummaryCell title="Stock value" value={`KES ${stats.totalValue.toLocaleString()}`} sub="Total inventory" />
         <SummaryCell title="Expiring soon" value={`${stats.expiringSoon || 0}`} sub="Within 30 days" tone={stats.expiringSoon > 0 ? 'amber' : undefined} />
       </div>
+      <div className='flex justify-end'>
+        <button
+          onClick={() => {
+            setEditingProduct(null);
+            setIsAddModalOpen(true);
+          }}
+          title="Add Product"
+          className="bg-[#0D4A3E] text-white h-9 px-2 rounded-full shadow-xl font-medium text-sm hover:bg-[#0A3D33] transition-colors flex items-center justify-center gap-2 col-span-2 sm:col-span-1"
+        >
+          <Plus size={8} strokeWidth={5} /> Add item
+        </button>
+      </div>
 
       {/* Products */}
       <div className="bg-white rounded-[.5rem] border border-gray-100 overflow-hidden">
@@ -277,7 +279,7 @@ export default function ProductsPage() {
           isOpen={isOrdersOpen}
           onClose={() => setIsOrdersOpen(false)}
           title={`Incoming client orders (${incomingOrders.length})`}
-         >
+        >
           <div className="space-y-4">
             {incomingOrders.length > 0 && (
               <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-gray-100 mb-2">
@@ -308,7 +310,7 @@ export default function ProductsPage() {
             ) : (
               incomingOrders.map((req: any) => {
                 let msgData: any = null;
-                try { msgData = JSON.parse(req.message); } catch (_) {}
+                try { msgData = JSON.parse(req.message); } catch (_) { }
 
                 let cleanPhone = (req.customerPhone || '').replace(/[^0-9]/g, '');
                 if (cleanPhone.startsWith('0') && (cleanPhone.length === 10 || cleanPhone.length === 9)) {
@@ -323,10 +325,9 @@ export default function ProductsPage() {
                         <p className="text-xs text-gray-400">{new Date(req.createdAt).toLocaleString()}</p>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className={`text-[10px] font-medium px-2 py-1 rounded-full ${
-                          req.status === 'PENDING' ? 'bg-amber-50 text-amber-700' :
-                          req.status === 'COMPLETED' ? 'bg-emerald-50 text-emerald-700' : 'bg-gray-100 text-gray-500'
-                        }`}>
+                        <span className={`text-[10px] font-medium px-2 py-1 rounded-full ${req.status === 'PENDING' ? 'bg-amber-50 text-amber-700' :
+                            req.status === 'COMPLETED' ? 'bg-emerald-50 text-emerald-700' : 'bg-gray-100 text-gray-500'
+                          }`}>
                           {req.status}
                         </span>
                         <button
@@ -797,9 +798,8 @@ function Th({ label, active, order, onClick, align = 'left' }: any) {
   return (
     <th
       onClick={onClick}
-      className={`px-5 py-3 text-xs font-medium cursor-pointer select-none transition-colors ${
-        align === 'right' ? 'text-right' : align === 'center' ? 'text-center' : 'text-left'
-      } ${active ? 'text-gray-700' : 'text-gray-400 hover:text-gray-600'}`}
+      className={`px-5 py-3 text-xs font-medium cursor-pointer select-none transition-colors ${align === 'right' ? 'text-right' : align === 'center' ? 'text-center' : 'text-left'
+        } ${active ? 'text-gray-700' : 'text-gray-400 hover:text-gray-600'}`}
     >
       {label}{active && (order === 'asc' ? ' ↑' : ' ↓')}
     </th>
@@ -962,7 +962,7 @@ function ProductForm({ onClose }: { onClose: () => void }) {
             className="px-3.5 py-2 bg-gray-50 text-gray-600 rounded-[.5rem] text-xs font-medium hover:bg-gray-100 transition-colors flex items-center gap-1.5"
             title="Upload from device storage"
           >
-            <Upload size={14}/>
+            <Upload size={14} />
           </button>
           <button
             type="button"
@@ -970,7 +970,7 @@ function ProductForm({ onClose }: { onClose: () => void }) {
             className="px-3.5 py-2 bg-emerald-50 text-emerald-700 rounded-[.5rem] text-xs font-medium hover:bg-emerald-100 transition-colors flex items-center gap-1.5"
             title="Paste image copied from WhatsApp or other apps"
           >
-            <Clipboard size={14}/>
+            <Clipboard size={14} />
           </button>
           <button
             type="button"
@@ -987,7 +987,7 @@ function ProductForm({ onClose }: { onClose: () => void }) {
               className="px-3.5 py-2 bg-red-50 text-red-600 rounded-[.5rem] text-xs font-medium hover:bg-red-100 transition-colors"
               title="Remove image"
             >
-              <Ban size={14}/>
+              <Ban size={14} />
             </button>
           )}
         </div>
@@ -1001,11 +1001,10 @@ function ProductForm({ onClose }: { onClose: () => void }) {
                 key={p.name}
                 type="button"
                 onClick={() => setForm({ ...form, imageUrl: p.url, file: null })}
-                className={`px-2 py-0.5 text-[10px] font-medium rounded-full border transition-colors ${
-                  form.imageUrl === p.url
+                className={`px-2 py-0.5 text-[10px] font-medium rounded-full border transition-colors ${form.imageUrl === p.url
                     ? 'bg-[#0D4A3E] text-white border-[#0D4A3E]'
                     : 'bg-white hover:bg-gray-50 text-gray-500 border-gray-200'
-                }`}
+                  }`}
               >
                 {p.name}
               </button>
@@ -1346,7 +1345,7 @@ function EditProductForm({ product, onClose }: { product: any; onClose: () => vo
             className="px-3.5 py-2 bg-gray-50 text-gray-600 rounded-[.5rem] text-xs font-medium hover:bg-gray-100 transition-colors flex items-center gap-1.5"
             title="Upload from device storage"
           >
-            <Upload size={14}/> File
+            <Upload size={14} /> File
           </button>
           <button
             type="button"
@@ -1354,7 +1353,7 @@ function EditProductForm({ product, onClose }: { product: any; onClose: () => vo
             className="px-3.5 py-2 bg-emerald-50 text-emerald-700 rounded-[.5rem] text-xs font-medium hover:bg-emerald-100 transition-colors flex items-center gap-1.5"
             title="Paste image copied from WhatsApp or other apps"
           >
-            <Clipboard size={14}/> Paste
+            <Clipboard size={14} /> Paste
           </button>
           <button
             type="button"
@@ -1385,11 +1384,10 @@ function EditProductForm({ product, onClose }: { product: any; onClose: () => vo
                 key={p.name}
                 type="button"
                 onClick={() => setForm({ ...form, imageUrl: p.url, file: null })}
-                className={`px-2 py-0.5 text-[10px] font-medium rounded-full border transition-colors ${
-                  form.imageUrl === p.url
+                className={`px-2 py-0.5 text-[10px] font-medium rounded-full border transition-colors ${form.imageUrl === p.url
                     ? 'bg-[#0D4A3E] text-white border-[#0D4A3E]'
                     : 'bg-white hover:bg-gray-50 text-gray-500 border-gray-200'
-                }`}
+                  }`}
               >
                 {p.name}
               </button>
