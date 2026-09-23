@@ -495,7 +495,7 @@ export default function LoginPage() {
               <h1 className="lp-title">
                 The Smartest Way <br /> to Grow <br /> Your Biashara
               </h1>
-              <p className="text-xl text-white font-light opacity-90 leading-relaxed max-w-sm drop-shadow-lg mb-10">
+              <p className="text-white font-light opacity-90 leading-relaxed max-w-sm drop-shadow-lg mb-10">
                 Stop the guesswork. Use modern tracking to manage stock and double your business profits.
               </p>
               <div className="flex flex-col gap-5">
@@ -534,18 +534,12 @@ export default function LoginPage() {
                 >
                   {/* Nav */}
                   <nav className="mob-nav hidden" style={{ display: 'flex', float:'right' }}>
-                    {/* <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <img src={hlynk} alt="hlynk" style={{ height: 32, objectFit: 'contain' }} />
-                    </div> */}
-                    <a href="/" style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.85)', textDecoration: 'none', letterSpacing: '0.14em' }}>
-                      <ArrowLeft size={10} /> Website
-                    </a>
                   </nav>
 
                   {/* Hero - Simplified for Mobile but consistent with Desktop */}
                   <div className="mob-hero" style={{ display: 'block' }}>
                     <h1 className="mob-hero-title pb-1">The Smartest Way <br /> to Grow <br /> Your <em>Biashara</em></h1>
-                    <p className="mob-hero-sub mt-2 mb-6">Stop the guesswork. Use modern tracking to manage stock and double your business profits.</p>
+                    <p className="mob-hero-sub mt-2 mb-6 ">Stop the guesswork. Use modern tracking to manage stock and double your business profits.</p>
                     <div className="flex flex-col gap-2 opacity-80 scale-90 origin-left">
                       {[
                         'M-Pesa Friendly Sales Tracking',
@@ -554,7 +548,7 @@ export default function LoginPage() {
                         'Instant Setup, No Fees to Start',
                       ].map((item) => (
                         <div key={item} className="flex items-center gap-3 text-white">
-                          <div className="w-5 h-5 rounded-full bg-[#E3A23C] flex items-center justify-center text-[#14181A]">
+                          <div className="w-7 h-7 rounded-full bg-[#E3A23C] flex items-center justify-center text-[#14181A]">
                             <Check size={10} strokeWidth={4} />
                           </div>
                           <span className="text-[12px] font-medium tracking-wide">{item}</span>
