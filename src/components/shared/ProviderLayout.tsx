@@ -674,7 +674,7 @@ function MobileBottomNav({ user, targetEndDate, filteredGroups = [], onOpenMobil
                   onClick={() => setShowMoreSheet(false)}
                   className="text-[13px] font-normal text-emerald-700 active:opacity-50 transition-opacity"
                 >
-                  Done
+                  Cancel
                 </button>
               </div>
 
