@@ -228,7 +228,7 @@ export default function OfflineLockScreen() {
             transition={{ delay: 0.5 }}
             style={{
               display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)',
-              gap: 10, width: '40%', maxWidth: 260, marginBottom: 28,
+              gap: 10, width: '100%', maxWidth: 260, marginBottom: 28,
             }}
           >
             {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(n => (
