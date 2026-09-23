@@ -968,14 +968,6 @@ function FloatingExpiryWidget({
             <div className="text-[10px] text-slate-400 leading-tight">
               Expiry Date: <span className="text-slate-200 font-semibold">{new Date(targetEndDate).toLocaleDateString(undefined, { dateStyle: 'medium' })}</span>
             </div>
-
-            {/* <Link
-              to="/dashboard/subscription"
-              onClick={() => setIsOpen(false)}
-              className="block w-full text-center py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs transition-colors shadow-lg shadow-emerald-500/20"
-            >
-              {isTrial ? 'Upgrade Subscription' : 'Manage / Top Up Plan'}
-            </Link> */}
           </motion.div>
         )}
       </AnimatePresence>

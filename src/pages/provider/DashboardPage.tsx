@@ -277,7 +277,7 @@ function KpiStrip({ stats, threshold, net, netIsPositive }: any) {
 
       {/* Expandable: additional 3 metrics */}
       {expanded && (
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-px bg-gray-100 overflow-hidden border border-t-0 border-b-0 border-gray-100 animate-in fade-in duration-200">
+        <div className="grid grid-cols-3 sm:grid-cols-3 gap-px bg-gray-100 overflow-hidden border border-t-0 border-b-0 border-gray-100 animate-in fade-in duration-200">
           <SummaryCell
             icon={Users}
             label="New customers"
