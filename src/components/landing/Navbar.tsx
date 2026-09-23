@@ -184,7 +184,7 @@ export default function Navbar() {
         background: scrolled ? 'rgba(255,255,255,0.85)' : 'transparent',
         backdropFilter: scrolled ? 'blur(20px) saturate(180%)' : 'none',
         WebkitBackdropFilter: scrolled ? 'blur(20px) saturate(180%)' : 'none',
-        borderBottom: scrolled ? '1px solid rgba(0,0,0,0.05)' : '1px solid transparent',
+        borderBottom: 'none',
         boxShadow: scrolled ? '0 4px 20px rgba(0,0,0,0.03)' : 'none',
         transition: 'background 0.3s ease, border-color 0.3s ease, transform 0.4s cubic-bezier(0.16,1,0.3,1), height 0.4s ease',
       }}>

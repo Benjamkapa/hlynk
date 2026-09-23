@@ -151,9 +151,9 @@ export default function ProductsPage() {
     }
     if (!publicStoreUrl) return toast.error('Your store link is not ready yet');
     navigator.clipboard.writeText(publicStoreUrl).then(() => {
-      toast.success('Public store link copied to clipboard!', { description: publicStoreUrl });
+      toast.success('Link copied to clipboard!');
     }).catch(() => {
-      toast.info(`Your public store URL is: ${publicStoreUrl}`);
+      // toast.info(`Your public store URL is: ${publicStoreUrl}`);
     });
   };
 
