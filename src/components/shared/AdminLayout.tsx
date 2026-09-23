@@ -238,16 +238,23 @@ function AdminMobileBottomNav({ onOpenDrawer, onLogout }: { onOpenDrawer: () => 
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 16, scale: 0.97 }}
             transition={{ duration: 0.22, ease: [0.32, 0.72, 0, 1] }}
-            className="fixed inset-x-3 z-[94] bottom-[calc(4.85rem+env(safe-area-inset-bottom,0px))] pointer-events-auto max-h-[75vh] flex flex-col"
+            className="fixed inset-x-0 bottom-0 z-[94] pointer-events-auto max-h-[90vh] flex flex-col"
+            drag="y"
+            dragConstraints={{ top: 0, bottom: 0 }}
+            onDragEnd={(e, info) => { if (info.offset.y > 120) setShowMoreSheet(false); }}
           >
-            <div className="glass-sheet rounded-[1rem] overflow-hidden border border-white/60 flex flex-col max-h-full p-2 shadow-2xl">
-              <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100 flex-shrink-0">
-                <p className="text-xs font-extrabold text-slate-700">Admin Modules & Control</p>
+            <div className="bg-white rounded-t-[3rem] flex flex-col overflow-hidden shadow-[0_-4px_24px_rgba(0,0,0,0.1)]">
+              {/* Drag handle */}
+              <div className="flex justify-center pt-2.5 pb-0.5 flex-shrink-0">
+                <div className="w-8 h-[3px] rounded-full bg-slate-200" />
+              </div>
+              <div className="flex items-center justify-between px-4 py-2 flex-shrink-0">
+                <p className="text-[13px] font-medium text-slate-800">More</p>
                 <button
                   onClick={() => setShowMoreSheet(false)}
-                  className="glass-btn w-7 h-7 rounded-full flex items-center justify-center text-slate-400 transition-all"
+                  className="text-[13px] font-normal text-emerald-700 active:opacity-50 transition-opacity"
                 >
-                  <X size={14} />
+                  Cancel
                 </button>
               </div>
 
@@ -260,13 +267,13 @@ function AdminMobileBottomNav({ onOpenDrawer, onLogout }: { onOpenDrawer: () => 
                     className={({ isActive }) =>
                       `flex items-center gap-3 px-3.5 py-3 rounded-xl transition-all no-tap-highlight ${
                         isActive
-                          ? 'bg-emerald-50 text-emerald-800 font-bold border border-emerald-100'
+                          ? 'bg-emerald-50 text-emerald-800 border border-emerald-100'
                           : 'bg-slate-50 text-slate-700 hover:bg-emerald-50 hover:text-emerald-800'
                       }`
                     }
                   >
                     <item.icon className="w-[18px] h-[18px] text-emerald-700 flex-shrink-0" strokeWidth={2} />
-                    <span className="text-[11px] leading-tight font-bold truncate">{item.label}</span>
+                    <span className="text-[11px] leading-tight truncate">{item.label}</span>
                   </NavLink>
                 ))}
               </div>
@@ -275,7 +282,7 @@ function AdminMobileBottomNav({ onOpenDrawer, onLogout }: { onOpenDrawer: () => 
                 <Link
                   to="/dashboard"
                   onClick={() => setShowMoreSheet(false)}
-                  className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 transition-colors"
+                  className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-lg text-slate-700 bg-slate-100 hover:bg-slate-200 transition-colors"
                 >
                   Provider UI
                 </Link>
@@ -309,7 +316,7 @@ function AdminMobileBottomNav({ onOpenDrawer, onLogout }: { onOpenDrawer: () => 
                   <div className={`w-9 h-9 rounded-full flex items-center justify-center transition-all duration-200 ${isActive ? 'bg-emerald-100/80 text-[#00694B]' : 'bg-transparent text-slate-500'}`}>
                     <tab.icon className="w-[19px] h-[19px]" strokeWidth={isActive ? 2.5 : 2} />
                   </div>
-                  <span className={`text-[10px] font-extrabold transition-all truncate w-full text-center ${isActive ? 'text-[#00694B]' : 'text-slate-500'}`}>
+                  <span className={`text-[10px] transition-all truncate w-full text-center ${isActive ? 'text-[#00694B]' : 'text-slate-500'}`}>
                     {tab.label}
                   </span>
                 </>
@@ -321,14 +328,14 @@ function AdminMobileBottomNav({ onOpenDrawer, onLogout }: { onOpenDrawer: () => 
           <NavLink
             to="/admin"
             end
-            className="flex-1 min-w-0 flex flex-col items-center gap-0.5 py-1 no-tap-highlight"
+            className="flex-1 min-w-0 flex flex-col items-center  gap-0.5 py-1 no-tap-highlight"
           >
             {({ isActive }) => (
               <>
                 <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 active:scale-95 ${isActive ? 'bg-emerald-500 shadow-lg shadow-emerald-500/30 text-white' : 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100/80'}`}>
-                  <Home className="w-5 h-5" strokeWidth={2.5} />
+                  <Home className="" strokeWidth={2.5} />
                 </div>
-                <span className={`text-[9px] font-bold mt-0.5 transition-all truncate w-full text-center ${isActive ? 'text-[#0D4A3E]' : 'text-slate-400'}`}>
+                <span className={`text-[10px] mt-0.5 transition-all truncate w-full text-center ${isActive ? 'text-[#0D4A3E]' : 'text-slate-400'}`}>
                   Overview
                 </span>
               </>
@@ -347,7 +354,7 @@ function AdminMobileBottomNav({ onOpenDrawer, onLogout }: { onOpenDrawer: () => 
                   <div className={`w-9 h-9 rounded-full flex items-center justify-center transition-all duration-200 ${isActive ? 'bg-emerald-100/80 text-[#00694B]' : 'bg-transparent text-slate-500'}`}>
                     <tab.icon className="w-[19px] h-[19px]" strokeWidth={isActive ? 2.5 : 2} />
                   </div>
-                  <span className={`text-[10px] font-extrabold transition-all truncate w-full text-center ${isActive ? 'text-[#00694B]' : 'text-slate-500'}`}>
+                  <span className={`text-[10px] transition-all truncate w-full text-center ${isActive ? 'text-[#00694B]' : 'text-slate-500'}`}>
                     {tab.label}
                   </span>
                 </>
@@ -363,7 +370,7 @@ function AdminMobileBottomNav({ onOpenDrawer, onLogout }: { onOpenDrawer: () => 
             <div className={`w-9 h-9 rounded-full flex items-center justify-center transition-all duration-200 ${showMoreSheet ? 'bg-emerald-100/80 text-[#00694B]' : 'bg-transparent text-slate-500'}`}>
               <MoreHorizontal className="w-[19px] h-[19px]" strokeWidth={showMoreSheet ? 2.5 : 2} />
             </div>
-            <span className={`text-[10px] font-extrabold transition-all truncate w-full text-center ${showMoreSheet ? 'text-[#00694B]' : 'text-slate-500'}`}>
+            <span className={`text-[10px] transition-all truncate w-full text-center ${showMoreSheet ? 'text-[#00694B]' : 'text-slate-500'}`}>
               More
             </span>
           </button>

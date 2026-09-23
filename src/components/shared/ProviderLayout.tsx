@@ -661,7 +661,7 @@ function MobileBottomNav({ user, targetEndDate, filteredGroups = [], onOpenMobil
             className="fixed inset-x-0 bottom-0 z-[97] pointer-events-auto"
             style={{ maxHeight: '70vh' }}
           >
-            <div className="bg-white rounded-t-[1.25rem] flex flex-col overflow-hidden shadow-[0_-4px_24px_rgba(0,0,0,0.1)]">
+            <div className="bg-white rounded-t-[2rem] flex flex-col overflow-hidden shadow-[0_-4px_24px_rgba(0,0,0,0.1)]">
               {/* Drag handle */}
               <div className="flex justify-center pt-2.5 pb-0.5 flex-shrink-0">
                 <div className="w-8 h-[3px] rounded-full bg-slate-200" />
