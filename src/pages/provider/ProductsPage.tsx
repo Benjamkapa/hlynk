@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { Plus, Search, Filter, Edit, Trash2, Package, TrendingDown, Activity, AlertTriangle, LayoutGrid, List, Camera, FileText, Eye, Share2, ShoppingBag, Phone, MessageSquare, Check, CheckCircle2, Clock, CreditCard, Upload, Trash, CandyCaneIcon, Ban } from 'lucide-react'
+import React, { useState, useEffect } from 'react'
+import { Plus, Search, Filter, Edit, Trash2, Package, TrendingDown, Activity, AlertTriangle, LayoutGrid, List, Camera, FileText, Eye, Share2, ShoppingBag, Phone, MessageSquare, Check, CheckCircle2, Clock, CreditCard, Upload, Trash, CandyCaneIcon, Ban, Clipboard } from 'lucide-react'
 import { CameraCapture } from '../../components/shared/CameraCapture'
 import { ConfirmModal } from '../../components/shared/ConfirmModal'
 import { SlideOver } from '../../components/shared/SlideOver'
@@ -13,7 +13,6 @@ import FeatureGate, { canAccessFeature } from '../../components/shared/FeatureGa
 import { useAuth } from '../../lib/auth/AuthContext'
 import { useNavigate, useLocation } from 'react-router-dom'
 
-import { useEffect } from 'react'
 import { keepPreviousData } from '@tanstack/react-query'
 import { PaginatedResponse } from '../../lib/types/api'
 import { cacheInventory, getCachedInventory } from '../../lib/offline/db'
@@ -828,6 +827,66 @@ function ProductForm({ onClose }: { onClose: () => void }) {
   })
   const [isCameraOpen, setIsCameraOpen] = useState(false)
 
+  const handleImageFile = (file: File) => {
+    const reader = new FileReader()
+    reader.onloadend = () => {
+      setForm(prev => ({ ...prev, imageUrl: reader.result as string, file }))
+      toast.success('Image loaded from clipboard!')
+    }
+    reader.readAsDataURL(file)
+  }
+
+  const handlePaste = (e: React.ClipboardEvent<HTMLDivElement> | ClipboardEvent) => {
+    const items = (e as React.ClipboardEvent).clipboardData?.items || (e as ClipboardEvent).clipboardData?.items
+    if (!items) return
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i]
+      if (item.type.startsWith('image/')) {
+        const file = item.getAsFile()
+        if (file) {
+          handleImageFile(file)
+          e.preventDefault()
+          return
+        }
+      }
+    }
+  }
+
+  const handleReadClipboard = async () => {
+    try {
+      if (!navigator.clipboard || !navigator.clipboard.read) {
+        toast.error('Clipboard access not supported. Use Ctrl+V to paste.')
+        return
+      }
+      const items = await navigator.clipboard.read()
+      let found = false
+      for (const item of items) {
+        const imageType = item.types.find(t => t.startsWith('image/'))
+        if (imageType) {
+          const blob = await item.getType(imageType)
+          const file = new File([blob], `pasted-${Date.now()}.${imageType.split('/')[1] || 'png'}`, { type: imageType })
+          handleImageFile(file)
+          found = true
+          break
+        }
+      }
+      if (!found) {
+        toast.error('No image found in clipboard. Please copy an image first.')
+      }
+    } catch (err: any) {
+      console.error('Failed to read clipboard:', err)
+      toast.error('Unable to access clipboard. Allow clipboard permissions or press Ctrl+V.')
+    }
+  }
+
+  useEffect(() => {
+    const windowPasteHandler = (e: ClipboardEvent) => {
+      handlePaste(e)
+    }
+    window.addEventListener('paste', windowPasteHandler)
+    return () => window.removeEventListener('paste', windowPasteHandler)
+  }, [])
+
   const mutation = useMutation({
     mutationFn: async (data: any) => {
       // Remove base64 image and file before sending to create
@@ -854,7 +913,19 @@ function ProductForm({ onClose }: { onClose: () => void }) {
     <div className="space-y-5 pb-16">
       <div className="flex flex-col items-center gap-4">
         <div
-          className="h-28 w-28 rounded-[.5rem] bg-gray-50 border border-dashed border-gray-200 flex items-center justify-center overflow-hidden cursor-pointer hover:border-gray-300 transition-colors group relative"
+          className="h-28 w-28 rounded-[.5rem] bg-gray-50 border border-dashed border-gray-200 flex items-center justify-center overflow-hidden cursor-pointer hover:border-gray-300 transition-colors group relative outline-none focus:ring-2 focus:ring-[#0D4A3E]"
+          onPaste={handlePaste}
+          onContextMenu={(e) => {
+            e.preventDefault()
+            handleReadClipboard()
+          }}
+          onClick={() => {
+            if (!form.imageUrl) {
+              document.getElementById('image-upload')?.click()
+            }
+          }}
+          tabIndex={0}
+          title="Click to browse file, paste (Ctrl+V), or long-press / right-click to paste from clipboard"
         >
           {form.imageUrl ? (
             <>
@@ -864,9 +935,10 @@ function ProductForm({ onClose }: { onClose: () => void }) {
               </div>
             </>
           ) : (
-            <div className="flex flex-col items-center gap-2 text-gray-300 group-hover:text-gray-400 transition-colors">
-              <Plus size={28} />
-              <span className="text-xs">Upload image</span>
+            <div className="flex flex-col items-center gap-1 text-gray-400 group-hover:text-gray-500 transition-colors p-2 text-center">
+              <Plus size={24} />
+              <span className="text-[11px] font-medium leading-tight">Upload or Paste</span>
+              <span className="text-[9px] text-gray-300">Long-press to paste</span>
             </div>
           )}
           <input
@@ -877,9 +949,7 @@ function ProductForm({ onClose }: { onClose: () => void }) {
             onChange={(e) => {
               const file = e.target.files?.[0]
               if (file) {
-                const reader = new FileReader()
-                reader.onloadend = () => setForm({ ...form, imageUrl: reader.result as string, file: file })
-                reader.readAsDataURL(file)
+                handleImageFile(file)
               }
             }}
           />
@@ -889,14 +959,24 @@ function ProductForm({ onClose }: { onClose: () => void }) {
           <button
             type="button"
             onClick={() => document.getElementById('image-upload')?.click()}
-            className="px-4 py-2 bg-gray-50 text-gray-600 rounded-[.5rem] text-xs font-medium hover:bg-gray-100 transition-colors"
+            className="px-3.5 py-2 bg-gray-50 text-gray-600 rounded-[.5rem] text-xs font-medium hover:bg-gray-100 transition-colors flex items-center gap-1.5"
+            title="Upload from device storage"
           >
             <Upload size={14}/>
           </button>
           <button
             type="button"
+            onClick={handleReadClipboard}
+            className="px-3.5 py-2 bg-emerald-50 text-emerald-700 rounded-[.5rem] text-xs font-medium hover:bg-emerald-100 transition-colors flex items-center gap-1.5"
+            title="Paste image copied from WhatsApp or other apps"
+          >
+            <Clipboard size={14}/>
+          </button>
+          <button
+            type="button"
             onClick={() => setIsCameraOpen(true)}
-            className="px-4 py-2 bg-gray-50 text-gray-600 rounded-[.5rem] text-xs font-medium hover:bg-gray-100 transition-colors flex items-center gap-1.5"
+            className="px-3.5 py-2 bg-gray-50 text-gray-600 rounded-[.5rem] text-xs font-medium hover:bg-gray-100 transition-colors flex items-center gap-1.5"
+            title="Take photo with camera"
           >
             <Camera size={14} />
           </button>
@@ -904,7 +984,8 @@ function ProductForm({ onClose }: { onClose: () => void }) {
             <button
               type="button"
               onClick={() => setForm({ ...form, imageUrl: '', file: null })}
-              className="px-4 py-2 bg-red-50 text-red-600 rounded-[.5rem] text-xs font-medium hover:bg-red-100 transition-colors"
+              className="px-3.5 py-2 bg-red-50 text-red-600 rounded-[.5rem] text-xs font-medium hover:bg-red-100 transition-colors"
+              title="Remove image"
             >
               <Ban size={14}/>
             </button>
@@ -1129,7 +1210,67 @@ function EditProductForm({ product, onClose }: { product: any; onClose: () => vo
     isPerishable: !!product.isPerishable,
     expiryDate: product.expiryDate ? product.expiryDate.split('T')[0] : ''
   })
-  const [isCameraOpen, setIsCameraOpen] = useState(false)
+  const [isCameraOpen, setIsCameraOpen] = useState(false);
+
+  const handleImageFile = (file: File) => {
+    const reader = new FileReader()
+    reader.onloadend = () => {
+      setForm(prev => ({ ...prev, imageUrl: reader.result as string, file }))
+      toast.success('Image loaded from clipboard!')
+    }
+    reader.readAsDataURL(file)
+  }
+
+  const handlePaste = (e: React.ClipboardEvent<HTMLDivElement> | ClipboardEvent) => {
+    const items = (e as React.ClipboardEvent).clipboardData?.items || (e as ClipboardEvent).clipboardData?.items
+    if (!items) return
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i]
+      if (item.type.startsWith('image/')) {
+        const file = item.getAsFile()
+        if (file) {
+          handleImageFile(file)
+          e.preventDefault()
+          return
+        }
+      }
+    }
+  }
+
+  const handleReadClipboard = async () => {
+    try {
+      if (!navigator.clipboard || !navigator.clipboard.read) {
+        toast.error('Clipboard access not supported. Use Ctrl+V to paste.')
+        return
+      }
+      const items = await navigator.clipboard.read()
+      let found = false
+      for (const item of items) {
+        const imageType = item.types.find(t => t.startsWith('image/'))
+        if (imageType) {
+          const blob = await item.getType(imageType)
+          const file = new File([blob], `pasted-${Date.now()}.${imageType.split('/')[1] || 'png'}`, { type: imageType })
+          handleImageFile(file)
+          found = true
+          break
+        }
+      }
+      if (!found) {
+        toast.error('No image found in clipboard. Please copy an image first.')
+      }
+    } catch (err: any) {
+      console.error('Failed to read clipboard:', err)
+      toast.error('Unable to access clipboard. Allow clipboard permissions or press Ctrl+V.')
+    }
+  }
+
+  useEffect(() => {
+    const windowPasteHandler = (e: ClipboardEvent) => {
+      handlePaste(e)
+    }
+    window.addEventListener('paste', windowPasteHandler)
+    return () => window.removeEventListener('paste', windowPasteHandler)
+  }, [])
 
   const mutation = useMutation({
     mutationFn: async (data: any) => {
@@ -1156,8 +1297,20 @@ function EditProductForm({ product, onClose }: { product: any; onClose: () => vo
     <div className="space-y-5 pb-16 ">
       <div className="flex flex-col items-center gap-4">
         <div
-          className="h-28 w-28 rounded-[.5rem] bg-gray-50 border border-dashed border-gray-200 flex items-center justify-center overflow-hidden cursor-pointer hover:border-gray-300 transition-colors group relative"
-         >
+          className="h-28 w-28 rounded-[.5rem] bg-gray-50 border border-dashed border-gray-200 flex items-center justify-center overflow-hidden cursor-pointer hover:border-gray-300 transition-colors group relative outline-none focus:ring-2 focus:ring-[#0D4A3E]"
+          onPaste={handlePaste}
+          onContextMenu={(e) => {
+            e.preventDefault()
+            handleReadClipboard()
+          }}
+          onClick={() => {
+            if (!form.imageUrl) {
+              document.getElementById('image-edit-upload')?.click()
+            }
+          }}
+          tabIndex={0}
+          title="Click to browse file, paste (Ctrl+V), or long-press / right-click to paste from clipboard"
+        >
           {form.imageUrl ? (
             <>
               <img src={form.imageUrl} alt="Preview" className="h-full w-full object-cover" />
@@ -1166,9 +1319,10 @@ function EditProductForm({ product, onClose }: { product: any; onClose: () => vo
               </div>
             </>
           ) : (
-            <div className="flex flex-col items-center gap-2 text-gray-300 group-hover:text-gray-400 transition-colors">
-              <Plus size={28} />
-              <span className="text-xs">Upload image</span>
+            <div className="flex flex-col items-center gap-1 text-gray-400 group-hover:text-gray-500 transition-colors p-2 text-center">
+              <Plus size={24} />
+              <span className="text-[11px] font-medium leading-tight">Upload or Paste</span>
+              <span className="text-[9px] text-gray-300">Long-press to paste</span>
             </div>
           )}
           <input
@@ -1179,34 +1333,43 @@ function EditProductForm({ product, onClose }: { product: any; onClose: () => vo
             onChange={(e) => {
               const file = e.target.files?.[0]
               if (file) {
-                const reader = new FileReader()
-                reader.onloadend = () => setForm({ ...form, imageUrl: reader.result as string, file: file })
-                reader.readAsDataURL(file)
+                handleImageFile(file)
               }
             }}
           />
         </div>
 
-        <div className="flex flex-col-3 gap-2">
+        <div className="flex gap-2">
           <button
             type="button"
             onClick={() => document.getElementById('image-edit-upload')?.click()}
-            className="px-4 py-2 bg-gray-50 text-gray-600 rounded-[.5rem] text-xs font-medium hover:bg-gray-100 transition-colors"
+            className="px-3.5 py-2 bg-gray-50 text-gray-600 rounded-[.5rem] text-xs font-medium hover:bg-gray-100 transition-colors flex items-center gap-1.5"
+            title="Upload from device storage"
           >
-            <Upload size={14}/>
+            <Upload size={14}/> File
+          </button>
+          <button
+            type="button"
+            onClick={handleReadClipboard}
+            className="px-3.5 py-2 bg-emerald-50 text-emerald-700 rounded-[.5rem] text-xs font-medium hover:bg-emerald-100 transition-colors flex items-center gap-1.5"
+            title="Paste image copied from WhatsApp or other apps"
+          >
+            <Clipboard size={14}/> Paste
           </button>
           <button
             type="button"
             onClick={() => setIsCameraOpen(true)}
-            className="px-4 py-2 bg-gray-50 text-gray-600 rounded-[.5rem] text-xs font-medium hover:bg-gray-100 transition-colors flex items-center gap-1.5"
+            className="px-3.5 py-2 bg-gray-50 text-gray-600 rounded-[.5rem] text-xs font-medium hover:bg-gray-100 transition-colors flex items-center gap-1.5"
+            title="Take photo with camera"
           >
-            <Camera size={14} />
+            <Camera size={14} /> Camera
           </button>
           {form.imageUrl && (
             <button
               type="button"
               onClick={() => setForm({ ...form, imageUrl: '', file: null })}
-              className="px-4 py-2 bg-red-50 text-red-600 rounded-[.5rem] text-xs font-medium hover:bg-red-100 transition-colors"
+              className="px-3.5 py-2 bg-red-50 text-red-600 rounded-[.5rem] text-xs font-medium hover:bg-red-100 transition-colors"
+              title="Remove image"
             >
               <Trash size={14} />
             </button>
