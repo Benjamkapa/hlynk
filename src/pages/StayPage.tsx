@@ -1324,10 +1324,10 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
                 setIsCartOpen(true);
                 setIsOrdering(true);
               }}
-              className="flex w-full items-center justify-between rounded-[22px] border border-white/20 bg-slate-950/80 p-3 pl-4 text-left text-white shadow-[0_20px_55px_rgba(15,23,42,0.35)] backdrop-blur-2xl active:scale-[0.98] transition"
+              className="flex w-full items-center justify-between rounded-full border border-white/20 bg-slate-950/80 p-3 pl-4 text-left text-white shadow-[0_20px_55px_rgba(15,23,42,0.35)] backdrop-blur-2xl active:scale-[0.98] transition"
             >
               <span className="flex min-w-0 items-center gap-3">
-                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-white text-sm font-bold text-slate-950">
+                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-white text-sm font-bold text-slate-950">
                   {cartItemCount}
                 </span>
                 <span className="min-w-0">
@@ -1340,7 +1340,7 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
                 </span>
               </span>
 
-              <span className="rounded-xl bg-white px-4 py-3 text-xs font-bold text-slate-950">
+              <span className="rounded-full bg-white px-4 py-3 text-xs font-bold text-slate-950">
                 Checkout
               </span>
             </button>
