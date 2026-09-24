@@ -139,14 +139,28 @@ function getItemImages(item: Room | Product): string[] {
   return item.imageUrl ? [item.imageUrl] : [];
 }
 
-function GalleryModal({
-  images,
-  title,
-  onClose,
-}: {
+interface ItemDetailState {
+  item: Room | Product;
   images: string[];
   title: string;
+  category: string;
+  description?: string;
+  price: number;
+  ctaLabel: string;
+}
+
+function ItemDetailModal({
+  item,
+  images,
+  title,
+  category,
+  description,
+  ctaLabel,
+  onClose,
+  onAdd,
+}: ItemDetailState & {
   onClose: () => void;
+  onAdd: () => void;
 }) {
   const [index, setIndex] = useState(0);
 
@@ -154,7 +168,7 @@ function GalleryModal({
     setIndex(0);
   }, [images]);
 
-  if (!images.length) return null;
+  const hasImages = images.length > 0;
 
   return (
     <motion.div
@@ -162,54 +176,117 @@ function GalleryModal({
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       onClick={onClose}
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/90 p-4 backdrop-blur-md"
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/80 p-4 backdrop-blur-md"
     >
-      <div
+      <motion.div
+        initial={{ scale: 0.95, opacity: 0, y: 10 }}
+        animate={{ scale: 1, opacity: 1, y: 0 }}
+        exit={{ scale: 0.95, opacity: 0, y: 10 }}
         onClick={(event) => event.stopPropagation()}
-        className="relative w-full max-w-5xl"
+        className="relative flex w-full max-w-lg flex-col overflow-hidden rounded-[28px] bg-white shadow-2xl"
       >
-        <img
-          src={images[index]}
-          alt={`${title} ${index + 1}`}
-          className="max-h-[78vh] w-full rounded-[28px] object-contain"
-        />
-
-        <div className="mt-3 flex items-center justify-between px-1 text-sm text-white/70">
-          <span className="truncate">{title}</span>
-          <span>{index + 1} / {images.length}</span>
-        </div>
-
+        {/* Close Button */}
         <button
           type="button"
           onClick={onClose}
-          className="absolute -top-3 -right-2 grid h-10 w-10 place-items-center rounded-full bg-white text-slate-900 shadow-lg"
-          aria-label="Close gallery"
+          className="absolute right-3 top-3 z-30 grid h-9 w-9 place-items-center rounded-full bg-slate-950/60 text-white backdrop-blur hover:bg-slate-950 transition"
+          aria-label="Close modal"
         >
           <X size={18} />
         </button>
 
-        {images.length > 1 && (
-          <>
-            <button
-              type="button"
-              onClick={() => setIndex((value) => (value - 1 + images.length) % images.length)}
-              className="absolute left-3 top-1/2 grid h-11 w-11 -translate-y-1/2 place-items-center rounded-full bg-black/40 text-white backdrop-blur hover:bg-black/60"
-              aria-label="Previous image"
-            >
-              <ChevronLeft size={22} />
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setIndex((value) => (value + 1) % images.length)}
-              className="absolute right-3 top-1/2 grid h-11 w-11 -translate-y-1/2 place-items-center rounded-full bg-black/40 text-white backdrop-blur hover:bg-black/60"
-              aria-label="Next image"
-            >
-              <ChevronRight size={22} />
-            </button>
-          </>
+        {/* Image / Gallery */}
+        {hasImages ? (
+          <div className="relative aspect-[4/3] w-full bg-[#f3f1ec]">
+            <img
+              src={images[index]}
+              alt={`${title} ${index + 1}`}
+              className="h-full w-full object-cover"
+            />
+            {images.length > 1 && (
+              <>
+                <button
+                  type="button"
+                  onClick={() => setIndex((val) => (val - 1 + images.length) % images.length)}
+                  className="absolute left-3 top-1/2 grid h-9 w-9 -translate-y-1/2 place-items-center rounded-full bg-black/40 text-white backdrop-blur hover:bg-black/60 transition"
+                  aria-label="Previous image"
+                >
+                  <ChevronLeft size={20} />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIndex((val) => (val + 1) % images.length)}
+                  className="absolute right-3 top-1/2 grid h-9 w-9 -translate-y-1/2 place-items-center rounded-full bg-black/40 text-white backdrop-blur hover:bg-black/60 transition"
+                  aria-label="Next image"
+                >
+                  <ChevronRight size={20} />
+                </button>
+                <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-1 bg-slate-950/60 px-2 py-1 rounded-full backdrop-blur">
+                  {images.map((_, i) => (
+                    <span
+                      key={i}
+                      className={`h-1.5 rounded-full transition-all ${i === index ? 'w-3 bg-white' : 'w-1.5 bg-white/50'}`}
+                    />
+                  ))}
+                </div>
+              </>
+            )}
+            <span className="absolute bottom-3 right-3 rounded-full bg-slate-950/70 px-2.5 py-0.5 text-[10px] font-medium text-white backdrop-blur">
+              {index + 1} / {images.length}
+            </span>
+          </div>
+        ) : (
+          <div className="grid aspect-[16/9] w-full place-items-center bg-[#f3f1ec] text-slate-400">
+            {"title" in item ? <BedDouble size={40} /> : <Package size={40} />}
+          </div>
         )}
-      </div>
+
+        {/* Content Body */}
+        <div className="flex flex-col p-6 max-h-[60vh] overflow-y-auto">
+          <div className="flex items-center gap-2">
+            {category && (
+              <span className="rounded-full bg-slate-100 px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.1em] text-slate-600">
+                {category}
+              </span>
+            )}
+          </div>
+
+          <h2 className="mt-2 text-2xl font-bold tracking-tight text-slate-950" style={serif}>
+            {title}
+          </h2>
+
+          {/* Description Section */}
+          <div className="mt-4 border-t border-slate-100 pt-4">
+            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400">
+              Description
+            </h4>
+            {description && description.trim() ? (
+              <p className="mt-2 whitespace-pre-line text-sm leading-relaxed text-slate-600">
+                {description}
+              </p>
+            ) : (
+              <p className="mt-2 text-xs italic text-slate-400">
+                No description provided for this item.
+              </p>
+            )}
+          </div>
+        </div>
+
+        {/* Footer Actions */}
+        <div className="flex items-center justify-end border-t border-slate-100 bg-slate-50/80 px-6 py-4">
+          <button
+            type="button"
+            onClick={() => {
+              onAdd();
+              onClose();
+            }}
+            className="inline-flex h-11 w-full sm:w-auto items-center justify-center gap-2 rounded-full bg-slate-950 px-6 text-xs font-bold text-white transition hover:bg-slate-800 active:scale-95 shadow-md"
+          >
+            <Plus size={16} />
+            {ctaLabel === "Book" ? "Book Space" : "Add to Cart"}
+          </button>
+        </div>
+      </motion.div>
     </motion.div>
   );
 }
@@ -233,7 +310,7 @@ function CatalogCard({
   images = [],
   image,
   imageCount,
-  onImageClick,
+  onViewDetails,
   onAdd,
   ctaLabel,
   isList,
@@ -242,7 +319,7 @@ function CatalogCard({
   images?: string[];
   image?: string;
   imageCount: number;
-  onImageClick: () => void;
+  onViewDetails: () => void;
   onAdd: () => void;
   ctaLabel: string;
   isList: boolean;
@@ -272,13 +349,18 @@ function CatalogCard({
 
   if (isList) {
     return (
-      <article className="group flex min-h-[68px] w-full overflow-hidden rounded-xl border border-slate-200 bg-white transition hover:border-slate-300 hover:shadow-sm">
+      <article
+        onClick={onViewDetails}
+        className="group flex min-h-[68px] w-full cursor-pointer overflow-hidden rounded-xl border border-slate-200 bg-white transition hover:border-slate-300 hover:shadow-sm"
+      >
         <button
           type="button"
-          disabled={!activeImg}
-          onClick={onImageClick}
-          className="relative h-[68px] w-[68px] min-w-[68px] overflow-hidden bg-[#f3f1ec] text-left disabled:cursor-default sm:h-[76px] sm:w-[76px] sm:min-w-[76px]"
-          aria-label={activeImg ? `View photos of ${title}` : undefined}
+          onClick={(e) => {
+            e.stopPropagation();
+            onViewDetails();
+          }}
+          className="relative h-[68px] w-[68px] min-w-[68px] overflow-hidden bg-[#f3f1ec] text-left sm:h-[76px] sm:w-[76px] sm:min-w-[76px]"
+          aria-label={`View details of ${title}`}
         >
           {activeImg ? (
             <img
@@ -299,7 +381,7 @@ function CatalogCard({
         <div className="flex min-w-0 flex-1 items-center gap-3 px-3 py-2 sm:px-3.5">
           <div className="min-w-0 flex-1">
             <div className="flex min-w-0 items-center gap-2">
-              <h3 className="truncate text-[13px] font-semibold tracking-tight text-slate-950">{title}</h3>
+              <h3 className="truncate text-[13px] font-semibold tracking-tight text-slate-950 group-hover:text-slate-700">{title}</h3>
               {category && (
                 <span className="hidden shrink-0 rounded-full bg-slate-100 px-2 py-0.5 text-[8px] font-bold uppercase tracking-[0.08em] text-slate-500 sm:inline-flex">
                   {category}
@@ -319,7 +401,10 @@ function CatalogCard({
             </span>
             <button
               type="button"
-              onClick={onAdd}
+              onClick={(e) => {
+                e.stopPropagation();
+                onAdd();
+              }}
               className="inline-flex h-8 items-center gap-1 rounded-full bg-slate-950 px-2.5 text-[10px] font-semibold text-white transition hover:bg-slate-800 active:scale-95 sm:px-3"
             >
               <Plus size={12} />
@@ -332,10 +417,12 @@ function CatalogCard({
   }
 
   return (
-    <article className="group/card flex min-w-0 flex-col overflow-hidden rounded-[16px] border border-slate-200 bg-white transition duration-300 hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-[0_14px_32px_rgba(15,23,42,0.07)]">
+    <article
+      onClick={onViewDetails}
+      className="group/card flex min-w-0 flex-col overflow-hidden rounded-[16px] border border-slate-200 bg-white transition duration-300 hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-[0_14px_32px_rgba(15,23,42,0.07)] cursor-pointer"
+    >
       <div
-        className="relative aspect-[1.12/1] w-full overflow-hidden bg-[#f3f1ec] text-left group/slider cursor-pointer"
-        onClick={onImageClick}
+        className="relative aspect-[1.12/1] w-full overflow-hidden bg-[#f3f1ec] text-left group/slider"
       >
         {activeImg ? (
           <img
@@ -400,7 +487,7 @@ function CatalogCard({
 
       <div className="flex min-h-[108px] flex-1 flex-col p-2.5 sm:p-3">
         <div className="min-w-0">
-          <h3 className="truncate text-[13px] font-semibold tracking-tight text-slate-950">{title}</h3>
+          <h3 className="truncate text-[13px] font-semibold tracking-tight text-slate-950 group-hover/card:text-slate-700">{title}</h3>
           {description && (
             <p className="mt-0.5 line-clamp-1 text-[10px] leading-4 text-slate-500">
               {description}
@@ -420,7 +507,10 @@ function CatalogCard({
 
           <button
             type="button"
-            onClick={onAdd}
+            onClick={(e) => {
+              e.stopPropagation();
+              onAdd();
+            }}
             className="inline-flex h-8 shrink-0 items-center gap-1 rounded-full bg-slate-950 px-2.5 text-[10px] font-semibold text-white transition hover:bg-slate-800 active:scale-95"
           >
             <Plus size={12} />
@@ -458,7 +548,26 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
   const [isOrdering, setIsOrdering] = useState(false);
   const [orderSuccess, setOrderSuccess] = useState<any>(null);
 
-  const [gallery, setGallery] = useState<GalleryState | null>(null);
+  const [itemDetail, setItemDetail] = useState<ItemDetailState | null>(null);
+
+  const openItemDetails = (item: Room | Product) => {
+    const images = getItemImages(item);
+    const title = "title" in item ? item.title : item.name;
+    const category = "title" in item ? item.type : item.category || "General";
+    const description = "title" in item ? item.meta?.description : item.description;
+    const price = "title" in item ? Number(item.basePrice) : Number(item.price);
+    const ctaLabel = "title" in item ? "Book" : "Add";
+
+    setItemDetail({
+      item,
+      images,
+      title,
+      category,
+      description,
+      price,
+      ctaLabel,
+    });
+  };
 
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
@@ -1160,10 +1269,7 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
                         images={images}
                         image={images[0]}
                         imageCount={images.length}
-                        onImageClick={() =>
-                          images.length &&
-                          setGallery({ images, title: room.title })
-                        }
+                        onViewDetails={() => openItemDetails(room)}
                         onAdd={() =>
                           addToCart({
                             id: room.id,
@@ -1203,10 +1309,7 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
                         images={images}
                         image={images[0]}
                         imageCount={images.length}
-                        onImageClick={() =>
-                          images.length &&
-                          setGallery({ images, title: product.name })
-                        }
+                        onViewDetails={() => openItemDetails(product)}
                         onAdd={() =>
                           addToCart({
                             id: product.id,
@@ -1743,13 +1846,22 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
         )}
       </AnimatePresence>
 
-      {/* GALLERY */}
+      {/* ITEM DETAIL MODAL */}
       <AnimatePresence>
-        {gallery && (
-          <GalleryModal
-            images={gallery.images}
-            title={gallery.title}
-            onClose={() => setGallery(null)}
+        {itemDetail && (
+          <ItemDetailModal
+            {...itemDetail}
+            onClose={() => setItemDetail(null)}
+            onAdd={() => {
+              addToCart({
+                id: itemDetail.item.id,
+                name: itemDetail.title,
+                price: itemDetail.price,
+                type: "title" in itemDetail.item ? "ROOM" : "PRODUCT",
+                imageUrl: itemDetail.images[0],
+              });
+              toast.success(`Added ${itemDetail.title} to cart`);
+            }}
           />
         )}
       </AnimatePresence>

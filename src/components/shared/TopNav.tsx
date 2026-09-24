@@ -35,7 +35,7 @@ const routeTitles: Record<string, string> = {
   '/admin/system-performance': 'System Performance',
   '/admin/financials': 'Financial Intelligence',
   '/admin/businesses': 'Provider Management',
-  '/admin/user-operations': 'User Operations',
+  '/admin/user-operations': 'Users',
   '/admin/subscriptions': 'Subscriptions Management',
   '/admin/payments': 'Payments & Ledger',
   '/admin/forensic-audit': 'Audit & Security',

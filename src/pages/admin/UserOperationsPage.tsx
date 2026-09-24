@@ -87,7 +87,7 @@ export default function UserOperationsPage() {
     <div className="space-y-8 animate-in fade-in duration-500 pt-4">
 
       <div>
-        <h1 className="text-xl font-semibold text-gray-900">User Operations</h1>
+        <h1 className="text-xl font-semibold text-gray-900">Users</h1>
         <p className="text-gray-400 text-sm mt-0.5">Manage platform users, security sessions, and activity audits</p>
       </div>
 

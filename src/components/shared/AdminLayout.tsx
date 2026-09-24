@@ -39,7 +39,7 @@ const adminNavItems: AdminNavItem[] = [
   { to: '/admin/system-performance', label: 'Performance', icon: Activity },
   { to: '/admin/financials', label: 'Financials', icon: DollarSign },
   { to: '/admin/businesses', label: 'Providers', icon: Building2 },
-  { to: '/admin/user-operations', label: 'User Operations', icon: Users },
+  { to: '/admin/user-operations', label: 'Users', icon: Users },
   { to: '/admin/subscriptions', label: 'Subscriptions', icon: CreditCard },
   { to: '/admin/payments', label: 'Payments', icon: Receipt },
   { to: '/admin/forensic-audit', label: 'Audit & Security', icon: ShieldCheck },

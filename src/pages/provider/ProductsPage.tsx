@@ -823,7 +823,8 @@ function ProductForm({ onClose }: { onClose: () => void }) {
   const queryClient = useQueryClient()
   const [form, setForm] = useState({
     name: '', category: 'Groceries', buyingPrice: '', price: '', stock: '', minLevel: '5',
-    imageUrl: '', file: null as File | null, isPerishable: false, expiryDate: '', type: 'GOOD'
+    imageUrl: '', file: null as File | null, isPerishable: false, expiryDate: '', type: 'GOOD',
+    description: ''
   })
   const [isCameraOpen, setIsCameraOpen] = useState(false)
 
@@ -1171,6 +1172,17 @@ function ProductForm({ onClose }: { onClose: () => void }) {
         </div>
       )}
 
+      <div className="space-y-1.5">
+        <label className="text-xs text-gray-500">Item description (optional)</label>
+        <textarea
+          rows={3}
+          placeholder="Describe this item (details, features, ingredients, specs). Leave blank if not needed."
+          value={form.description}
+          onChange={(e) => setForm({ ...form, description: e.target.value })}
+          className="w-full bg-gray-50 border-none rounded-[.5rem] py-2.5 px-3.5 outline-none focus:ring-2 focus:ring-gray-200 transition-all text-sm resize-none"
+        />
+      </div>
+
       <button
         onClick={() => {
           if (!form.name || !form.price) return toast.error('Name and price are required')
@@ -1181,7 +1193,8 @@ function ProductForm({ onClose }: { onClose: () => void }) {
             stock: parseInt(form.stock) || 0,
             minLevel: parseInt(form.minLevel) || 5,
             isPerishable: form.isPerishable,
-            expiryDate: form.expiryDate || undefined
+            expiryDate: form.expiryDate || undefined,
+            description: form.description.trim() || undefined
           })
         }}
         disabled={mutation.isPending}
@@ -1207,7 +1220,8 @@ function EditProductForm({ product, onClose }: { product: any; onClose: () => vo
     imageUrl: product.imageUrl || '',
     file: null as File | null,
     isPerishable: !!product.isPerishable,
-    expiryDate: product.expiryDate ? product.expiryDate.split('T')[0] : ''
+    expiryDate: product.expiryDate ? product.expiryDate.split('T')[0] : '',
+    description: product.description || ''
   })
   const [isCameraOpen, setIsCameraOpen] = useState(false);
 
@@ -1475,6 +1489,17 @@ function EditProductForm({ product, onClose }: { product: any; onClose: () => vo
         </div>
       )}
 
+      <div className="space-y-1.5">
+        <label className="text-xs text-gray-500">Item description (optional)</label>
+        <textarea
+          rows={3}
+          placeholder="Describe this item (details, features, ingredients, specs). Leave blank if not needed."
+          value={form.description}
+          onChange={(e) => setForm({ ...form, description: e.target.value })}
+          className="w-full bg-gray-50 border-none rounded-[.5rem] py-2.5 px-3.5 outline-none focus:ring-2 focus:ring-gray-200 transition-all text-sm resize-none"
+        />
+      </div>
+
       <button
         onClick={() => {
           mutation.mutate({
@@ -1484,7 +1509,8 @@ function EditProductForm({ product, onClose }: { product: any; onClose: () => vo
             stock: parseInt(form.stock) || 0,
             minLevel: parseInt(form.minLevel) || 5,
             isPerishable: form.isPerishable,
-            expiryDate: form.expiryDate || undefined
+            expiryDate: form.expiryDate || undefined,
+            description: form.description.trim() || undefined
           })
         }}
         disabled={mutation.isPending}
