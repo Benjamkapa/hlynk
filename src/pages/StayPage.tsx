@@ -113,6 +113,7 @@ interface CartItem {
 interface GalleryState {
   images: string[];
   title: string;
+  description?: string;
 }
 
 type ViewMode = "grid" | "list";
@@ -142,10 +143,12 @@ function getItemImages(item: Room | Product): string[] {
 function GalleryModal({
   images,
   title,
+  description,
   onClose,
 }: {
   images: string[];
   title: string;
+  description?: string;
   onClose: () => void;
 }) {
   const [index, setIndex] = useState(0);
@@ -154,7 +157,7 @@ function GalleryModal({
     setIndex(0);
   }, [images]);
 
-  if (!images.length) return null;
+  if (!images.length && !description) return null;
 
   return (
     <motion.div
@@ -168,16 +171,28 @@ function GalleryModal({
         onClick={(event) => event.stopPropagation()}
         className="relative w-full max-w-5xl"
       >
-        <img
-          src={images[index]}
-          alt={`${title} ${index + 1}`}
-          className="max-h-[78vh] w-full rounded-[28px] object-contain"
-        />
+        {images.length > 0 ? (
+          <img
+            src={images[index]}
+            alt={`${title} ${index + 1}`}
+            className="max-h-[70vh] w-full rounded-[28px] object-contain"
+          />
+        ) : (
+          <div className="flex w-full h-[30vh] items-center justify-center rounded-[28px] bg-slate-900 border border-slate-800">
+            <span className="text-slate-500">No images available</span>
+          </div>
+        )}
 
         <div className="mt-3 flex items-center justify-between px-1 text-sm text-white/70">
           <span className="truncate">{title}</span>
-          <span>{index + 1} / {images.length}</span>
+          {images.length > 0 && <span>{index + 1} / {images.length}</span>}
         </div>
+
+        {description && (
+          <div className="mt-2 px-1 pb-2 max-h-[25vh] overflow-y-auto custom-scrollbar">
+            <p className="text-sm text-white/90 whitespace-pre-wrap break-words">{description}</p>
+          </div>
+        )}
 
         <button
           type="button"
@@ -275,10 +290,10 @@ function CatalogCard({
       <article className="group flex min-h-[68px] w-full overflow-hidden rounded-xl border border-slate-200 bg-white transition hover:border-slate-300 hover:shadow-sm">
         <button
           type="button"
-          disabled={!activeImg}
+          disabled={!activeImg && !description}
           onClick={onImageClick}
           className="relative h-[68px] w-[68px] min-w-[68px] overflow-hidden bg-[#f3f1ec] text-left disabled:cursor-default sm:h-[76px] sm:w-[76px] sm:min-w-[76px]"
-          aria-label={activeImg ? `View photos of ${title}` : undefined}
+          aria-label={activeImg ? `View photos of ${title}` : (description ? `View details of ${title}` : undefined)}
         >
           {activeImg ? (
             <img
@@ -998,7 +1013,7 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
           />
           <InfoCell
             icon={<Phone size={16} />}
-            label="Support"
+            label="Contact"
             value={listing.phone || "Available through the business"}
           />
         </section>
@@ -1016,7 +1031,7 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
                   }`}
               >
                 <span className="inline-flex items-center gap-2">
-                  <BedDouble size={16} /> Rooms & spaces
+                  <BedDouble size={16} /> Hospitality
                 </span>
                 {activeTab === "rooms" && (
                   <span className="absolute inset-x-4 bottom-0 h-0.5 rounded-full bg-slate-950" />
@@ -1161,8 +1176,8 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
                         image={images[0]}
                         imageCount={images.length}
                         onImageClick={() =>
-                          images.length &&
-                          setGallery({ images, title: room.title })
+                          (images.length || room.meta?.description) &&
+                          setGallery({ images, title: room.title, description: room.meta?.description })
                         }
                         onAdd={() =>
                           addToCart({
@@ -1204,8 +1219,8 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
                         image={images[0]}
                         imageCount={images.length}
                         onImageClick={() =>
-                          images.length &&
-                          setGallery({ images, title: product.name })
+                          (images.length || product.description) &&
+                          setGallery({ images, title: product.name, description: product.description })
                         }
                         onAdd={() =>
                           addToCart({
@@ -1749,6 +1764,7 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
           <GalleryModal
             images={gallery.images}
             title={gallery.title}
+            description={gallery.description}
             onClose={() => setGallery(null)}
           />
         )}

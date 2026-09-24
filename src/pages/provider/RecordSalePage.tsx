@@ -158,8 +158,8 @@ export default function RecordSalePage() {
     const currentQty = existing ? existing.quantity : 0
     const isService = product.type === 'SERVICE'
 
-    if (!isService && currentQty >= product.stockLevel) {
-      toast.error(product.stockLevel <= 0 ? `${product.name} is out of stock` : `Only ${product.stockLevel} units available`)
+    if (!isService && product.stockLevel > 0 && currentQty >= product.stockLevel) {
+      toast.error(`Only ${product.stockLevel} units available`)
       return
     }
     if (existing) {
@@ -175,7 +175,7 @@ export default function RecordSalePage() {
       if (item.id === id) {
         const newQty = item.quantity + delta
         const isService = item.type === 'SERVICE'
-        if (delta > 0 && !isService && newQty > item.stockLevel) {
+        if (delta > 0 && !isService && item.stockLevel > 0 && newQty > item.stockLevel) {
           toast.error(`Only ${item.stockLevel} units available`)
           return item
         }
@@ -572,7 +572,7 @@ export default function RecordSalePage() {
 
                       {/* Stock badge */}
                       <span className={`absolute top-2 right-2 px-2 py-0.5 rounded-full text-[8px] font-bold z-10 ${
-                        product.type === 'SERVICE'
+                        product.type === 'SERVICE' || product.stockLevel === 0
                           ? 'bg-emerald-100/90 text-emerald-800'
                           : availableStock <= 0
                             ? 'bg-red-100/90 text-red-800'
@@ -580,7 +580,7 @@ export default function RecordSalePage() {
                               ? 'bg-amber-100/90 text-amber-800'
                               : 'bg-slate-100/90 text-slate-600'
                       }`}>
-                        {product.type === 'SERVICE' ? 'Service' : availableStock <= 0 ? 'Out' : `${availableStock} left`}
+                        {product.type === 'SERVICE' ? 'Service' : product.stockLevel === 0 ? 'Available' : availableStock <= 0 ? 'Out' : `${availableStock} left`}
                       </span>
 
                       {/* Cart-in-bag indicator */}
@@ -662,10 +662,14 @@ export default function RecordSalePage() {
                           <span className="text-xs font-medium text-slate-400">{product.category}</span>
                         </td>
                         <td className="px-5 py-3.5">
-                          {product.type === 'SERVICE' ? (
-                            <span className="text-[10px] font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">Service</span>
+                          {product.type === 'SERVICE' || product.stockLevel === 0 ? (
+                            <span className="text-[10px] font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
+                              {product.type === 'SERVICE' ? 'Service' : 'Available'}
+                            </span>
                           ) : (
-                            <span className={`text-xs font-semibold ${availableStock < 10 ? 'text-red-500' : 'text-slate-600'}`}>{availableStock}</span>
+                            <span className={`text-xs font-semibold ${availableStock <= 0 ? 'text-red-500 font-bold' : availableStock < 10 ? 'text-amber-500' : 'text-slate-600'}`}>
+                              {availableStock <= 0 ? 'Out' : availableStock}
+                            </span>
                           )}
                         </td>
                         <td className="px-5 py-3.5 text-right">

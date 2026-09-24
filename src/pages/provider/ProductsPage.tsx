@@ -664,7 +664,9 @@ export default function ProductsPage() {
                       </div>
                     </td>
                     <td className="px-5 py-3.5 text-center">
-                      <span className={`text-sm font-medium hl-mono ${p.stockLevel <= (p.minLevel ?? threshold) ? 'text-red-600 font-bold' : 'text-gray-900'}`}>{p.stockLevel}</span>
+                      <span className={`text-sm font-medium hl-mono ${p.stockLevel > 0 && p.stockLevel <= (p.minLevel ?? threshold) ? 'text-red-600 font-bold' : p.stockLevel === 0 ? 'text-emerald-700 font-semibold' : 'text-gray-900'}`}>
+                        {p.stockLevel === 0 ? 'Available' : p.stockLevel}
+                      </span>
                     </td>
                     <td className="px-5 py-3.5 text-right text-gray-400 text-sm hl-mono">KES {Number(p.buyingPrice || 0).toLocaleString()}</td>
                     <td className="px-5 py-3.5 text-right font-medium text-gray-900 text-sm hl-mono">KES {Number(p.price).toLocaleString()}</td>
@@ -737,7 +739,9 @@ export default function ProductsPage() {
                       </div>
                       <div className="flex items-end justify-between">
                         <p className="text-xs font-semibold text-[#0D4A3E] hl-mono">KES {Number(p.price).toLocaleString()}</p>
-                        <span className={`text-[10px] hl-mono ${p.stockLevel <= (p.minLevel ?? threshold) ? 'text-red-500 font-bold' : 'text-gray-400'}`}>{p.stockLevel} in stock</span>
+                        <span className={`text-[10px] hl-mono ${p.stockLevel > 0 && p.stockLevel <= (p.minLevel ?? threshold) ? 'text-red-500 font-bold' : p.stockLevel === 0 ? 'text-emerald-600 font-semibold' : 'text-gray-400'}`}>
+                          {p.stockLevel === 0 ? 'Available' : `${p.stockLevel} in stock`}
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -1142,7 +1146,7 @@ function ProductForm({ onClose }: { onClose: () => void }) {
 
       {form.type === 'GOOD' && (
         <div className="grid grid-cols-2 gap-4">
-          <InputGroup label="Initial stock" inputType="number" placeholder="0" mono value={form.stock} onChange={(v: string) => setForm({ ...form, stock: v })} />
+          <InputGroup label="Initial stock" inputType="number" placeholder="Leave blank for reseller / unlimited" mono value={form.stock} onChange={(v: string) => setForm({ ...form, stock: v })} />
           <InputGroup label="Low stock alert level" inputType="number" placeholder="5" mono value={form.minLevel} onChange={(v: string) => setForm({ ...form, minLevel: v })} />
         </div>
       )}
@@ -1190,7 +1194,7 @@ function ProductForm({ onClose }: { onClose: () => void }) {
             ...form,
             price: parseFloat(form.price) || 0,
             buyingPrice: parseFloat(form.buyingPrice) || 0,
-            stock: parseInt(form.stock) || 0,
+            stock: form.stock.trim() === '' ? 0 : (parseInt(form.stock) || 0),
             minLevel: parseInt(form.minLevel) || 5,
             isPerishable: form.isPerishable,
             expiryDate: form.expiryDate || undefined,
@@ -1506,7 +1510,7 @@ function EditProductForm({ product, onClose }: { product: any; onClose: () => vo
             ...form,
             price: parseFloat(form.price) || 0,
             buyingPrice: parseFloat(form.buyingPrice) || 0,
-            stock: parseInt(form.stock) || 0,
+            stock: form.stock.trim() === '' ? 0 : (parseInt(form.stock) || 0),
             minLevel: parseInt(form.minLevel) || 5,
             isPerishable: form.isPerishable,
             expiryDate: form.expiryDate || undefined,

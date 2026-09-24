@@ -341,8 +341,94 @@ export default function ProviderLayout() {
         </AnimatePresence>
 
         <div className="group relative w-full flex justify-center mt-2">
+          <AnimatePresence>
+            {showProfileModal && (
+              <>
+                <div 
+                  className="fixed inset-0 z-[180]" 
+                  onClick={() => setShowProfileModal(false)} 
+                />
+                <motion.div
+                  initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                  transition={{ duration: 0.18, ease: "easeOut" }}
+                  className="absolute bottom-full mb-3 left-0 w-72 bg-white rounded-2xl p-4 shadow-2xl border border-slate-200 z-[190] text-left"
+                >
+                  <div className="flex items-center justify-between pb-2 border-b border-slate-100 mb-3">
+                    <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Account & Profile Options</span>
+                    <button 
+                      onClick={() => setShowProfileModal(false)}
+                      className="text-slate-400 hover:text-slate-600 p-1 rounded-full hover:bg-slate-100 transition-colors"
+                    >
+                      <X size={14} />
+                    </button>
+                  </div>
+
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl border border-slate-100">
+                      <img
+                        src={user?.photoUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || '')}&background=0D4A3E&color=fff`}
+                        alt="Profile"
+                        className="w-10 h-10 rounded-full object-cover border border-emerald-600/20 shrink-0"
+                      />
+                      <div className="min-w-0">
+                        <p className="text-xs font-bold text-slate-900 truncate">{user?.name || user?.businessName}</p>
+                        <p className="text-[10px] text-slate-500 truncate">{user?.email}</p>
+                        <span className="inline-block mt-0.5 text-[9px] font-black uppercase tracking-wider text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full">
+                          {user?.role === 'SUPER_ADMIN' ? 'Admin' : (user?.subscription?.planName || 'Business')}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="space-y-1.5 pt-1">
+                      <button
+                        onClick={() => {
+                          setShowProfileModal(false);
+                          navigate(user?.role === 'SUPER_ADMIN' ? '/admin/settings' : '/dashboard/settings');
+                        }}
+                        className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold text-slate-700 bg-slate-50 hover:bg-emerald-50 hover:text-emerald-800 transition-colors border border-slate-100"
+                      >
+                        <User size={16} className="text-emerald-600" /> View Profile & Business Info
+                      </button>
+
+                      {hasOfflinePin() && (
+                        <button
+                          onClick={() => {
+                            setShowProfileModal(false);
+                            lock();
+                          }}
+                          className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold text-slate-700 bg-slate-50 hover:bg-slate-100 transition-colors border border-slate-100"
+                        >
+                          <Lock size={16} className="text-slate-500" /> Lock Screen (PIN)
+                        </button>
+                      )}
+
+                      <button
+                        onClick={async () => {
+                          setShowProfileModal(false);
+                          if (window.confirm("Are you sure you want to log out?")) {
+                            await logout();
+                            if (navigator.onLine) {
+                              navigate('/login');
+                            } else {
+                              toast.info('Session locked. Enter your PIN to continue.');
+                            }
+                          }
+                        }}
+                        className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold text-red-600 bg-red-50 hover:bg-red-100 transition-colors border border-red-100"
+                      >
+                        <LogOut size={16} /> Log Out of System
+                      </button>
+                    </div>
+                  </div>
+                </motion.div>
+              </>
+            )}
+          </AnimatePresence>
+
           <button
-            onClick={() => setShowProfileModal(true)}
+            onClick={() => setShowProfileModal(v => !v)}
             className={`flex items-center gap-3 transition-colors ${sidebarExpanded ? 'w-full hover:bg-slate-100 p-2 rounded-md border border-slate-100/50' : 'hover:scale-110 p-1 bg-slate-50 rounded-md border border-slate-100'}`}
             title="Profile & Options"
           >
