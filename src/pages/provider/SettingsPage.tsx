@@ -267,8 +267,8 @@ export default function SettingsPage() {
               key={tab.name}
               onClick={() => setActiveTab(tab.name)}
               className={`flex flex-col items-center justify-center gap-1.5 py-3 px-1.5 rounded-[.5rem] text-center transition-all ${activeTab === tab.name
-                  ? 'bg-[#0D4A3E] text-white'
-                  : 'bg-gray-50 text-gray-500 hover:bg-gray-100'
+                ? 'bg-[#0D4A3E] text-white'
+                : 'bg-gray-50 text-gray-500 hover:bg-gray-100'
                 }`}
             >
               <tab.icon size={18} />
@@ -283,8 +283,8 @@ export default function SettingsPage() {
               key={tab.name}
               onClick={() => setActiveTab(tab.name)}
               className={`w-full flex items-center gap-3 px-6 py-4 rounded-[.5rem] font-bold text-sm transition-all ${activeTab === tab.name
-                  ? 'bg-white text-emerald-600 shadow-sm'
-                  : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'
+                ? 'bg-white text-emerald-600 shadow-sm'
+                : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'
                 }`}
             >
               <tab.icon size={18} />
@@ -645,7 +645,7 @@ export default function SettingsPage() {
                     <div className="p-5 lg:p-8 rounded-[.5rem] bg-red-50 border border-red-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                       <div>
                         <p className="text-sm font-black text-red-900">Permanently Delete Profile & Facility Data</p>
-                        <p className="text-[10px] text-red-600 font-bold mt-1">Completely wipes your user account, staff, sales, inventory, and facility from HudumaLynk.</p>
+                        <p className="text-[10px] text-red-600 font-bold mt-1">Completely wipes your user account, staff, sales, inventory, and facility from hlynk.</p>
                       </div>
                       <button
                         onClick={() => setConfirmDeleteId('delete-profile-facility')}
@@ -675,7 +675,7 @@ export default function SettingsPage() {
         }
         message={
           confirmDeleteId === 'delete-profile-facility'
-            ? 'CRITICAL WARNING: This will permanently erase your user profile, all staff logins, inventory, sales, financial records, and your facility tenant from HudumaLynk. THIS CANNOT BE UNDONE. Are you absolutely sure?'
+            ? 'CRITICAL WARNING: This will permanently erase your user profile, all staff logins, inventory, sales, financial records, and your facility tenant from hlynk. THIS CANNOT BE UNDONE. Are you absolutely sure?'
             : confirmDeleteId === 'deactivate'
               ? 'Are you sure you want to deactivate your account? This action will disable access for you and your staff.'
               : 'Are you sure you want to reset workshop data? All sales and product data will be cleared.'
@@ -1067,7 +1067,7 @@ function DataManagementPanel({ onConfirm, profile }: { onConfirm: (id: string) =
             <div className="w-full">
               <h4 className="text-lg font-black text-red-900 mb-2">Delete Profile & Facility Data</h4>
               <p className="text-sm text-red-800 leading-relaxed max-w-xl">
-                Completely and permanently erases your user profile, facility tenant, staff logins, product catalog, sales, expenses, and financial logs from HudumaLynk. <strong>This action cannot be undone.</strong>
+                Completely and permanently erases your user profile, facility tenant, staff logins, product catalog, sales, expenses, and financial logs from hlynk. <strong>This action cannot be undone.</strong>
               </p>
               <div className="mt-6 lg:mt-8">
                 <button
