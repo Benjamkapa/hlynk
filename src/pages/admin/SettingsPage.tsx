@@ -1,8 +1,10 @@
 import { useState, useEffect, useRef } from 'react'
-import { Settings, Shield, Bell, Globe, Database, Cpu, Lock, Save, Key, UserCheck, ShieldAlert, ShieldCheck, User, Camera, Loader2, Smartphone } from 'lucide-react'
+import { Settings, Shield, Bell, Globe, Database, Cpu, Lock, Save, Key, UserCheck, ShieldAlert, ShieldCheck, User, Camera, Loader2, Smartphone, CheckCircle2, AlertTriangle } from 'lucide-react'
 import { toast } from 'sonner'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { adminApi } from '../../lib/api/providers'
+import { api } from '../../lib/api/client'
+import { subscribeToPushNotifications, unsubscribeFromPush, getPushSubscriptionState } from '../../lib/notifications/pushService'
 import { useAuth } from '../../lib/auth/AuthContext'
 import { getErrorMessage } from '../../lib/utils/error'
 
@@ -334,6 +336,33 @@ export default function SettingsPage() {
                 </div>
               )}
 
+              {activeTab === 'Notifications' && (
+                <AdminNotificationsPanel />
+              )}
+
+              {activeTab === 'Regional' && (
+                <section className="space-y-6">
+                  <div className="flex items-center gap-2 text-slate-400 mb-2">
+                    <Globe size={14} />
+                    <span className="text-[10px] font-black uppercase tracking-widest">Localization & Currencies</span>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <SelectGroup
+                      label="Primary Operating Currency"
+                      options={['KES - Kenya Shilling', 'USD - US Dollar', 'EUR - Euro', 'GBP - British Pound']}
+                      value={formState['DEFAULT_CURRENCY'] || 'KES - Kenya Shilling'}
+                      onChange={(v: string) => setField('DEFAULT_CURRENCY', v)}
+                    />
+                    <SelectGroup
+                      label="System Timezone"
+                      options={['Africa/Nairobi (UTC+3)', 'UTC', 'Europe/London (UTC+1)', 'America/New_York (UTC-5)']}
+                      value={formState['TIMEZONE'] || 'Africa/Nairobi (UTC+3)'}
+                      onChange={(v: string) => setField('TIMEZONE', v)}
+                    />
+                  </div>
+                </section>
+              )}
+
               {activeTab === 'Security' && (
                 <section className="space-y-4">
                   <SecuritySwitch 
@@ -426,6 +455,194 @@ function SecuritySwitch({ title, desc, icon: Icon, active, onChange }: any) {
       <div className={`w-12 h-7 rounded-full p-1 transition-all ${active ? 'bg-emerald-500' : 'bg-slate-300'}`}>
         <div className={`w-5 h-5 bg-white rounded-full shadow-sm transition-all ${active ? 'translate-x-5' : 'translate-x-0'}`} />
       </div>
+    </div>
+  )
+}
+
+function AdminNotificationsPanel() {
+  const [pushState, setPushState] = useState<'subscribed' | 'denied' | 'prompt' | 'unsupported' | 'ios_browser'>('prompt')
+  const [loading, setLoading] = useState(false)
+  const [sendingTest, setSendingTest] = useState(false)
+
+  useEffect(() => {
+    getPushSubscriptionState().then((state) => setPushState(state as any))
+  }, [])
+
+  const handlePushToggle = async (active: boolean) => {
+    setLoading(true)
+    try {
+      if (active) {
+        await subscribeToPushNotifications()
+        toast.success('Native administrator push notifications enabled!')
+      } else {
+        await unsubscribeFromPush()
+        toast.success('Administrator push notifications disabled.')
+      }
+      const newState = await getPushSubscriptionState()
+      setPushState(newState as any)
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to update push settings')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleSendTest = async () => {
+    setSendingTest(true)
+    try {
+      await api.post('/notifications/test')
+      toast.success('Test notification dispatched to your device!')
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || 'Failed to send test push notification')
+    } finally {
+      setSendingTest(false)
+    }
+  }
+
+  return (
+    <div className="space-y-8 animate-in fade-in duration-500">
+      {/* Informational banner */}
+      <div className="bg-emerald-50/80 p-5 rounded-[.5rem] border border-emerald-100 flex items-start gap-4">
+        <div className="h-10 w-10 rounded-md bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
+          <Bell size={20} />
+        </div>
+        <div>
+          <h4 className="text-xs font-black text-emerald-950 uppercase tracking-widest mb-1">
+            Real-Time Administrative Dispatch
+          </h4>
+          <p className="text-xs text-emerald-800 leading-relaxed font-medium">
+            Enable native push notifications to receive instant OS-level alerts for provider onboarding, M-Pesa payments & payouts, subscription milestones, and platform security alerts even when the browser is closed or running in the background.
+          </p>
+        </div>
+      </div>
+
+      {/* Push Notification Toggle Card */}
+      <div className="bg-slate-50/50 p-6 rounded-[.5rem] border border-slate-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5">
+        <div className="space-y-1">
+          <div className="flex items-center gap-2.5">
+            <p className="text-sm font-black text-slate-900">Web Push Notifications</p>
+            <span
+              className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider ${
+                pushState === 'subscribed'
+                  ? 'bg-emerald-100 text-emerald-700 border border-emerald-200'
+                  : pushState === 'denied'
+                  ? 'bg-amber-100 text-amber-700 border border-amber-200'
+                  : pushState === 'unsupported'
+                  ? 'bg-red-100 text-red-700 border border-red-200'
+                  : 'bg-slate-200 text-slate-600'
+              }`}
+            >
+              {pushState === 'subscribed'
+                ? 'Active'
+                : pushState === 'denied'
+                ? 'Permission Denied'
+                : pushState === 'unsupported'
+                ? 'Unsupported'
+                : pushState === 'ios_browser'
+                ? 'Action Required (iOS)'
+                : 'Disabled'}
+            </span>
+          </div>
+          <p className="text-xs text-slate-400 font-medium">
+            {pushState === 'subscribed'
+              ? 'This device is registered and actively receiving live administrative push alerts.'
+              : pushState === 'denied'
+              ? 'Notifications are blocked in your browser. Click the lock/site settings in your address bar to reset permissions.'
+              : pushState === 'ios_browser'
+              ? 'On iOS Safari, tap Share → "Add to Home Screen" to enable native Web Push in standalone mode.'
+              : 'Turn on to subscribe this browser to critical administrative push alerts.'}
+          </p>
+        </div>
+
+        <div className="flex items-center gap-3 shrink-0 self-end sm:self-center">
+          {loading ? (
+            <Loader2 className="animate-spin text-emerald-600" size={20} />
+          ) : pushState === 'unsupported' ? (
+            <span className="text-[10px] font-black text-red-500 uppercase tracking-widest">Unsupported Browser</span>
+          ) : pushState === 'ios_browser' ? (
+            <button
+              onClick={() =>
+                toast.info('To enable notifications on iPhone: Tap "Share" and select "Add to Home Screen". Push only works in standalone mode!')
+              }
+              className="px-3 py-2 bg-amber-100 text-amber-800 rounded-md text-[10px] font-black uppercase tracking-widest hover:bg-amber-200 transition-all"
+            >
+              Setup on iPhone
+            </button>
+          ) : pushState === 'denied' ? (
+            <button
+              onClick={() =>
+                toast.info('Please click the site settings icon in your browser address bar to allow notifications, then refresh this page.')
+              }
+              className="px-3 py-2 bg-amber-100 text-amber-800 rounded-md text-[10px] font-black uppercase tracking-widest hover:bg-amber-200 transition-all"
+            >
+              Reset Permission
+            </button>
+          ) : (
+            <>
+              {pushState === 'subscribed' && (
+                <button
+                  onClick={handleSendTest}
+                  disabled={sendingTest}
+                  className="px-3 py-2 border border-slate-200 bg-white text-slate-700 rounded-md text-[10px] font-black uppercase tracking-widest hover:bg-slate-50 transition-all flex items-center gap-1.5 disabled:opacity-50"
+                >
+                  {sendingTest ? <Loader2 size={12} className="animate-spin" /> : <Bell size={12} />}
+                  Send Test Alert
+                </button>
+              )}
+              <div
+                onClick={() => handlePushToggle(pushState !== 'subscribed')}
+                className={`w-12 h-7 rounded-full p-1 transition-all cursor-pointer ${
+                  pushState === 'subscribed' ? 'bg-emerald-500' : 'bg-slate-300'
+                }`}
+              >
+                <div
+                  className={`w-5 h-5 bg-white rounded-full shadow-sm transition-all ${
+                    pushState === 'subscribed' ? 'translate-x-5' : 'translate-x-0'
+                  }`}
+                />
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+
+      {/* Admin Alert Streams Overview */}
+      <section className="space-y-4">
+        <div className="flex items-center gap-2 text-slate-400 mb-2">
+          <ShieldAlert size={14} />
+          <span className="text-[10px] font-black uppercase tracking-widest">Administrative Alert Streams</span>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="p-4 rounded-[.5rem] bg-white border border-slate-100 shadow-sm space-y-1.5">
+            <div className="flex items-center justify-between">
+              <p className="text-xs font-black text-slate-900">Provider Signups & Onboarding</p>
+              <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">Automated</span>
+            </div>
+            <p className="text-xs text-slate-500">Instant notification when a new business signs up or completes onboarding.</p>
+          </div>
+          <div className="p-4 rounded-[.5rem] bg-white border border-slate-100 shadow-sm space-y-1.5">
+            <div className="flex items-center justify-between">
+              <p className="text-xs font-black text-slate-900">M-Pesa & Financial Transactions</p>
+              <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">Automated</span>
+            </div>
+            <p className="text-xs text-slate-500">Live alerts for subscription payments, B2C disbursements, and payment anomalies.</p>
+          </div>
+          <div className="p-4 rounded-[.5rem] bg-white border border-slate-100 shadow-sm space-y-1.5">
+            <div className="flex items-center justify-between">
+              <p className="text-xs font-black text-slate-900">Security & Intrusion Alerts</p>
+              <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">Automated</span>
+            </div>
+            <p className="text-xs text-slate-500">High-priority alerts for IP lockouts, brute-force attempts, and role changes.</p>
+          </div>
+          <div className="p-4 rounded-[.5rem] bg-white border border-slate-100 shadow-sm space-y-1.5">
+            <div className="flex items-center justify-between">
+              <p className="text-xs font-black text-slate-900">Subscriptions & Expirations</p>
+              <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">Automated</span>
+            </div>
+            <p className="text-xs text-slate-500">System daemon alerts for expiring tiers, grace periods, and renewal status.</p>
+          </div>
+        </div>
+      </section>
     </div>
   )
 }

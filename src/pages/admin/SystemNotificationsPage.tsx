@@ -1,4 +1,5 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useEffect } from 'react'
+import { Link } from 'react-router-dom'
 import {
   Bell,
   Search,
@@ -20,6 +21,8 @@ import {
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { adminApi } from '../../lib/api/providers'
+import { api } from '../../lib/api/client'
+import { subscribeToPushNotifications, getPushSubscriptionState } from '../../lib/notifications/pushService'
 
 type NotificationType = 'success' | 'warning' | 'danger' | string
 
@@ -141,6 +144,40 @@ export default function SystemNotificationsPage() {
     }
   }
 
+  const [pushState, setPushState] = useState<'subscribed' | 'denied' | 'prompt' | 'unsupported' | 'ios_browser'>('prompt')
+  const [pushLoading, setPushLoading] = useState(false)
+  const [testSending, setTestSending] = useState(false)
+
+  useEffect(() => {
+    getPushSubscriptionState().then((s) => setPushState(s as any))
+  }, [])
+
+  const handleEnablePush = async () => {
+    setPushLoading(true)
+    try {
+      await subscribeToPushNotifications()
+      toast.success('Native administrator push notifications enabled!')
+      const newState = await getPushSubscriptionState()
+      setPushState(newState as any)
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to enable notifications')
+    } finally {
+      setPushLoading(false)
+    }
+  }
+
+  const handleSendTestPush = async () => {
+    setTestSending(true)
+    try {
+      await api.post('/notifications/test')
+      toast.success('Test notification sent!')
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || 'Failed to send test')
+    } finally {
+      setTestSending(false)
+    }
+  }
+
   const handleSearch = (value: string) => {
     setSearch(value)
     setPage(1)
@@ -196,7 +233,53 @@ export default function SystemNotificationsPage() {
               </div>
             </div>
 
-            <div className="relative mt-5 flex flex-col sm:flex-row gap-2.5">
+            {/* Push Notification Quick Activation Strip */}
+            <div className="mt-4 p-3.5 rounded-xl border border-slate-100 bg-slate-50/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="flex items-center gap-2.5">
+                <div className={`w-2 h-2 rounded-full shrink-0 ${pushState === 'subscribed' ? 'bg-emerald-500 animate-pulse' : 'bg-amber-400'}`} />
+                <p className="text-xs font-semibold text-slate-700">
+                  {pushState === 'subscribed' ? (
+                    <span><strong className="text-slate-900">Web Push Active:</strong> You receive real-time OS alerts for payments, signups & system anomalies.</span>
+                  ) : pushState === 'denied' ? (
+                    <span><strong className="text-amber-700">Browser Blocked:</strong> Notification permissions are blocked. Click the lock/settings icon in your address bar to allow.</span>
+                  ) : pushState === 'unsupported' ? (
+                    <span className="text-slate-500">Push notifications are not supported in this browser.</span>
+                  ) : (
+                    <span><strong className="text-slate-900">Enable Desktop & Mobile Push:</strong> Receive instant alerts even when the admin portal is closed.</span>
+                  )}
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2 shrink-0">
+                {pushState === 'subscribed' ? (
+                  <button
+                    onClick={handleSendTestPush}
+                    disabled={testSending}
+                    className="px-2.5 py-1 text-[11px] font-bold text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-all flex items-center gap-1.5 disabled:opacity-50 shadow-xs"
+                  >
+                    {testSending ? <Loader2 size={12} className="animate-spin" /> : <Bell size={12} />}
+                    Test Alert
+                  </button>
+                ) : (
+                  <button
+                    onClick={handleEnablePush}
+                    disabled={pushLoading || pushState === 'unsupported'}
+                    className="px-3 py-1.5 text-[11px] font-bold text-white bg-slate-900 hover:bg-black rounded-lg transition-all flex items-center gap-1.5 disabled:opacity-50 shadow-sm"
+                  >
+                    {pushLoading ? <Loader2 size={12} className="animate-spin" /> : <Bell size={12} />}
+                    Enable Push Alerts
+                  </button>
+                )}
+                <Link
+                  to="/admin/settings"
+                  className="px-2 py-1 text-[11px] font-bold text-slate-500 hover:text-slate-800 transition-colors"
+                >
+                  Configure →
+                </Link>
+              </div>
+            </div>
+
+            <div className="relative mt-4 flex flex-col sm:flex-row gap-2.5">
               <div className="relative flex-1">
                 <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                 <input
