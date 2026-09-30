@@ -51,6 +51,7 @@ export default function RecordSalePage() {
     return saved ? JSON.parse(saved) : []
   })
   const [paymentMethod, setPaymentMethod] = useState('CASH')
+  const [showAllPaymentMethods, setShowAllPaymentMethods] = useState(false)
   const [customerSearch, setCustomerSearch] = useState('')
   const [customerSearchInput, setCustomerSearchInput] = useState('')
   const [isSearchingCustomer, setIsSearchingCustomer] = useState(false)
@@ -897,43 +898,52 @@ export default function RecordSalePage() {
             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Payment method</p>
 
             {/* Payment buttons */}
-            <div className="grid grid-cols-4 gap-2">
-              {[
-                { id: 'CASH', label: 'Cash', icon: Banknote, feature: null },
-                { id: 'MPESA', label: 'M-Pesa STK', icon: MpesaBankIcon, feature: 'mpesa_stk' },
-                { id: 'KCB', label: 'KCB STK', icon: KcbBankIcon, feature: 'kcb_settlement' },
-                { id: 'MPESA_MANUAL', label: 'Till / Pochi', icon: Wallet, feature: null },
-              ].map(method => (
-                <FeatureGate
-                  key={method.id}
-                  feature={method.feature as any}
-                  fallback={
-                    method.feature ? (
-                      <button
-                        onClick={() => toast.info(`${method.label} requires the Growth Plan. Please upgrade to unlock.`)}
-                        className="relative flex items-center justify-start gap-2 px-3 py-2.5 rounded-xl border border-slate-100 bg-slate-50 text-slate-400 cursor-not-allowed overflow-hidden text-left"
-                      >
-                        <method.icon size={18} className="shrink-0" />
-                        <span className="text-xs font-semibold truncate">{method.label}</span>
-                        <div className="ml-auto opacity-40 shrink-0">
-                          <Lock size={10} />
-                        </div>
-                      </button>
-                    ) : null
-                  }
-                >
-                  <button
-                    onClick={() => setPaymentMethod(method.id)}
-                    className={`flex items-center justify-start gap-2.5 px-3 py-2.5 rounded-xl border transition-all text-left ${paymentMethod === method.id
-                      ? 'border-[#0D4A3E] bg-emerald-50/60 text-[#0D4A3E] shadow-sm font-semibold'
-                      : 'border-slate-200/80 bg-white text-slate-600 hover:bg-slate-50 hover:border-slate-300'
-                      }`}
+            <div className="space-y-2">
+              <div className="grid grid-cols-4 gap-2">
+                {[
+                  { id: 'CASH', label: 'Cash', icon: Banknote, feature: null },
+                  { id: 'MPESA', label: 'M-Pesa STK', icon: MpesaBankIcon, feature: 'mpesa_stk' },
+                  { id: 'KCB', label: 'KCB STK', icon: KcbBankIcon, feature: 'kcb_settlement' },
+                  { id: 'MPESA_MANUAL', label: 'Till / Pochi', icon: Wallet, feature: null },
+                ].filter((_, i) => showAllPaymentMethods || i === 0 || paymentMethod === ['CASH','MPESA','KCB','MPESA_MANUAL'][i]).map(method => (
+                  <FeatureGate
+                    key={method.id}
+                    feature={method.feature as any}
+                    fallback={
+                      method.feature ? (
+                        <button
+                          onClick={() => toast.info(`${method.label} requires the Growth Plan. Please upgrade to unlock.`)}
+                          className="relative flex items-center justify-start gap-2 px-3 py-2.5 rounded-xl border border-slate-100 bg-slate-50 text-slate-400 cursor-not-allowed overflow-hidden text-left"
+                        >
+                          <method.icon size={18} className="shrink-0" />
+                          <span className="text-xs font-semibold truncate">{method.label}</span>
+                          <div className="ml-auto opacity-40 shrink-0">
+                            <Lock size={10} />
+                          </div>
+                        </button>
+                      ) : null
+                    }
                   >
-                    <method.icon size={18} className="shrink-0" />
-                    <span className="text-xs font-medium truncate">{method.label}</span>
-                  </button>
-                </FeatureGate>
-              ))}
+                    <button
+                      onClick={() => setPaymentMethod(method.id)}
+                      className={`flex items-center justify-start gap-2.5 px-3 py-2.5 rounded-xl border transition-all text-left ${paymentMethod === method.id
+                        ? 'border-[#0D4A3E] bg-emerald-50/60 text-[#0D4A3E] shadow-sm font-semibold'
+                        : 'border-slate-200/80 bg-white text-slate-600 hover:bg-slate-50 hover:border-slate-300'
+                        }`}
+                    >
+                      <method.icon size={18} className="shrink-0" />
+                      <span className="text-xs font-medium truncate">{method.label}</span>
+                    </button>
+                  </FeatureGate>
+                ))}
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowAllPaymentMethods(v => !v)}
+                className="text-[10px] font-medium text-slate-400 hover:text-slate-600 transition-colors flex items-center gap-1"
+              >
+                {showAllPaymentMethods ? '− Fewer options' : '+ More payment options'}
+              </button>
             </div>
 
             {/* Payment sub-details */}

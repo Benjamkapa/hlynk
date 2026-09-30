@@ -17,9 +17,7 @@ export const providersApi = {
   uploadPhoto: (file: File) => {
     const form = new FormData()
     form.append('file', file)
-    return api.post('/providers/me/photo', form, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    }).then(r => r.data)
+    return api.post('/providers/me/photo', form).then(r => r.data)
   },
   submitReview: (data: { rating: number, reviewText: string }) => api.post('/platform/reviews', data).then(r => r.data),
   getReviews: () => api.get('/providers/reviews').then(r => r.data),
@@ -50,7 +48,7 @@ export const salesApi = {
 export const subscriptionsApi = {
   getMe: () => api.get('/subscriptions/me').then(r => r.data),
   getBillingHistory: (params?: { page?: number; limit?: number; status?: string; plan?: string; sortBy?: string; sortOrder?: string }) => api.get('/subscriptions/history', { params }).then(r => r.data),
-  renew: (phone: string, months?: number) => api.post('/subscriptions/renew', { phone, months }).then(r => r.data),
+  renew: (phone: string, months?: number, plan?: string) => api.post('/subscriptions/renew', { phone, months, plan }).then(r => r.data),
   changePlan: (plan: string, phone: string, months?: number) => api.post('/subscriptions/change-plan', { plan, phone, months }).then(r => r.data),
   verify: (paymentId: string) => api.get(`/subscriptions/verify/${paymentId}`).then(r => r.data),
   submitManualPayment: (data: { planName: string, mpesaCode: string, amount?: number, phone?: string }) => api.post('/subscriptions/manual', data).then(r => r.data),
@@ -67,9 +65,7 @@ export const inventoryApi = {
   uploadImage: (id: string, file: File) => {
     const form = new FormData()
     form.append('file', file)
-    return api.post(`/inventory/${id}/image`, form, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    }).then(r => r.data)
+    return api.post(`/inventory/${id}/image`, form).then(r => r.data)
   },
   delete: (id: string) => api.delete(`/inventory/${id}`).then(r => r.data),
 }
@@ -153,9 +149,7 @@ export const adminApi = {
   uploadPhoto: (file: File) => {
     const formData = new FormData()
     formData.append('photo', file)
-    return api.post('/admin/me/photo', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' }
-    }).then(r => r.data)
+    return api.post('/admin/me/photo', formData).then(r => r.data)
   },
   generatePromoCode: (data: { planName: string, durationDays: number, maxUses?: number, assignedPhone?: string }) =>
     api.post('/subscriptions/promo/generate', data).then(r => r.data),
@@ -174,7 +168,6 @@ export const adminApi = {
     const formData = new FormData()
     formData.append('sqlFile', file)
     return api.post('/admin/backup/restore', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
       onUploadProgress
     }).then(r => r.data)
   }

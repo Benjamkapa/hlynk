@@ -702,14 +702,15 @@ export default function SubscriptionPage() {
 
 
   const renewMutation = useMutation({
-    mutationFn: (phone: string) => subscriptionsApi.renew(phone, parseInt(billingCycle)),
+    mutationFn: ({ phone, plan }: { phone: string, plan?: string }) => subscriptionsApi.renew(phone, parseInt(billingCycle), plan),
     onSuccess: (data) => {
       setInitialPlan(subResponse?.data?.planName || null)
       toast.success(data.message || 'STK Push sent to your phone, Enter your pin to complete the transaction!')
       setShowRenewModal(false)
       setIsWaitingForPayment(true)
-      if (data.data?.id || data.id) {
-        setWaitingPaymentId(data.data?.id || data.id)
+      const paymentId = data.data?.paymentId || data.data?.id || data.id
+      if (paymentId) {
+        setWaitingPaymentId(paymentId)
       }
       setTimeout(() => {
         setIsWaitingForPayment(false)
@@ -726,8 +727,9 @@ export default function SubscriptionPage() {
       toast.success(data.message || 'Payment initiated for plan upgrade!')
       setShowChangeModal(false)
       setIsWaitingForPayment(true)
-      if (data.data?.id || data.id) {
-        setWaitingPaymentId(data.data?.id || data.id)
+      const paymentId = data.data?.paymentId || data.data?.id || data.id
+      if (paymentId) {
+        setWaitingPaymentId(paymentId)
       }
       setTimeout(() => {
         setIsWaitingForPayment(false)
@@ -984,7 +986,10 @@ export default function SubscriptionPage() {
                   Renew for {billingCycle === '1' ? '1 month' : billingCycle === '6' ? '6 months' : '1 year'}
                 </button>
                 <button
-                  onClick={() => setShowChangeModal(true)}
+                  onClick={() => {
+                    setSelectedPlan(PLANS.find(p => p.id === 'PLUS') || PLANS[0])
+                    setShowChangeModal(true)
+                  }}
                   className="w-full sm:w-auto bg-white text-gray-600 px-5 py-3 rounded-full text-sm font-medium border border-gray-200 hover:bg-gray-50 transition-colors"
                 >
                   Change my plan
@@ -1004,8 +1009,8 @@ export default function SubscriptionPage() {
                 <thead>
                   <tr>
                     <th className="py-3 px-4 text-xs font-medium text-gray-400">Feature</th>
-                    <th className="py-3 px-4 text-xs font-medium text-teal-600 text-center">Starter</th>
-                    <th className="py-3 px-4 text-xs font-medium text-purple-600 text-center">Business Pro</th>
+                    <th className="py-3 px-4 text-xs font-medium text-teal-600 text-center">Starter [ KES 4450 /month ]</th>
+                    <th className="py-3 px-4 text-xs font-medium text-purple-600 text-center">Business Pro [ KES 8200 /month ]</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
@@ -1249,7 +1254,7 @@ export default function SubscriptionPage() {
                   if (daysLeft > 0) {
                     setShowConfirmRenew(true)
                   } else {
-                    renewMutation.mutate(mpesaPhone)
+                    renewMutation.mutate({ phone: mpesaPhone })
                   }
                 }}
                 disabled={renewMutation.isPending || manualPaymentMutation.isPending || (subPaymentMethod === 'STK' ? !mpesaPhone : !mpesaCode)}
@@ -1391,7 +1396,7 @@ export default function SubscriptionPage() {
         cancelText="Cancel"
         isDestructive={false}
         onConfirm={() => {
-          renewMutation.mutate(mpesaPhone)
+          renewMutation.mutate({ phone: mpesaPhone })
         }}
         onCancel={() => setShowConfirmRenew(false)}
       />

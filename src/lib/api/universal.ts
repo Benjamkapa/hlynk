@@ -94,9 +94,7 @@ export const resourcesApi = {
   uploadPhoto: async (file: File) => {
     const formData = new FormData();
     formData.append('file', file);
-    const res = await api.post<{ success: boolean; data: { url: string } }>('/resources/upload', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' }
-    });
+    const res = await api.post<{ success: boolean; data: { url: string } }>('/resources/upload', formData);
     return res.data.data.url;
   }
 };

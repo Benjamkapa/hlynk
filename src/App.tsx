@@ -97,7 +97,8 @@ function RootRedirect() {
     return <Navigate to={user.role === 'SUPER_ADMIN' ? '/admin' : '/dashboard'} replace />
   }
 
-  return <Navigate to="/login" replace />
+  // Unauthenticated users see the landing page at /
+  return <LandingPage />
 }
 
 export default function App() {

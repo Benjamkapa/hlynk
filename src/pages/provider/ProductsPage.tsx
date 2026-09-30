@@ -831,6 +831,7 @@ function ProductForm({ onClose }: { onClose: () => void }) {
     description: ''
   })
   const [isCameraOpen, setIsCameraOpen] = useState(false)
+  const [showAllPhotos, setShowAllPhotos] = useState(false)
 
   const handleImageFile = (file: File) => {
     const reader = new FileReader()
@@ -1001,7 +1002,7 @@ function ProductForm({ onClose }: { onClose: () => void }) {
         <div className="w-full px-1">
           <p className="text-xs text-gray-400 mb-1.5">Or pick a stock photo:</p>
           <div className="flex flex-wrap gap-1">
-            {PRESET_PRODUCT_PHOTOS.map((p) => (
+            {(showAllPhotos ? PRESET_PRODUCT_PHOTOS : PRESET_PRODUCT_PHOTOS.slice(0, 6)).map((p) => (
               <button
                 key={p.name}
                 type="button"
@@ -1014,6 +1015,13 @@ function ProductForm({ onClose }: { onClose: () => void }) {
                 {p.name}
               </button>
             ))}
+            <button
+              type="button"
+              onClick={() => setShowAllPhotos(v => !v)}
+              className="px-2 py-0.5 text-[10px] font-medium rounded-full border border-dashed border-gray-300 text-gray-400 hover:text-gray-600 hover:border-gray-400 transition-colors"
+            >
+              {showAllPhotos ? '− Less' : `+ ${PRESET_PRODUCT_PHOTOS.length - 6} more`}
+            </button>
           </div>
         </div>
 
@@ -1032,12 +1040,12 @@ function ProductForm({ onClose }: { onClose: () => void }) {
       <InputGroup label="Product name" placeholder="e.g. Fresh Milk" value={form.name} onChange={(v: string) => setForm({ ...form, name: v })} />
 
       <div className="space-y-1.5">
-        <label className="text-xs text-gray-500">Category</label>
+        <label className="text-xs text-gray-500">Category <span className="text-gray-400 font-normal">(pick or type your own)</span></label>
         <input
           list="product-categories"
           value={form.category}
           onChange={(e) => setForm({ ...form, category: e.target.value })}
-          placeholder="e.g. Groceries"
+          placeholder="e.g. Groceries, Beverages, Spares…"
           className="hl-select"
         />
         <datalist id="product-categories">
@@ -1228,6 +1236,7 @@ function EditProductForm({ product, onClose }: { product: any; onClose: () => vo
     description: product.description || ''
   })
   const [isCameraOpen, setIsCameraOpen] = useState(false);
+  const [showAllPhotos, setShowAllPhotos] = useState(false);
 
   const handleImageFile = (file: File) => {
     const reader = new FileReader()
@@ -1397,7 +1406,7 @@ function EditProductForm({ product, onClose }: { product: any; onClose: () => vo
         <div className="w-full px-1">
           <p className="text-xs text-gray-400 mb-1.5">Or pick a stock photo:</p>
           <div className="flex flex-wrap gap-1">
-            {PRESET_PRODUCT_PHOTOS.map((p) => (
+            {(showAllPhotos ? PRESET_PRODUCT_PHOTOS : PRESET_PRODUCT_PHOTOS.slice(0, 6)).map((p) => (
               <button
                 key={p.name}
                 type="button"
@@ -1410,6 +1419,13 @@ function EditProductForm({ product, onClose }: { product: any; onClose: () => vo
                 {p.name}
               </button>
             ))}
+            <button
+              type="button"
+              onClick={() => setShowAllPhotos(v => !v)}
+              className="px-2 py-0.5 text-[10px] font-medium rounded-full border border-dashed border-gray-300 text-gray-400 hover:text-gray-600 hover:border-gray-400 transition-colors"
+            >
+              {showAllPhotos ? '− Less' : `+ ${PRESET_PRODUCT_PHOTOS.length - 6} more`}
+            </button>
           </div>
         </div>
 
@@ -1428,12 +1444,12 @@ function EditProductForm({ product, onClose }: { product: any; onClose: () => vo
       <InputGroup label="Product name" placeholder="e.g. Fresh Milk" value={form.name} onChange={(v: string) => setForm({ ...form, name: v })} />
 
       <div className="space-y-1.5">
-        <label className="text-xs text-gray-500">Category</label>
+        <label className="text-xs text-gray-500">Category <span className="text-gray-400 font-normal">(pick or type your own)</span></label>
         <input
           list="product-categories-edit"
           value={form.category}
           onChange={(e) => setForm({ ...form, category: e.target.value })}
-          placeholder="e.g. Groceries"
+          placeholder="e.g. Groceries, Beverages, Spares…"
           className="hl-select"
         />
         <datalist id="product-categories-edit">

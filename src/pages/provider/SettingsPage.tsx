@@ -417,12 +417,14 @@ export default function SettingsPage() {
                   />
                   <div className="space-y-2">
                     <label className="text-xs font-black text-gray-400 uppercase tracking-widest">Business Category</label>
-                    <select
+                    <input
+                      list="business-categories"
                       value={formData.category}
                       onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                      placeholder="e.g. Retail Store, Salon, or type your own…"
                       className="hl-select"
-                    >
-                      <option value="">Select Category</option>
+                    />
+                    <datalist id="business-categories">
                       {[
                         'Accounting & Tax Services',
                         'Agrovet',
@@ -502,9 +504,9 @@ export default function SettingsPage() {
                         'Welding & Fabrication',
                         'Wholesale Shop'
                       ].map(c => (
-                        <option key={c} value={c}>{c}</option>
+                        <option key={c} value={c} />
                       ))}
-                    </select>
+                    </datalist>
                   </div>
                 </div>
                 <InputGroup

@@ -195,15 +195,43 @@ export default function PropertiesPage() {
   };
 
 function fileToDataUrl(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     const reader = new FileReader();
-    reader.onload = () => resolve(reader.result as string);
-    reader.onerror = (err) => reject(err);
+    reader.onload = (e) => {
+      const result = e.target?.result as string;
+      if (!result) return resolve("");
+      const img = new Image();
+      img.onload = () => {
+        const MAX_DIM = 1600;
+        let { width, height } = img;
+        if (width > MAX_DIM || height > MAX_DIM) {
+          if (width > height) {
+            height = Math.round((height * MAX_DIM) / width);
+            width = MAX_DIM;
+          } else {
+            width = Math.round((width * MAX_DIM) / height);
+            height = MAX_DIM;
+          }
+          const canvas = document.createElement("canvas");
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext("2d");
+          if (ctx) {
+            ctx.drawImage(img, 0, 0, width, height);
+            return resolve(canvas.toDataURL("image/jpeg", 0.82));
+          }
+        }
+        resolve(result);
+      };
+      img.onerror = () => resolve(result);
+      img.src = result;
+    };
+    reader.onerror = () => resolve("");
     reader.readAsDataURL(file);
   });
 }
 
-function withTimeout<T>(promise: Promise<T>, ms = 8000): Promise<T> {
+function withTimeout<T>(promise: Promise<T>, ms = 45000): Promise<T> {
   return new Promise((resolve, reject) => {
     const timer = setTimeout(() => reject(new Error("Network upload timeout")), ms);
     promise
@@ -222,7 +250,7 @@ function withTimeout<T>(promise: Promise<T>, ms = 8000): Promise<T> {
       });
       try {
         const localUrls = await Promise.all(files.map(f => fileToDataUrl(f)));
-        setRoomPhotos(prev => [...prev, ...localUrls]);
+        setRoomPhotos(prev => [...prev, ...localUrls.filter(Boolean)]);
       } catch {
         toast.error("Failed to read image file");
       }
@@ -233,15 +261,21 @@ function withTimeout<T>(promise: Promise<T>, ms = 8000): Promise<T> {
     setUploadingPhotos(true);
     const toastId = toast.loading(`Uploading ${files.length} photo(s)...`);
     try {
-      const uploaded = (await Promise.all(files.map(async f => {
-        if (!f.type.startsWith("image/")) { toast.error(`Not an image: ${f.name}`); return null; }
+      const uploaded: string[] = [];
+      for (const f of files) {
+        if (!f.type.startsWith("image/")) {
+          toast.error(`Not an image: ${f.name}`);
+          continue;
+        }
         try {
-          return await withTimeout(resourcesApi.uploadPhoto(f), 8000);
+          const url = await withTimeout(resourcesApi.uploadPhoto(f), 45000);
+          uploaded.push(url);
         } catch {
           toast.warning(`Slow network: Attached ${f.name} as local draft preview.`);
-          return await fileToDataUrl(f);
+          const localUrl = await fileToDataUrl(f);
+          if (localUrl) uploaded.push(localUrl);
         }
-      }))).filter(Boolean) as string[];
+      }
 
       if (uploaded.length) {
         setRoomPhotos(prev => [...prev, ...uploaded]);
@@ -264,7 +298,7 @@ function withTimeout<T>(promise: Promise<T>, ms = 8000): Promise<T> {
       });
       try {
         const url = await fileToDataUrl(file);
-        setRoomPhotos(prev => [url, ...prev]);
+        if (url) setRoomPhotos(prev => [url, ...prev]);
       } catch {
         toast.error("Failed to process photo");
       }
@@ -273,13 +307,13 @@ function withTimeout<T>(promise: Promise<T>, ms = 8000): Promise<T> {
 
     const toastId = toast.loading("Uploading photo...");
     try {
-      const url = await withTimeout(resourcesApi.uploadPhoto(file), 8000);
+      const url = await withTimeout(resourcesApi.uploadPhoto(file), 45000);
       setRoomPhotos(prev => [url, ...prev]);
       toast.success("Photo added!", { id: toastId });
     } catch (err: any) {
       toast.warning("Network issue: Photo attached as local draft preview", { id: toastId });
       const localUrl = await fileToDataUrl(file);
-      setRoomPhotos(prev => [localUrl, ...prev]);
+      if (localUrl) setRoomPhotos(prev => [localUrl, ...prev]);
     }
   };
 

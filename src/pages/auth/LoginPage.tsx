@@ -533,7 +533,13 @@ export default function LoginPage() {
                   transition={{ duration: 0.3 }}
                 >
                   {/* Nav */}
-                  <nav className="mob-nav hidden" style={{ display: 'flex', float:'right' }}>
+                  <nav className="mob-nav hidden" style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                    <a
+                      href="/"
+                      style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.85)', textDecoration: 'none', letterSpacing: '0.05em' }}
+                    >
+                      <ArrowLeft size={11} /> Back to Website
+                    </a>
                   </nav>
 
                   {/* Hero - Simplified for Mobile but consistent with Desktop */}
@@ -634,10 +640,17 @@ export default function LoginPage() {
                             </select>
                           </Field>
                           <Field label="Category" icon={Tag}>
-                            <select value={formData.category} onChange={e => setFormData({ ...formData, category: e.target.value })} className={inputCls} required>
-                              <option value="" className="bg-[#14181A] lg:bg-white">Type?</option>
-                              {CATEGORIES.map(c => <option key={c} className="bg-[#14181A] lg:bg-white">{c}</option>)}
-                            </select>
+                            <input
+                              list="reg-categories-mobile"
+                              value={formData.category}
+                              onChange={e => setFormData({ ...formData, category: e.target.value })}
+                              className={inputCls}
+                              placeholder="e.g. Salon, Mkokoteni, Retail…"
+                              required
+                            />
+                            <datalist id="reg-categories-mobile">
+                              {CATEGORIES.map(c => <option key={c} value={c} />)}
+                            </datalist>
                           </Field>
                         </div>
                         <Field label="Town / Area" icon={MapPin}>
@@ -755,10 +768,17 @@ export default function LoginPage() {
                             </select>
                           </Field>
                           <Field label="Biashara Category" icon={Tag}>
-                            <select value={formData.category} onChange={e => setFormData({ ...formData, category: e.target.value })} className={inputCls} required>
-                              <option value="" className="bg-[#14181A] lg:bg-white">What do you do?</option>
-                              {CATEGORIES.map(c => <option key={c} className="bg-[#14181A] lg:bg-white">{c}</option>)}
-                            </select>
+                            <input
+                              list="reg-categories-desktop"
+                              value={formData.category}
+                              onChange={e => setFormData({ ...formData, category: e.target.value })}
+                              className={inputCls}
+                              placeholder="e.g. Salon, Mkokoteni, Retail…"
+                              required
+                            />
+                            <datalist id="reg-categories-desktop">
+                              {CATEGORIES.map(c => <option key={c} value={c} />)}
+                            </datalist>
                           </Field>
                         </div>
                         <Field label="Specific Town/Area" icon={MapPin}>
