@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react'
-import { Users, Desktop, SignOut, MagnifyingGlass, Trash } from '@phosphor-icons/react'
+import { Users, Desktop, SignOut, MagnifyingGlass, Trash, Pulse, DeviceMobile, Globe, Clock, ShieldCheck } from '@phosphor-icons/react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { adminApi } from '../../lib/api/providers'
 import { toast } from 'sonner'
@@ -8,6 +8,20 @@ import { useNavigate } from 'react-router-dom'
 import Pagination from '../../components/shared/Pagination'
 import { ConfirmModal } from '../../components/shared/ConfirmModal'
 import BroadcastTool from '../../components/admin/BroadcastTool'
+
+function timeAgo(dateStr: string | Date | null | undefined): string {
+  if (!dateStr) return 'Active now'
+  const d = new Date(dateStr)
+  if (isNaN(d.getTime())) return 'Active now'
+  const sec = Math.floor((Date.now() - d.getTime()) / 1000)
+  if (sec < 15) return 'Just now'
+  if (sec < 60) return `${sec}s ago`
+  const min = Math.floor(sec / 60)
+  if (min < 60) return `${min}m ago`
+  const hrs = Math.floor(min / 60)
+  if (hrs < 24) return `${hrs}h ago`
+  return `${Math.floor(hrs / 24)}d ago`
+}
 
 export default function UserOperationsPage() {
   const [search, setSearch] = useState('')
@@ -27,10 +41,18 @@ export default function UserOperationsPage() {
     queryFn: () => adminApi.getUsers({ search, role, page, limit: 5 })
   })
 
+  // Live real-time active sessions (synced every 5 seconds)
   const { data: sessionsResponse } = useQuery<{ success: boolean; data: any[] }>({
     queryKey: ['admin-sessions'],
     queryFn: adminApi.getSessions,
-    refetchInterval: 60000
+    refetchInterval: 5000
+  })
+
+  // Real-time activity stream of user operations (synced every 5 seconds)
+  const { data: liveActivityRes } = useQuery<{ success: boolean; data: any }>({
+    queryKey: ['admin-live-activity-stream'],
+    queryFn: () => adminApi.getActivityLogs({ page: 1, limit: 8 }),
+    refetchInterval: 5000
   })
 
   const { data: userActivityResponse } = useQuery<{ success: boolean; data: any[] }>({
@@ -42,6 +64,7 @@ export default function UserOperationsPage() {
   const users = usersRes?.data?.items || []
   const pagination = usersRes?.data?.pagination || { total: 0, pages: 1 }
   const sessions = sessionsResponse?.data || []
+  const liveLogs = liveActivityRes?.data?.items || []
   const activityLogs = userActivityResponse?.data || []
 
   const deleteMutation = useMutation({
@@ -101,12 +124,12 @@ export default function UserOperationsPage() {
             <div className="px-6 py-4 border-b border-gray-50 flex justify-between items-center">
               <div>
                 <h3 className="text-sm font-medium text-gray-900">Live sessions</h3>
-                <p className="text-xs text-gray-400 mt-0.5">Active connections across the platform</p>
+                <p className="text-xs text-gray-400 mt-0.5">Real-time connected sessions across web & mobile devices</p>
               </div>
               <div className="flex items-center gap-2 px-3 py-1.5 bg-emerald-50 text-emerald-700 rounded-md border border-emerald-100">
                 <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
                 <span className="text-xs font-semibold hl-mono">{sessions.length}</span>
-                <span className="text-[10px] font-black uppercase tracking-widest">active</span>
+                <span className="text-[10px] font-black uppercase tracking-widest">online</span>
               </div>
             </div>
 
@@ -115,7 +138,7 @@ export default function UserOperationsPage() {
                 <thead>
                   <tr className="bg-slate-50/50">
                     <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest">Active Identity</th>
-                    <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest">Entry Point (IP)</th>
+                    <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest">Device & IP</th>
                     <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Status</th>
                     <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Action</th>
                   </tr>
@@ -138,24 +161,51 @@ export default function UserOperationsPage() {
                             referrerPolicy="no-referrer"
                           />
                           <div>
-                            <p className="font-medium text-gray-900 text-sm">{s.user?.name}</p>
-                            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest leading-none mt-1">{s.user?.role || 'User'}</p>
+                            <div className="flex items-center gap-2">
+                              <p className="font-medium text-gray-900 text-sm">{s.user?.name}</p>
+                              {s.user?.businessName && (
+                                <span className="text-[10px] font-semibold text-emerald-800 bg-emerald-50 border border-emerald-100 px-1.5 py-0.5 rounded">
+                                  {s.user.businessName}
+                                </span>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-1.5 mt-1">
+                              <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest leading-none">{s.user?.role || 'User'}</span>
+                              <span className="text-gray-300">•</span>
+                              <span className="text-[10px] text-gray-400 font-mono">{s.user?.email || 'No email'}</span>
+                            </div>
                           </div>
                         </div>
                       </td>
                       <td className="px-8 py-5">
-                        <p className="text-xs font-medium text-slate-700 hl-mono">{s.ipAddress || 'Cloud internal'}</p>
-                        <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">HTTPS/WSS</p>
+                        <div className="flex items-center gap-2">
+                          {s.device?.deviceType === 'Mobile' ? (
+                            <DeviceMobile size={15} className="text-slate-400 shrink-0" />
+                          ) : (
+                            <Desktop size={15} className="text-slate-400 shrink-0" />
+                          )}
+                          <p className="text-xs font-medium text-slate-800 truncate max-w-[200px]" title={s.device?.summary || s.userAgent}>
+                            {s.device?.summary || 'Web Browser'}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-2 mt-1">
+                          <span className="text-[10px] font-mono text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded">{s.ipAddress || 'Cloud internal'}</span>
+                          <span className="text-[9px] text-slate-400 font-bold uppercase tracking-widest">{s.device?.deviceType || 'Desktop'}</span>
+                        </div>
                       </td>
                       <td className="px-8 py-5 text-center">
-                        <div className="flex items-center justify-center gap-1.5 text-[9px] font-black text-emerald-600 bg-emerald-50 px-2 py-1 rounded-md uppercase tracking-widest">
-                          <div className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                          Active
+                        <div className="inline-flex flex-col items-center gap-1">
+                          <div className="flex items-center justify-center gap-1.5 text-[9px] font-black text-emerald-600 bg-emerald-50 px-2 py-1 rounded-md uppercase tracking-widest border border-emerald-100">
+                            <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                            Active
+                          </div>
+                          <span className="text-[10px] font-medium text-slate-400">{timeAgo(s.lastActive)}</span>
                         </div>
                       </td>
                       <td className="px-8 py-5 text-right">
                         <button
                           onClick={(e) => { e.stopPropagation(); setConfirmTerminateId(s.id); }}
+                          title="Terminate this session"
                           className="text-gray-400 hover:text-red-600 transition-all p-2 hover:bg-red-50 rounded-md"
                         >
                           <SignOut size={16} />
@@ -171,6 +221,74 @@ export default function UserOperationsPage() {
                   )}
                 </tbody>
               </table>
+            </div>
+          </div>
+
+          {/* Real-time Activity Stream */}
+          <div className="bg-white rounded-[.5rem] border border-gray-100 overflow-hidden">
+            <div className="px-6 py-4 border-b border-gray-50 flex justify-between items-center">
+              <div className="flex items-center gap-2.5">
+                <Pulse size={18} className="text-emerald-600 animate-pulse" />
+                <div>
+                  <h3 className="text-sm font-medium text-gray-900">Real-time Activity Stream</h3>
+                  <p className="text-xs text-gray-400 mt-0.5">Live user logins, transactions, inventory updates, and session actions</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 px-2.5 py-1 bg-slate-50 text-slate-600 rounded-md border border-slate-200">
+                <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-ping" />
+                <span className="text-[10px] font-bold uppercase tracking-wider">Sync 5s</span>
+              </div>
+            </div>
+
+            <div className="divide-y divide-slate-50 max-h-[360px] overflow-y-auto">
+              {liveLogs.length > 0 ? liveLogs.map((log: any) => {
+                const isLogin = log.action?.includes('Login') || log.logName === 'Auth'
+                const isSale = log.action?.includes('Sale') || log.logName === 'Sales'
+                const isSecurity = log.logName === 'Security' || log.action?.includes('Terminated')
+                return (
+                  <div key={log.id} className="px-6 py-3.5 hover:bg-slate-50/50 transition-all flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className={`h-8 w-8 rounded-md flex items-center justify-center shrink-0 ${
+                        isLogin ? 'bg-emerald-50 text-emerald-600' :
+                        isSale ? 'bg-blue-50 text-blue-600' :
+                        isSecurity ? 'bg-amber-50 text-amber-600' :
+                        'bg-slate-100 text-slate-600'
+                      }`}>
+                        {isLogin ? <Users size={16} /> : isSale ? <Pulse size={16} /> : <Desktop size={16} />}
+                      </div>
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <p className="text-xs font-semibold text-gray-900 truncate">
+                            {log.user?.name || log.userName || 'System User'}
+                          </p>
+                          {log.tenant?.businessName && (
+                            <span className="text-[10px] font-medium text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded">
+                              {log.tenant.businessName}
+                            </span>
+                          )}
+                          <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider ${
+                            isLogin ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' :
+                            isSale ? 'bg-blue-50 text-blue-700 border border-blue-100' :
+                            isSecurity ? 'bg-red-50 text-red-700 border border-red-100' :
+                            'bg-slate-100 text-slate-600'
+                          }`}>
+                            {log.action}
+                          </span>
+                        </div>
+                        <p className="text-xs text-slate-500 truncate mt-0.5">{log.details}</p>
+                      </div>
+                    </div>
+                    <div className="text-right shrink-0">
+                      <p className="text-[11px] font-medium text-slate-600 hl-mono">{timeAgo(log.createdAt)}</p>
+                      <p className="text-[9px] text-slate-400 font-mono mt-0.5">{log.ipAddress || '127.0.0.1'}</p>
+                    </div>
+                  </div>
+                )
+              }) : (
+                <div className="py-12 text-center text-slate-400 text-sm">
+                  Waiting for user activity...
+                </div>
+              )}
             </div>
           </div>
 
