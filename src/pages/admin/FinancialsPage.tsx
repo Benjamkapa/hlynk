@@ -2,12 +2,12 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { adminApi } from '../../lib/api/providers'
 import { toast } from 'sonner'
 import { getErrorMessage } from '../../lib/utils/error'
-import { DollarSign, TrendingUp, PieChart, ArrowUpRight, Download, Search, Filter, CheckCircle2, Clock, CreditCard, Activity, Landmark, Wallet, AlertTriangle, ExternalLink, Smartphone, Banknote, ChevronLeft, ChevronRight, X, Trash2, ShieldAlert } from 'lucide-react'
+import { DollarSign, TrendingUp, PieChart, ArrowUpRight, Download, Search, Filter, CheckCircle2, Clock, CreditCard, Activity, Landmark, Wallet, AlertTriangle, ExternalLink, Smartphone, Banknote, ChevronLeft, ChevronRight, X, Trash2, ShieldAlert, Lock, Unlock, TriangleAlert, ChevronDown } from 'lucide-react'
 import PayoutsManager from '../../components/admin/PayoutsManager'
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, BarChart, Bar } from 'recharts'
 import Pagination from '../../components/shared/Pagination'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { AdminStats } from '../../lib/types/api'
 import { formatDate, formatDateTime } from '../../lib/utils/date'
 
@@ -21,6 +21,33 @@ export default function FinancialsPage() {
   const [type, setType] = useState('')
   const [selectedTxId, setSelectedTxId] = useState<string | null>(null)
 
+  // Danger zone state
+  const [dangerUnlocked, setDangerUnlocked] = useState(false)
+  const [purgeModalOpen, setPurgeModalOpen] = useState(false)
+  const [purgeTargetTenantId, setPurgeTargetTenantId] = useState('')
+  const [purgeConfirmText, setPurgeConfirmText] = useState('')
+  const [tenantSearch, setTenantSearch] = useState('')
+  const lockTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  // Auto-relock danger zone after 30s of inactivity
+  const handleUnlockDanger = () => {
+    setDangerUnlocked(v => !v)
+    if (lockTimerRef.current) clearTimeout(lockTimerRef.current)
+    if (!dangerUnlocked) {
+      lockTimerRef.current = setTimeout(() => {
+        setDangerUnlocked(false)
+        setPurgeModalOpen(false)
+      }, 30_000)
+    }
+  }
+
+  const { data: tenantsData } = useQuery({
+    queryKey: ['admin-tenants-purge', tenantSearch],
+    queryFn: () => adminApi.getTenants({ search: tenantSearch, limit: 100 }),
+    enabled: purgeModalOpen,
+  })
+  const tenantList: any[] = tenantsData?.data?.tenants || []
+
   const deleteTxMutation = useMutation({
     mutationFn: (txId: string) => adminApi.deleteRecord('payment', txId),
     onSuccess: (res) => {
@@ -33,12 +60,16 @@ export default function FinancialsPage() {
   })
 
   const clearLedgerMutation = useMutation({
-    mutationFn: () => adminApi.clearTable('payment'),
+    mutationFn: (tenantId?: string) => adminApi.clearTable('payment', tenantId || undefined),
     onSuccess: (res) => {
       toast.success(res.message || 'Payment ledger cleared')
       queryClient.invalidateQueries({ queryKey: ['admin-transactions'] })
       queryClient.invalidateQueries({ queryKey: ['financial-stats'] })
       queryClient.invalidateQueries({ queryKey: ['admin-vault'] })
+      setPurgeModalOpen(false)
+      setPurgeTargetTenantId('')
+      setPurgeConfirmText('')
+      setDangerUnlocked(false)
     },
     onError: (err) => toast.error(getErrorMessage(err))
   })
@@ -83,6 +114,9 @@ export default function FinancialsPage() {
     revenue: r.value,
     profit: r.value * 0.8 
   })) || []
+
+  const selectedTenant = tenantList.find(t => t.id === purgeTargetTenantId)
+  const canPurge = purgeTargetTenantId && purgeConfirmText === 'PURGE'
 
   return (
     <div className="space-y-8 pt-4 animate-in fade-in duration-700">
@@ -192,17 +226,30 @@ export default function FinancialsPage() {
                   <h3 className="text-sm font-medium text-gray-900">Active payments log</h3>
                   <p className="text-xs text-gray-400 mt-0.5">Unified view of all platform transactions</p>
                 </div>
-                <button
-                  disabled={clearLedgerMutation.isPending}
-                  onClick={() => {
-                    if (window.confirm('CRITICAL ACTION: Are you sure you want to purge all payment ledger records? This cannot be undone!')) {
-                      clearLedgerMutation.mutate()
-                    }
-                  }}
-                  className="px-4 py-2 bg-red-50 text-red-600 hover:bg-red-100 rounded-md text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2"
-                >
-                  <Trash2 size={12} /> Purge Ledger
-                </button>
+                {/* Danger zone — hidden behind an unlock toggle */}
+                <div className="flex items-center gap-2">
+                  <button
+                    title={dangerUnlocked ? 'Lock danger zone' : 'Unlock danger zone actions'}
+                    onClick={handleUnlockDanger}
+                    className={`p-2 rounded-md transition-all border text-[10px] flex items-center gap-1.5 font-black uppercase tracking-widest ${
+                      dangerUnlocked
+                        ? 'bg-red-50 border-red-200 text-red-500 hover:bg-red-100'
+                        : 'bg-slate-50 border-slate-200 text-slate-300 hover:text-slate-500 hover:border-slate-300'
+                    }`}
+                  >
+                    {dangerUnlocked ? <Unlock size={12} /> : <Lock size={12} />}
+                    {dangerUnlocked && <span>Locked in 30s</span>}
+                  </button>
+                  {dangerUnlocked && (
+                    <button
+                      disabled={clearLedgerMutation.isPending}
+                      onClick={() => setPurgeModalOpen(true)}
+                      className="px-3 py-2 bg-red-600 text-white hover:bg-red-700 rounded-md text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 shadow-sm animate-in fade-in slide-in-from-right-2 duration-200"
+                    >
+                      <Trash2 size={12} /> Purge Ledger
+                    </button>
+                  )}
+                </div>
               </div>
               
               <div className="flex flex-wrap gap-3 w-full xl:w-auto">
@@ -458,6 +505,119 @@ export default function FinancialsPage() {
         </div>
       )}
 
+      {/* ─── Purge Ledger Modal ─────────────────────────────────────── */}
+      {purgeModalOpen && (
+        <div className="fixed inset-0 z-[300] flex items-center justify-center p-4">
+          <div
+            className="absolute inset-0 bg-slate-950/60 backdrop-blur-sm"
+            onClick={() => { setPurgeModalOpen(false); setPurgeTargetTenantId(''); setPurgeConfirmText(''); }}
+          />
+          <div className="relative bg-white w-full max-w-md rounded-xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
+            {/* Header */}
+            <div className="bg-red-600 px-6 py-5 flex items-start gap-4">
+              <div className="p-2 bg-white/20 rounded-lg mt-0.5">
+                <TriangleAlert size={20} className="text-white" />
+              </div>
+              <div>
+                <p className="text-[9px] font-black uppercase tracking-[0.2em] text-red-200 mb-1">Destructive Action</p>
+                <h2 className="text-lg font-semibold text-white">Purge Payment Ledger</h2>
+                <p className="text-xs text-red-200/80 mt-1">Select an account and confirm. This permanently deletes all payment records for that vendor.</p>
+              </div>
+              <button
+                onClick={() => { setPurgeModalOpen(false); setPurgeTargetTenantId(''); setPurgeConfirmText(''); }}
+                className="ml-auto p-1.5 hover:bg-white/20 rounded-lg transition-all text-white flex-shrink-0"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-5">
+              {/* Step 1: Tenant selector */}
+              <div>
+                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-2">
+                  Step 1 — Select Account to Purge
+                </label>
+                <div className="relative mb-2">
+                  <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                  <input
+                    type="text"
+                    placeholder="Search by business name…"
+                    value={tenantSearch}
+                    onChange={e => setTenantSearch(e.target.value)}
+                    className="w-full pl-9 pr-3 py-2.5 text-xs border border-slate-200 rounded-lg bg-slate-50 focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-400 transition-all"
+                  />
+                </div>
+                <div className="max-h-44 overflow-y-auto border border-slate-200 rounded-lg divide-y divide-slate-100">
+                  {tenantList.length === 0 && (
+                    <p className="text-center text-xs text-slate-400 py-6">No accounts found.</p>
+                  )}
+                  {tenantList.map(t => (
+                    <button
+                      key={t.id}
+                      onClick={() => setPurgeTargetTenantId(t.id)}
+                      className={`w-full flex items-center justify-between px-4 py-3 text-left transition-all hover:bg-red-50 ${
+                        purgeTargetTenantId === t.id ? 'bg-red-50 border-l-2 border-red-500' : ''
+                      }`}
+                    >
+                      <div>
+                        <p className="text-xs font-bold text-slate-900">{t.businessName}</p>
+                        <p className="text-[10px] text-slate-400 font-mono">{t.slug}</p>
+                      </div>
+                      {purgeTargetTenantId === t.id && (
+                        <div className="h-4 w-4 rounded-full bg-red-500 flex items-center justify-center flex-shrink-0">
+                          <CheckCircle2 size={10} className="text-white" />
+                        </div>
+                      )}
+                    </button>
+                  ))}
+                </div>
+                {selectedTenant && (
+                  <p className="text-[10px] text-red-600 font-bold mt-2 flex items-center gap-1">
+                    <TriangleAlert size={10} /> Will purge all payments for <span className="font-black">{selectedTenant.businessName}</span>
+                  </p>
+                )}
+              </div>
+
+              {/* Step 2: Typed confirmation */}
+              <div>
+                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-2">
+                  Step 2 — Type <span className="font-black text-red-600 tracking-widest">PURGE</span> to confirm
+                </label>
+                <input
+                  type="text"
+                  value={purgeConfirmText}
+                  onChange={e => setPurgeConfirmText(e.target.value.toUpperCase())}
+                  placeholder="PURGE"
+                  className="w-full px-4 py-2.5 text-xs font-black border-2 border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-400 transition-all tracking-widest"
+                  style={{ fontFamily: 'monospace' }}
+                />
+              </div>
+
+              {/* Action buttons */}
+              <div className="flex gap-3 pt-1">
+                <button
+                  onClick={() => { setPurgeModalOpen(false); setPurgeTargetTenantId(''); setPurgeConfirmText(''); }}
+                  className="flex-1 px-4 py-2.5 bg-slate-100 text-slate-600 rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-slate-200 transition-all"
+                >
+                  Cancel
+                </button>
+                <button
+                  disabled={!canPurge || clearLedgerMutation.isPending}
+                  onClick={() => clearLedgerMutation.mutate(purgeTargetTenantId)}
+                  className="flex-1 px-4 py-2.5 bg-red-600 text-white rounded-lg text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-red-700 enabled:shadow-sm enabled:shadow-red-200"
+                >
+                  {clearLedgerMutation.isPending ? (
+                    <Activity size={12} className="animate-spin" />
+                  ) : (
+                    <Trash2 size={12} />
+                  )}
+                  {clearLedgerMutation.isPending ? 'Purging…' : 'Purge This Account'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
