@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { platformApi } from '../../lib/api/platform';
 import { toast } from 'sonner';
+import { setAppBadge, clearAppBadge } from '../../lib/notifications/badge';
 
 interface Notification {
   id: string;
@@ -91,6 +92,25 @@ export default function NotificationBell() {
     return () => clearInterval(interval);
   }, [fetchNotifications]);
 
+  // Sync PWA device app icon badge whenever unread count changes
+  useEffect(() => {
+    setAppBadge(unread);
+  }, [unread]);
+
+  // Re-sync notifications & badge when background push notification arrives
+  useEffect(() => {
+    if (!('serviceWorker' in navigator)) return;
+
+    const handleMessage = (event: MessageEvent) => {
+      if (event.data?.type === 'PUSH_NOTIFICATION') {
+        fetchNotifications();
+      }
+    };
+
+    navigator.serviceWorker.addEventListener('message', handleMessage);
+    return () => navigator.serviceWorker.removeEventListener('message', handleMessage);
+  }, [fetchNotifications]);
+
   // Close on outside click
   useEffect(() => {
     if (!open) return;
@@ -131,6 +151,7 @@ export default function NotificationBell() {
     try {
       await platformApi.markAllAsRead();
       setNotes(prev => prev.map(x => ({ ...x, isRead: true })));
+      clearAppBadge();
     } catch (_) {
       toast.error('Failed to mark all as read');
     }
@@ -142,6 +163,7 @@ export default function NotificationBell() {
       await platformApi.deleteAllNotifications();
       setNotes([]);
       setOpen(false);
+      clearAppBadge();
       toast.success('All notifications cleared');
     } catch (_) {
       toast.error('Failed to clear notifications');

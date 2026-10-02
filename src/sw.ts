@@ -88,11 +88,27 @@ _self.addEventListener('push', (event: PushEvent) => {
     };
 
     // 1. Show the system notification
-    event.waitUntil(
-      _self.registration.showNotification(data.title, options)
-    );
+    const notificationPromise = _self.registration.showNotification(data.title, options);
 
-    // 2. Broadcast to all open tabs for in-app toasts
+    // 2. Update device PWA icon badge
+    const badgePromise = (async () => {
+      if ('setAppBadge' in _self.navigator) {
+        try {
+          const count = typeof data.unreadCount === 'number' && data.unreadCount > 0
+            ? data.unreadCount
+            : undefined;
+          if (count !== undefined) {
+            await (_self.navigator as any).setAppBadge(count);
+          } else {
+            await (_self.navigator as any).setAppBadge();
+          }
+        } catch (_) {}
+      }
+    })();
+
+    event.waitUntil(Promise.all([notificationPromise, badgePromise]));
+
+    // 3. Broadcast to all open tabs for in-app toasts & badge sync
     _self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clients) => {
       clients.forEach((client) => {
         client.postMessage({
@@ -101,7 +117,8 @@ _self.addEventListener('push', (event: PushEvent) => {
             title: data.title, 
             body: data.body, 
             data: data.data,
-            type: data.type || 'info'
+            type: data.type || 'info',
+            unreadCount: data.unreadCount
           }
         });
       });
@@ -112,6 +129,11 @@ _self.addEventListener('push', (event: PushEvent) => {
 _self.addEventListener('notificationclick', (event: NotificationEvent) => {
   event.notification.close();
   const urlToOpen = event.notification.data?.url || '/';
+
+  // Clear or decrement badge when user interacts with notification
+  if ('clearAppBadge' in _self.navigator) {
+    (_self.navigator as any).clearAppBadge().catch(() => {});
+  }
 
   event.waitUntil(
     _self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((windowClients) => {
@@ -126,5 +148,23 @@ _self.addEventListener('notificationclick', (event: NotificationEvent) => {
       }
     })
   );
+});
+
+// Sync badge changes requested by web tabs
+_self.addEventListener('message', (event) => {
+  if (event.data?.type === 'SET_BADGE') {
+    const count = event.data.count;
+    if ('setAppBadge' in _self.navigator) {
+      if (typeof count === 'number' && count > 0) {
+        (_self.navigator as any).setAppBadge(count).catch(() => {});
+      } else {
+        (_self.navigator as any).clearAppBadge().catch(() => {});
+      }
+    }
+  } else if (event.data?.type === 'CLEAR_BADGE') {
+    if ('clearAppBadge' in _self.navigator) {
+      (_self.navigator as any).clearAppBadge().catch(() => {});
+    }
+  }
 });
 
