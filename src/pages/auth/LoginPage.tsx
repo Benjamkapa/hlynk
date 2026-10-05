@@ -537,7 +537,7 @@ export default function LoginPage() {
                   <nav className="mob-nav hidden" style={{ display: 'flex', justifyContent: 'flex-end' }}>
                     <a
                       href="/"
-                      style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.85)', textDecoration: 'none', letterSpacing: '0.05em' }}
+                      style={{ display: 'flex', marginTop: '2rem', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.85)', textDecoration: 'none', letterSpacing: '0.05em' }}
                     >
                       <ArrowLeft size={11} /> Back to Website
                     </a>
@@ -614,7 +614,7 @@ export default function LoginPage() {
                     <img src={hlynk} alt="hlynk" style={{ height: 32, objectFit: 'contain' }} />
                     <button
                       onClick={() => { setRequiresRegistration(false); setGoogleCredential('') }}
-                      style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, fontWeight: 700, background: 'none', border: 'none', color: 'rgba(255,255,255,0.85)', textTransform: 'capitalize', letterSpacing: '0.14em', cursor: 'pointer' }}
+                      style={{ display: 'flex', alignItems: 'center', gap: 4, marginBlock: '2rem', fontSize: 10, fontWeight: 700, background: 'none', border: 'none', color: 'rgba(255,255,255,0.85)', textTransform: 'capitalize', letterSpacing: '0.14em', cursor: 'pointer' }}
                     >
                       <ArrowLeft size={10} /> Back
                     </button>
