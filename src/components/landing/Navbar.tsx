@@ -254,6 +254,7 @@ export default function Navbar() {
         style={{
           position: 'fixed',
           inset: 0,
+          paddingTop: 30,
           zIndex: 200,
           background: '#fff',
           display: 'flex',
