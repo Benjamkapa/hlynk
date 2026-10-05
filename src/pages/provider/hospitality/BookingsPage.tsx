@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { CalendarCheck, Plus, Search, Loader2, LogOut, ChevronDown, X, WifiOff } from "lucide-react";
+import { CalendarCheck, Plus, Search, LogOut, ChevronDown, X, WifiOff } from "lucide-react";
+import InlineLoader, { ButtonLoader } from "../../../components/shared/InlineLoader";
 import { eventsApi, resourcesApi, UniversalEvent, Resource } from "../../../lib/api/universal";
 import { toast } from "sonner";
 import { AnimatePresence, motion } from "framer-motion";
@@ -339,7 +340,7 @@ export default function BookingsPage() {
       {/* Bookings List */}
       {loading ? (
         <div className="flex items-center justify-center h-48">
-          <Loader2 className="animate-spin text-slate-400" size={24} />
+          <InlineLoader size="md" color="text-slate-400" />
         </div>
       ) : filtered.length === 0 ? (
         <div className="text-center py-20 bg-white rounded-2xl border border-slate-100">
@@ -571,7 +572,7 @@ export default function BookingsPage() {
 
           <button type="submit" disabled={submitting || availableRooms.length === 0}
             className="w-full bg-[#0D4A3E] text-white py-3 rounded-full text-sm font-semibold hover:bg-[#0A3D33] transition-colors flex items-center justify-center gap-2">
-            {submitting ? <Loader2 className="animate-spin" size={16} /> : "Save booking"}
+            {submitting ? <ButtonLoader size={16} /> : "Save booking"}
           </button>
         </form>
       </Modal>
@@ -608,7 +609,7 @@ export default function BookingsPage() {
             </div>
             <button type="submit" disabled={submitting}
               className="w-full bg-[#0D4A3E] text-white py-3 rounded-full text-sm font-semibold hover:bg-slate-700 transition-colors disabled:opacity-40 flex items-center justify-center gap-2">
-              {submitting ? <Loader2 className="animate-spin" size={16} /> : "Record payment"}
+              {submitting ? <ButtonLoader size={16} /> : "Record payment"}
             </button>
           </form>
         )}

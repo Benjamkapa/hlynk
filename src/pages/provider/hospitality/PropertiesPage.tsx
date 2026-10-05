@@ -1,9 +1,10 @@
 import { useState, useEffect, useRef } from "react";
 import {
-  Building, Plus, Edit2, Trash2, Loader2, X, Camera,
+  Building, Plus, Edit2, Trash2, X, Camera,
   UploadCloud, Star, ChevronLeft, ChevronRight, Link as LinkIcon,
   Eye, Share2, Search, LayoutGrid, Grid, List, WifiOff
 } from "lucide-react";
+import InlineLoader, { ButtonLoader } from "../../../components/shared/InlineLoader";
 import { resourcesApi, Resource } from "../../../lib/api/universal";
 import { CameraCapture } from "../../../components/shared/CameraCapture";
 import { toast } from "sonner";
@@ -664,7 +665,7 @@ function withTimeout<T>(promise: Promise<T>, ms = 45000): Promise<T> {
       {/* Units Display */}
       {loading ? (
         <div className="flex items-center justify-center h-48">
-          <Loader2 className="animate-spin text-slate-400" size={24} />
+          <InlineLoader size="md" color="text-slate-400" />
         </div>
       ) : filteredRooms.length === 0 ? (
         <div className="text-center py-16 bg-white rounded-2xl border border-slate-100">
@@ -967,7 +968,7 @@ function withTimeout<T>(promise: Promise<T>, ms = 45000): Promise<T> {
           </div>
           <button type="submit" disabled={submitting}
             className="w-full bg-[#0D4A3E] text-white py-3 rounded-full text-sm font-semibold hover:bg-slate-700 disabled:opacity-40 flex items-center justify-center gap-2">
-            {submitting ? <Loader2 className="animate-spin" size={16} /> : "Save group"}
+            {submitting ? <ButtonLoader size={16} /> : "Save group"}
           </button>
         </form>
       </Modal>
@@ -1126,7 +1127,7 @@ function withTimeout<T>(promise: Promise<T>, ms = 45000): Promise<T> {
 
           <button type="submit" disabled={submitting}
             className="w-full bg-[#0D4A3E] text-white py-3 rounded-full text-sm font-semibold hover:bg-slate-700 disabled:opacity-40 flex items-center justify-center gap-2">
-            {submitting ? <Loader2 className="animate-spin" size={16} /> : (editingResource ? "Save changes" : "Add unit")}
+            {submitting ? <ButtonLoader size={16} /> : (editingResource ? "Save changes" : "Add unit")}
           </button>
         </form>
       </Modal>

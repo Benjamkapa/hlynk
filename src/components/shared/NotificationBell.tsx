@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Bell, X, Check, CheckCheck, Package, CalendarCheck, Info, AlertTriangle, ShieldCheck, Trash2, Loader2 } from 'lucide-react';
+import { Bell, X, Check, CheckCheck, Package, CalendarCheck, Info, AlertTriangle, ShieldCheck, Trash2 } from 'lucide-react';
+import InlineLoader, { ButtonLoader } from './InlineLoader';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { platformApi } from '../../lib/api/platform';
@@ -232,7 +233,7 @@ export default function NotificationBell() {
                     className="flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold text-slate-500 hover:bg-red-50 hover:text-red-600 transition-colors"
                     title="Clear all notifications"
                   >
-                    {clearing ? <Loader2 size={12} className="animate-spin" /> : <Trash2 size={12} />}
+                    {clearing ? <ButtonLoader size={12} /> : <Trash2 size={12} />}
                     Clear
                   </button>
                 )}
@@ -249,7 +250,7 @@ export default function NotificationBell() {
             <div className="overflow-y-auto flex-1 custom-scrollbar">
               {loading ? (
                 <div className="flex items-center justify-center h-32">
-                  <Loader2 size={22} className="animate-spin text-emerald-600" />
+                  <InlineLoader size="sm" />
                 </div>
               ) : notifications.length === 0 ? (
                 <div className="text-center py-12 px-6">

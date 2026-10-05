@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { Phone, Mail, Check, ArrowRight, Loader2, AlertCircle, X } from 'lucide-react'
+import { Phone, Mail, Check, ArrowRight, AlertCircle, X } from 'lucide-react'
+import { ButtonLoader } from '../shared/InlineLoader'
 import { FadeUp } from './Animations'
 import emailjs from '@emailjs/browser'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -173,7 +174,7 @@ export default function Contact() {
                     disabled={loading}
                     className="w-full py-4 bg-[#064E3B] text-[#14181A] rounded-full font-bold text-sm hover:opacity-85 transition-all flex items-center justify-center gap-2 group disabled:opacity-50"
                   >
-                    {loading ? <Loader2 size={16} className="animate-spin" /> : 'Send message'}
+                    {loading ? <ButtonLoader size={16} /> : 'Send message'}
                     {!loading && <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />}
                   </button>
                 </form>

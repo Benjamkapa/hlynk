@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { paymentsApi } from '../../lib/api/providers'
-import { Loader2, Smartphone, Calendar, User, CheckCircle2, XCircle, Clock, AlertTriangle, ShieldCheck, Terminal, Database, ArrowRightLeft, Zap, Download, ArrowUpDown } from 'lucide-react'
+import { Smartphone, Calendar, User, CheckCircle2, XCircle, Clock, AlertTriangle, ShieldCheck, Terminal, Database, ArrowRightLeft, Zap, Download, ArrowUpDown } from 'lucide-react'
+import InlineLoader from '../../components/shared/InlineLoader'
 import Pagination from '../../components/shared/Pagination'
 import { SlideOver } from '../../components/shared/SlideOver'
 import { toast } from 'sonner'
@@ -124,9 +125,8 @@ export default function MpesaLogsPage() {
 
       <div className="grid grid-cols-1 gap-8">
         {isLoading ? (
-          <div className="p-32 flex flex-col items-center justify-center text-slate-400 gap-4">
-            <Loader2 className="animate-spin" size={48} />
-            <p className="font-black uppercase tracking-widest text-xs">Fetching Audit Stream...</p>
+          <div className="p-32 flex flex-col items-center justify-center">
+            <InlineLoader size="xl" message="Fetching Audit Stream..." />
           </div>
         ) : logs.length === 0 ? (
           <div className="p-32 text-center bg-white rounded-[.5em] border border-slate-100 shadow-sm">

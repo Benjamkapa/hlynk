@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { AlertCircle, ChevronRight, HelpCircle, Loader2, Mail, MessageCircle, Phone, Star } from 'lucide-react'
+import { AlertCircle, ChevronRight, HelpCircle, Mail, MessageCircle, Phone, Star } from 'lucide-react'
+import InlineLoader, { ButtonLoader } from '../../components/shared/InlineLoader'
 import { toast } from 'sonner'
 import { platformApi } from '../../lib/api/platform'
 import { useAuth } from '../../lib/auth/AuthContext'
@@ -99,7 +100,7 @@ export default function SupportPage() {
           <div className="p-6 space-y-5">
             {reviewLoading ? (
               <div className="py-8 flex justify-center">
-                <Loader2 className="animate-spin text-emerald-600" size={24} />
+                <InlineLoader />
               </div>
             ) : (
               <>
@@ -132,7 +133,7 @@ export default function SupportPage() {
                   className="w-full glass-btn-primary py-3.5 rounded-xl font-black text-sm uppercase tracking-widest flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {submitReviewMutation.isPending
-                    ? <><Loader2 className="animate-spin" size={16} /> Submitting...</>
+                    ? <><ButtonLoader size="sm" /> Submitting...</>
                     : <><Star size={16} /> {myReview?.data ? 'Update Review' : 'Submit Review'}</>
                   }
                 </button>

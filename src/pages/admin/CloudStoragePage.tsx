@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { HardDrive, Search, Trash2, FileText, Image as ImageIcon, ExternalLink, Filter, Database, Loader2, Users, MoreVertical, Shield, LayoutGrid, List, SortAsc, Download, FileCode, CheckCircle2, AlertCircle } from 'lucide-react'
+import { HardDrive, Search, Trash2, FileText, Image as ImageIcon, ExternalLink, Filter, Database, Users, MoreVertical, Shield, LayoutGrid, List, SortAsc, Download, FileCode, CheckCircle2, AlertCircle } from 'lucide-react'
+import InlineLoader from '../../components/shared/InlineLoader'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { adminApi } from '../../lib/api/providers'
 import { useAuth } from '../../lib/auth/AuthContext'
@@ -174,15 +175,9 @@ export default function CloudStoragePage() {
         {/* Main Content Area */}
         <div className="lg:col-span-3 space-y-6">
           {isLoading ? (
-            <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-40 flex flex-col items-center justify-center space-y-6">
-               <div className="relative">
-                  <Loader2 size={60} className="animate-spin text-emerald-500 opacity-20" />
-                  <Database size={24} className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-emerald-600 animate-pulse" />
-               </div>
-               <div className="text-center">
-                  <p className="text-lg font-black text-slate-900 tracking-tight">Syncing Storage State...</p>
-                  <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mt-1">Establishing Secure Connection to MinIO Cluster</p>
-               </div>
+            <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-40 flex flex-col items-center justify-center space-y-4">
+               <InlineLoader size={48} message="Syncing Storage State..." />
+               <p className="text-xs text-slate-400 font-bold uppercase tracking-widest">Establishing Secure Connection to MinIO Cluster</p>
             </div>
           ) : filteredMedia.length > 0 ? (
             

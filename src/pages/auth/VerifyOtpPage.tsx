@@ -1,7 +1,8 @@
 import { useRef, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { toast } from 'sonner'
-import { Loader2, ShieldCheck, ArrowRight, ArrowLeft, Home } from 'lucide-react'
+import { ShieldCheck, ArrowRight, ArrowLeft, Home } from 'lucide-react'
+import { ButtonLoader } from '../../components/shared/InlineLoader'
 import { authApi } from '../../lib/api/auth'
 import { useAuth } from '../../lib/auth/AuthContext'
 import { getErrorMessage } from '../../lib/utils/error'
@@ -86,7 +87,7 @@ export default function VerifyOtpPage() {
               disabled={loading}
               className="w-full py-5 bg-[#0D4A3E] text-white rounded-xl font-black text-xs uppercase tracking-widest hover:bg-[#064E3B] transition-all shadow-xl shadow-emerald-900/10 flex items-center justify-center gap-2 group disabled:opacity-50"
             >
-              {loading ? <Loader2 size={16} className="animate-spin" /> : 'Verify & Join Network'}
+              {loading ? <ButtonLoader size={16} /> : 'Verify & Join Network'}
               {!loading && <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />}
             </button>
           </form>

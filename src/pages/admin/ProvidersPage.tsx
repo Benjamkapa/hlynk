@@ -6,6 +6,7 @@ import { ConfirmModal } from '../../components/shared/ConfirmModal'
 import { toast } from 'sonner'
 import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query'
 import { adminApi } from '../../lib/api/providers'
+import InlineLoader from '../../components/shared/InlineLoader'
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts'
 
 export default function ProvidersPage() {
@@ -171,7 +172,7 @@ export default function ProvidersPage() {
               {isLoading ? (
                 <tr>
                   <td colSpan={6} className="py-20 text-center">
-                    <div className="h-8 w-8 animate-spin rounded-full border-4 border-emerald-500 border-t-transparent mx-auto" />
+                    <InlineLoader message="Loading providers..." />
                   </td>
                 </tr>
               ) : providers.length > 0 ? providers.map((p: any, i: number) => (

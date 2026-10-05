@@ -2,7 +2,7 @@ import { lazy, Suspense, useState, useEffect } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { AnimatePresence } from 'framer-motion'
 import { useAuth } from './lib/auth/AuthContext'
-import { Loader2 } from 'lucide-react'
+import InlineLoader from './components/shared/InlineLoader'
 import { hasOfflinePin, hasPinBeenPrompted, markPinPrompted } from './lib/offline/offlinePin'
 import OfflineLockScreen from './components/auth/OfflineLockScreen'
 import PinSetupModal from './components/auth/PinSetupModal'
@@ -70,7 +70,7 @@ const OperationsPage = lazy(() => import('./pages/provider/hospitality/Operation
 function LoadingScreen() {
   return (
     <div className="flex h-screen items-center justify-center bg-gray-50">
-      <Loader2 className="h-8 w-8 animate-spin text-emerald-600" />
+      <InlineLoader size="lg" />
     </div>
   )
 }

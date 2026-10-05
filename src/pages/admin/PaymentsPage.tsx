@@ -5,6 +5,7 @@ import { toast } from 'sonner'
 import { Clock, XCircle, Save, CreditCard, ArrowUpRight, Search, Filter, Landmark, CheckCircle2, ChevronLeft, ChevronRight, ArrowUpDown } from 'lucide-react'
 import { AdminStats } from '../../lib/types/api'
 import Pagination from '../../components/shared/Pagination'
+import InlineLoader, { ButtonLoader } from '../../components/shared/InlineLoader'
 
 type SortField = 'id' | 'createdAt' | 'businessName' | 'amount' | 'type' | 'status'
 type SortDirection = 'asc' | 'desc'
@@ -207,7 +208,7 @@ export default function PaymentsPage() {
                 {statsLoading ? (
                   <tr>
                     <td colSpan={6} className="py-20 text-center">
-                      <div className="h-8 w-8 animate-spin rounded-full border-4 border-emerald-500 border-t-transparent mx-auto" />
+                      <InlineLoader message="Loading transactions..." />
                     </td>
                   </tr>
                 ) : paginatedTransactions.length > 0 ? paginatedTransactions.map((t: any, i: number) => {
@@ -300,7 +301,7 @@ export default function PaymentsPage() {
                                      disabled={markPaidMutation.isPending}
                                      className="bg-emerald-600 text-white h-10 px-4 rounded-md font-bold text-xs hover:bg-emerald-700 transition-all flex items-center gap-2 ml-auto"
                                    >
-                                      {markPaidMutation.isPending ? <Landmark className="animate-spin" size={16} /> : <CheckCircle2 size={16} />}
+                                      {markPaidMutation.isPending ? <ButtonLoader size={16} /> : <CheckCircle2 size={16} />}
                                       Mark as Settled
                                    </button>
                                 </td>

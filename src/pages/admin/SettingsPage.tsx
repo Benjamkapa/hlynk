@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
-import { Settings, Shield, Bell, Globe, Database, Cpu, Lock, Save, Key, UserCheck, ShieldAlert, ShieldCheck, User, Camera, Loader2, Smartphone, CheckCircle2, AlertTriangle } from 'lucide-react'
+import { Settings, Shield, Bell, Globe, Database, Cpu, Lock, Save, Key, UserCheck, ShieldAlert, ShieldCheck, User, Camera, Smartphone, CheckCircle2, AlertTriangle } from 'lucide-react'
+import { ButtonLoader } from '../../components/shared/InlineLoader'
 import { toast } from 'sonner'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { adminApi } from '../../lib/api/providers'
@@ -172,7 +173,7 @@ export default function SettingsPage() {
                         )}
                         {uploading && (
                           <div className="absolute inset-0 bg-black/20 flex items-center justify-center backdrop-blur-[2px]">
-                            <Loader2 size={20} className="text-white animate-spin" />
+                            <ButtonLoader size={20} className="text-white" />
                           </div>
                         )}
                       </div>
@@ -556,7 +557,7 @@ function AdminNotificationsPanel() {
 
         <div className="flex items-center gap-3 shrink-0 self-end sm:self-center">
           {loading ? (
-            <Loader2 className="animate-spin text-emerald-600" size={20} />
+            <ButtonLoader size={20} className="text-emerald-600" />
           ) : pushState === 'unsupported' ? (
             <span className="text-[10px] font-black text-red-500 uppercase tracking-widest">Unsupported Browser</span>
           ) : pushState === 'ios_browser' ? (
@@ -585,7 +586,7 @@ function AdminNotificationsPanel() {
                   disabled={sendingTest}
                   className="px-3 py-2 border border-slate-200 bg-white text-slate-700 rounded-md text-[10px] font-black uppercase tracking-widest hover:bg-slate-50 transition-all flex items-center gap-1.5 disabled:opacity-50"
                 >
-                  {sendingTest ? <Loader2 size={12} className="animate-spin" /> : <Bell size={12} />}
+                  {sendingTest ? <ButtonLoader size={12} /> : <Bell size={12} />}
                   Send Test Alert
                 </button>
               )}

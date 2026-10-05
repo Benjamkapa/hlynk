@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react'
 import {
-  Calendar, CreditCard, CheckCircle2, Zap, AlertTriangle, Loader2, Phone, Star, RefreshCcw, Shield, Smartphone, Eye, Download, Info, Users, Check, TrendingUp
+  Calendar, CreditCard, CheckCircle2, Zap, AlertTriangle, Phone, Star, RefreshCcw, Shield, Smartphone, Eye, Download, Info, Users, Check, TrendingUp
 } from 'lucide-react'
+import InlineLoader, { ButtonLoader } from '../../components/shared/InlineLoader'
 import { subscriptionsApi } from '../../lib/api/providers'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
@@ -389,7 +390,7 @@ function ReferralsTab() {
                         {isTrial ? (
                           <div className="flex flex-col gap-0.5">
                             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs bg-amber-50 text-amber-700 w-fit">
-                              <Loader2 size={10} className="animate-spin" /> In trial
+                              <ButtonLoader size={10} /> In trial
                             </span>
                             <p className="text-xs text-gray-400 ml-1">Ends {new Date(ref.trialEndDate).toLocaleDateString()}</p>
                           </div>
@@ -784,7 +785,7 @@ export default function SubscriptionPage() {
 
   if (subLoading) return (
     <div className="flex h-96 items-center justify-center">
-      <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#0D4A3E] border-t-transparent" />
+      <InlineLoader size="lg" color="text-[#0D4A3E]" />
     </div>
   )
 
@@ -797,7 +798,7 @@ export default function SubscriptionPage() {
             {paymentResultMessage ? (
               (paymentResultMessage.includes('Success') || paymentResultMessage.includes('active') ? <CheckCircle2 size={20} className="text-emerald-600" /> : <AlertTriangle size={20} className="text-red-600" />)
             ) : (
-              <Loader2 className="animate-spin text-emerald-600" size={20} />
+              <ButtonLoader size={20} className="text-emerald-600" />
             )}
             <div>
               <h4 className="font-medium text-sm">
@@ -820,7 +821,7 @@ export default function SubscriptionPage() {
               disabled={verifyMutation.isPending}
               className="px-3 py-2 bg-white border border-emerald-100 rounded-[.5rem] text-xs text-emerald-600 hover:bg-emerald-50 transition-colors flex items-center gap-2"
             >
-              {verifyMutation.isPending ? <Loader2 size={12} className="animate-spin" /> : <RefreshCcw size={12} />}
+              {verifyMutation.isPending ? <ButtonLoader size={12} /> : <RefreshCcw size={12} />}
               Check status
             </button>
           )}
@@ -1130,7 +1131,7 @@ export default function SubscriptionPage() {
                                 title="Verify payment"
                                 className="h-7 w-7 rounded-[.5rem] bg-gray-50 text-gray-400 flex items-center justify-center hover:bg-gray-100 hover:text-gray-900 transition-colors"
                               >
-                                {verifyMutation.isPending ? <Loader2 size={13} className="animate-spin" /> : <RefreshCcw size={13} />}
+                                {verifyMutation.isPending ? <ButtonLoader size={13} /> : <RefreshCcw size={13} />}
                               </button>
                             )}
                             <button
@@ -1260,7 +1261,7 @@ export default function SubscriptionPage() {
                 disabled={renewMutation.isPending || manualPaymentMutation.isPending || (subPaymentMethod === 'STK' ? !mpesaPhone : !mpesaCode)}
                 className="w-full bg-[#0D4A3E] text-white py-3 rounded-[.5rem] text-sm font-medium hover:bg-[#0A3D33] transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
               >
-                {renewMutation.isPending || manualPaymentMutation.isPending ? <Loader2 className="animate-spin" size={16} /> : (subPaymentMethod === 'STK' ? 'Pay via M-Pesa' : 'Submit code')}
+                {renewMutation.isPending || manualPaymentMutation.isPending ? <ButtonLoader size={16} /> : (subPaymentMethod === 'STK' ? 'Pay via M-Pesa' : 'Submit code')}
               </button>
             </div>
           </div>
@@ -1365,7 +1366,7 @@ export default function SubscriptionPage() {
                       disabled={changePlanMutation.isPending || manualPaymentMutation.isPending || (subPaymentMethod === 'STK' ? !mpesaPhone : !mpesaCode)}
                       className="w-full sm:w-auto bg-[#0D4A3E] text-white px-5 py-3 rounded-[.5rem] text-sm font-medium hover:bg-[#0A3D33] transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
                     >
-                      {changePlanMutation.isPending || manualPaymentMutation.isPending ? <Loader2 className="animate-spin" size={16} /> : (subPaymentMethod === 'STK' ? `Upgrade to ${selectedPlan.name}` : 'Verify & upgrade')}
+                      {changePlanMutation.isPending || manualPaymentMutation.isPending ? <ButtonLoader size={16} /> : (subPaymentMethod === 'STK' ? `Upgrade to ${selectedPlan.name}` : 'Verify & upgrade')}
                     </button>
                   </div>
                 </div>

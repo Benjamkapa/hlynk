@@ -8,6 +8,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { inventoryApi, providersApi, requestsApi } from '../../lib/api/providers'
 import { getErrorMessage } from '../../lib/utils/error'
 import { getLocalDateString, formatLocalDate } from '../../lib/utils/date'
+import InlineLoader, { ButtonLoader } from '../../components/shared/InlineLoader'
 import { exportToCSV } from '../../lib/utils/export'
 import FeatureGate, { canAccessFeature } from '../../components/shared/FeatureGate'
 import { useAuth } from '../../lib/auth/AuthContext'
@@ -404,7 +405,7 @@ export default function ProductsPage() {
                           return (
                             <div className="flex flex-col gap-0.5 p-2.5 rounded-[.5rem] bg-amber-50 border border-amber-200 text-amber-900 text-xs">
                               <span className="font-bold flex items-center gap-1.5 text-amber-800">
-                                <Clock size={14} className="animate-spin text-amber-600" />
+                                <ButtonLoader size={14} className="text-amber-600" />
                                 PAY UPFRONT — STK PROMPT SENT ⏳
                               </span>
                               <span className="text-[10px] text-amber-700">Awaiting customer M-Pesa PIN entry.</span>
@@ -634,7 +635,9 @@ export default function ProductsPage() {
               <tbody className="divide-y divide-gray-50">
                 {isLoading ? (
                   <tr>
-                    <td colSpan={6} className="py-16 text-center text-sm text-gray-400">Loading…</td>
+                    <td colSpan={6} className="py-16 text-center">
+                      <InlineLoader message="Loading products..." />
+                    </td>
                   </tr>
                 ) : products.length > 0 ? products.map((p: any, i: number) => (
                   <tr key={p.id ?? i} className="hover:bg-gray-50/60 transition-colors cursor-pointer" onClick={() => setEditingProduct(p)}>
@@ -699,7 +702,9 @@ export default function ProductsPage() {
         ) : (
           <div className="p-5 sm:p-6">
             {isLoading ? (
-              <div className="py-16 text-center text-sm text-gray-400">Loading…</div>
+              <div className="py-16 text-center">
+                <InlineLoader message="Loading products..." />
+              </div>
             ) : products.length > 0 ? (
               <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-4">
                 {products.map((p: any) => (

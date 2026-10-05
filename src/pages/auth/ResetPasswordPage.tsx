@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
-import { Lock, Phone, Eye, EyeOff, Loader2, ArrowRight, ShieldCheck, Home } from 'lucide-react'
+import { Lock, Phone, Eye, EyeOff, ArrowRight, ShieldCheck, Home } from 'lucide-react'
+import { ButtonLoader } from '../../components/shared/InlineLoader'
 import { authApi } from '../../lib/api/auth'
 import { getErrorMessage } from '../../lib/utils/error'
 
@@ -100,7 +101,7 @@ export default function ResetPasswordPage() {
               disabled={loading}
               className="w-full py-5 bg-[#0D4A3E] text-white rounded-xl font-black text-xs uppercase tracking-widest hover:bg-[#064E3B] transition-all shadow-xl shadow-emerald-900/10 flex items-center justify-center gap-2 group disabled:opacity-50"
             >
-              {loading ? <Loader2 size={16} className="animate-spin" /> : 'Set New Password'}
+              {loading ? <ButtonLoader size={16} /> : 'Set New Password'}
               {!loading && <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />}
             </button>
           </form>

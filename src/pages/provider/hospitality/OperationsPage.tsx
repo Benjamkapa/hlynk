@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { MopSparkles, Wrench, Plus, CheckCircle2, Loader2, WifiOff } from "lucide-react";
+import { MopSparkles, Wrench, Plus, CheckCircle2, WifiOff } from "lucide-react";
+import InlineLoader, { ButtonLoader } from "../../../components/shared/InlineLoader";
 import { operationsApi, resourcesApi, OperationTask, Resource } from "../../../lib/api/universal";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
@@ -230,7 +231,7 @@ export default function OperationsPage() {
       {/* Tasks */}
       {loading ? (
         <div className="flex items-center justify-center h-48">
-          <Loader2 className="animate-spin text-slate-400" size={24} />
+          <InlineLoader size="md" color="text-slate-400" />
         </div>
       ) : filteredTasks.length === 0 ? (
         <div className="text-center py-20 bg-white rounded-2xl border border-slate-100">
@@ -358,7 +359,7 @@ export default function OperationsPage() {
             disabled={submitting}
             className="w-full bg-[#0D4A3E] text-white py-3 rounded-full text-sm font-semibold hover:bg-slate-700 transition-colors disabled:opacity-40 flex items-center justify-center gap-2"
           >
-            {submitting ? <Loader2 className="animate-spin" size={16} /> : "Save task"}
+            {submitting ? <ButtonLoader size={16} /> : "Save task"}
           </button>
         </form>
       </Modal>
@@ -392,7 +393,7 @@ export default function OperationsPage() {
               disabled={submitting}
               className="w-full bg-slate-900 text-white py-3 rounded-full text-sm font-semibold hover:bg-slate-700 transition-colors disabled:opacity-40 flex items-center justify-center gap-2"
             >
-              {submitting ? <Loader2 className="animate-spin" size={16} /> : "Complete task"}
+              {submitting ? <ButtonLoader size={16} /> : "Complete task"}
             </button>
           </form>
         )}

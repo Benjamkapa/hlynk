@@ -1,4 +1,5 @@
-import { TrendingUp, TrendingDown, Download, BarChart3, PieChart, Loader2, Receipt } from 'lucide-react'
+import { TrendingUp, TrendingDown, Download, BarChart3, PieChart, Receipt } from 'lucide-react'
+import InlineLoader from '../../components/shared/InlineLoader'
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts'
 import { useQuery } from '@tanstack/react-query'
 import { providersApi } from '../../lib/api/providers'
@@ -32,7 +33,7 @@ export default function ReportsPage() {
 
   if (statsLoading) return (
     <div className="flex h-96 items-center justify-center">
-      <Loader2 size={28} className="animate-spin text-[#0D4A3E]" />
+      <InlineLoader size="lg" color="text-[#0D4A3E]" />
     </div>
   )
 

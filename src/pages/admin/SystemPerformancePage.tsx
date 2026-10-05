@@ -8,6 +8,7 @@ import { toast } from 'sonner'
 import { Globe, Database, Cpu, ShieldCheck, Activity, Server, ArrowUpRight, ArrowDownRight } from 'lucide-react'
 import { getErrorMessage } from '../../lib/utils/error'
 import { useEffect } from 'react'
+import InlineLoader from '../../components/shared/InlineLoader'
 
 export default function SystemPerformancePage() {
   const queryClient = useQueryClient()
@@ -198,7 +199,7 @@ export default function SystemPerformancePage() {
               {isLoading ? (
                 <tr>
                   <td colSpan={4} className="py-16 text-center">
-                    <div className="h-8 w-8 animate-spin rounded-full border-4 border-emerald-500 border-t-transparent mx-auto" />
+                    <InlineLoader message="Auditing cluster nodes..." />
                   </td>
                 </tr>
               ) : clusterNodes.length > 0 ? clusterNodes.map((node: any, i: number) => (

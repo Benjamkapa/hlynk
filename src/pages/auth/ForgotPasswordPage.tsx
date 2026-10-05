@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { toast } from 'sonner'
-import { Phone, Loader2, ArrowLeft, CheckCircle2, ArrowRight, Home } from 'lucide-react'
+import { Phone, ArrowLeft, CheckCircle2, ArrowRight, Home } from 'lucide-react'
+import { ButtonLoader } from '../../components/shared/InlineLoader'
 import { authApi } from '../../lib/api/auth'
 import { getErrorMessage } from '../../lib/utils/error'
 
@@ -108,7 +109,7 @@ export default function ForgotPasswordPage() {
               disabled={loading}
               className="w-full py-5 bg-[#0D4A3E] text-white rounded-xl font-black text-xs uppercase tracking-widest hover:bg-[#064E3B] transition-all shadow-xl shadow-emerald-900/10 flex items-center justify-center gap-2 group disabled:opacity-50"
             >
-              {loading ? <Loader2 size={16} className="animate-spin" /> : 'Send Reset Code'}
+              {loading ? <ButtonLoader size={16} /> : 'Send Reset Code'}
               {!loading && <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />}
             </button>
           </form>

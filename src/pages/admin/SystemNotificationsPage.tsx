@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom'
 import {
   Bell,
   Search,
-  Loader2,
   Trash2,
   Clock3,
   CheckCircle2,
@@ -23,6 +22,7 @@ import { toast } from 'sonner'
 import { adminApi } from '../../lib/api/providers'
 import { api } from '../../lib/api/client'
 import { subscribeToPushNotifications, getPushSubscriptionState } from '../../lib/notifications/pushService'
+import InlineLoader, { ButtonLoader } from '../../components/shared/InlineLoader'
 
 type NotificationType = 'success' | 'warning' | 'danger' | string
 
@@ -257,7 +257,7 @@ export default function SystemNotificationsPage() {
                     disabled={testSending}
                     className="px-2.5 py-1 text-[11px] font-bold text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-all flex items-center gap-1.5 disabled:opacity-50 shadow-xs"
                   >
-                    {testSending ? <Loader2 size={12} className="animate-spin" /> : <Bell size={12} />}
+                    {testSending ? <ButtonLoader size={12} /> : <Bell size={12} />}
                     Test Alert
                   </button>
                 ) : (
@@ -266,7 +266,7 @@ export default function SystemNotificationsPage() {
                     disabled={pushLoading || pushState === 'unsupported'}
                     className="px-3 py-1.5 text-[11px] font-bold text-white bg-slate-900 hover:bg-black rounded-lg transition-all flex items-center gap-1.5 disabled:opacity-50 shadow-sm"
                   >
-                    {pushLoading ? <Loader2 size={12} className="animate-spin" /> : <Bell size={12} />}
+                    {pushLoading ? <ButtonLoader size={12} /> : <Bell size={12} />}
                     Enable Push Alerts
                   </button>
                 )}
@@ -301,7 +301,7 @@ export default function SystemNotificationsPage() {
 
               {isFetching && !isLoading && (
                 <div className="h-10 px-3 rounded-xl border border-slate-200 bg-white flex items-center gap-2 text-[10px] font-bold text-slate-400">
-                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  <ButtonLoader size={14} />
                   Updating
                 </div>
               )}
@@ -460,7 +460,7 @@ export default function SystemNotificationsPage() {
                     className="w-full h-9 rounded-lg border border-red-200 bg-white text-red-600 hover:bg-red-50 text-[11px] font-black flex items-center justify-center gap-2 transition-colors disabled:opacity-50"
                   >
                     {deleteMutation.isPending ? (
-                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      <ButtonLoader size={14} />
                     ) : (
                       <Trash2 className="w-3.5 h-3.5" />
                     )}
@@ -490,11 +490,8 @@ export default function SystemNotificationsPage() {
           <div className="min-h-[420px]">
             {isLoading ? (
               <div className="min-h-[420px] flex flex-col items-center justify-center">
-                <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center mb-3">
-                  <Loader2 className="w-5 h-5 text-emerald-600 animate-spin" />
-                </div>
-                <p className="text-xs font-bold text-slate-600">Loading activity...</p>
-                <p className="text-[11px] text-slate-400 mt-1">Fetching the latest notifications</p>
+                <InlineLoader size="lg" message="Loading activity..." />
+                <p className="text-[11px] text-slate-400 mt-2">Fetching the latest notifications</p>
               </div>
             ) : items.length === 0 ? (
               <div className="min-h-[420px] flex flex-col items-center justify-center px-6 text-center">
@@ -780,7 +777,7 @@ export default function SystemNotificationsPage() {
                   className="w-full h-9 rounded-lg border border-red-200 bg-white text-red-600 hover:bg-red-50 text-[11px] font-black flex items-center justify-center gap-2 transition-colors disabled:opacity-50"
                 >
                   {deleteMutation.isPending ? (
-                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    <ButtonLoader size={14} />
                   ) : (
                     <Trash2 className="w-3.5 h-3.5" />
                   )}

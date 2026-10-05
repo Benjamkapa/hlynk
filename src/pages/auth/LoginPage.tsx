@@ -2,8 +2,9 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   Building2, MapPin, Phone, Tag,
-  Loader2, Check, ArrowLeft, Star, WifiOff, RefreshCw
+  Check, ArrowLeft, Star, WifiOff, RefreshCw
 } from 'lucide-react'
+import { ButtonLoader } from '../../components/shared/InlineLoader'
 import { toast } from 'sonner'
 import { authApi } from '../../lib/api/auth'
 import { useAuth } from '../../lib/auth/AuthContext'
@@ -663,7 +664,7 @@ export default function LoginPage() {
 
                       </div>
                       <button type="submit" disabled={formLoading} className="lp-btn-submit">
-                        {formLoading ? <Loader2 size={18} className="animate-spin" /> : 'Launch My Biashara'}
+                        {formLoading ? <ButtonLoader size={18} /> : 'Launch My Biashara'}
                       </button>
                     </form>
                   </div>
@@ -791,7 +792,7 @@ export default function LoginPage() {
 
                       </div>
                       <button type="submit" disabled={formLoading} className="lp-btn-submit">
-                        {formLoading ? <Loader2 size={18} className="animate-spin" /> : 'Launch My biashara'}
+                        {formLoading ? <ButtonLoader size={18} /> : 'Launch My biashara'}
                       </button>
                       <button type="button" disabled={formLoading} onClick={() => { setRequiresRegistration(false); setGoogleCredential('') }} className="text-left mt-8 cursor-pointer text-black font-normal pl-5 hover:underline">
                         Back to Login

@@ -4,6 +4,7 @@ import { toast } from 'sonner'
 import { MessageSquare, Search, Filter, Clock, CheckCircle2, AlertCircle, ArrowRight, LifeBuoy, Users, Zap, User, TrendingUp } from 'lucide-react'
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts'
 import { useState, useEffect } from 'react'
+import InlineLoader from '../../components/shared/InlineLoader'
 import { AdminStats } from '../../lib/types/api'
 
 export default function SupportPage() {
@@ -176,7 +177,7 @@ export default function SupportPage() {
               {isLoading ? (
                 <tr>
                   <td colSpan={6} className="py-20 text-center">
-                    <div className="h-8 w-8 animate-spin rounded-full border-4 border-emerald-500 border-t-transparent mx-auto" />
+                    <InlineLoader message="Loading tickets..." />
                   </td>
                 </tr>
               ) : filteredTickets.length > 0 ? filteredTickets.map((t: any, i: number) => (

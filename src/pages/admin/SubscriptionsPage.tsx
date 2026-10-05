@@ -4,6 +4,7 @@ import { adminApi } from '../../lib/api/providers'
 import { toast } from 'sonner'
 import { Search, CreditCard, CheckCircle2, Clock, Wallet } from 'lucide-react'
 import Pagination from '../../components/shared/Pagination'
+import InlineLoader from '../../components/shared/InlineLoader'
 import { ConfirmModal } from '../../components/shared/ConfirmModal'
 import { AdminStats } from '../../lib/types/api'
 
@@ -128,7 +129,7 @@ export default function SubscriptionsPage() {
               {isLoading ? (
                 <tr>
                   <td colSpan={6} className="py-20 text-center">
-                    <div className="h-8 w-8 animate-spin rounded-full border-4 border-emerald-500 border-t-transparent mx-auto" />
+                    <InlineLoader message="Loading subscriptions..." />
                   </td>
                 </tr>
               ) : subscriptions.length > 0 ? subscriptions.map((s: any) => (

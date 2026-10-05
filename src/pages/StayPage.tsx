@@ -27,8 +27,8 @@ import {
   SlidersHorizontal,
   Truck,
   Smartphone,
-  Loader2,
 } from "lucide-react";
+import InlineLoader, { ButtonLoader } from "../components/shared/InlineLoader";
 import { AnimatePresence, motion } from "framer-motion";
 import { toast } from "sonner";
 
@@ -747,10 +747,7 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
   if (loading) {
     return (
       <div className="grid min-h-screen place-items-center bg-[#f6f6f4]">
-        <div className="flex flex-col items-center gap-4">
-          <div className="h-10 w-10 animate-spin rounded-full border-[3px] border-slate-900 border-t-transparent" />
-          <p className="text-sm font-medium text-slate-500">Loading store...</p>
-        </div>
+        <InlineLoader size="lg" message="Loading store..." color="text-slate-900" />
       </div>
     );
   }
@@ -1627,7 +1624,7 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
                             >
                               {submittingOrder ? (
                                 <>
-                                  <Loader2 size={16} className="animate-spin" />
+                                  <ButtonLoader size={16} />
                                   {paymentOption === "PAY_UPFRONT" ? "Initiating STK Push..." : "Submitting Order..."}
                                 </>
                               ) : paymentOption === "PAY_UPFRONT" ? (
@@ -1712,7 +1709,7 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
                   ) : (
                     <div className="border-amber-200 bg-amber-50/80 text-amber-950 p-3 rounded-xl space-y-2">
                       <div className="flex items-center gap-2 font-bold text-amber-900">
-                        <Loader2 size={15} className="animate-spin text-amber-600" />
+                        <ButtonLoader size={15} className="text-amber-600" />
                         <span>Awaiting M-Pesa PIN entry...</span>
                       </div>
                       <p className="text-[11px] text-amber-800 leading-snug">

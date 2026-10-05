@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, useId } from 'react'
-import { Loader2 } from 'lucide-react'
+import { ButtonLoader } from '../shared/InlineLoader'
 import { loadGoogleIdentityScript } from '../../lib/google/identity'
 
 interface GoogleAuthButtonProps {
@@ -112,7 +112,7 @@ export default function GoogleAuthButton({
   const buttonText = isLoading ? 'Processing...' : (isOffline ? 'Offline - Check Connection' : (!isReady ? 'Connecting Google...' : (text === 'signup_with' ? 'Sign Up With Google' : 'Proceed With Google')))
   
   const iconMarkup = isLoading ? (
-    <Loader2 size={18} className="animate-spin text-slate-400" />
+    <ButtonLoader size={18} className="text-slate-400" />
   ) : (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" className={`transition-transform ${!disabled ? 'group-hover:scale-110' : ''}`}>
       <defs>

@@ -7,6 +7,7 @@ import { providersApi } from '../../lib/api/providers'
 import { getErrorMessage } from '../../lib/utils/error'
 import FeatureGate from '../../components/shared/FeatureGate'
 import { useAuth } from '../../lib/auth/AuthContext'
+import InlineLoader from '../../components/shared/InlineLoader'
 
 export default function StaffManagementPage() {
   const { user } = useAuth()
@@ -145,7 +146,7 @@ export default function StaffManagementPage() {
                 {isLoading ? (
                   <tr>
                     <td colSpan={6} className="py-20 text-center">
-                       <div className="h-8 w-8 animate-spin rounded-full border-4 border-emerald-500 border-t-transparent mx-auto" />
+                       <InlineLoader message="Loading team..." />
                     </td>
                   </tr>
                 ) : filteredStaff.length > 0 ? filteredStaff.map((s: any) => {

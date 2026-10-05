@@ -2,8 +2,9 @@ import { useState, useEffect } from 'react'
 import {
   Users, Bell, Activity, 
   DollarSign, Landmark, 
-  AlertCircle, FileSpreadsheet, Loader2
+  AlertCircle, FileSpreadsheet
 } from 'lucide-react'
+import InlineLoader, { ButtonLoader } from '../../components/shared/InlineLoader'
 import {
   ResponsiveContainer, Tooltip, AreaChart, Area,
   XAxis, YAxis, CartesianGrid
@@ -65,7 +66,7 @@ export default function AdminDashboardPage() {
 
   if (isLoading) return (
     <div className="flex h-96 items-center justify-center">
-      <div className="h-12 w-12 animate-spin rounded-full border-4 border-emerald-500 border-t-transparent" />
+      <InlineLoader size="lg" message="Loading dashboard overview..." />
     </div>
   )
 
@@ -85,7 +86,7 @@ export default function AdminDashboardPage() {
             className="flex items-center gap-2 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white rounded-lg text-xs font-bold transition-all shadow-sm shadow-emerald-900/10 cursor-pointer"
             title="Download full 9-sheet platform intelligence report in Excel (.xlsx)"
           >
-            {isExporting ? <Loader2 size={15} className="animate-spin" /> : <FileSpreadsheet size={15} />}
+            {isExporting ? <ButtonLoader size="sm" /> : <FileSpreadsheet size={15} />}
             <span>{isExporting ? 'Exporting...' : 'Export Dossier (.xlsx)'}</span>
           </button>
           <div className="flex items-center gap-4 bg-white p-2 rounded-lg border border-slate-100 shadow-sm">

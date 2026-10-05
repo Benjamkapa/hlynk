@@ -2,7 +2,8 @@ import { Navigate, Outlet, useLocation } from 'react-router-dom'
 import { useAuth } from '../../lib/auth/AuthContext'
 import { useQuery } from '@tanstack/react-query'
 import { subscriptionsApi } from '../../lib/api/providers'
-import { Loader2, AlertCircle, CreditCard } from 'lucide-react'
+import { AlertCircle, CreditCard } from 'lucide-react'
+import InlineLoader from './InlineLoader'
 
 export default function SubscriptionGuard({ children }: { children?: React.ReactNode }) {
   const { user, isLoading: authLoading } = useAuth()
@@ -22,10 +23,7 @@ export default function SubscriptionGuard({ children }: { children?: React.React
   if (authLoading || (subLoading && !user?.subscription)) {
     return (
       <div className="flex h-screen items-center justify-center bg-slate-50">
-        <div className="flex flex-col items-center gap-4">
-          <Loader2 className="h-12 w-12 animate-spin text-emerald-600" />
-          <p className="font-black text-[10px] uppercase tracking-widest text-slate-400">Verifying Subscription...</p>
-        </div>
+        <InlineLoader size="xl" message="Verifying Subscription..." />
       </div>
     )
   }

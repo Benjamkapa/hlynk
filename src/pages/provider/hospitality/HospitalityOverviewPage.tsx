@@ -2,8 +2,9 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import {
   CalendarCheck, Building, TrendingUp, Wallet, Clock, Sparkles,
-  Plus, RefreshCw, Loader2, Users, ArrowRight, WifiOff
+  Plus, RefreshCw, Users, ArrowRight, WifiOff
 } from "lucide-react";
+import InlineLoader from "../../../components/shared/InlineLoader";
 import { resourcesApi, eventsApi, operationsApi, Resource, UniversalEvent, OperationTask } from "../../../lib/api/universal";
 import { toast } from "sonner";
 
@@ -170,7 +171,7 @@ export default function HospitalityOverviewPage() {
           </div>
           {loading ? (
             <div className="flex items-center justify-center h-24">
-              <Loader2 className="animate-spin text-slate-300" size={20} />
+              <InlineLoader size="sm" color="text-slate-300" />
             </div>
           ) : units.length === 0 ? (
             <div className="text-center py-8">
@@ -206,7 +207,7 @@ export default function HospitalityOverviewPage() {
           </div>
           {loading ? (
             <div className="flex items-center justify-center h-24">
-              <Loader2 className="animate-spin text-slate-300" size={20} />
+              <InlineLoader size="sm" color="text-slate-300" />
             </div>
           ) : activeBookings.length === 0 ? (
             <div className="text-center py-8">

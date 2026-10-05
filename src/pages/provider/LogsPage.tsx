@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { Shield, RefreshCcw, FileText, Loader2, Calendar, HardDrive, Filter } from 'lucide-react'
+import { Shield, RefreshCcw, FileText, Calendar, HardDrive, Filter } from 'lucide-react'
+import InlineLoader from '../../components/shared/InlineLoader'
 import { providersApi } from '../../lib/api/providers'
 import { useQuery } from '@tanstack/react-query'
 import FeatureGate from '../../components/shared/FeatureGate'
@@ -94,8 +95,7 @@ export default function LogsPage() {
               <tbody className="divide-y divide-slate-50">
                 {logsLoading ? (
                   <tr><td colSpan={4} className="p-32 text-center">
-                    <Loader2 className="animate-spin mx-auto text-emerald-600 h-10 w-10 mb-4" />
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">Decrypting Audit Logs...</p>
+                    <InlineLoader size="xl" message="Decrypting Audit Logs..." />
                   </td></tr>
                 ) : logsData?.data?.items?.length === 0 ? (
                   <tr><td colSpan={4} className="p-32 text-center text-slate-300 italic font-medium">No security events found in this period.</td></tr>

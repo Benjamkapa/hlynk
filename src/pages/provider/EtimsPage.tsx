@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
-import { ShieldCheck, AlertCircle, CheckCircle2, ExternalLink, Loader2, FileText, RefreshCw, RotateCcw, Trash2, Clock, XCircle, ChevronRight, Wifi, WifiOff, Settings2, Info } from 'lucide-react'
+import { ShieldCheck, AlertCircle, CheckCircle2, ExternalLink, FileText, RefreshCw, RotateCcw, Trash2, Clock, XCircle, ChevronRight, Wifi, WifiOff, Settings2, Info } from 'lucide-react'
+import InlineLoader, { ButtonLoader } from '../../components/shared/InlineLoader'
 import { useAuth } from '../../lib/auth/AuthContext'
 import { toast } from 'sonner'
 
@@ -115,7 +116,7 @@ export default function EtimsPage() {
 
   if (loadingCreds) return (
     <div className="max-w-4xl mx-auto flex items-center justify-center py-32">
-      <Loader2 size={28} className="animate-spin text-slate-300" />
+      <InlineLoader size="lg" color="text-slate-400" />
     </div>
   )
 
@@ -156,7 +157,7 @@ export default function EtimsPage() {
         </div>
         {creds && (
           <button onClick={handleDelete} disabled={deleting} className="flex items-center gap-2 text-xs font-black text-red-400 hover:text-red-600 uppercase tracking-widest transition-colors shrink-0">
-            {deleting ? <Loader2 size={13} className="animate-spin" /> : <Trash2 size={13} />} Disable
+            {deleting ? <ButtonLoader size="xs" /> : <Trash2 size={13} />} Disable
           </button>
         )}
       </div>
@@ -268,7 +269,7 @@ export default function EtimsPage() {
           </div>
 
           <button type="submit" disabled={savingCreds} className="flex items-center gap-2 px-8 py-3.5 bg-[#0D4A3E] text-white rounded-[.4rem] text-xs font-black uppercase tracking-widest hover:bg-[#064E3B] transition-all shadow-lg shadow-emerald-900/10 disabled:opacity-50">
-            {savingCreds ? <Loader2 size={15} className="animate-spin" /> : <ShieldCheck size={15} />}
+            {savingCreds ? <ButtonLoader size="sm" /> : <ShieldCheck size={15} />}
             {savingCreds ? 'Saving...' : 'Save Credentials'}
           </button>
         </form>
@@ -281,7 +282,7 @@ export default function EtimsPage() {
           <p className="text-sm text-slate-500">Your credentials are saved. Click below to send them to KRA and receive your <span className="font-bold text-slate-700">Communication Key</span>. This only needs to be done once.</p>
           <div className="flex flex-wrap gap-3">
             <button onClick={handleInit} disabled={initializingDev} className="flex items-center gap-2 px-8 py-3.5 bg-[#0D4A3E] text-white rounded-[.4rem] text-xs font-black uppercase tracking-widest hover:bg-[#064E3B] transition-all shadow-md disabled:opacity-50">
-              {initializingDev ? <Loader2 size={15} className="animate-spin" /> : <Wifi size={15} />}
+              {initializingDev ? <ButtonLoader size="sm" /> : <Wifi size={15} />}
               {initializingDev ? 'Connecting to KRA...' : 'Initialize Device'}
             </button>
             <button onClick={() => setShowForm(true)} className="flex items-center gap-2 px-6 py-3.5 border border-slate-200 text-slate-600 rounded-[.4rem] text-xs font-black uppercase tracking-widest hover:bg-slate-50 transition-all">
@@ -313,7 +314,7 @@ export default function EtimsPage() {
           </div>
 
           {loadingInvoices ? (
-            <div className="flex items-center justify-center py-20"><Loader2 size={24} className="animate-spin text-slate-300" /></div>
+            <div className="flex items-center justify-center py-20"><InlineLoader color="text-slate-400" /></div>
           ) : invoices.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 text-center px-8">
               <FileText size={40} className="text-slate-200 mb-4" />
@@ -352,7 +353,7 @@ export default function EtimsPage() {
                         <td className="px-6 py-4">
                           {inv.status !== 'success' && (
                             <button onClick={() => handlePush(inv.payment_id)} disabled={pushingId === inv.payment_id} className="flex items-center gap-1 text-[10px] font-black text-blue-500 hover:text-blue-700 uppercase tracking-widest transition-colors disabled:opacity-40">
-                              {pushingId === inv.payment_id ? <Loader2 size={11} className="animate-spin" /> : <RotateCcw size={11} />} Retry
+                              {pushingId === inv.payment_id ? <ButtonLoader size="xs" /> : <RotateCcw size={11} />} Retry
                             </button>
                           )}
                         </td>

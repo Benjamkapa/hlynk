@@ -9,6 +9,7 @@ import { SlideOver } from '../../components/shared/SlideOver'
 import { PaginatedResponse } from '../../lib/types/api'
 import TablePagination from '../../components/shared/TablePagination'
 import ThermalReceipt, { thermalReceiptStyles } from '../../components/shared/ThermalReceipt'
+import InlineLoader, { ButtonLoader } from '../../components/shared/InlineLoader'
 import { useLocation } from 'react-router-dom'
 
 const getStatusLabel = (status: any) => {
@@ -236,7 +237,7 @@ export default function SalesHistoryPage() {
                         className="flex-1 h-9 rounded-[.5rem] bg-red-600 text-white text-sm font-medium hover:bg-red-700 transition-colors disabled:opacity-60 flex items-center justify-center gap-2"
                       >
                         {voidMutation.isPending ? (
-                          <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                          <ButtonLoader size={16} />
                         ) : (
                           <Ban size={13} />
                         )}
@@ -385,7 +386,7 @@ export default function SalesHistoryPage() {
             </thead>
             <tbody className="divide-y divide-gray-50">
               {isLoading ? (
-                <tr><td colSpan={8} className="py-16 text-center text-sm text-gray-400">Loading…</td></tr>
+                <tr><td colSpan={8} className="py-16 text-center"><InlineLoader message="Loading sales..." /></td></tr>
               ) : sales.length === 0 ? (
                 <tr>
                   <td colSpan={8} className="py-16 text-center text-sm text-gray-400">

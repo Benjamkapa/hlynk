@@ -2,7 +2,8 @@ import { useState } from 'react'
 import { useQuery, useMutation } from '@tanstack/react-query'
 import { adminApi } from '../../lib/api/providers'
 import { toast } from 'sonner'
-import { FileText, Download, Calendar, Play, FileSpreadsheet, Loader2, CheckCircle2, TrendingUp, ShieldCheck, Database, Layers, Sparkles } from 'lucide-react'
+import { FileText, Download, Calendar, Play, FileSpreadsheet, CheckCircle2, TrendingUp, ShieldCheck, Database, Layers, Sparkles } from 'lucide-react'
+import { ButtonLoader } from '../../components/shared/InlineLoader'
 
 export default function ReportsPage() {
   const [table, setTable] = useState('User')
@@ -67,7 +68,7 @@ export default function ReportsPage() {
           disabled={isExporting}
           className="flex items-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white rounded-lg font-bold text-sm shadow-sm transition-all"
         >
-          {isExporting ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />}
+          {isExporting ? <ButtonLoader size="sm" /> : <Download size={16} />}
           <span>{isExporting ? 'Compiling Dossier...' : 'Export Full Intelligence Dossier (.xlsx)'}</span>
         </button>
       </div>
@@ -96,7 +97,7 @@ export default function ReportsPage() {
             >
               {isExporting ? (
                 <>
-                  <Loader2 size={18} className="animate-spin" />
+                  <ButtonLoader size="sm" />
                   <span>Compiling 9 Sheets...</span>
                 </>
               ) : (

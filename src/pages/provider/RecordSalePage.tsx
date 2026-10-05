@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
-import { Search, Plus, Minus, Trash2, CreditCard, Wallet, Banknote, Zap, CheckCircle2, Package, Scan, ArrowRight, ShoppingCart, Loader2, LayoutGrid, List, ChevronLeft, ChevronRight, Lock, Smartphone, AlertTriangle, RefreshCcw, Wifi, X, Share2, Eye } from 'lucide-react'
+import { Search, Plus, Minus, Trash2, CreditCard, Wallet, Banknote, Zap, CheckCircle2, Package, Scan, ArrowRight, ShoppingCart, LayoutGrid, List, ChevronLeft, ChevronRight, Lock, Smartphone, AlertTriangle, RefreshCcw, Wifi, X, Share2, Eye } from 'lucide-react'
+import InlineLoader, { ButtonLoader } from '../../components/shared/InlineLoader'
 
 const KcbBankIcon = ({ className, size = 64 }: { className?: string, size?: number }) => (
   <img src="https://buni.kcbgroup.com/_nuxt/logo.71b8fc4b.svg" alt="KCB" style={{ width: size, height: size }} className={`${className || ''} object-contain shrink-0`} />
@@ -513,9 +514,8 @@ export default function RecordSalePage() {
 
           {/* Product listing */}
           {productsLoading ? (
-            <div className="py-24 flex flex-col items-center justify-center text-slate-300 gap-3">
-              <Loader2 className="animate-spin" size={32} />
-              <p className="text-xs font-medium text-slate-400">Loading inventory...</p>
+            <div className="py-24 flex flex-col items-center justify-center">
+              <InlineLoader size="lg" message="Loading inventory..." />
             </div>
           ) : filteredProducts.length === 0 ? (
             <div className="py-24 flex flex-col items-center justify-center gap-4 bg-white rounded-2xl border border-slate-100">
@@ -1045,7 +1045,7 @@ export default function RecordSalePage() {
              >
               {handleCompleteSale.isPending || isProcessingMpesa ? (
                 <div className="flex items-center gap-2">
-                  <Loader2 size={16} className="animate-spin" />
+                  <ButtonLoader size={16} />
                   <span>Processing...</span>
                 </div>
               ) : (

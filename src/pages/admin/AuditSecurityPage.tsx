@@ -3,9 +3,10 @@ import { adminApi } from '../../lib/api/providers'
 import { toast } from 'sonner'
 import { 
   ShieldCheck, UserX, Key, Search, ShieldAlert, 
-  RefreshCcw, FileText, Loader2, Download, Radio, 
+  RefreshCcw, FileText, Download, Radio, 
   Terminal, Activity, Eye, X, Server, Zap 
 } from 'lucide-react'
+import InlineLoader, { ButtonLoader } from '../../components/shared/InlineLoader'
 import { useState, useEffect } from 'react'
 import { AdminStats } from '../../lib/types/api'
 import { exportToCSV } from '../../lib/utils/export'
@@ -196,7 +197,7 @@ export default function AuditSecurityPage() {
             <div className="relative z-10 flex items-center gap-2">
               {isBackingUp ? (
                 <>
-                  <Loader2 size={14} className="animate-spin" />
+                  <ButtonLoader size={14} />
                   <span>{backupProgress > 0 ? `Downloading ${backupProgress}%` : 'Preparing...'}</span>
                 </>
               ) : (
@@ -220,7 +221,7 @@ export default function AuditSecurityPage() {
               disabled={isRestoring}
               className="bg-white text-gray-700 border border-gray-200 h-10 px-4 rounded-md font-bold text-xs hover:bg-gray-50 transition-all flex items-center gap-2 disabled:opacity-50 shadow-sm"
             >
-              {isRestoring ? <Loader2 size={14} className="animate-spin text-slate-700" /> : <RefreshCcw size={14} />}
+              {isRestoring ? <ButtonLoader size={14} className="text-slate-700" /> : <RefreshCcw size={14} />}
               Restore SQL
             </button>
           </div>
@@ -298,7 +299,7 @@ export default function AuditSecurityPage() {
           <div className="p-4 font-mono text-xs max-h-56 overflow-y-auto space-y-1.5 bg-slate-950/90 leading-relaxed">
             {logsLoading ? (
               <div className="flex items-center gap-2 text-slate-500 py-2">
-                <Loader2 size={14} className="animate-spin text-emerald-400" />
+                <ButtonLoader size={14} className="text-emerald-400" />
                 <span>Connecting to live server activity stream...</span>
               </div>
             ) : !logsData?.items || logsData.items.length === 0 ? (
@@ -423,8 +424,7 @@ export default function AuditSecurityPage() {
               {logsLoading ? (
                 <tr>
                   <td colSpan={6} className="py-16 text-center">
-                    <Loader2 size={26} className="animate-spin text-emerald-600 mx-auto mb-2" />
-                    <span className="text-gray-400 font-medium">Fetching real-time activity logs...</span>
+                    <InlineLoader message="Fetching real-time activity logs..." />
                   </td>
                 </tr>
               ) : !logsData?.items || logsData.items.length === 0 ? (
@@ -624,7 +624,7 @@ export default function AuditSecurityPage() {
                 disabled={isRestoring || !restorePassphrase.trim()}
                 className="flex-1 h-10 bg-red-600 text-white font-bold text-xs rounded-lg hover:bg-red-700 transition-all flex items-center justify-center gap-2 disabled:opacity-50 shadow-md"
               >
-                {isRestoring ? <Loader2 size={15} className="animate-spin" /> : 'Yes, Overwrite Database'}
+                {isRestoring ? <ButtonLoader size={15} /> : 'Yes, Overwrite Database'}
               </button>
             </div>
           </div>

@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
-import { Send, Bell, Users, User, Star, X, Loader2, Search, Check, ChevronDown, ChevronUp } from 'lucide-react'
+import { Send, Bell, Users, User, Star, X, Search, Check, ChevronDown, ChevronUp } from 'lucide-react'
+import { ButtonLoader } from '../shared/InlineLoader'
 import { api } from '../../lib/api/client'
 import { toast } from 'sonner'
 import { useQuery } from '@tanstack/react-query'
@@ -194,7 +195,7 @@ export default function BroadcastTool() {
                   disabled={sending}
                   className="px-4 py-2 bg-amber-600 hover:bg-amber-700 disabled:opacity-50 text-white rounded-lg text-xs font-semibold flex items-center gap-2 shadow-xs transition-all cursor-pointer"
                 >
-                  {sending ? <Loader2 size={13} className="animate-spin" /> : <Star size={13} className="fill-white" />}
+                  {sending ? <ButtonLoader size={13} /> : <Star size={13} className="fill-white" />}
                   <span>{sending ? 'Sending Prompt...' : 'Send Review Request to All'}</span>
                 </button>
               </div>
@@ -254,7 +255,9 @@ export default function BroadcastTool() {
                       className="w-full pl-9 pr-8 py-2 text-xs border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 bg-white"
                     />
                     {searching && (
-                      <Loader2 size={13} className="absolute right-3 top-1/2 -translate-y-1/2 animate-spin text-gray-400" />
+                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
+                        <ButtonLoader size={13} />
+                      </span>
                     )}
 
                     {isDropdownOpen && suggestions.length > 0 && searchQuery.trim().length >= 2 && (
@@ -364,7 +367,7 @@ export default function BroadcastTool() {
                   disabled={sending}
                   className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 shadow-xs transition-all shrink-0 cursor-pointer"
                 >
-                  {sending ? <Loader2 size={13} className="animate-spin" /> : <Send size={13} />}
+                  {sending ? <ButtonLoader size={13} /> : <Send size={13} />}
                   <span>{sending ? 'Broadcasting...' : 'Send Broadcast'}</span>
                 </button>
               </div>

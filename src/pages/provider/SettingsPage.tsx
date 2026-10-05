@@ -1,7 +1,8 @@
 import { useState, useRef, useEffect } from 'react'
 import {
-  User, Storefront as Store, Bell, Lock, FloppyDisk as Save, Camera, CircleNotch as Loader2, SignOut as LogOut, Trash as Trash2, Users, Shield, Envelope as Mail, Phone, ArrowRight, Plus, CheckCircle as CheckCircle2, PencilSimple as Edit, FileText, ArrowClockwise as RefreshCcw, Code, Sparkle as Sparkles, Eye, Warning as AlertTriangle, Terminal, ShieldCheck, CreditCard, CaretDown as ChevronDown
+  User, Storefront as Store, Bell, Lock, FloppyDisk as Save, Camera, SignOut as LogOut, Trash as Trash2, Users, Shield, Envelope as Mail, Phone, ArrowRight, Plus, CheckCircle as CheckCircle2, PencilSimple as Edit, FileText, ArrowClockwise as RefreshCcw, Code, Sparkle as Sparkles, Eye, Warning as AlertTriangle, Terminal, ShieldCheck, CreditCard, CaretDown as ChevronDown
 } from '@phosphor-icons/react'
+import InlineLoader, { ButtonLoader } from '../../components/shared/InlineLoader'
 import { ConfirmModal } from '../../components/shared/ConfirmModal'
 import { toast } from 'sonner'
 import { useAuth } from '../../lib/auth/AuthContext'
@@ -322,7 +323,7 @@ export default function SettingsPage() {
                       />
                       {uploading && (
                         <div className="absolute inset-0 bg-black/20 flex items-center justify-center backdrop-blur-[2px]">
-                          <Loader2 size={24} className="text-white animate-spin" />
+                          <ButtonLoader size={24} className="text-white" />
                         </div>
                       )}
                     </div>
@@ -372,7 +373,7 @@ export default function SettingsPage() {
                     disabled={updateMutation.isPending}
                     className="bg-[#0D4A3E] text-white h-11 px-8 rounded-full font-black text-sm hover:bg-[#0A3D33] transition-all flex items-center justify-center gap-2 disabled:opacity-50"
                   >
-                    {updateMutation.isPending ? <Loader2 className="animate-spin" size={16} /> : <Save size={16} />}
+                    {updateMutation.isPending ? <ButtonLoader size={16} /> : <Save size={16} />}
                     Save Profile
                   </button>
                 </div>
@@ -558,7 +559,7 @@ export default function SettingsPage() {
                     disabled={updateMutation.isPending}
                     className="bg-[#0D4A3E] text-white h-11 px-8 rounded-full font-black text-sm hover:bg-[#0A3D33] transition-all flex items-center justify-center gap-2 disabled:opacity-50"
                   >
-                    {updateMutation.isPending ? <Loader2 className="animate-spin" size={16} /> : <Save size={16} />}
+                    {updateMutation.isPending ? <ButtonLoader size={16} /> : <Save size={16} />}
                     Save
                   </button>
                 </div>
@@ -762,7 +763,7 @@ function NotificationsPanel({ settings = {}, onUpdate }: any) {
             </p>
           </div>
           {loading ? (
-            <Loader2 className="animate-spin text-emerald-600" size={20} />
+            <ButtonLoader className="text-emerald-600" size={20} />
           ) : pushState === 'unsupported' ? (
             <span className="text-[10px] font-black text-red-400 uppercase tracking-widest">Unsupported</span>
           ) : pushState === 'ios_browser' ? (
@@ -955,7 +956,7 @@ function ActivityLogViewer() {
             </thead>
             <tbody className="divide-y divide-slate-50">
               {logsLoading ? (
-                <tr><td colSpan={4} className="p-20 text-center"><Loader2 className="animate-spin mx-auto text-emerald-600" /></td></tr>
+                <tr><td colSpan={4} className="p-20 text-center"><InlineLoader message="Loading activity..." /></td></tr>
               ) : !logsData?.data?.items || logsData.data.items.length === 0 ? (
                 <tr><td colSpan={4} className="p-20 text-center text-slate-300 italic font-medium">No activity recorded for this period.</td></tr>
               ) : (

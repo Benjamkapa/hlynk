@@ -6,6 +6,7 @@ import { DollarSign, TrendingUp, PieChart, ArrowUpRight, Download, Search, Filte
 import PayoutsManager from '../../components/admin/PayoutsManager'
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, BarChart, Bar } from 'recharts'
 import Pagination from '../../components/shared/Pagination'
+import InlineLoader, { ButtonLoader } from '../../components/shared/InlineLoader'
 
 import { useEffect, useState, useRef } from 'react'
 import { AdminStats } from '../../lib/types/api'
@@ -406,9 +407,8 @@ export default function FinancialsPage() {
           <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => setSelectedTxId(null)} />
           <div className="relative bg-white w-full max-w-2xl rounded-[.5rem] shadow-sm overflow-hidden animate-in zoom-in-95 duration-200">
             {!selectedTxData ? (
-              <div className="p-20 flex flex-col items-center justify-center gap-4">
-                <Activity className="animate-spin text-emerald-500" size={32} />
-                <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Fetching Audit Log...</p>
+              <div className="p-20 flex flex-col items-center justify-center">
+                <InlineLoader message="Fetching Audit Log..." />
               </div>
             ) : (
               <div className="p-0">
@@ -607,7 +607,7 @@ export default function FinancialsPage() {
                   className="flex-1 px-4 py-2.5 bg-red-600 text-white rounded-lg text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-red-700 enabled:shadow-sm enabled:shadow-red-200"
                 >
                   {clearLedgerMutation.isPending ? (
-                    <Activity size={12} className="animate-spin" />
+                    <ButtonLoader size={12} />
                   ) : (
                     <Trash2 size={12} />
                   )}

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
-import { Loader2, Save, Wallet, CheckCircle2, AlertTriangle, Info, X, HelpCircle, Smartphone } from 'lucide-react'
+import { Save, Wallet, CheckCircle2, AlertTriangle, Info, X, HelpCircle, Smartphone } from 'lucide-react'
+import InlineLoader, { ButtonLoader } from '../../components/shared/InlineLoader'
 import { useAuth } from '../../lib/auth/AuthContext'
 import { providersApi } from '../../lib/api/providers'
 import { getErrorMessage } from '../../lib/utils/error'
@@ -58,7 +59,7 @@ export default function DeveloperPage() {
 
   if (isLoading) return (
     <div className="flex h-96 items-center justify-center">
-      <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#0D4A3E] border-t-transparent" />
+      <InlineLoader size="lg" color="text-[#0D4A3E]" />
     </div>
   )
 
@@ -85,7 +86,7 @@ export default function DeveloperPage() {
             disabled={updateMutation.isPending}
             className="bg-[#0D4A3E] text-white h-9 px-4 rounded-full text-sm font-medium hover:bg-[#0A3D33] transition-colors flex items-center gap-2 disabled:opacity-50"
           >
-            {updateMutation.isPending ? <Loader2 className="animate-spin" size={15} /> : <Save size={15} />}
+            {updateMutation.isPending ? <ButtonLoader size={15} /> : <Save size={15} />}
             Save
           </button>
           </div>
