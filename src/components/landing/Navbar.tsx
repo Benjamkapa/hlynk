@@ -312,7 +312,7 @@ export default function Navbar() {
             onClick={() => setMenuOpen(false)}
             style={{
               padding: '17px', textAlign: 'center',
-              background: '#0D4A3E', borderRadius: 12,
+              background: '#0D4A3E', borderRadius: 22,
               fontSize: '0.78rem', fontWeight: 800,
               color: '#fff', textDecoration: 'none',
               textTransform: 'uppercase', letterSpacing: '0.1em',
