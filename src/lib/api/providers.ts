@@ -19,6 +19,11 @@ export const providersApi = {
     form.append('file', file)
     return api.post('/providers/me/photo', form).then(r => r.data)
   },
+  uploadBanner: (file: File) => {
+    const form = new FormData()
+    form.append('file', file)
+    return api.post('/providers/me/banner', form).then(r => r.data)
+  },
   submitReview: (data: { rating: number, reviewText: string }) => api.post('/platform/reviews', data).then(r => r.data),
   getReviews: () => api.get('/providers/reviews').then(r => r.data),
   // Inventory aliases

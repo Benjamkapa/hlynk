@@ -35,7 +35,10 @@ export default function SettingsPage() {
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState(() => window.innerWidth < 1024 ? 'Platform Hub' : 'Profile')
   const [uploading, setUploading] = useState(false)
+  const [bannerUploading, setBannerUploading] = useState(false)
+  const [bannerPreview, setBannerPreview] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const bannerInputRef = useRef<HTMLInputElement>(null)
   const [pinHasPin, setPinHasPin] = useState(() => hasOfflinePin())
   const [showPinSetup, setShowPinSetup] = useState(false)
 
@@ -174,6 +177,24 @@ export default function SettingsPage() {
       toast.error(getErrorMessage(err))
     } finally {
       setUploading(false)
+    }
+  }
+
+  const handleBannerUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    // Show local preview immediately
+    setBannerPreview(URL.createObjectURL(file))
+    setBannerUploading(true)
+    try {
+      await providersApi.uploadBanner(file)
+      queryClient.invalidateQueries({ queryKey: ['my-profile'] })
+      toast.success('Store banner updated')
+    } catch (err) {
+      setBannerPreview(null)
+      toast.error(getErrorMessage(err))
+    } finally {
+      setBannerUploading(false)
     }
   }
 
@@ -346,6 +367,51 @@ export default function SettingsPage() {
                     <h4 className="font-black text-gray-900">Profile Photo</h4>
                     <p className="text-xs text-gray-500 font-medium">PNG, JPG or GIF. Max 5MB.</p>
                   </div>
+                </div>
+
+                {/* Store Banner */}
+                <div className="space-y-3">
+                  <div>
+                    <h4 className="font-black text-gray-900 text-sm">Store Banner</h4>
+                    <p className="text-xs text-gray-500 font-medium mt-0.5">Shown at the top of your public store page. Recommended: 1600 × 640px.</p>
+                  </div>
+                  <div className="relative group w-full h-36 rounded-xl overflow-hidden bg-slate-900 border border-slate-200">
+                    {(bannerPreview || profile?.data?.operationalSettings?.bannerUrl) ? (
+                      <img
+                        src={bannerPreview || profile?.data?.operationalSettings?.bannerUrl}
+                        alt="Store banner"
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center gap-2 text-slate-400 text-xs font-semibold">
+                        <Camera size={18} />
+                        No banner set
+                      </div>
+                    )}
+                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                      <button
+                        type="button"
+                        onClick={() => bannerInputRef.current?.click()}
+                        disabled={bannerUploading}
+                        className="inline-flex items-center gap-2 rounded-full bg-white/90 px-4 py-2 text-xs font-bold text-slate-900 shadow transition hover:bg-white active:scale-95 disabled:opacity-60"
+                      >
+                        {bannerUploading ? <ButtonLoader size={14} /> : <Camera size={14} />}
+                        {bannerUploading ? 'Uploading…' : 'Change banner'}
+                      </button>
+                    </div>
+                    {bannerUploading && (
+                      <div className="absolute inset-0 bg-black/20 flex items-center justify-center backdrop-blur-[2px]">
+                        <ButtonLoader size={28} className="text-white" />
+                      </div>
+                    )}
+                  </div>
+                  <input
+                    type="file"
+                    ref={bannerInputRef}
+                    onChange={handleBannerUpload}
+                    className="hidden"
+                    accept="image/*"
+                  />
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

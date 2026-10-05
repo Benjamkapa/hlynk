@@ -95,6 +95,7 @@ interface Listing {
   phone?: string;
   slug: string;
   businessType?: string;
+  bannerUrl?: string;
   hasMpesaGateway?: boolean;
   properties: Property[];
   rooms: Room[];
@@ -931,7 +932,7 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
             Product/service photos stay exclusively inside the catalogue. */}
         <section className="relative mt-1 overflow-hidden rounded-[26px] bg-slate-950">
           <img
-            src={UNIVERSAL_BANNER_IMAGE}
+            src={listing.bannerUrl || UNIVERSAL_BANNER_IMAGE}
             alt=""
             className="absolute inset-0 h-full w-full object-cover"
             onError={(event) => {
