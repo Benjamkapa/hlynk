@@ -696,7 +696,7 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
       return [...current, { ...item, quantity: 1 }];
     });
 
-    toast.success(`${item.name} added to cart`);
+    // toast.success(`${item.name} added to cart`);
   };
 
   const updateQuantity = (id: string, delta: number) => {
