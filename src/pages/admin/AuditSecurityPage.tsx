@@ -26,6 +26,7 @@ export default function AuditSecurityPage() {
   const [backupProgress, setBackupProgress] = useState(0)
   const [isRestoring, setIsRestoring] = useState(false)
   const [restoreFile, setRestoreFile] = useState<File | null>(null)
+  const [restorePassphrase, setRestorePassphrase] = useState('')
 
   const handleBackupDownload = async () => {
     setIsBackingUp(true)
@@ -69,16 +70,21 @@ export default function AuditSecurityPage() {
 
   const handleRestoreConfirm = async () => {
     if (!restoreFile) return
+    if (!restorePassphrase.trim()) {
+      toast.error('Please enter the security restore passphrase')
+      return
+    }
     setIsRestoring(true)
     const toastId = toast.loading('Restoring database globally...')
     try {
-      await adminApi.restoreDatabaseBackup(restoreFile)
+      await adminApi.restoreDatabaseBackup(restoreFile, restorePassphrase)
       toast.success('System database restored successfully! Please refresh.', { id: toastId })
+      setRestoreFile(null)
+      setRestorePassphrase('')
     } catch (err: any) {
-      toast.error('Failed to restore database: ' + (err.message || 'Unknown error'), { id: toastId })
+      toast.error('Failed to restore database: ' + (err.response?.data?.message || err.message || 'Unknown error'), { id: toastId })
     } finally {
       setIsRestoring(false)
-      setRestoreFile(null)
     }
   }
 
@@ -587,12 +593,27 @@ export default function AuditSecurityPage() {
               <ShieldAlert size={24} />
             </div>
             <h3 className="text-lg font-bold text-center text-gray-900 mb-2">Overwrite Global Database?</h3>
-            <p className="text-xs text-gray-500 text-center font-medium mb-6">
+            <p className="text-xs text-gray-500 text-center font-medium mb-4">
               Restoring from <strong className="text-gray-900">{restoreFile.name}</strong> will completely overwrite the <strong>entire database</strong>. This action cannot be undone.
             </p>
+            <div className="mb-5 text-left">
+              <label className="text-[11px] font-bold text-gray-700 uppercase tracking-wider block mb-1.5">
+                Root Restore Passphrase
+              </label>
+              <input
+                type="password"
+                placeholder="Enter passphrase to authorize..."
+                value={restorePassphrase}
+                onChange={e => setRestorePassphrase(e.target.value)}
+                className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 bg-gray-50"
+              />
+            </div>
             <div className="flex gap-3">
               <button 
-                onClick={() => setRestoreFile(null)}
+                onClick={() => {
+                  setRestoreFile(null)
+                  setRestorePassphrase('')
+                }}
                 disabled={isRestoring}
                 className="flex-1 h-10 bg-gray-100 text-gray-700 font-bold text-xs rounded-lg hover:bg-gray-200 transition-all disabled:opacity-50"
               >
@@ -600,7 +621,7 @@ export default function AuditSecurityPage() {
               </button>
               <button 
                 onClick={handleRestoreConfirm}
-                disabled={isRestoring}
+                disabled={isRestoring || !restorePassphrase.trim()}
                 className="flex-1 h-10 bg-red-600 text-white font-bold text-xs rounded-lg hover:bg-red-700 transition-all flex items-center justify-center gap-2 disabled:opacity-50 shadow-md"
               >
                 {isRestoring ? <Loader2 size={15} className="animate-spin" /> : 'Yes, Overwrite Database'}

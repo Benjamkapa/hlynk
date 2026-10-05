@@ -1,38 +1,41 @@
-import { useState, useEffect } from 'react'
-import { Send, Bell, Mail, Users, Info, AlertTriangle, CheckCircle2, Loader2, Search, X, Star } from 'lucide-react'
+import { useState, useRef, useEffect } from 'react'
+import { Send, Bell, Users, User, Star, X, Loader2, Search, Check, ChevronDown, ChevronUp } from 'lucide-react'
 import { api } from '../../lib/api/client'
 import { toast } from 'sonner'
 import { useQuery } from '@tanstack/react-query'
 
 export default function BroadcastTool() {
+  const [isCollapsed, setIsCollapsed] = useState(false)
   const [target, setTarget] = useState<'all' | 'specific' | 'review'>('all')
-  const [emails, setEmails] = useState('')
   const [selectedEmails, setSelectedEmails] = useState<string[]>([])
   const [title, setTitle] = useState('')
   const [message, setMessage] = useState('')
-  const [type, setType] = useState<'info' | 'success' | 'warning' | 'error'>('info')
+  const [type, setType] = useState<'info' | 'warning' | 'success'>('info')
   const [sending, setSending] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false)
+  const searchRef = useRef<HTMLDivElement>(null)
 
-  // Fetch suggestions based on search query
+  // Suggestions search query
   const { data: suggestionsRes, isLoading: searching } = useQuery({
     queryKey: ['broadcast-user-search', searchQuery],
     queryFn: () => api.get('/notifications/search-users', { params: { query: searchQuery } }).then(r => r.data),
-    enabled: target === 'specific' && searchQuery.length >= 2,
-    staleTime: 60000
+    enabled: target === 'specific' && searchQuery.trim().length >= 2,
+    staleTime: 30000
   })
 
   const suggestions = suggestionsRes?.items || []
 
-  // Fetch all vendors for the "Quick Pick" list
-  const { data: allVendorsRes } = useQuery({
-    queryKey: ['all-vendors-list'],
-    queryFn: () => api.get('/notifications/search-users', { params: { query: '' } }).then(r => r.data),
-    enabled: target === 'specific',
-    staleTime: 300000 // 5 mins
-  })
-
-  const allVendors = allVendorsRes?.items || []
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
+        setIsDropdownOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
 
   const addEmail = (email: string) => {
     if (!selectedEmails.includes(email)) {
@@ -44,18 +47,19 @@ export default function BroadcastTool() {
     setSelectedEmails(selectedEmails.filter(e => e !== email))
   }
 
-  const handleSend = async () => {
+  const handleSend = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault()
+
     if (target === 'review') {
-      // Review request: broadcast to all vendors with a special type
       setSending(true)
       try {
         const res = await api.post('/notifications/broadcast', {
           target: 'all',
           title: '⭐ Share Your Experience',
-          message: 'We\'d love to hear how hlynk is helping your business. Tap to leave a quick rating — it takes less than a minute!',
+          message: "We'd love to hear how hlynk is helping your business. Tap to leave a quick rating — it takes less than a minute!",
           type: 'review_request',
         })
-        toast.success(res.data.message || 'Review request sent to all vendors!')
+        toast.success(res.data.message || 'Review request sent to all vendors')
       } catch (err: any) {
         toast.error(err.response?.data?.message || 'Failed to send review request')
       } finally {
@@ -64,15 +68,17 @@ export default function BroadcastTool() {
       return
     }
 
-    if (!title || !message) return toast.error('Title and Message are required')
-    
+    if (!title.trim()) return toast.error('Please enter a notification title')
+    if (!message.trim()) return toast.error('Please enter message content')
+
     let finalEmails = selectedEmails
-    if (target === 'specific' && finalEmails.length === 0) {
-      // Fallback to manual entry if they typed something but didn't select
-      if (searchQuery.includes('@')) {
-        finalEmails = [searchQuery.trim()]
-      } else {
-        return toast.error('Please provide at least one vendor email')
+    if (target === 'specific') {
+      if (finalEmails.length === 0) {
+        if (searchQuery.trim().includes('@')) {
+          finalEmails = [searchQuery.trim()]
+        } else {
+          return toast.error('Please select at least one vendor recipient')
+        }
       }
     }
 
@@ -81,12 +87,11 @@ export default function BroadcastTool() {
       const res = await api.post('/notifications/broadcast', {
         target,
         emails: target === 'specific' ? finalEmails : undefined,
-        title,
-        message,
+        title: title.trim(),
+        message: message.trim(),
         type
       })
-      toast.success(res.data.message || 'Notification broadcasted successfully')
-      
+      toast.success(res.data.message || 'Broadcast sent successfully')
       setTitle('')
       setMessage('')
       setSelectedEmails([])
@@ -99,221 +104,274 @@ export default function BroadcastTool() {
   }
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden animate-in fade-in slide-in-from-top-4 duration-700">
-      <div className="p-8 border-b border-gray-50 bg-emerald-900 text-white relative overflow-hidden">
-        <div className="relative z-10">
-          <h3 className="text-xl font-black flex items-center gap-2">
-            <Bell size={20} className="text-emerald-400" />
-            Platform-Wide Messaging
-          </h3>
-          <p className="text-emerald-300/60 text-[10px] font-black uppercase tracking-[0.2em] mt-1">Direct In-App & Native Push Broadcast</p>
+    <div className="bg-white rounded-lg border border-gray-100 shadow-sm overflow-hidden transition-all duration-200">
+      {/* Header bar */}
+      <div className="px-5 py-3.5 border-b border-gray-50 flex flex-col sm:flex-row justify-between sm:items-center gap-3 bg-white">
+        <div className="flex items-center gap-3">
+          <div className="h-8 w-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+            <Bell size={16} />
+          </div>
+          <div>
+            <h3 className="text-sm font-semibold text-gray-900">Broadcast Messaging</h3>
+            <p className="text-xs text-gray-400">Push in-app notices and device notifications to vendors</p>
+          </div>
         </div>
-        <Send className="absolute -right-6 -bottom-6 text-white/5 -rotate-12" size={120} />
+
+        <div className="flex items-center gap-2 self-start sm:self-auto">
+          {/* Segmented Audience Selector */}
+          <div className="inline-flex p-1 bg-gray-50 rounded-lg border border-gray-100 text-xs">
+            <button
+              type="button"
+              onClick={() => { setTarget('all'); setIsCollapsed(false); }}
+              className={`px-3 py-1.5 rounded-md transition-all flex items-center gap-1.5 font-medium ${
+                target === 'all'
+                  ? 'bg-white text-gray-900 shadow-xs font-semibold'
+                  : 'text-gray-500 hover:text-gray-900'
+              }`}
+            >
+              <Users size={13} />
+              <span>All Vendors</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => { setTarget('specific'); setIsCollapsed(false); }}
+              className={`px-3 py-1.5 rounded-md transition-all flex items-center gap-1.5 font-medium ${
+                target === 'specific'
+                  ? 'bg-white text-gray-900 shadow-xs font-semibold'
+                  : 'text-gray-500 hover:text-gray-900'
+              }`}
+            >
+              <User size={13} />
+              <span>Specific Target</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => { setTarget('review'); setIsCollapsed(false); }}
+              className={`px-3 py-1.5 rounded-md transition-all flex items-center gap-1.5 font-medium ${
+                target === 'review'
+                  ? 'bg-white text-amber-700 shadow-xs font-semibold'
+                  : 'text-gray-500 hover:text-gray-900'
+              }`}
+            >
+              <Star size={13} className="text-amber-500" />
+              <span>Review Prompt</span>
+            </button>
+          </div>
+
+          {/* Collapse/Expand Toggle */}
+          <button
+            type="button"
+            onClick={() => setIsCollapsed(!isCollapsed)}
+            className="p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-50 rounded-md transition-colors"
+            title={isCollapsed ? 'Expand panel' : 'Collapse panel'}
+          >
+            {isCollapsed ? <ChevronDown size={16} /> : <ChevronUp size={16} />}
+          </button>
+        </div>
       </div>
 
-      <div className="p-8 space-y-6">
-        <div className="flex gap-3">
-          <button
-            onClick={() => setTarget('all')}
-            className={`flex-1 p-4 rounded-xl border transition-all flex flex-col items-center gap-2 ${
-              target === 'all' 
-                ? 'bg-emerald-50 border-emerald-200 text-emerald-900' 
-                : 'bg-gray-50 border-gray-100 text-gray-400 grayscale hover:grayscale-0'
-            }`}
-          >
-            <Users size={20} />
-            <span className="text-[10px] font-black uppercase tracking-widest">To All Vendors</span>
-          </button>
-          <button
-            onClick={() => setTarget('specific')}
-            className={`flex-1 p-4 rounded-xl border transition-all flex flex-col items-center gap-2 ${
-              target === 'specific' 
-                ? 'bg-emerald-50 border-emerald-200 text-emerald-900' 
-                : 'bg-gray-50 border-gray-100 text-gray-400 grayscale hover:grayscale-0'
-            }`}
-          >
-            <Mail size={20} />
-            <span className="text-[10px] font-black uppercase tracking-widest">Specific Targets</span>
-          </button>
-          <button
-            onClick={() => setTarget('review')}
-            className={`flex-1 p-4 rounded-xl border transition-all flex flex-col items-center gap-2 ${
-              target === 'review' 
-                ? 'bg-amber-50 border-amber-200 text-amber-700' 
-                : 'bg-gray-50 border-gray-100 text-gray-400 grayscale hover:grayscale-0'
-            }`}
-          >
-            <Star size={20} />
-            <span className="text-[10px] font-black uppercase tracking-widest">Request Reviews</span>
-          </button>
-        </div>
+      {/* Body Content */}
+      {!isCollapsed && (
+        <div className="p-5 animate-in fade-in duration-200">
+          {target === 'review' ? (
+            <div className="space-y-4">
+              <div className="p-4 bg-amber-50/70 border border-amber-100 rounded-lg flex items-start gap-3.5">
+                <div className="h-8 w-8 rounded-lg bg-amber-100 text-amber-600 flex items-center justify-center shrink-0 mt-0.5">
+                  <Star size={16} className="fill-amber-400 text-amber-400" />
+                </div>
+                <div className="space-y-1">
+                  <p className="text-xs font-semibold text-amber-900">Platform Review Invitation</p>
+                  <p className="text-xs text-amber-700 leading-relaxed">
+                    Sends an automated prompt to all registered vendors inviting them to review their experience on hlynk. Vendors can submit ratings directly from their dashboard.
+                  </p>
+                </div>
+              </div>
 
-        {target === 'specific' && (
-          <div className="space-y-4 animate-in slide-in-from-top-2 duration-300">
-            <div className="space-y-2">
-              <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Selected Recipients ({selectedEmails.length})</label>
-              <div className="flex flex-wrap gap-2 p-3 bg-gray-50 border border-dashed border-gray-200 rounded-xl min-h-[50px]">
-                {selectedEmails.map(email => (
-                  <span key={email} className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-100 text-emerald-700 rounded-lg text-[10px] font-black border border-emerald-200 animate-in zoom-in-95">
-                    {email}
-                    <button onClick={() => removeEmail(email)} className="hover:text-emerald-900"><X size={12} /></button>
-                  </span>
-                ))}
-                {selectedEmails.length === 0 && <span className="text-[10px] text-gray-400 font-bold italic py-1 px-1">Search and select vendors below...</span>}
+              <div className="flex justify-end pt-1">
+                <button
+                  type="button"
+                  onClick={() => handleSend()}
+                  disabled={sending}
+                  className="px-4 py-2 bg-amber-600 hover:bg-amber-700 disabled:opacity-50 text-white rounded-lg text-xs font-semibold flex items-center gap-2 shadow-xs transition-all cursor-pointer"
+                >
+                  {sending ? <Loader2 size={13} className="animate-spin" /> : <Star size={13} className="fill-white" />}
+                  <span>{sending ? 'Sending Prompt...' : 'Send Review Request to All'}</span>
+                </button>
               </div>
             </div>
+          ) : (
+            <form onSubmit={handleSend} className="space-y-4">
+              {/* Target info / recipient picker */}
+              {target === 'specific' ? (
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <label className="text-xs font-medium text-gray-700">Target Recipients</label>
+                    {selectedEmails.length > 0 && (
+                      <span className="text-[11px] text-gray-400">{selectedEmails.length} selected</span>
+                    )}
+                  </div>
 
-            <div className="relative">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search vendor by name or email..."
-                className="w-full pl-12 pr-4 py-4 bg-white border border-gray-100 rounded-xl text-sm font-bold outline-none focus:ring-2 focus:ring-emerald-500/10 shadow-sm"
-              />
-              {searching && <Loader2 className="absolute right-4 top-1/2 -translate-y-1/2 animate-spin text-emerald-600" size={16} />}
-              
-              {suggestions.length > 0 && searchQuery.length >= 2 && (
-                <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl border border-gray-100 shadow-2xl z-50 max-h-[300px] overflow-y-auto overflow-x-hidden p-2">
-                  <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest p-3 border-b border-gray-50">Search Results</p>
-                  {suggestions.map((u: any) => (
-                    <button
-                      key={u.id}
-                      onClick={() => { addEmail(u.email); setSearchQuery(''); }}
-                      className="w-full flex items-center justify-between p-3 hover:bg-emerald-50 rounded-lg transition-all text-left"
-                    >
-                      <div>
-                        <p className="text-xs font-black text-gray-900">{u.name}</p>
-                        <p className="text-[10px] text-gray-500 font-bold">{u.email}</p>
+                  {/* Selected recipient chips */}
+                  {selectedEmails.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5 p-2 bg-gray-50 border border-gray-100 rounded-lg">
+                      {selectedEmails.map(email => (
+                        <span
+                          key={email}
+                          className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-white text-gray-800 rounded-md text-xs border border-gray-200 shadow-xs"
+                        >
+                          <span className="truncate max-w-[220px]">{email}</span>
+                          <button
+                            type="button"
+                            onClick={() => removeEmail(email)}
+                            className="text-gray-400 hover:text-gray-700"
+                          >
+                            <X size={12} />
+                          </button>
+                        </span>
+                      ))}
+                      <button
+                        type="button"
+                        onClick={() => setSelectedEmails([])}
+                        className="text-[11px] text-gray-400 hover:text-red-600 px-2 py-1 transition-colors self-center"
+                      >
+                        Clear
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Search input with live suggestion popover */}
+                  <div className="relative" ref={searchRef}>
+                    <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                    <input
+                      type="text"
+                      value={searchQuery}
+                      onChange={e => {
+                        setSearchQuery(e.target.value)
+                        setIsDropdownOpen(true)
+                      }}
+                      onFocus={() => setIsDropdownOpen(true)}
+                      placeholder="Type vendor business name or email to search..."
+                      className="w-full pl-9 pr-8 py-2 text-xs border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 bg-white"
+                    />
+                    {searching && (
+                      <Loader2 size={13} className="absolute right-3 top-1/2 -translate-y-1/2 animate-spin text-gray-400" />
+                    )}
+
+                    {isDropdownOpen && suggestions.length > 0 && searchQuery.trim().length >= 2 && (
+                      <div className="absolute left-0 right-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-52 overflow-y-auto divide-y divide-gray-50">
+                        {suggestions.map((u: any) => {
+                          const isSelected = selectedEmails.includes(u.email)
+                          return (
+                            <button
+                              key={u.id || u.email}
+                              type="button"
+                              onClick={() => {
+                                if (!isSelected) addEmail(u.email)
+                                setSearchQuery('')
+                                setIsDropdownOpen(false)
+                              }}
+                              className="w-full px-3 py-2 text-left hover:bg-gray-50 flex items-center justify-between text-xs transition-colors"
+                            >
+                              <div className="truncate pr-2">
+                                <p className="font-medium text-gray-900 truncate">{u.name}</p>
+                                <p className="text-[11px] text-gray-400 truncate">{u.email}</p>
+                              </div>
+                              {isSelected ? (
+                                <Check size={14} className="text-emerald-600 shrink-0" />
+                              ) : (
+                                <span className="text-[10px] text-emerald-600 font-semibold shrink-0">Add</span>
+                              )}
+                            </button>
+                          )
+                        })}
                       </div>
-                    </button>
-                  ))}
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <div className="flex items-center gap-2 text-xs text-gray-500 bg-gray-50 px-3 py-2 rounded-lg border border-gray-100">
+                  <Users size={14} className="text-emerald-600 shrink-0" />
+                  <span>Audience: <strong>All registered vendors</strong> will receive this message.</span>
                 </div>
               )}
-            </div>
 
-            <div className="space-y-3">
-              <div className="flex justify-between items-center px-1">
-                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Quick Select from Registry</label>
-                <span className="text-[9px] text-slate-400 font-bold uppercase tracking-widest">All Vendors ({allVendors.length})</span>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 max-h-[200px] overflow-y-auto pr-2 custom-scrollbar p-1">
-                 {allVendors.map((u: any) => (
-                   <button
-                    key={u.id}
-                    onClick={() => addEmail(u.email)}
-                    className={`flex items-center justify-between p-3 rounded-xl border transition-all text-left ${
-                      selectedEmails.includes(u.email)
-                        ? 'bg-emerald-50 border-emerald-200 ring-2 ring-emerald-500/10'
-                        : 'bg-white border-gray-100 hover:border-emerald-200'
-                    }`}
-                   >
-                     <div className="min-w-0 pr-2">
-                        <p className="text-[10px] font-black text-gray-900 truncate">{u.name}</p>
-                        <p className="text-[9px] text-gray-400 font-bold truncate leading-none mt-1">{u.email}</p>
-                     </div>
-                     {selectedEmails.includes(u.email) && <CheckCircle2 size={14} className="text-emerald-600 shrink-0" />}
-                   </button>
-                 ))}
-              </div>
-            </div>
-          </div>
-        )}
+              {/* Title & Severity */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="sm:col-span-2 space-y-1">
+                  <label className="text-xs font-medium text-gray-700">Notice Title</label>
+                  <input
+                    type="text"
+                    value={title}
+                    onChange={e => setTitle(e.target.value)}
+                    placeholder="e.g. Scheduled System Maintenance"
+                    className="w-full px-3 py-2 text-xs border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                  />
+                </div>
 
-        {target === 'review' ? (
-          <div className="p-6 bg-amber-50 border border-amber-100 rounded-2xl flex items-start gap-4 animate-in fade-in duration-300">
-            <div className="h-10 w-10 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center shrink-0">
-              <Star size={20} className="fill-amber-400 text-amber-400" />
-            </div>
-            <div>
-              <p className="text-xs font-black text-amber-900 uppercase tracking-widest mb-1">Review Request Broadcast</p>
-              <p className="text-[11px] text-amber-700 font-medium leading-relaxed">
-                This will send a notification to <span className="font-black">all vendors</span> asking them to share their experience.
-                They'll receive it in their in-app inbox with a link to the review form.
-              </p>
-            </div>
-          </div>
-        ) : (
-          <>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Notification Title</label>
-                <input
-                  type="text"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  placeholder="e.g. System Maintenance"
-                  className="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 text-xs font-bold outline-none focus:ring-2 focus:ring-emerald-500/10"
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Notice Severity</label>
-                <div className="flex gap-2">
-                  <TypeButton active={type === 'info'} color="blue" icon={Info} onClick={() => setType('info')} />
-                  <TypeButton active={type === 'success'} color="emerald" icon={CheckCircle2} onClick={() => setType('success')} />
-                  <TypeButton active={type === 'warning'} color="amber" icon={AlertTriangle} onClick={() => setType('warning')} />
+                <div className="space-y-1">
+                  <label className="text-xs font-medium text-gray-700">Severity</label>
+                  <div className="grid grid-cols-3 gap-1 h-[34px] p-0.5 bg-gray-50 rounded-lg border border-gray-200 text-xs">
+                    <button
+                      type="button"
+                      onClick={() => setType('info')}
+                      className={`rounded-md flex items-center justify-center font-medium text-[11px] transition-all ${
+                        type === 'info' ? 'bg-white text-blue-600 shadow-xs font-semibold' : 'text-gray-500 hover:text-gray-900'
+                      }`}
+                    >
+                      Info
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setType('warning')}
+                      className={`rounded-md flex items-center justify-center font-medium text-[11px] transition-all ${
+                        type === 'warning' ? 'bg-white text-amber-600 shadow-xs font-semibold' : 'text-gray-500 hover:text-gray-900'
+                      }`}
+                    >
+                      Warning
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setType('success')}
+                      className={`rounded-md flex items-center justify-center font-medium text-[11px] transition-all ${
+                        type === 'success' ? 'bg-white text-emerald-600 shadow-xs font-semibold' : 'text-gray-500 hover:text-gray-900'
+                      }`}
+                    >
+                      Success
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <div className="space-y-2">
-              <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Detailed Content</label>
-              <textarea
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                placeholder="Type your message here..."
-                className="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 text-xs font-bold outline-none focus:ring-2 focus:ring-emerald-500/10 min-h-[100px]"
-              />
-            </div>
-          </>
-        )}
+              {/* Message Content */}
+              <div className="space-y-1">
+                <label className="text-xs font-medium text-gray-700">Message Content</label>
+                <textarea
+                  rows={3}
+                  value={message}
+                  onChange={e => setMessage(e.target.value)}
+                  placeholder="Write message details for the notification..."
+                  className="w-full px-3 py-2 text-xs border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 resize-none"
+                />
+              </div>
 
-        {target !== 'review' && (
-          <div className="p-4 bg-slate-50 rounded-xl border border-slate-100 mb-6 group">
-            <div className="flex gap-3 items-start">
-               <div className="h-5 w-5 rounded-full bg-slate-900 text-white flex items-center justify-center shrink-0 mt-0.5">
-                  <Info size={10} />
-               </div>
-               <p className="text-[10px] text-slate-500 font-bold leading-relaxed">
-                 <span className="text-slate-900 font-black">Dual-Delivery Logic:</span> This message will be stored in the vendor's 
-                 <span className="text-emerald-600"> In-App Inbox</span> and pushed as a 
-                 <span className="text-emerald-600"> Native Device Notification</span> if they have permissions enabled.
-               </p>
-            </div>
-          </div>
-        )}
-
-        <button
-          onClick={handleSend}
-          disabled={sending}
-          className={`w-full py-4 rounded-xl font-black text-xs uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-2 shadow-xl disabled:opacity-50 ${
-            target === 'review'
-              ? 'bg-amber-500 hover:bg-amber-400 text-white shadow-amber-900/10'
-              : 'bg-[#0D4A3E] hover:bg-[#0A3D33] text-white shadow-emerald-900/10'
-          }`}
-        >
-          {sending ? <Loader2 className="animate-spin" size={16} /> : target === 'review' ? <Star size={16} /> : <Send size={16} />}
-          {sending ? 'Pushing to Data Nodes...' : target === 'review' ? 'Send Review Request to All' : 'Initiate Broadcast'}
-        </button>
-      </div>
+              {/* Footer Actions */}
+              <div className="pt-2 flex flex-col sm:flex-row justify-between sm:items-center gap-3 border-t border-gray-50">
+                <span className="text-[11px] text-gray-400">
+                  Delivered to in-app notification center and push notifications
+                </span>
+                <button
+                  type="submit"
+                  disabled={sending}
+                  className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 shadow-xs transition-all shrink-0 cursor-pointer"
+                >
+                  {sending ? <Loader2 size={13} className="animate-spin" /> : <Send size={13} />}
+                  <span>{sending ? 'Broadcasting...' : 'Send Broadcast'}</span>
+                </button>
+              </div>
+            </form>
+          )}
+        </div>
+      )}
     </div>
-  )
-}
-
-function TypeButton({ active, color, icon: Icon, onClick }: any) {
-  const colors: any = {
-    blue: active ? 'bg-blue-100 text-blue-600 border-blue-200' : 'bg-gray-50 text-gray-400 border-gray-100',
-    emerald: active ? 'bg-emerald-100 text-emerald-600 border-emerald-200' : 'bg-gray-50 text-gray-400 border-gray-100',
-    amber: active ? 'bg-amber-100 text-amber-600 border-amber-200' : 'bg-gray-50 text-gray-400 border-gray-100',
-  }
-
-  return (
-    <button
-      onClick={onClick}
-      className={`flex-1 p-3 rounded-lg border transition-all flex items-center justify-center ${colors[color]}`}
-    >
-      <Icon size={16} />
-    </button>
   )
 }

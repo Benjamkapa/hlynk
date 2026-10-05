@@ -2,17 +2,32 @@ import { useState } from 'react'
 import { useQuery, useMutation } from '@tanstack/react-query'
 import { adminApi } from '../../lib/api/providers'
 import { toast } from 'sonner'
-import { FileText, Download, Calendar, Play } from 'lucide-react'
+import { FileText, Download, Calendar, Play, FileSpreadsheet, Loader2, CheckCircle2, TrendingUp, ShieldCheck, Database, Layers, Sparkles } from 'lucide-react'
 
 export default function ReportsPage() {
   const [table, setTable] = useState('User')
   const [columns, setColumns] = useState('id,name,email')
   const [queryResult, setQueryResult] = useState<any[]>([])
+  const [isExporting, setIsExporting] = useState(false)
 
   const { data: schedules } = useQuery<any[]>({
     queryKey: ['admin-schedules'],
     queryFn: () => adminApi.getSchedules().then(res => res.data)
   })
+
+  const handleExportDossier = async () => {
+    setIsExporting(true)
+    const toastId = toast.loading('Compiling multi-sheet intelligence report...')
+    try {
+      await adminApi.downloadPlatformReport()
+      toast.success('Platform intelligence report downloaded successfully (.xlsx)', { id: toastId })
+    } catch (err: any) {
+      console.error(err)
+      toast.error('Failed to export platform report. Please try again.', { id: toastId })
+    } finally {
+      setIsExporting(false)
+    }
+  }
 
   const presets = {
     'Sales Audit': { table: 'Sale', columns: 'id,totalAmount,paymentMethod,createdAt' },
@@ -42,10 +57,104 @@ export default function ReportsPage() {
   return (
     <div className="space-y-8 animate-in fade-in duration-500 pt-4">
       
-      <div className="flex justify-between items-end">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
         <div>
           <h1 className="text-xl font-semibold text-gray-900">Reports & Exports</h1>
-          <p className="text-slate-500 font-medium">Generate, schedule and export platform-wide analytical data</p>
+          <p className="text-slate-500 font-medium">Generate, schedule and export platform-wide analytical intelligence</p>
+        </div>
+        <button
+          onClick={handleExportDossier}
+          disabled={isExporting}
+          className="flex items-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white rounded-lg font-bold text-sm shadow-sm transition-all"
+        >
+          {isExporting ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />}
+          <span>{isExporting ? 'Compiling Dossier...' : 'Export Full Intelligence Dossier (.xlsx)'}</span>
+        </button>
+      </div>
+
+      {/* Featured Intelligence Dossier Card */}
+      <div className="bg-gradient-to-br from-emerald-950 via-slate-900 to-emerald-900 rounded-xl p-6 sm:p-8 text-white relative overflow-hidden shadow-md">
+        <div className="absolute right-0 top-0 translate-x-8 -translate-y-8 w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
+        
+        <div className="relative z-10">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+            <div className="space-y-3 max-w-2xl">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 text-xs font-semibold">
+                <Sparkles size={14} />
+                <span>Executive Business Intelligence</span>
+              </div>
+              <h2 className="text-2xl font-bold tracking-tight text-white">Platform Intelligence Dossier</h2>
+              <p className="text-slate-300 text-sm leading-relaxed">
+                Automatically generate an investor-grade, multi-tab Microsoft Excel (.xlsx) workbook aggregating all operational, financial, transactional, and audit data across the entire ecosystem.
+              </p>
+            </div>
+            
+            <button
+              onClick={handleExportDossier}
+              disabled={isExporting}
+              className="flex items-center justify-center gap-2.5 px-6 py-3.5 bg-emerald-500 hover:bg-emerald-400 disabled:opacity-60 text-slate-950 font-bold text-sm rounded-lg transition-all shadow-lg shadow-emerald-500/20 shrink-0"
+            >
+              {isExporting ? (
+                <>
+                  <Loader2 size={18} className="animate-spin" />
+                  <span>Compiling 9 Sheets...</span>
+                </>
+              ) : (
+                <>
+                  <FileSpreadsheet size={18} />
+                  <span>Download Excel Dossier (.xlsx)</span>
+                </>
+              )}
+            </button>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-9 gap-2.5 mt-6 pt-6 border-t border-white/10 text-xs">
+            <div className="bg-white/5 border border-white/10 rounded-lg p-2.5 flex flex-col items-center text-center">
+              <span className="text-base mb-1">📊</span>
+              <span className="font-semibold text-white">KPI Summary</span>
+              <span className="text-[10px] text-slate-400 mt-0.5">Rev & Counts</span>
+            </div>
+            <div className="bg-white/5 border border-white/10 rounded-lg p-2.5 flex flex-col items-center text-center">
+              <span className="text-base mb-1">💳</span>
+              <span className="font-semibold text-white">Transactions</span>
+              <span className="text-[10px] text-slate-400 mt-0.5">Payment Ledger</span>
+            </div>
+            <div className="bg-white/5 border border-white/10 rounded-lg p-2.5 flex flex-col items-center text-center">
+              <span className="text-base mb-1">🏪</span>
+              <span className="font-semibold text-white">Tenants</span>
+              <span className="text-[10px] text-slate-400 mt-0.5">Vendor Directory</span>
+            </div>
+            <div className="bg-white/5 border border-white/10 rounded-lg p-2.5 flex flex-col items-center text-center">
+              <span className="text-base mb-1">📋</span>
+              <span className="font-semibold text-white">Subscriptions</span>
+              <span className="text-[10px] text-slate-400 mt-0.5">Plans & Expiries</span>
+            </div>
+            <div className="bg-white/5 border border-white/10 rounded-lg p-2.5 flex flex-col items-center text-center">
+              <span className="text-base mb-1">📱</span>
+              <span className="font-semibold text-white">M-Pesa</span>
+              <span className="text-[10px] text-slate-400 mt-0.5">STK & C2B Logs</span>
+            </div>
+            <div className="bg-white/5 border border-white/10 rounded-lg p-2.5 flex flex-col items-center text-center">
+              <span className="text-base mb-1">💸</span>
+              <span className="font-semibold text-white">Payouts</span>
+              <span className="text-[10px] text-slate-400 mt-0.5">Settlement State</span>
+            </div>
+            <div className="bg-white/5 border border-white/10 rounded-lg p-2.5 flex flex-col items-center text-center">
+              <span className="text-base mb-1">🛒</span>
+              <span className="font-semibold text-white">Sales Volume</span>
+              <span className="text-[10px] text-slate-400 mt-0.5">POS & Receipts</span>
+            </div>
+            <div className="bg-white/5 border border-white/10 rounded-lg p-2.5 flex flex-col items-center text-center">
+              <span className="text-base mb-1">🏆</span>
+              <span className="font-semibold text-white">Top 20</span>
+              <span className="text-[10px] text-slate-400 mt-0.5">Revenue Leaders</span>
+            </div>
+            <div className="bg-white/5 border border-white/10 rounded-lg p-2.5 flex flex-col items-center text-center">
+              <span className="text-base mb-1">🔐</span>
+              <span className="font-semibold text-white">Activity Log</span>
+              <span className="text-[10px] text-slate-400 mt-0.5">Security Audit</span>
+            </div>
+          </div>
         </div>
       </div>
 

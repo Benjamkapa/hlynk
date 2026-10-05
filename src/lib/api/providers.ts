@@ -164,12 +164,22 @@ export const adminApi = {
   clearTable: (table: string, tenantId?: string) => api.post('/admin/data/clear-table', { table, tenantId }).then(r => r.data),
   deleteRecord: (table: string, id: string) => api.post('/admin/data/delete-record', { table, id }).then(r => r.data),
   downloadDatabaseBackup: (onDownloadProgress?: (progressEvent: any) => void) => api.get('/admin/backup/db', { responseType: 'blob', onDownloadProgress }).then(r => r.data),
-  restoreDatabaseBackup: (file: File, onUploadProgress?: (progressEvent: any) => void) => {
+  restoreDatabaseBackup: (file: File, passphrase: string, onUploadProgress?: (progressEvent: any) => void) => {
     const formData = new FormData()
     formData.append('sqlFile', file)
-    return api.post('/admin/backup/restore', formData, {
-      onUploadProgress
-    }).then(r => r.data)
+    formData.append('passphrase', passphrase)
+    return api.post('/admin/backup/restore', formData, { onUploadProgress }).then(r => r.data)
+  },
+  downloadPlatformReport: async () => {
+    const res = await api.get('/admin/reports/export', { responseType: 'blob' })
+    const url = URL.createObjectURL(res.data)
+    const a = document.createElement('a')
+    const d = new Date()
+    const stamp = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`
+    a.href = url
+    a.download = `hlynk_report_${stamp}.xlsx`
+    a.click()
+    URL.revokeObjectURL(url)
   }
 }
 

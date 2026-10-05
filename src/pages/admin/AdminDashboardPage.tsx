@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import {
   Users, Bell, Activity, 
   DollarSign, Landmark, 
-  AlertCircle
+  AlertCircle, FileSpreadsheet, Loader2
 } from 'lucide-react'
 import {
   ResponsiveContainer, Tooltip, AreaChart, Area,
@@ -17,6 +17,22 @@ import Pagination from '../../components/shared/Pagination'
 export default function AdminDashboardPage() {
   const [timeframe, setTimeframe] = useState<'HOURLY' | 'DAILY'>('HOURLY')
   const [page, setPage] = useState(1)
+  const [isExporting, setIsExporting] = useState(false)
+
+  const handleExportDossier = async () => {
+    setIsExporting(true)
+    const toastId = toast.loading('Compiling multi-sheet intelligence report...')
+    try {
+      await adminApi.downloadPlatformReport()
+      toast.success('Platform intelligence report downloaded (.xlsx)', { id: toastId })
+    } catch (err: any) {
+      console.error(err)
+      toast.error('Failed to export platform report', { id: toastId })
+    } finally {
+      setIsExporting(false)
+    }
+  }
+
   const { data: rawStats, isLoading, error } = useQuery<any>({
     queryKey: ['admin-stats-', timeframe],
     queryFn: () => adminApi.getStats(timeframe)
@@ -62,7 +78,17 @@ export default function AdminDashboardPage() {
           <h1 className="text-xl font-semibold text-gray-900">System Overview</h1>
           <p className="text-gray-400 text-sm mt-0.5">Operational intelligence for hlynk platform</p>
         </div>
-        <div className="flex items-center gap-4 bg-white p-2 rounded-lg border border-slate-100 shadow-sm">
+        <div className="flex flex-wrap items-center gap-3">
+          <button
+            onClick={handleExportDossier}
+            disabled={isExporting}
+            className="flex items-center gap-2 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white rounded-lg text-xs font-bold transition-all shadow-sm shadow-emerald-900/10 cursor-pointer"
+            title="Download full 9-sheet platform intelligence report in Excel (.xlsx)"
+          >
+            {isExporting ? <Loader2 size={15} className="animate-spin" /> : <FileSpreadsheet size={15} />}
+            <span>{isExporting ? 'Exporting...' : 'Export Dossier (.xlsx)'}</span>
+          </button>
+          <div className="flex items-center gap-4 bg-white p-2 rounded-lg border border-slate-100 shadow-sm">
             <div className="flex -space-x-3 pr-2">
               {stats?.overview?.activeAvatars?.length > 0 ? (
                 stats.overview.activeAvatars.map((u: any, i: number) => (
@@ -91,6 +117,7 @@ export default function AdminDashboardPage() {
               <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
               <span className="text-[11px] font-black uppercase tracking-widest hl-mono">Cloud Active</span>
            </div>
+          </div>
         </div>
       </div>
 
