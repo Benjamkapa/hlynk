@@ -1,5 +1,8 @@
 import { useState, useRef } from 'react'
-import { Users, Desktop, SignOut, MagnifyingGlass, Trash, Pulse, DeviceMobile, Globe, Clock, ShieldCheck } from '@phosphor-icons/react'
+import { 
+  Users, Desktop, SignOut, MagnifyingGlass, Trash, Pulse, DeviceMobile, Globe, Clock, ShieldCheck,
+  Package, TrendUp, TrendDown, CurrencyDollar, CircleNotch, Storefront, Receipt 
+} from '@phosphor-icons/react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { adminApi } from '../../lib/api/providers'
 import { toast } from 'sonner'
@@ -28,6 +31,7 @@ export default function UserOperationsPage() {
   const [role, setRole] = useState('')
   const [page, setPage] = useState(1)
   const [selectedUser, setSelectedUser] = useState<any>(null)
+  const [detailTab, setDetailTab] = useState<'value' | 'audit'>('value')
   const [confirmTerminateId, setConfirmTerminateId] = useState<string | null>(null)
   const [confirmImpersonateUser, setConfirmImpersonateUser] = useState<any>(null)
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
@@ -35,6 +39,7 @@ export default function UserOperationsPage() {
   const { login } = useAuth()
   const navigate = useNavigate()
   const usersTableRef = useRef<HTMLDivElement>(null)
+  const activeUserRef = useRef<HTMLDivElement>(null)
 
   const { data: usersRes, isLoading } = useQuery<any>({
     queryKey: ['admin-users', search, role, page],
@@ -61,11 +66,18 @@ export default function UserOperationsPage() {
     enabled: !!selectedUser
   })
 
+  const { data: userValueResponse, isLoading: isLoadingValue } = useQuery<{ success: boolean; data: any }>({
+    queryKey: ['user-financial-value', selectedUser?.id],
+    queryFn: () => adminApi.getUserValue(selectedUser.id),
+    enabled: !!selectedUser
+  })
+
   const users = usersRes?.data?.items || []
   const pagination = usersRes?.data?.pagination || { total: 0, pages: 1 }
   const sessions = sessionsResponse?.data || []
   const liveLogs = liveActivityRes?.data?.items || []
   const activityLogs = userActivityResponse?.data || []
+  const userFinancials = userValueResponse?.data
 
   const deleteMutation = useMutation({
     mutationFn: adminApi.deleteUser,
@@ -340,7 +352,11 @@ export default function UserOperationsPage() {
                   ) : users.length > 0 ? users.map((u: any) => (
                     <tr
                       key={u.id}
-                      onClick={() => setSelectedUser(u)}
+                      onClick={() => {
+                        setSelectedUser(u)
+                        setDetailTab('value')
+                        setTimeout(() => activeUserRef.current?.scrollIntoView({ behavior: 'smooth' }), 60)
+                      }}
                       className={`hover:bg-slate-50/30 transition-all cursor-pointer ${selectedUser?.id === u.id ? 'bg-emerald-50/40' : ''}`}
                     >
                       <td className="px-8 py-5">
@@ -352,7 +368,14 @@ export default function UserOperationsPage() {
                             referrerPolicy="no-referrer"
                           />
                           <div>
-                            <p className="font-medium text-gray-900 text-sm">{u.name}</p>
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <p className="font-medium text-gray-900 text-sm">{u.name}</p>
+                              {u.businessName && (
+                                <span className="text-[10px] font-semibold text-emerald-800 bg-emerald-50 border border-emerald-200/60 px-1.5 py-0.5 rounded">
+                                  {u.businessName}
+                                </span>
+                              )}
+                            </div>
                             <p className="text-[9px] text-slate-400 font-bold hl-mono mt-0.5">ID: {u.id.slice(-8).toUpperCase()}</p>
                           </div>
                         </div>
@@ -418,37 +441,277 @@ export default function UserOperationsPage() {
             </div>
           </div>
 
-          {/* Audit trail */}
+          {/* Identity & Provider Details + Valuation [Stock Value, Profit, Loss] */}
           {selectedUser && (
-            <div className="bg-white rounded-[.5rem] border border-gray-100 p-6 animate-in fade-in duration-500">
-              <div className="flex justify-between items-center mb-6">
-                <div>
-                  <h3 className="text-sm font-medium text-gray-900">Audit trail — {selectedUser.name}</h3>
-                  <p className="text-xs text-gray-400 mt-0.5">Recent activity for this identity</p>
+            <div ref={activeUserRef} className="bg-white rounded-[.5rem] border border-gray-100 p-6 animate-in fade-in duration-500 space-y-6">
+              {/* Profile Header Bar */}
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-5 border-b border-gray-50">
+                <div className="flex items-center gap-4">
+                  <img
+                    src={selectedUser.photoUrl || `https://api.dicebear.com/7.x/initials/svg?seed=${selectedUser.name}`}
+                    className="h-12 w-12 rounded-lg object-cover border border-slate-100 shadow-sm"
+                    alt=""
+                    referrerPolicy="no-referrer"
+                  />
+                  <div>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h3 className="text-base font-semibold text-gray-900">{selectedUser.name}</h3>
+                      <span className={`text-[10px] font-black px-2 py-0.5 rounded-md uppercase tracking-wider ${
+                        selectedUser.role === 'SUPER_ADMIN' ? 'bg-purple-50 text-purple-600' :
+                        selectedUser.role === 'PROVIDER' ? 'bg-blue-50 text-blue-600' :
+                        selectedUser.role === 'STAFF' ? 'bg-amber-50 text-amber-600' :
+                        'bg-emerald-50 text-emerald-600'
+                      }`}>
+                        {selectedUser.role}
+                      </span>
+                      {selectedUser.businessName && (
+                        <span className="text-xs font-semibold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-100">
+                          🏪 {selectedUser.businessName}
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-3 text-xs text-slate-400 mt-1 flex-wrap">
+                      <span className="font-mono text-slate-600">{selectedUser.phone}</span>
+                      <span>•</span>
+                      <span>{selectedUser.email || 'No email registered'}</span>
+                      {selectedUser.createdAt && (
+                        <>
+                          <span>•</span>
+                          <span>Member since {new Date(selectedUser.createdAt).toLocaleDateString()}</span>
+                        </>
+                      )}
+                    </div>
+                  </div>
                 </div>
-                <button onClick={() => setSelectedUser(null)} className="h-8 px-3 rounded-md bg-slate-50 text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-all text-xs font-medium">Close</button>
+
+                <div className="flex items-center gap-2">
+                  {selectedUser.role !== 'SUPER_ADMIN' && (
+                    <button
+                      onClick={() => setConfirmImpersonateUser(selectedUser)}
+                      disabled={impersonateMutation.isPending}
+                      className="h-8 px-3 rounded-md bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition-all text-xs font-semibold flex items-center gap-1.5"
+                    >
+                      <Desktop size={14} /> Impersonate
+                    </button>
+                  )}
+                  <button
+                    onClick={() => setConfirmDeleteId(selectedUser.id)}
+                    className="h-8 px-3 rounded-md bg-rose-50 text-rose-600 hover:bg-rose-100 transition-all text-xs font-semibold flex items-center gap-1.5"
+                  >
+                    <Trash size={14} /> Delete
+                  </button>
+                  <button
+                    onClick={() => setSelectedUser(null)}
+                    className="h-8 px-3 rounded-md bg-slate-50 text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-all text-xs font-medium ml-1"
+                  >
+                    Close
+                  </button>
+                </div>
               </div>
-              <div className="space-y-3 max-h-[420px] overflow-y-auto pr-2">
-                {activityLogs.length > 0 ? activityLogs.map((log: any, i: number) => (
-                  <div key={i} className="flex items-start gap-3 p-4 bg-slate-50/60 rounded-md border border-slate-50">
-                    <div className="h-8 w-8 rounded-md bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
-                      <Users size={14} />
-                    </div>
-                    <div className="flex-1 space-y-1">
-                      <div className="flex justify-between items-center">
-                        <p className="text-sm font-medium text-gray-900">{log.action}</p>
-                        <span className="text-[10px] font-bold text-slate-400 hl-mono">{new Date(log.createdAt).toLocaleString()}</span>
+
+              {/* Navigation Tabs */}
+              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setDetailTab('value')}
+                    className={`px-3.5 py-1.5 rounded-md text-xs font-semibold transition-all flex items-center gap-1.5 ${
+                      detailTab === 'value'
+                        ? 'bg-[#0D4A3E] text-white shadow-sm'
+                        : 'text-slate-500 hover:bg-slate-50'
+                    }`}
+                  >
+                    <CurrencyDollar size={15} /> Provider Financial Valuation
+                  </button>
+                  <button
+                    onClick={() => setDetailTab('audit')}
+                    className={`px-3.5 py-1.5 rounded-md text-xs font-semibold transition-all flex items-center gap-1.5 ${
+                      detailTab === 'audit'
+                        ? 'bg-[#0D4A3E] text-white shadow-sm'
+                        : 'text-slate-500 hover:bg-slate-50'
+                    }`}
+                  >
+                    <Clock size={15} /> Audit Trail ({activityLogs.length})
+                  </button>
+                </div>
+              </div>
+
+              {/* Content Panel */}
+              {detailTab === 'value' ? (
+                isLoadingValue ? (
+                  <div className="py-16 text-center text-slate-400 font-medium text-xs flex items-center justify-center gap-2">
+                    <CircleNotch size={18} className="animate-spin text-[#0D4A3E]" />
+                    Evaluating merchant financial metrics [stock value, profit, loss]...
+                  </div>
+                ) : userFinancials ? (
+                  <div className="space-y-6">
+                    {/* Primary Metrics Grid: Stock Value, Profit, Loss, Net Outcome */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                      {/* 1. STOCK VALUE */}
+                      <div className="bg-slate-50/70 p-5 rounded-lg border border-slate-100 relative overflow-hidden">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Stock Value</span>
+                          <div className="h-7 w-7 rounded-md bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                            <Package size={16} />
+                          </div>
+                        </div>
+                        <h4 className="text-xl font-bold text-slate-900 hl-mono">
+                          KES {Number(userFinancials.stockValue?.costValue || 0).toLocaleString()}
+                        </h4>
+                        <p className="text-[11px] text-slate-400 mt-0.5">Inventory cost valuation</p>
+                        <div className="mt-4 pt-3 border-t border-slate-200/60 space-y-1.5 text-xs">
+                          <div className="flex justify-between text-slate-500">
+                            <span>Retail Worth:</span>
+                            <span className="font-semibold text-slate-800 hl-mono">KES {Number(userFinancials.stockValue?.retailValue || 0).toLocaleString()}</span>
+                          </div>
+                          <div className="flex justify-between text-slate-500">
+                            <span>Total Inventory:</span>
+                            <span className="font-semibold text-slate-800 hl-mono">{userFinancials.stockValue?.totalItems || 0} items ({userFinancials.stockValue?.totalUnits || 0} units)</span>
+                          </div>
+                          <div className="flex justify-between text-slate-500">
+                            <span>Stock Margin:</span>
+                            <span className="font-semibold text-emerald-600 hl-mono">+KES {Number(userFinancials.stockValue?.potentialProfit || 0).toLocaleString()}</span>
+                          </div>
+                          {userFinancials.stockValue?.lowStockCount > 0 && (
+                            <div className="flex justify-between text-amber-600 font-medium pt-1">
+                              <span>Low Stock:</span>
+                              <span className="hl-mono font-bold">{userFinancials.stockValue.lowStockCount} items</span>
+                            </div>
+                          )}
+                        </div>
                       </div>
-                      <p className="text-xs text-slate-500 leading-relaxed">{log.details}</p>
-                      <p className="text-[9px] text-slate-300 font-bold uppercase tracking-widest pt-1">Event ID: {log.id.slice(-8).toUpperCase()}</p>
+
+                      {/* 2. PROFIT */}
+                      <div className="bg-slate-50/70 p-5 rounded-lg border border-slate-100 relative overflow-hidden">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Gross Profit</span>
+                          <div className="h-7 w-7 rounded-md bg-blue-50 text-blue-600 flex items-center justify-center">
+                            <TrendUp size={16} />
+                          </div>
+                        </div>
+                        <h4 className="text-xl font-bold text-blue-700 hl-mono">
+                          KES {Number(userFinancials.profit?.allTimeGrossProfit || 0).toLocaleString()}
+                        </h4>
+                        <p className="text-[11px] text-slate-400 mt-0.5">Cumulative sales gross margin</p>
+                        <div className="mt-4 pt-3 border-t border-slate-200/60 space-y-1.5 text-xs">
+                          <div className="flex justify-between text-slate-500">
+                            <span>MTD Profit:</span>
+                            <span className="font-semibold text-slate-800 hl-mono">KES {Number(userFinancials.profit?.mtdGrossProfit || 0).toLocaleString()}</span>
+                          </div>
+                          <div className="flex justify-between text-slate-500">
+                            <span>Today's Profit:</span>
+                            <span className="font-semibold text-slate-800 hl-mono">KES {Number(userFinancials.profit?.todayGrossProfit || 0).toLocaleString()}</span>
+                          </div>
+                          <div className="flex justify-between text-slate-500">
+                            <span>Total Revenue:</span>
+                            <span className="font-semibold text-slate-800 hl-mono">KES {Number(userFinancials.profit?.totalRevenue || 0).toLocaleString()}</span>
+                          </div>
+                          <div className="flex justify-between text-slate-500">
+                            <span>Margin Rate:</span>
+                            <span className="font-semibold text-blue-600 hl-mono">{userFinancials.profit?.marginPercent || 0}%</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* 3. LOSS / EXPENSES */}
+                      <div className="bg-slate-50/70 p-5 rounded-lg border border-slate-100 relative overflow-hidden">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Loss & Expenses</span>
+                          <div className="h-7 w-7 rounded-md bg-rose-50 text-rose-600 flex items-center justify-center">
+                            <TrendDown size={16} />
+                          </div>
+                        </div>
+                        <h4 className="text-xl font-bold text-rose-600 hl-mono">
+                          KES {Number(userFinancials.loss?.totalExpenses || 0).toLocaleString()}
+                        </h4>
+                        <p className="text-[11px] text-slate-400 mt-0.5">Recorded cost outflows</p>
+                        <div className="mt-4 pt-3 border-t border-slate-200/60 space-y-1.5 text-xs">
+                          <div className="flex justify-between text-slate-500">
+                            <span>MTD Expenses:</span>
+                            <span className="font-semibold text-slate-800 hl-mono">KES {Number(userFinancials.loss?.mtdExpenses || 0).toLocaleString()}</span>
+                          </div>
+                          <div className="flex justify-between text-slate-500">
+                            <span>Expense Records:</span>
+                            <span className="font-semibold text-slate-800 hl-mono">{userFinancials.loss?.expenseCount || 0} entries</span>
+                          </div>
+                          <div className="flex justify-between text-slate-500">
+                            <span>Net Deficit:</span>
+                            <span className={`font-semibold hl-mono ${userFinancials.loss?.isLoss ? 'text-rose-600' : 'text-slate-400'}`}>
+                              {userFinancials.loss?.isLoss ? `KES ${Number(userFinancials.loss?.netLoss || 0).toLocaleString()}` : 'KES 0'}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* 4. NET PERFORMANCE */}
+                      <div className={`p-5 rounded-lg border relative overflow-hidden ${
+                        (userFinancials.netProfit || 0) >= 0
+                          ? 'bg-emerald-50/40 border-emerald-100'
+                          : 'bg-rose-50/40 border-rose-100'
+                      }`}>
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Net Bottom Line</span>
+                          <span className={`text-[10px] font-black px-2 py-0.5 rounded uppercase tracking-wider ${
+                            (userFinancials.netProfit || 0) >= 0 ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'
+                          }`}>
+                            {(userFinancials.netProfit || 0) >= 0 ? 'Profitable' : 'Deficit / Loss'}
+                          </span>
+                        </div>
+                        <h4 className={`text-xl font-bold hl-mono ${
+                          (userFinancials.netProfit || 0) >= 0 ? 'text-emerald-700' : 'text-rose-600'
+                        }`}>
+                          {(userFinancials.netProfit || 0) >= 0 ? '+' : '−'}KES {Math.abs(Number(userFinancials.netProfit || 0)).toLocaleString()}
+                        </h4>
+                        <p className="text-[11px] text-slate-500 mt-0.5">Gross profit − expenses</p>
+                        <div className="mt-4 pt-3 border-t border-slate-200/60 space-y-1.5 text-xs">
+                          <div className="flex justify-between text-slate-600">
+                            <span>MTD Net:</span>
+                            <span className="font-semibold hl-mono">
+                              {(userFinancials.mtdNetProfit || 0) >= 0 ? '+' : '−'}KES {Math.abs(Number(userFinancials.mtdNetProfit || 0)).toLocaleString()}
+                            </span>
+                          </div>
+                          <div className="flex justify-between text-slate-600">
+                            <span>Completed Orders:</span>
+                            <span className="font-semibold hl-mono">{userFinancials.profit?.totalSalesCount || 0} sales</span>
+                          </div>
+                        </div>
+                      </div>
                     </div>
+
+                    {!userFinancials.hasBusiness && (
+                      <div className="p-4 bg-slate-50 rounded-md border border-slate-100 text-xs text-slate-500">
+                        ℹ️ This identity is registered as a customer or platform administrator without linked vendor store products.
+                      </div>
+                    )}
                   </div>
-                )) : (
-                  <div className="py-14 text-center">
-                    <p className="text-slate-400 font-medium text-sm">No activity logs for this identity</p>
+                ) : (
+                  <div className="py-12 text-center text-slate-400 text-xs">
+                    No financial data available for this identity.
                   </div>
-                )}
-              </div>
+                )
+              ) : (
+                /* Activity Audit Trail Tab */
+                <div className="space-y-3 max-h-[420px] overflow-y-auto pr-2">
+                  {activityLogs.length > 0 ? activityLogs.map((log: any, i: number) => (
+                    <div key={i} className="flex items-start gap-3 p-4 bg-slate-50/60 rounded-md border border-slate-50">
+                      <div className="h-8 w-8 rounded-md bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+                        <Users size={14} />
+                      </div>
+                      <div className="flex-1 space-y-1">
+                        <div className="flex justify-between items-center">
+                          <p className="text-sm font-medium text-gray-900">{log.action}</p>
+                          <span className="text-[10px] font-bold text-slate-400 hl-mono">{new Date(log.createdAt).toLocaleString()}</span>
+                        </div>
+                        <p className="text-xs text-slate-500 leading-relaxed">{log.details}</p>
+                        <p className="text-[9px] text-slate-300 font-bold uppercase tracking-widest pt-1">Event ID: {log.id.slice(-8).toUpperCase()}</p>
+                      </div>
+                    </div>
+                  )) : (
+                    <div className="py-14 text-center">
+                      <p className="text-slate-400 font-medium text-sm">No activity logs for this identity</p>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           )}
         </div>

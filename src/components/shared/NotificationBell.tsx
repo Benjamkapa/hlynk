@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Bell, X, Check, CheckCheck, Package, CalendarCheck, Info, AlertTriangle, ShieldCheck, Trash2 } from 'lucide-react';
+import { Bell, X, Check, CheckCheck, Package, CalendarCheck, Info, AlertTriangle, ShieldCheck, Trash2, Star } from 'lucide-react';
 import InlineLoader, { ButtonLoader } from './InlineLoader';
+import { Modal } from './Modal';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { platformApi } from '../../lib/api/platform';
@@ -26,6 +27,8 @@ const TYPE_ICON: Record<string, any> = {
   danger: AlertTriangle,
   system: ShieldCheck,
   info: Info,
+  review: Star,
+  review_request: Star,
 };
 
 const TYPE_COLOR: Record<string, string> = {
@@ -36,7 +39,27 @@ const TYPE_COLOR: Record<string, string> = {
   danger:  'bg-red-50 text-red-600 border-red-100',
   system:  'bg-slate-100 text-slate-600 border-slate-200',
   info:    'bg-sky-50 text-sky-600 border-sky-100',
+  review:  'bg-amber-50 text-amber-500 border-amber-100',
+  review_request: 'bg-amber-50 text-amber-500 border-amber-100',
 };
+
+export function isReviewNotification(n: Notification): boolean {
+  const type = (n.type || '').toLowerCase();
+  const refType = (n.referenceType || '').toLowerCase();
+  const title = (n.title || '').toLowerCase();
+  const msg = (n.message || '').toLowerCase();
+
+  return (
+    type === 'review' ||
+    type === 'review_request' ||
+    refType === 'review' ||
+    title.includes('share your experience') ||
+    title.includes('leave a review') ||
+    (title.includes('review') && msg.includes('rating')) ||
+    msg.includes('tap to leave a quick rating') ||
+    msg.includes('rate your experience')
+  );
+}
 
 function timeAgo(dateStr: string): string {
   const diff = Date.now() - new Date(dateStr).getTime();
@@ -49,10 +72,10 @@ function timeAgo(dateStr: string): string {
 }
 
 /** Derive the route to navigate to when a notification is clicked */
-function getNavTarget(n: Notification): { path: string; state?: any } | null {
+function getNavTarget(n: Notification): { path: string; state?: any; label?: string } | null {
   // Booking reference
   if (n.referenceType === 'booking' || n.type === 'booking') {
-    return { path: '/dashboard/hospitality/bookings', state: { highlightId: n.referenceId } };
+    return { path: '/dashboard/hospitality/bookings', state: { highlightId: n.referenceId }, label: '→ View Booking' };
   }
 
   // Order reference -> Open client orders in Products (Items) section
@@ -63,11 +86,19 @@ function getNavTarget(n: Notification): { path: string; state?: any } | null {
     n.title?.toLowerCase().includes('order') ||
     n.message?.toLowerCase().includes('ordered')
   ) {
-    return { path: '/dashboard/products', state: { openOrders: true, highlightId: n.referenceId } };
+    return { path: '/dashboard/products', state: { openOrders: true, highlightId: n.referenceId }, label: '→ View Order' };
+  }
+
+  // Review prompt -> open Review Pop-up Modal directly
+  if (isReviewNotification(n)) {
+    const alreadyReviewed = typeof window !== 'undefined' && localStorage.getItem('hlynk_provider_reviewed') === 'true';
+    return { path: '#review-modal', label: alreadyReviewed ? '✓ Reviewed' : '⭐ Rate Now' };
   }
 
   return null;
 }
+
+const RATING_LABELS = ['', 'Needs Improvement 😔', 'Fair 😐', 'Good 🙂', 'Very Good! 😊', 'Excellent Experience! 🌟'];
 
 export default function NotificationBell() {
   const [open, setOpen]             = useState(false);
@@ -76,6 +107,14 @@ export default function NotificationBell() {
   const [clearing, setClearing]     = useState(false);
   const panelRef                    = useRef<HTMLDivElement>(null);
   const navigate                    = useNavigate();
+
+  // Review modal state
+  const [reviewModalOpen, setReviewModalOpen] = useState(false);
+  const [rating, setRating]                   = useState(0);
+  const [hoverRating, setHoverRating]         = useState(0);
+  const [comment, setComment]                 = useState('');
+  const [submittingReview, setSubmittingReview] = useState(false);
+  const [activeReviewNotifId, setActiveReviewNotifId] = useState<string | null>(null);
 
   const unread = notifications.filter(n => !n.isRead).length;
 
@@ -92,6 +131,15 @@ export default function NotificationBell() {
     const interval = setInterval(fetchNotifications, 30_000);
     return () => clearInterval(interval);
   }, [fetchNotifications]);
+
+  // Check if provider has already reviewed in DB on mount
+  useEffect(() => {
+    platformApi.getMyReview().then((res) => {
+      if (res?.success && res.data) {
+        localStorage.setItem('hlynk_provider_reviewed', 'true');
+      }
+    }).catch(() => {});
+  }, []);
 
   // Sync PWA device app icon badge whenever unread count changes
   useEffect(() => {
@@ -134,6 +182,32 @@ export default function NotificationBell() {
   };
 
   const handleClick = async (n: Notification) => {
+    // If it's a review notification, handle modal & "only once and never again"
+    if (isReviewNotification(n)) {
+      // Mark as read in background
+      if (!n.isRead) {
+        await platformApi.markAsRead(n.id).catch(() => {});
+        setNotes(prev => prev.map(x => x.id === n.id ? { ...x, isRead: true } : x));
+      }
+
+      // Check if user already reviewed - only once and never again!
+      const alreadyReviewed = localStorage.getItem('hlynk_provider_reviewed') === 'true';
+      if (alreadyReviewed) {
+        toast.info('You have already submitted a review. Thank you for your feedback! ⭐');
+        setNotes(prev => prev.filter(x => x.id !== n.id));
+        setOpen(false);
+        return;
+      }
+
+      // Trigger pop-up modal
+      setActiveReviewNotifId(n.id);
+      setRating(0);
+      setComment('');
+      setReviewModalOpen(true);
+      setOpen(false);
+      return;
+    }
+
     // Mark as read
     if (!n.isRead) {
       await platformApi.markAsRead(n.id).catch(() => {});
@@ -142,9 +216,42 @@ export default function NotificationBell() {
 
     // Navigate
     const target = getNavTarget(n);
-    if (target) {
+    if (target && target.path !== '#review-modal') {
       setOpen(false);
       navigate(target.path, { state: target.state });
+    }
+  };
+
+  const handleSubmitReview = async () => {
+    if (rating === 0) {
+      toast.error('Please select a star rating between 1 and 5');
+      return;
+    }
+
+    setSubmittingReview(true);
+    try {
+      await platformApi.submitReview({
+        rating,
+        comment: comment.trim(),
+      });
+
+      // Persist that the review has been submitted — only once and never again!
+      localStorage.setItem('hlynk_provider_reviewed', 'true');
+
+      // Dismiss the review notification from local state and mark read in backend
+      if (activeReviewNotifId) {
+        setNotes(prev => prev.filter(x => x.id !== activeReviewNotifId));
+        await platformApi.markAsRead(activeReviewNotifId).catch(() => {});
+      }
+
+      toast.success('Thank you for sharing your experience! ⭐');
+      setReviewModalOpen(false);
+      setRating(0);
+      setComment('');
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || 'Failed to submit review');
+    } finally {
+      setSubmittingReview(false);
     }
   };
 
@@ -299,9 +406,7 @@ export default function NotificationBell() {
                             </span>
                             {isClickable && (
                               <span className="text-[9px] font-black text-emerald-600 tracking-wider">
-                                {n.referenceType === 'booking' || n.type === 'booking'
-                                  ? '→ View Booking'
-                                  : '→ View Order'}
+                                {target?.label ?? '→ Open'}
                               </span>
                             )}
                           </div>
@@ -315,6 +420,93 @@ export default function NotificationBell() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Review Pop-up Modal: Triggered on review prompt click, only once and never again */}
+      <Modal
+        isOpen={reviewModalOpen}
+        onClose={() => setReviewModalOpen(false)}
+        maxWidth="md"
+        title="Share Your Experience"
+        subtitle="How is hlynk helping your business? Your rating helps us make the platform better for you."
+        icon={Star as any}
+      >
+        <div className="space-y-6 pt-2">
+          {/* Star selector with hover effect */}
+          <div className="flex flex-col items-center justify-center py-5 bg-slate-50/80 rounded-2xl border border-slate-100">
+            <div className="flex items-center gap-3">
+              {[1, 2, 3, 4, 5].map((star) => {
+                const isFilled = (hoverRating || rating) >= star;
+                return (
+                  <button
+                    key={star}
+                    type="button"
+                    onMouseEnter={() => setHoverRating(star)}
+                    onMouseLeave={() => setHoverRating(0)}
+                    onClick={() => setRating(star)}
+                    className="p-1 transition-transform hover:scale-125 focus:outline-none"
+                    aria-label={`${star} star`}
+                  >
+                    <Star
+                      size={38}
+                      className={`transition-colors ${
+                        isFilled
+                          ? 'text-amber-400 fill-amber-400 drop-shadow-sm'
+                          : 'text-slate-200 fill-slate-100'
+                      }`}
+                    />
+                  </button>
+                );
+              })}
+            </div>
+            <p className="text-xs font-bold text-slate-700 mt-3 h-5 hl-mono">
+              {RATING_LABELS[hoverRating || rating] || 'Tap a star to rate'}
+            </p>
+          </div>
+
+          {/* Feedback textarea */}
+          <div className="space-y-1.5">
+            <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+              Your Feedback (Optional)
+            </label>
+            <textarea
+              value={comment}
+              onChange={(e) => setComment(e.target.value)}
+              placeholder="What do you love about hlynk? What features would you like to see next?"
+              rows={3}
+              className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3.5 text-sm text-slate-800 placeholder-slate-400 outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 transition-all resize-none"
+            />
+          </div>
+
+          {/* Action buttons */}
+          <div className="flex items-center gap-3 pt-2">
+            <button
+              type="button"
+              onClick={() => setReviewModalOpen(false)}
+              className="flex-1 py-3 px-4 rounded-xl text-xs font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-all"
+            >
+              Maybe Later
+            </button>
+            <button
+              type="button"
+              onClick={handleSubmitReview}
+              disabled={submittingReview || rating === 0}
+              className="flex-1 py-3 px-4 rounded-xl text-xs font-bold text-white bg-[#0D4A3E] hover:bg-[#0A3D33] shadow-md shadow-[#0D4A3E]/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {submittingReview ? (
+                <>
+                  <ButtonLoader size="sm" />
+                  Submitting...
+                </>
+              ) : (
+                <>
+                  <Star size={15} className="fill-white" />
+                  Submit Rating
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }

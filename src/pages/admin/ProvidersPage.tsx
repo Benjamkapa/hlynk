@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Plus, Search, Eye, ShieldAlert, UserCheck, TrendingUp, Bell, Users, Landmark, ArrowUpRight } from 'lucide-react'
+import { Plus, Search, Eye, ShieldAlert, UserCheck, TrendingUp, Bell, Users, Landmark, ArrowUpRight, Package, TrendingDown, DollarSign, Loader2 } from 'lucide-react'
 import Pagination from '../../components/shared/Pagination'
 import { SlideOver } from '../../components/shared/SlideOver'
 import { ConfirmModal } from '../../components/shared/ConfirmModal'
@@ -260,6 +260,13 @@ function ProviderDetailsPanel({ provider, onClose }: { provider: any, onClose: (
     })
   }, [provider])
 
+  const { data: valRes, isLoading: isLoadingVal } = useQuery({
+    queryKey: ['provider-financial-value', provider?.id],
+    queryFn: () => adminApi.getTenantValue(provider.id),
+    enabled: !!provider?.id
+  })
+  const financials = valRes?.data
+
   const deleteMutation = useMutation({
     mutationFn: () => adminApi.deleteTenant(provider.id),
     onSuccess: () => {
@@ -340,6 +347,81 @@ function ProviderDetailsPanel({ provider, onClose }: { provider: any, onClose: (
           <p className="text-xs text-gray-400 mb-1">Services</p>
           <p className="text-lg font-semibold text-gray-900 hl-mono">{provider._count?.services || 0}</p>
         </div>
+      </div>
+
+      {/* Financial Valuation: Stock Value, Profit, Loss */}
+      <div className="space-y-3">
+        <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider border-b border-gray-100 pb-2">
+          Merchant Valuation & Financials
+        </h4>
+        {isLoadingVal ? (
+          <div className="py-6 text-center text-xs text-gray-400 flex items-center justify-center gap-2">
+            <Loader2 size={15} className="animate-spin text-emerald-600" /> Calculating financials...
+          </div>
+        ) : financials ? (
+          <div className="space-y-3">
+            <div className="grid grid-cols-3 gap-2.5">
+              {/* Stock Value */}
+              <div className="bg-slate-50 p-3 rounded-lg border border-slate-100">
+                <div className="flex items-center gap-1.5 text-slate-500 mb-1">
+                  <Package size={13} className="text-emerald-600" />
+                  <span className="text-[10px] font-bold uppercase tracking-wider">Stock Value</span>
+                </div>
+                <p className="text-sm font-bold text-slate-900 hl-mono">
+                  KES {Number(financials.stockValue?.costValue || 0).toLocaleString()}
+                </p>
+                <p className="text-[9px] text-slate-400 mt-0.5">
+                  {financials.stockValue?.totalItems || 0} items ({financials.stockValue?.totalUnits || 0} units)
+                </p>
+              </div>
+
+              {/* Profit */}
+              <div className="bg-slate-50 p-3 rounded-lg border border-slate-100">
+                <div className="flex items-center gap-1.5 text-slate-500 mb-1">
+                  <TrendingUp size={13} className="text-blue-600" />
+                  <span className="text-[10px] font-bold uppercase tracking-wider">Gross Profit</span>
+                </div>
+                <p className="text-sm font-bold text-blue-700 hl-mono">
+                  KES {Number(financials.profit?.allTimeGrossProfit || 0).toLocaleString()}
+                </p>
+                <p className="text-[9px] text-slate-400 mt-0.5">
+                  Rev: KES {Number(financials.profit?.totalRevenue || 0).toLocaleString()}
+                </p>
+              </div>
+
+              {/* Loss / Expenses */}
+              <div className="bg-slate-50 p-3 rounded-lg border border-slate-100">
+                <div className="flex items-center gap-1.5 text-slate-500 mb-1">
+                  <TrendingDown size={13} className="text-rose-600" />
+                  <span className="text-[10px] font-bold uppercase tracking-wider">Expenses / Loss</span>
+                </div>
+                <p className="text-sm font-bold text-rose-600 hl-mono">
+                  KES {Number(financials.loss?.totalExpenses || 0).toLocaleString()}
+                </p>
+                <p className="text-[9px] text-slate-400 mt-0.5">
+                  {financials.loss?.expenseCount || 0} records
+                </p>
+              </div>
+            </div>
+
+            {/* Bottom Line */}
+            <div className={`p-3 rounded-lg border flex items-center justify-between ${
+              (financials.netProfit || 0) >= 0 ? 'bg-emerald-50/50 border-emerald-100 text-emerald-900' : 'bg-rose-50/50 border-rose-100 text-rose-900'
+            }`}>
+              <div>
+                <span className="text-[10px] font-bold uppercase tracking-wider opacity-70">Net Bottom Line:</span>
+                <span className="text-xs font-bold hl-mono ml-2">
+                  {(financials.netProfit || 0) >= 0 ? '+' : '−'}KES {Math.abs(Number(financials.netProfit || 0)).toLocaleString()}
+                </span>
+              </div>
+              <span className={`text-[9px] font-black px-2 py-0.5 rounded uppercase tracking-wider ${
+                (financials.netProfit || 0) >= 0 ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'
+              }`}>
+                {(financials.netProfit || 0) >= 0 ? 'Profitable' : 'Deficit'}
+              </span>
+            </div>
+          </div>
+        ) : null}
       </div>
 
       <div className="space-y-3">

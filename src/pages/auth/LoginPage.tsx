@@ -359,7 +359,6 @@ export default function LoginPage() {
           padding: 60px; position: relative; z-index: 10;
         }
         .lp-title {
-          font-family: 'Cormorant Garamond', serif;
           font-size: clamp(48px, 4vw, 72px);
           line-height: 0.95; font-weight: 500; color: white; margin-bottom: 24px;
         }
@@ -505,7 +504,7 @@ export default function LoginPage() {
           <div className="lp-left hidden lg:flex">
             <div className="relative z-10 w-full">
               <div className="h-[2px] w-24 bg-white/50 mb-16" />
-              <h1 className="lp-title">
+              <h1 className="lp-title font-nunito">
                 The Smartest Way <br /> to Grow <br /> Your Biashara
               </h1>
               <p className="text-white font-light opacity-90 leading-relaxed max-w-sm drop-shadow-lg mb-10">

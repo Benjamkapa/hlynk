@@ -138,7 +138,7 @@ export default function ProviderLayout() {
       items: [
         { to: '/dashboard/logs', label: 'Audit Log', icon: ShieldCheck, permission: 'logs', plan: 'MAX' },
         { to: '/dashboard/subscription', label: 'Subscription', icon: CreditCard, role: 'PROVIDER' },
-        { to: '/dashboard/developer', label: 'M-Pesa', icon: Wallet, role: 'PROVIDER', plan: 'PLUS' },
+        { to: '/dashboard/developer', label: 'Payment Gateway', icon: Wallet, role: 'PROVIDER', plan: 'PLUS' },
       ],
     },
   ];

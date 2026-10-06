@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { AlertCircle, ChevronRight, HelpCircle, Mail, MessageCircle, Phone, Star } from 'lucide-react'
 import InlineLoader, { ButtonLoader } from '../../components/shared/InlineLoader'
@@ -6,10 +6,14 @@ import { toast } from 'sonner'
 import { platformApi } from '../../lib/api/platform'
 import { useAuth } from '../../lib/auth/AuthContext'
 import { getErrorMessage } from '../../lib/utils/error'
+import { useLocation } from 'react-router-dom'
 
 export default function SupportPage() {
   const { user } = useAuth()
   const queryClient = useQueryClient()
+  const location = useLocation()
+  const reviewRef = useRef<HTMLDivElement>(null)
+  const [reviewHighlight, setReviewHighlight] = useState(false)
   const [rating, setRating] = useState(5)
   const [comment, setComment] = useState('')
 
@@ -27,10 +31,20 @@ export default function SupportPage() {
 
   useEffect(() => {
     if (!myReview?.data) return
-
     setRating(myReview.data.rating)
     setComment(myReview.data.comment)
   }, [myReview])
+
+  // Auto-scroll + highlight when arriving from a review notification
+  useEffect(() => {
+    if (!location.state?.openReview) return
+    const timer = setTimeout(() => {
+      reviewRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      setReviewHighlight(true)
+      setTimeout(() => setReviewHighlight(false), 2000)
+    }, 300) // slight delay so page has rendered
+    return () => clearTimeout(timer)
+  }, [location.state])
 
   const submitReviewMutation = useMutation({
     mutationFn: platformApi.submitReview,
@@ -83,9 +97,16 @@ export default function SupportPage() {
         </div>
       </div>
 
-      {/* Review Section — shown to providers, completing review unlocks the form */}
+      {/* Review Section — shown to providers */}
       {user?.role === 'PROVIDER' && (
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+        <div
+          ref={reviewRef}
+          className={`bg-white rounded-2xl border shadow-sm overflow-hidden transition-all duration-500 ${
+            reviewHighlight
+              ? 'border-amber-400 ring-2 ring-amber-300 ring-offset-2'
+              : 'border-gray-100'
+          }`}
+        >
           <div className="p-6 bg-[#0D4A3E] text-white flex items-center gap-4">
             <div className="h-10 w-10 rounded-xl bg-white/10 flex items-center justify-center shrink-0">
               <Star size={20} className="text-amber-300 fill-amber-300" />
