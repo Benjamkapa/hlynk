@@ -112,7 +112,7 @@ export default function AuditSecurityPage() {
   const logsData = logsRes?.data
 
   const handleIncidentReport = () => {
-    window.location.href = 'mailto:security@hlynk.co.ke?subject=SECURITY INCIDENT: [Action Required]&body=Please describe the incident details here...'
+    window.location.href = 'mailto:info@hlynk.co.ke?subject=SECURITY INCIDENT: [Action Required]&body=Please describe the incident details here...'
     toast.success('Security incident report initiated')
   }
 
@@ -265,6 +265,35 @@ export default function AuditSecurityPage() {
           icon={UserX}
           color={(stats?.failedLoginsCount || 0) > 5 ? 'amber' : 'gray'}
         />
+      </div>
+
+      {/* Admin Perimeter & IP Whitelist Status Banner */}
+      <div className="bg-gradient-to-r from-slate-900 via-slate-900/95 to-slate-900 border border-slate-800 rounded-xl p-4 shadow-sm text-slate-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <div className="h-10 w-10 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 shrink-0">
+            <ShieldCheck size={20} />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="font-bold text-sm text-white">Admin Perimeter Defense</span>
+              <span className="px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider bg-emerald-500/15 text-emerald-400 border border-emerald-500/25">
+                IP Whitelist Enforced
+              </span>
+            </div>
+            <p className="text-xs text-slate-400 mt-0.5">
+              Only authorized requests from approved IP addresses can initiate or maintain administrator sessions.
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2.5 text-xs font-mono bg-slate-950/80 border border-slate-800 px-3.5 py-2 rounded-lg shrink-0">
+          <span className="text-slate-400">Current Client IP:</span>
+          <span className="text-emerald-400 font-bold">{healthData?.adminIpSecurity?.currentIP || '127.0.0.1'}</span>
+          <span className="text-slate-600">|</span>
+          <span className="text-emerald-500 font-semibold flex items-center gap-1">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block animate-pulse" />
+            Whitelisted
+          </span>
+        </div>
       </div>
 
       {/* Live Monospace Terminal Feed (Collapsible) */}

@@ -176,15 +176,31 @@ export const adminApi = {
     return api.post('/admin/backup/restore', formData, { onUploadProgress }).then(r => r.data)
   },
   downloadPlatformReport: async () => {
-    const res = await api.get('/admin/reports/export', { responseType: 'blob' })
-    const url = URL.createObjectURL(res.data)
-    const a = document.createElement('a')
-    const d = new Date()
-    const stamp = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`
-    a.href = url
-    a.download = `hlynk_report_${stamp}.xlsx`
-    a.click()
-    URL.revokeObjectURL(url)
+    try {
+      const res = await api.get('/admin/reports/export', { responseType: 'blob' })
+      const blob = new Blob([res.data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      const d = new Date()
+      const stamp = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`
+      a.href = url
+      a.download = `hlynk_report_${stamp}.xlsx`
+      document.body.appendChild(a)
+      a.click()
+      a.remove()
+      setTimeout(() => URL.revokeObjectURL(url), 1000)
+    } catch (err: any) {
+      if (err.response?.data instanceof Blob) {
+        const text = await err.response.data.text()
+        try {
+          const json = JSON.parse(text)
+          throw new Error(json.message || 'Failed to download report')
+        } catch (_) {
+          throw new Error(text || 'Failed to download report')
+        }
+      }
+      throw err
+    }
   }
 }
 

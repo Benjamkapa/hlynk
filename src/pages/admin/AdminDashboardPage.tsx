@@ -65,7 +65,7 @@ export default function AdminDashboardPage() {
   })) || []
 
   if (isLoading) return (
-    <div className="flex h-96 items-center justify-center">
+    <div className="flex h-96 items-center capitalize justify-center">
       <InlineLoader size="lg" message="Loading dashboard overview..." />
     </div>
   )
