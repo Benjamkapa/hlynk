@@ -42,4 +42,6 @@ export const platformApi = {
     api.patch(`/platform/notifications/all/read`).then((r) => r.data),
   deleteAllNotifications: () =>
     api.delete('/platform/notifications').then((r) => r.data),
+  deleteNotification: (id: string) =>
+    api.delete(`/platform/notifications/${id}`).then((r) => r.data),
 }
