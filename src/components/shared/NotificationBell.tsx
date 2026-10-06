@@ -91,8 +91,16 @@ function getNavTarget(n: Notification): { path: string; state?: any; label?: str
 
   // Review prompt -> open Review Pop-up Modal directly
   if (isReviewNotification(n)) {
-    const alreadyReviewed = typeof window !== 'undefined' && localStorage.getItem('hlynk_provider_reviewed') === 'true';
-    return { path: '#review-modal', label: alreadyReviewed ? '✓ Reviewed' : '⭐ Rate Now' };
+    return { path: '#review-modal', label: '⭐ Rate Now' };
+  }
+
+  // Security / Admin Session alert -> Open User Operations (Live Sessions)
+  if (
+    n.type === 'security' ||
+    n.title?.toLowerCase().includes('session') ||
+    n.message?.toLowerCase().includes('session')
+  ) {
+    return { path: '/admin/user-operations', label: '→ View Live Sessions' };
   }
 
   return null;
@@ -110,11 +118,12 @@ export default function NotificationBell() {
 
   // Review modal state
   const [reviewModalOpen, setReviewModalOpen] = useState(false);
-  const [rating, setRating]                   = useState(0);
+  const [rating, setRating]                   = useState(5);
   const [hoverRating, setHoverRating]         = useState(0);
   const [comment, setComment]                 = useState('');
   const [submittingReview, setSubmittingReview] = useState(false);
   const [activeReviewNotifId, setActiveReviewNotifId] = useState<string | null>(null);
+  const [existingReview, setExistingReview]   = useState<{ rating: number; comment?: string } | null>(null);
 
   const unread = notifications.filter(n => !n.isRead).length;
 
@@ -132,11 +141,15 @@ export default function NotificationBell() {
     return () => clearInterval(interval);
   }, [fetchNotifications]);
 
-  // Check if provider has already reviewed in DB on mount
+  // Load existing review so modal pre-populates previous rating/feedback if available
   useEffect(() => {
+    try {
+      localStorage.removeItem('hlynk_provider_reviewed');
+    } catch (_) {}
+
     platformApi.getMyReview().then((res) => {
       if (res?.success && res.data) {
-        localStorage.setItem('hlynk_provider_reviewed', 'true');
+        setExistingReview({ rating: res.data.rating, comment: res.data.comment });
       }
     }).catch(() => {});
   }, []);
@@ -182,7 +195,7 @@ export default function NotificationBell() {
   };
 
   const handleClick = async (n: Notification) => {
-    // If it's a review notification, handle modal & "only once and never again"
+    // If it's a review notification, open the review pop-up modal
     if (isReviewNotification(n)) {
       // Mark as read in background
       if (!n.isRead) {
@@ -190,19 +203,10 @@ export default function NotificationBell() {
         setNotes(prev => prev.map(x => x.id === n.id ? { ...x, isRead: true } : x));
       }
 
-      // Check if user already reviewed - only once and never again!
-      const alreadyReviewed = localStorage.getItem('hlynk_provider_reviewed') === 'true';
-      if (alreadyReviewed) {
-        toast.info('You have already submitted a review. Thank you for your feedback! ⭐');
-        setNotes(prev => prev.filter(x => x.id !== n.id));
-        setOpen(false);
-        return;
-      }
-
-      // Trigger pop-up modal
+      // Pre-fill existing rating if available, or default to 5 stars
       setActiveReviewNotifId(n.id);
-      setRating(0);
-      setComment('');
+      setRating(existingReview?.rating || 5);
+      setComment(existingReview?.comment || '');
       setReviewModalOpen(true);
       setOpen(false);
       return;
@@ -235,19 +239,16 @@ export default function NotificationBell() {
         comment: comment.trim(),
       });
 
-      // Persist that the review has been submitted — only once and never again!
-      localStorage.setItem('hlynk_provider_reviewed', 'true');
+      setExistingReview({ rating, comment: comment.trim() });
 
-      // Dismiss the review notification from local state and mark read in backend
+      // Dismiss all review prompt notifications from local state so duplicate prompts disappear
+      setNotes(prev => prev.filter(x => !isReviewNotification(x)));
       if (activeReviewNotifId) {
-        setNotes(prev => prev.filter(x => x.id !== activeReviewNotifId));
         await platformApi.markAsRead(activeReviewNotifId).catch(() => {});
       }
 
       toast.success('Thank you for sharing your experience! ⭐');
       setReviewModalOpen(false);
-      setRating(0);
-      setComment('');
     } catch (err: any) {
       toast.error(err.response?.data?.message || 'Failed to submit review');
     } finally {
