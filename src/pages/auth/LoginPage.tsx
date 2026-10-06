@@ -231,6 +231,18 @@ export default function LoginPage() {
 
   const [isOffline, setIsOffline] = useState(() => typeof navigator !== 'undefined' && !navigator.onLine)
 
+  // Show a security warning if the session was displaced by another admin login
+  useEffect(() => {
+    const warning = sessionStorage.getItem('auth_warning')
+    if (warning === 'SESSION_DISPLACED') {
+      sessionStorage.removeItem('auth_warning')
+      toast.error(
+        '🚨 Security Alert: Your admin session was terminated by a new login. If this was NOT you, your Google account may be compromised — change your password immediately and log in here to regain access.',
+        { duration: 20000, id: 'session-displaced' }
+      )
+    }
+  }, [])
+
   useEffect(() => {
     const handleOnline = () => setIsOffline(false)
     const handleOffline = () => setIsOffline(true)

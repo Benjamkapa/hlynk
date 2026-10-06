@@ -47,6 +47,19 @@ api.interceptors.response.use(
           console.log('[API Client] Offline or network error during refresh. Retaining session.')
           return Promise.reject(error)
         }
+
+        // Detect admin session displacement — someone else logged in with admin credentials
+        const errCode = err.response?.data?.code
+        if (errCode === 'SESSION_DISPLACED') {
+          storage.removeItem('accessToken')
+          storage.removeItem('user_profile')
+          queryClient.clear()
+          // Use sessionStorage to pass the warning message to the login page
+          sessionStorage.setItem('auth_warning', 'SESSION_DISPLACED')
+          window.location.href = '/login'
+          return Promise.reject(err)
+        }
+
         storage.removeItem('accessToken')
         storage.removeItem('user_profile')
         queryClient.clear()
