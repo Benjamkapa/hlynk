@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { adminApi } from '../../lib/api/providers'
 import { toast } from 'sonner'
 import { 
@@ -15,6 +15,7 @@ import { formatDate } from '../../lib/utils/date'
 import Pagination from '../../components/shared/Pagination'
 
 export default function AuditSecurityPage() {
+  const queryClient = useQueryClient()
   const [logPage, setLogPage] = useState(1)
   const [logLimit, setLogLimit] = useState(25)
   const [search, setSearch] = useState('')
@@ -76,12 +77,16 @@ export default function AuditSecurityPage() {
       return
     }
     setIsRestoring(true)
-    const toastId = toast.loading('Restoring database globally...')
+    const toastId = toast.loading('Restoring and overriding database globally...')
     try {
-      await adminApi.restoreDatabaseBackup(restoreFile, restorePassphrase)
-      toast.success('System database restored successfully! Please refresh.', { id: toastId })
+      const res: any = await adminApi.restoreDatabaseBackup(restoreFile, restorePassphrase)
+      toast.success(res?.message || 'Database content overridden successfully! Refreshing system...', { id: toastId })
       setRestoreFile(null)
       setRestorePassphrase('')
+      queryClient.clear()
+      setTimeout(() => {
+        window.location.reload()
+      }, 1200)
     } catch (err: any) {
       toast.error('Failed to restore database: ' + (err.response?.data?.message || err.message || 'Unknown error'), { id: toastId })
     } finally {
