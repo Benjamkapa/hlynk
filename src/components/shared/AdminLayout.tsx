@@ -1,5 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import { NavLink, Outlet, useNavigate, Link, useLocation } from 'react-router-dom';
+import React, { useState, useEffect } from "react";
+import {
+  NavLink,
+  Outlet,
+  useNavigate,
+  Link,
+  useLocation,
+} from "react-router-dom";
 import {
   LayoutDashboard,
   Activity,
@@ -21,11 +27,11 @@ import {
   MoreHorizontal,
   X,
   Home,
-} from 'lucide-react';
+} from "lucide-react";
 
-import { motion, AnimatePresence } from 'framer-motion';
-import { useAuth } from '../../lib/auth/AuthContext';
-import TopNav from './TopNav';
+import { motion, AnimatePresence } from "framer-motion";
+import { useAuth } from "../../lib/auth/AuthContext";
+import TopNav from "./TopNav";
 
 interface AdminNavItem {
   to: string;
@@ -35,19 +41,19 @@ interface AdminNavItem {
 }
 
 const adminNavItems: AdminNavItem[] = [
-  { to: '/admin', label: 'Overview', icon: LayoutDashboard, end: true },
-  { to: '/admin/system-performance', label: 'Performance', icon: Activity },
-  { to: '/admin/financials', label: 'Financials', icon: DollarSign },
-  { to: '/admin/businesses', label: 'Providers', icon: Building2 },
-  { to: '/admin/user-operations', label: 'Users', icon: Users },
-  { to: '/admin/subscriptions', label: 'Subscriptions', icon: CreditCard },
-  { to: '/admin/payments', label: 'Payments', icon: Receipt },
-  { to: '/admin/forensic-audit', label: 'Audit & Security', icon: ShieldCheck },
-  { to: '/admin/community-reviews', label: 'Reviews', icon: Star },
-  { to: '/admin/reports', label: 'Reports', icon: BarChart3 },
-  { to: '/admin/notifications', label: 'Notifications', icon: Bell },
-  { to: '/admin/settings', label: 'System Settings', icon: Settings },
-  { to: '/admin/help', label: 'Admin Help', icon: HelpCircle },
+  { to: "/admin", label: "Overview", icon: LayoutDashboard, end: true },
+  { to: "/admin/system-performance", label: "Performance", icon: Activity },
+  { to: "/admin/financials", label: "Financials", icon: DollarSign },
+  { to: "/admin/businesses", label: "Providers", icon: Building2 },
+  { to: "/admin/user-operations", label: "Users", icon: Users },
+  { to: "/admin/subscriptions", label: "Subscriptions", icon: CreditCard },
+  { to: "/admin/payments", label: "Payments", icon: Receipt },
+  { to: "/admin/forensic-audit", label: "Audit & Security", icon: ShieldCheck },
+  { to: "/admin/community-reviews", label: "Reviews", icon: Star },
+  { to: "/admin/reports", label: "Reports", icon: BarChart3 },
+  { to: "/admin/notifications", label: "Notifications", icon: Bell },
+  { to: "/admin/settings", label: "System Settings", icon: Settings },
+  { to: "/admin/help", label: "Admin Help", icon: HelpCircle },
 ];
 
 export default function AdminLayout() {
@@ -62,9 +68,11 @@ export default function AdminLayout() {
   }, [location.pathname]);
 
   const handleLogout = async () => {
-    if (window.confirm('Are you sure you want to log out of the Admin portal?')) {
+    if (
+      window.confirm("Are you sure you want to log out of the Admin portal?")
+    ) {
       await logout({ force: true });
-      navigate('/login');
+      navigate("/login");
     }
   };
 
@@ -81,34 +89,38 @@ export default function AdminLayout() {
       {/* Sidebar */}
       <aside
         className={`fixed lg:static inset-y-0 left-0 z-50 flex flex-col bg-white border-r border-slate-200/80 shadow-sm transition-all duration-300 ease-in-out ${
-          isCollapsed ? 'w-20' : 'w-64'
-        } ${mobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}
+          isCollapsed ? "w-20" : "w-64"
+        } ${mobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}`}
       >
         {/* Header / Brand */}
         <div className="h-16 lg:h-20 flex items-center justify-between px-4 border-b border-slate-100 flex-shrink-0 pt-[max(1.5rem,calc(env(safe-area-inset-top,0px)+0.75rem))] lg:pt-0 min-h-[calc(4.5rem+env(safe-area-inset-top,0px))] lg:min-h-[5rem]">
           <div className="flex items-center gap-3 overflow-hidden">
-            <div className="w-10 h-10 rounded-xl bg-emerald-700 flex items-center justify-center text-white font-black shadow-md flex-shrink-0">
-              <Shield size={22} />
+            <div className="">
+              <img
+                src="/public/hlynk.png"
+                className="h-[40px]"
+                alt="hlynk Logo"
+              />
             </div>
             {!isCollapsed && (
               <div className="flex flex-col min-w-0">
-                <span className="text-sm font-extrabold text-slate-900 tracking-wider uppercase leading-none">
-                  Hlynk Admin
+                <span className="text-sm font-extrabold text-slate-900 tracking-wider leading-none">
+                  hlynk Inc.
                 </span>
-                <span className="text-[10px] font-semibold text-emerald-700 uppercase tracking-widest mt-1">
+                <span className="text-[10px] font-semibold text-emerald-700 tracking-widest mt-1">
                   Super Admin
                 </span>
               </div>
             )}
           </div>
 
-          <button
+          {/* <button
             onClick={() => setIsCollapsed(v => !v)}
             className="hidden lg:flex p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
             title={isCollapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
           >
             {isCollapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
-          </button>
+          </button> */}
         </div>
 
         {/* Navigation Items */}
@@ -124,9 +136,9 @@ export default function AdminLayout() {
                 className={({ isActive }) =>
                   `flex items-center gap-3 px-3 py-2.5 rounded-xl font-semibold text-xs transition-all ${
                     isActive
-                      ? 'bg-emerald-50 text-[#00694B] font-bold border border-emerald-100/60 shadow-sm'
-                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
-                  } ${isCollapsed ? 'justify-center' : ''}`
+                      ? "bg-emerald-50 text-[#00694B] font-bold border border-emerald-100/60 shadow-sm"
+                      : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
+                  } ${isCollapsed ? "justify-center" : ""}`
                 }
                 title={isCollapsed ? item.label : undefined}
               >
@@ -142,8 +154,12 @@ export default function AdminLayout() {
           {!isCollapsed && (
             <div className="mb-3 px-2 flex items-center justify-between">
               <div className="min-w-0">
-                <p className="text-xs font-bold text-slate-900 truncate">{user?.name || 'Administrator'}</p>
-                <p className="text-[10px] text-slate-500 truncate">{user?.email}</p>
+                <p className="text-xs font-bold text-slate-900 truncate">
+                  {user?.name || "Administrator"}
+                </p>
+                <p className="text-[10px] text-slate-500 truncate">
+                  {user?.email}
+                </p>
               </div>
               <Link
                 to="/dashboard"
@@ -157,7 +173,7 @@ export default function AdminLayout() {
           <button
             onClick={handleLogout}
             className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold text-red-600 bg-red-50 hover:bg-red-100 border border-red-100/60 transition-colors ${
-              isCollapsed ? 'justify-center' : ''
+              isCollapsed ? "justify-center" : ""
             }`}
             title="Log Out"
           >
@@ -171,7 +187,7 @@ export default function AdminLayout() {
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden bg-slate-50/50">
         <TopNav
           isCollapsed={isCollapsed}
-          onToggleCollapse={() => setIsCollapsed(v => !v)}
+          onToggleCollapse={() => setIsCollapsed((v) => !v)}
         />
 
         <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 bg-slate-50/30 text-slate-900 pb-28 lg:pb-8 max-w-full overflow-x-hidden">
@@ -180,13 +196,22 @@ export default function AdminLayout() {
       </div>
 
       {/* Mobile Bottom Navigation for Admin Portal */}
-      <AdminMobileBottomNav onOpenDrawer={() => setMobileOpen(true)} onLogout={handleLogout} />
+      <AdminMobileBottomNav
+        onOpenDrawer={() => setMobileOpen(true)}
+        onLogout={handleLogout}
+      />
     </div>
   );
 }
 
 // ─── Admin Mobile Bottom Navigation Bar ───────────────────────────────────────
-function AdminMobileBottomNav({ onOpenDrawer, onLogout }: { onOpenDrawer: () => void; onLogout: () => void }) {
+function AdminMobileBottomNav({
+  onOpenDrawer,
+  onLogout,
+}: {
+  onOpenDrawer: () => void;
+  onLogout: () => void;
+}) {
   const [showMoreSheet, setShowMoreSheet] = useState(false);
   const location = useLocation();
 
@@ -196,20 +221,35 @@ function AdminMobileBottomNav({ onOpenDrawer, onLogout }: { onOpenDrawer: () => 
 
   // Primary tabs (Overview will be injected at the center manually)
   const leftTabs = [
-    { to: '/admin/system-performance', label: 'Performance', icon: Activity, end: false },
-    { to: '/admin/businesses', label: 'Providers', icon: Building2, end: false },
+    {
+      to: "/admin/system-performance",
+      label: "Performance",
+      icon: Activity,
+      end: false,
+    },
+    {
+      to: "/admin/businesses",
+      label: "Providers",
+      icon: Building2,
+      end: false,
+    },
   ];
-  
+
   const rightTab = [
-    { to: '/admin/financials', label: 'Financials', icon: DollarSign, end: false },
+    {
+      to: "/admin/financials",
+      label: "Financials",
+      icon: DollarSign,
+      end: false,
+    },
   ];
 
   // Overflow items shown in "More Options" bottom sheet
   const overflowTabs = adminNavItems.filter(
-    item => 
-      item.to !== '/admin' && 
-      !leftTabs.some(p => p.to === item.to) && 
-      !rightTab.some(p => p.to === item.to)
+    (item) =>
+      item.to !== "/admin" &&
+      !leftTabs.some((p) => p.to === item.to) &&
+      !rightTab.some((p) => p.to === item.to),
   );
 
   return (
@@ -241,7 +281,9 @@ function AdminMobileBottomNav({ onOpenDrawer, onLogout }: { onOpenDrawer: () => 
             className="fixed inset-x-0 bottom-0 z-[94] pointer-events-auto max-h-[90vh] flex flex-col"
             drag="y"
             dragConstraints={{ top: 0, bottom: 0 }}
-            onDragEnd={(e, info) => { if (info.offset.y > 120) setShowMoreSheet(false); }}
+            onDragEnd={(e, info) => {
+              if (info.offset.y > 120) setShowMoreSheet(false);
+            }}
           >
             <div className="bg-white rounded-t-[3rem] flex flex-col overflow-hidden shadow-[0_-4px_24px_rgba(0,0,0,0.1)]">
               {/* Drag handle */}
@@ -267,13 +309,18 @@ function AdminMobileBottomNav({ onOpenDrawer, onLogout }: { onOpenDrawer: () => 
                     className={({ isActive }) =>
                       `flex items-center gap-3 px-3.5 py-3 rounded-xl transition-all no-tap-highlight ${
                         isActive
-                          ? 'bg-emerald-50 text-emerald-800 border border-emerald-100'
-                          : 'bg-slate-50 text-slate-700 hover:bg-emerald-50 hover:text-emerald-800'
+                          ? "bg-emerald-50 text-emerald-800 border border-emerald-100"
+                          : "bg-slate-50 text-slate-700 hover:bg-emerald-50 hover:text-emerald-800"
                       }`
                     }
                   >
-                    <item.icon className="w-[18px] h-[18px] text-emerald-700 flex-shrink-0" strokeWidth={2} />
-                    <span className="text-[11px] leading-tight truncate">{item.label}</span>
+                    <item.icon
+                      className="w-[18px] h-[18px] text-emerald-700 flex-shrink-0"
+                      strokeWidth={2}
+                    />
+                    <span className="text-[11px] leading-tight truncate">
+                      {item.label}
+                    </span>
                   </NavLink>
                 ))}
               </div>
@@ -313,10 +360,17 @@ function AdminMobileBottomNav({ onOpenDrawer, onLogout }: { onOpenDrawer: () => 
             >
               {({ isActive }) => (
                 <>
-                  <div className={`w-9 h-9 rounded-full flex items-center justify-center transition-all duration-200 ${isActive ? 'bg-emerald-100/80 text-[#00694B]' : 'bg-transparent text-slate-500'}`}>
-                    <tab.icon className="w-[19px] h-[19px]" strokeWidth={isActive ? 2.5 : 2} />
+                  <div
+                    className={`w-9 h-9 rounded-full flex items-center justify-center transition-all duration-200 ${isActive ? "bg-emerald-100/80 text-[#00694B]" : "bg-transparent text-slate-500"}`}
+                  >
+                    <tab.icon
+                      className="w-[19px] h-[19px]"
+                      strokeWidth={isActive ? 2.5 : 2}
+                    />
                   </div>
-                  <span className={`text-[10px] transition-all truncate w-full text-center ${isActive ? 'text-[#00694B]' : 'text-slate-500'}`}>
+                  <span
+                    className={`text-[10px] transition-all truncate w-full text-center ${isActive ? "text-[#00694B]" : "text-slate-500"}`}
+                  >
                     {tab.label}
                   </span>
                 </>
@@ -332,10 +386,14 @@ function AdminMobileBottomNav({ onOpenDrawer, onLogout }: { onOpenDrawer: () => 
           >
             {({ isActive }) => (
               <>
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 active:scale-95 ${isActive ? 'bg-emerald-500 shadow-lg shadow-emerald-500/30 text-white' : 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100/80'}`}>
+                <div
+                  className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 active:scale-95 ${isActive ? "bg-emerald-500 shadow-lg shadow-emerald-500/30 text-white" : "bg-emerald-50 text-emerald-600 hover:bg-emerald-100/80"}`}
+                >
                   <Home className="" strokeWidth={2.5} />
                 </div>
-                <span className={`text-[10px] mt-0.5 transition-all truncate w-full text-center ${isActive ? 'text-[#0D4A3E]' : 'text-slate-400'}`}>
+                <span
+                  className={`text-[10px] mt-0.5 transition-all truncate w-full text-center ${isActive ? "text-[#0D4A3E]" : "text-slate-400"}`}
+                >
                   Overview
                 </span>
               </>
@@ -351,10 +409,17 @@ function AdminMobileBottomNav({ onOpenDrawer, onLogout }: { onOpenDrawer: () => 
             >
               {({ isActive }) => (
                 <>
-                  <div className={`w-9 h-9 rounded-full flex items-center justify-center transition-all duration-200 ${isActive ? 'bg-emerald-100/80 text-[#00694B]' : 'bg-transparent text-slate-500'}`}>
-                    <tab.icon className="w-[19px] h-[19px]" strokeWidth={isActive ? 2.5 : 2} />
+                  <div
+                    className={`w-9 h-9 rounded-full flex items-center justify-center transition-all duration-200 ${isActive ? "bg-emerald-100/80 text-[#00694B]" : "bg-transparent text-slate-500"}`}
+                  >
+                    <tab.icon
+                      className="w-[19px] h-[19px]"
+                      strokeWidth={isActive ? 2.5 : 2}
+                    />
                   </div>
-                  <span className={`text-[10px] transition-all truncate w-full text-center ${isActive ? 'text-[#00694B]' : 'text-slate-500'}`}>
+                  <span
+                    className={`text-[10px] transition-all truncate w-full text-center ${isActive ? "text-[#00694B]" : "text-slate-500"}`}
+                  >
                     {tab.label}
                   </span>
                 </>
@@ -364,13 +429,20 @@ function AdminMobileBottomNav({ onOpenDrawer, onLogout }: { onOpenDrawer: () => 
 
           {/* More Options Tab */}
           <button
-            onClick={() => setShowMoreSheet(v => !v)}
+            onClick={() => setShowMoreSheet((v) => !v)}
             className="flex-1 min-w-0 flex flex-col items-center gap-0.5 py-1 no-tap-highlight"
           >
-            <div className={`w-9 h-9 rounded-full flex items-center justify-center transition-all duration-200 ${showMoreSheet ? 'bg-emerald-100/80 text-[#00694B]' : 'bg-transparent text-slate-500'}`}>
-              <MoreHorizontal className="w-[19px] h-[19px]" strokeWidth={showMoreSheet ? 2.5 : 2} />
+            <div
+              className={`w-9 h-9 rounded-full flex items-center justify-center transition-all duration-200 ${showMoreSheet ? "bg-emerald-100/80 text-[#00694B]" : "bg-transparent text-slate-500"}`}
+            >
+              <MoreHorizontal
+                className="w-[19px] h-[19px]"
+                strokeWidth={showMoreSheet ? 2.5 : 2}
+              />
             </div>
-            <span className={`text-[10px] transition-all truncate w-full text-center ${showMoreSheet ? 'text-[#00694B]' : 'text-slate-500'}`}>
+            <span
+              className={`text-[10px] transition-all truncate w-full text-center ${showMoreSheet ? "text-[#00694B]" : "text-slate-500"}`}
+            >
               More
             </span>
           </button>
@@ -379,4 +451,3 @@ function AdminMobileBottomNav({ onOpenDrawer, onLogout }: { onOpenDrawer: () => 
     </div>
   );
 }
-

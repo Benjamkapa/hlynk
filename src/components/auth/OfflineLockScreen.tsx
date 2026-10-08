@@ -61,7 +61,7 @@ export default function OfflineLockScreen() {
 
     const newAttempts = wrongAttempts + 1
     setWrongAttempts(newAttempts)
-    if (newAttempts >= 3) setShowForceLogout(true)
+    if (newAttempts >= 1) setShowForceLogout(true)
   }
 
   const handleForceLogout = async () => {
