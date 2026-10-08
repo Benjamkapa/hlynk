@@ -48,12 +48,13 @@ export function canAccessFeature(user: any, feature: Feature): boolean {
   const planRaw = user?.subscription?.planName || 'LITE';
   const plan = planRaw.toUpperCase();
 
-  // Trial is only valid if status=2/TRIAL *and* trialEndDate has not passed
+  // If the backend says status=2/TRIAL, it IS a trial — trust it.
+  // The backend daemon is responsible for flipping the status when the trial ends.
+  // We do NOT re-calculate expiry from trialEndDate here because it can be null for
+  // older accounts, which would incorrectly gate features for active trial users.
   const statusNum = Number(user?.subscription?.status);
   const statusStr = String(user?.subscription?.status || '');
-  const trialEndDate = user?.subscription?.trialEndDate;
-  const trialExpired = trialEndDate ? new Date(trialEndDate) < new Date() : true;
-  const isTrial = (statusNum === 2 || statusStr === 'TRIAL') && !trialExpired;
+  const isTrial = statusNum === 2 || statusStr === 'TRIAL';
 
   const featurePlans = FEATURE_PLANS[feature];
   if (!featurePlans) return true;
@@ -67,8 +68,7 @@ export function canAccessFeature(user: any, feature: Feature): boolean {
   const userWeight = getPlanWeight(plan);
   const requiredWeight = Math.min(...featurePlans.map(getPlanWeight));
 
-  // For MAX-only features (stay_page, store_page, etc), trial gets access;
-  // for PLUS+ features, both trial and PLUS+ plans get access
+  // Trial users get access to everything — restrictions only apply on paid plans
   return isTrial || userWeight >= requiredWeight;
 }
 
