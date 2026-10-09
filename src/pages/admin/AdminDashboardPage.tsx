@@ -80,7 +80,7 @@ export default function AdminDashboardPage() {
           <p className="text-gray-400 text-sm mt-0.5">Operational intelligence for hlynk platform</p>
         </div>
         <div className="flex flex-wrap items-center gap-3">
-          <button
+          {/* <button
             onClick={handleExportDossier}
             disabled={isExporting}
             className="flex items-center gap-2 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white rounded-lg text-xs font-bold transition-all shadow-sm shadow-emerald-900/10 cursor-pointer"
@@ -88,7 +88,7 @@ export default function AdminDashboardPage() {
           >
             {isExporting ? <ButtonLoader size="sm" /> : <FileSpreadsheet size={15} />}
             <span>{isExporting ? 'Exporting...' : 'Export Dossier (.xlsx)'}</span>
-          </button>
+          </button> */}
           <div className="flex items-center gap-4 bg-white p-2 rounded-lg border border-slate-100 shadow-sm">
             <div className="flex -space-x-3 pr-2">
               {stats?.overview?.activeAvatars?.length > 0 ? (

@@ -13,6 +13,8 @@ import AdminLayout from './components/shared/AdminLayout'
 import SubscriptionGuard from './components/shared/SubscriptionGuard'
 import OfflineBanner from './components/shared/OfflineBanner'
 import ReloadPrompt from './components/shared/ReloadPrompt'
+import { toast } from 'sonner'
+import { initAudioUnlock, playNotificationSound } from './lib/notifications/sound'
 
 // Public
 const LandingPage = lazy(() => import('./pages/LandingPage'))
@@ -103,6 +105,32 @@ function RootRedirect() {
 
 export default function App() {
   const { isLocked } = useAuth()
+
+  // Initialize universal notification sound engine & listen for incoming push events
+  useEffect(() => {
+    initAudioUnlock()
+
+    if (typeof window === 'undefined' || !('serviceWorker' in navigator)) return
+
+    const handlePushEvent = (event: MessageEvent) => {
+      if (event.data?.type === 'PUSH_NOTIFICATION') {
+        const payload = event.data?.payload
+        // Play universal loud.wav tone
+        playNotificationSound()
+
+        // Show rich in-app toast if payload has title
+        if (payload?.title) {
+          toast(payload.title, {
+            description: payload.body,
+            duration: 6000,
+          })
+        }
+      }
+    }
+
+    navigator.serviceWorker.addEventListener('message', handlePushEvent)
+    return () => navigator.serviceWorker.removeEventListener('message', handlePushEvent)
+  }, [])
 
   return (
     <Suspense fallback={<LoadingScreen />}>

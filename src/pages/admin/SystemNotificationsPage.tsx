@@ -22,6 +22,7 @@ import { toast } from 'sonner'
 import { adminApi } from '../../lib/api/providers'
 import { api } from '../../lib/api/client'
 import { subscribeToPushNotifications, getPushSubscriptionState } from '../../lib/notifications/pushService'
+import { testNotificationSound } from '../../lib/notifications/sound'
 import InlineLoader, { ButtonLoader } from '../../components/shared/InlineLoader'
 
 type NotificationType = 'success' | 'warning' | 'danger' | string
@@ -149,7 +150,9 @@ export default function SystemNotificationsPage() {
   const [testSending, setTestSending] = useState(false)
 
   useEffect(() => {
-    getPushSubscriptionState().then((s) => setPushState(s as any))
+    getPushSubscriptionState()
+      .then((s) => setPushState(s as any))
+      .catch(() => setPushState('prompt'))
   }, [])
 
   const handleEnablePush = async () => {
@@ -169,12 +172,22 @@ export default function SystemNotificationsPage() {
   const handleSendTestPush = async () => {
     setTestSending(true)
     try {
+      testNotificationSound()
       await api.post('/notifications/test')
-      toast.success('Test notification sent!')
+      toast.success('Test notification sent with alert tone!')
     } catch (err: any) {
       toast.error(err.response?.data?.message || 'Failed to send test')
     } finally {
       setTestSending(false)
+    }
+  }
+
+  const handleTestTone = async () => {
+    try {
+      await testNotificationSound()
+      toast.success('Playing universal notification tone')
+    } catch (_) {
+      toast.error('Unable to play tone')
     }
   }
 
@@ -251,20 +264,27 @@ export default function SystemNotificationsPage() {
               </div>
 
               <div className="flex items-center gap-2 shrink-0">
+                <button
+                  type="button"
+                  onClick={handleTestTone}
+                  className="px-2.5 py-1 text-[11px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg hover:bg-emerald-100 transition-all flex items-center gap-1.5 shadow-xs cursor-pointer active:scale-95"
+                >
+                  ▶ Test Tone
+                </button>
                 {pushState === 'subscribed' ? (
                   <button
                     onClick={handleSendTestPush}
                     disabled={testSending}
-                    className="px-2.5 py-1 text-[11px] font-bold text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-all flex items-center gap-1.5 disabled:opacity-50 shadow-xs"
+                    className="px-2.5 py-1 text-[11px] font-bold text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-all flex items-center gap-1.5 disabled:opacity-50 shadow-xs cursor-pointer"
                   >
                     {testSending ? <ButtonLoader size={12} /> : <Bell size={12} />}
-                    Test Alert
+                    Test Push Alert
                   </button>
                 ) : (
                   <button
                     onClick={handleEnablePush}
                     disabled={pushLoading || pushState === 'unsupported'}
-                    className="px-3 py-1.5 text-[11px] font-bold text-white bg-slate-900 hover:bg-black rounded-lg transition-all flex items-center gap-1.5 disabled:opacity-50 shadow-sm"
+                    className="px-3 py-1.5 text-[11px] font-bold text-white bg-slate-900 hover:bg-black rounded-lg transition-all flex items-center gap-1.5 disabled:opacity-50 shadow-sm cursor-pointer"
                   >
                     {pushLoading ? <ButtonLoader size={12} /> : <Bell size={12} />}
                     Enable Push Alerts

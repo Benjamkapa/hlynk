@@ -8,6 +8,7 @@ import { useNavigate } from 'react-router-dom';
 import { platformApi } from '../../lib/api/platform';
 import { toast } from 'sonner';
 import { setAppBadge, clearAppBadge } from '../../lib/notifications/badge';
+import { playNotificationSound } from '../../lib/notifications/sound';
 
 interface Notification {
   id: string;
@@ -247,10 +248,31 @@ export default function NotificationBell() {
 
   const unread = notifications.filter(n => !n.isRead).length;
 
-  const fetchNotifications = useCallback(async () => {
+  const initialFetchDone = useRef(false);
+  const knownNotificationIds = useRef<Set<string>>(new Set());
+
+  const fetchNotifications = useCallback(async (opts?: { isPushTrigger?: boolean }) => {
     try {
       const res = await platformApi.getNotifications();
-      if (res.success) setNotes(res.data || []);
+      if (res.success && Array.isArray(res.data)) {
+        const items: Notification[] = res.data;
+
+        // Detect newly arrived unread notifications while the user is using the app
+        if (initialFetchDone.current) {
+          const hasNewUnread = items.some(
+            (item) => !item.isRead && !knownNotificationIds.current.has(item.id)
+          );
+          if (hasNewUnread || opts?.isPushTrigger) {
+            playNotificationSound();
+          }
+        } else {
+          initialFetchDone.current = true;
+        }
+
+        // Keep known IDs updated
+        items.forEach((item) => knownNotificationIds.current.add(item.id));
+        setNotes(items);
+      }
     } catch (_) {}
   }, []);
 
@@ -280,7 +302,10 @@ export default function NotificationBell() {
   useEffect(() => {
     if (!('serviceWorker' in navigator)) return;
     const handleMessage = (event: MessageEvent) => {
-      if (event.data?.type === 'PUSH_NOTIFICATION') fetchNotifications();
+      if (event.data?.type === 'PUSH_NOTIFICATION') {
+        playNotificationSound();
+        fetchNotifications({ isPushTrigger: true });
+      }
     };
     navigator.serviceWorker.addEventListener('message', handleMessage);
     return () => navigator.serviceWorker.removeEventListener('message', handleMessage);

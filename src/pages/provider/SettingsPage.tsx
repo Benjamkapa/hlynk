@@ -16,6 +16,7 @@ import { hasOfflinePin, clearOfflinePin } from '../../lib/offline/offlinePin'
 import PinSetupModal from '../../components/auth/PinSetupModal'
 import { AnimatePresence } from 'framer-motion'
 import { subscribeToPushNotifications, unsubscribeFromPush, getPushSubscriptionState } from '../../lib/notifications/pushService'
+import { isNotificationSoundEnabled, setNotificationSoundEnabled, testNotificationSound } from '../../lib/notifications/sound'
 
 const EtimsIcon = ({ className, size = 18 }: { className?: string, size?: number }) => (
   <img src="https://etims.kra.go.ke/assets/images/logo.jpg" alt="eTIMS" style={{ width: size, height: size }} className={`${className || ''} object-contain mix-blend-darken shrink-0`} />
@@ -784,9 +785,13 @@ export default function SettingsPage() {
 function NotificationsPanel({ settings = {}, onUpdate }: any) {
   const [pushState, setPushState] = useState<'subscribed' | 'denied' | 'prompt' | 'unsupported' | 'ios_browser'>('prompt');
   const [loading, setLoading] = useState(false);
+  const [soundEnabled, setSoundEnabled] = useState(isNotificationSoundEnabled());
+  const [testingSound, setTestingSound] = useState(false);
 
   useEffect(() => {
-    getPushSubscriptionState().then(setPushState as any);
+    getPushSubscriptionState()
+      .then(setPushState as any)
+      .catch(() => setPushState('prompt'));
   }, []);
 
   const handlePushToggle = async (active: boolean) => {
@@ -808,19 +813,43 @@ function NotificationsPanel({ settings = {}, onUpdate }: any) {
     }
   };
 
+  const handleSoundToggle = (active: boolean) => {
+    setSoundEnabled(active);
+    setNotificationSoundEnabled(active);
+    if (active) {
+      testNotificationSound();
+      toast.success('Notification tone enabled (loud.wav)');
+    } else {
+      toast.info('Notification tone muted');
+    }
+  };
+
+  const handleTestSound = async () => {
+    setTestingSound(true);
+    try {
+      await testNotificationSound();
+      toast.success('Playing universal notification sound (loud.wav)');
+    } catch (_) {
+      toast.error('Unable to play sound');
+    } finally {
+      setTimeout(() => setTestingSound(false), 800);
+    }
+  };
+
   return (
     <div className="space-y-6 lg:space-y-8 animate-in fade-in slide-in-from-top-4 duration-500">
       <div className="bg-emerald-50 p-5 lg:p-6 rounded-[.5rem] border border-emerald-100 flex items-start gap-4">
         <Bell className="text-emerald-600 mt-1 shrink-0" size={24} />
         <div>
-          <h4 className="text-sm font-black text-emerald-900 uppercase tracking-widest mb-1">Native Alerts</h4>
+          <h4 className="text-sm font-black text-emerald-900 uppercase tracking-widest mb-1">Native Alerts & Sound</h4>
           <p className="text-xs text-emerald-700 leading-relaxed max-w-lg">
-            Enable native push notifications to receive real-time alerts for M-Pesa payments, low stock levels, and critical security events even when the app is closed.
+            Enable native push notifications and alert tones to receive real-time audible alerts for M-Pesa payments, new orders, bookings, and critical security events across all your devices.
           </p>
         </div>
       </div>
 
       <div className="space-y-4">
+        {/* Push Notification Toggle */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 lg:p-6 bg-gray-50 rounded-[.5rem] border border-gray-100">
           <div>
             <p className="font-black text-gray-900 text-sm">Web Push Notifications</p>
@@ -855,6 +884,7 @@ function NotificationsPanel({ settings = {}, onUpdate }: any) {
                 <button
                   onClick={async () => {
                     try {
+                      testNotificationSound();
                       await api.post('/notifications/test');
                       toast.success('Test notification sent!');
                     } catch (err) {
@@ -869,6 +899,27 @@ function NotificationsPanel({ settings = {}, onUpdate }: any) {
               <Toggle active={pushState === 'subscribed'} onToggle={handlePushToggle} />
             </div>
           )}
+        </div>
+
+        {/* Universal Hlynk Notification Tone (loud.wav) */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 lg:p-6 bg-gray-50 rounded-[.5rem] border border-gray-100">
+          <div>
+            <p className="font-black text-gray-900 text-sm">Hlynk Alert Tone</p>
+            <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-1">
+              Universal sound on website & PWA (loud.wav)
+            </p>
+          </div>
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={handleTestSound}
+              disabled={testingSound}
+              className="px-3 py-1.5 border border-emerald-200 text-emerald-700 bg-emerald-50/60 rounded-[.4rem] text-[9px] font-black uppercase tracking-widest hover:bg-emerald-100 transition-all flex items-center gap-1.5 active:scale-95 cursor-pointer"
+            >
+              <span>{testingSound ? '▶ Playing...' : '▶ Test Sound'}</span>
+            </button>
+            <Toggle active={soundEnabled} onToggle={handleSoundToggle} />
+          </div>
         </div>
 
         <div className="pt-6 border-t border-gray-50 grid grid-cols-1 md:grid-cols-2 gap-6">

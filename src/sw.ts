@@ -64,6 +64,18 @@ registerRoute(
   })
 );
 
+// 6. Cache notification sounds & audio tones
+registerRoute(
+  /\.(?:wav|mp3|ogg)$/i,
+  new CacheFirst({
+    cacheName: 'app-tones-cache',
+    plugins: [
+      new CacheableResponsePlugin({ statuses: [0, 200] }),
+      new ExpirationPlugin({ maxEntries: 10, maxAgeSeconds: 60 * 60 * 24 * 365 }),
+    ],
+  })
+);
+
 // Require skipWaiting and claim to ensure SW activates immediately
 _self.skipWaiting();
 
@@ -78,10 +90,15 @@ _self.addEventListener('push', (event: PushEvent) => {
     const origin = _self.location.origin;
     const iconPath = data.icon || '/logo.png';
     const iconUrl = iconPath.startsWith('http') ? iconPath : `${origin}${iconPath}`;
+    const soundPath = data.sound || '/assets/tone/loud.wav';
+    const soundUrl = soundPath.startsWith('http') ? soundPath : `${origin}${soundPath}`;
 
-    const options: NotificationOptions = {
+    const options: any = {
       body: data.body,
       icon: iconUrl,
+      sound: soundUrl,
+      silent: false,
+      vibrate: [200, 100, 200],
       // NOTE: 'badge' is intentionally omitted — iOS ignores it and
       // older iOS versions silently drop the notification when it's present
       data: data.data || {},
@@ -108,7 +125,7 @@ _self.addEventListener('push', (event: PushEvent) => {
 
     event.waitUntil(Promise.all([notificationPromise, badgePromise]));
 
-    // 3. Broadcast to all open tabs for in-app toasts & badge sync
+    // 3. Broadcast to all open tabs for in-app toasts, sound playback & badge sync
     _self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clients) => {
       clients.forEach((client) => {
         client.postMessage({
@@ -118,7 +135,8 @@ _self.addEventListener('push', (event: PushEvent) => {
             body: data.body, 
             data: data.data,
             type: data.type || 'info',
-            unreadCount: data.unreadCount
+            unreadCount: data.unreadCount,
+            sound: soundUrl,
           }
         });
       });

@@ -466,7 +466,9 @@ function AdminNotificationsPanel() {
   const [sendingTest, setSendingTest] = useState(false)
 
   useEffect(() => {
-    getPushSubscriptionState().then((state) => setPushState(state as any))
+    getPushSubscriptionState()
+      .then((state) => setPushState(state as any))
+      .catch(() => setPushState('prompt'))
   }, [])
 
   const handlePushToggle = async (active: boolean) => {
