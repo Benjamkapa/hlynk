@@ -184,8 +184,12 @@ export default function SystemNotificationsPage() {
 
   const handleTestTone = async () => {
     try {
-      await testNotificationSound()
-      toast.success('Playing universal notification tone')
+      const ok = await testNotificationSound()
+      if (ok) {
+        toast.success('Playing universal notification tone')
+      } else {
+        toast.error('Browser prevented audio playback. Please check device sound/mute switch.')
+      }
     } catch (_) {
       toast.error('Unable to play tone')
     }

@@ -15,7 +15,7 @@
 
 export const NOTIFICATION_SOUND_URL = '/assets/tone/loud.wav';
 const SOUND_STORAGE_KEY = 'hlynk_notification_sound_enabled';
-const SOUND_COOLDOWN_MS = 600; // Minimum time between consecutive sound triggers
+const SOUND_COOLDOWN_MS = 300; // Minimum time between consecutive sound triggers
 
 let cachedAudio: HTMLAudioElement | null = null;
 let audioContext: AudioContext | null = null;
@@ -46,6 +46,17 @@ export function setNotificationSoundEnabled(enabled: boolean): void {
   }
 }
 
+function getAudioContext(): AudioContext | null {
+  if (typeof window === 'undefined') return null;
+  if (!audioContext) {
+    const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+    if (AudioCtx) {
+      audioContext = new AudioCtx();
+    }
+  }
+  return audioContext;
+}
+
 /**
  * Preload the audio file and prepare Audio element
  */
@@ -65,30 +76,22 @@ function getPreloadedAudio(): HTMLAudioElement {
 export function initAudioUnlock(): void {
   if (typeof window === 'undefined' || isAudioUnlocked) return;
 
-  const unlock = () => {
+  const unlock = async () => {
     if (isAudioUnlocked) return;
 
     try {
-      // 1. Prime HTMLAudioElement
+      const ctx = getAudioContext();
+      if (ctx && ctx.state === 'suspended') {
+        await ctx.resume();
+      }
+
       const audio = getPreloadedAudio();
       audio.load();
-
-      // 2. Prime AudioContext if available
-      const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
-      if (AudioCtx) {
-        if (!audioContext) {
-          audioContext = new AudioCtx();
-        }
-        if (audioContext.state === 'suspended') {
-          audioContext.resume().catch(() => {});
-        }
-      }
 
       isAudioUnlocked = true;
     } catch (_) {
       // Autoplay unlock attempt
     } finally {
-      // Remove one-time unlock listeners
       window.removeEventListener('click', unlock, true);
       window.removeEventListener('touchstart', unlock, true);
       window.removeEventListener('keydown', unlock, true);
@@ -101,7 +104,6 @@ export function initAudioUnlock(): void {
   window.addEventListener('keydown', unlock, { capture: true, once: true, passive: true });
   window.addEventListener('pointerdown', unlock, { capture: true, once: true, passive: true });
 
-  // Pre-instantiate audio element immediately
   try {
     getPreloadedAudio();
   } catch (_) {}
@@ -113,13 +115,13 @@ export function initAudioUnlock(): void {
 async function loadAudioBuffer(): Promise<AudioBuffer | null> {
   if (audioBuffer) return audioBuffer;
   try {
-    const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
-    if (!AudioCtx) return null;
-    if (!audioContext) audioContext = new AudioCtx();
+    const ctx = getAudioContext();
+    if (!ctx) return null;
 
     const response = await fetch(NOTIFICATION_SOUND_URL);
+    if (!response.ok) return null;
     const arrayBuffer = await response.arrayBuffer();
-    audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+    audioBuffer = await ctx.decodeAudioData(arrayBuffer);
     return audioBuffer;
   } catch {
     return null;
@@ -127,7 +129,47 @@ async function loadAudioBuffer(): Promise<AudioBuffer | null> {
 }
 
 /**
- * Play the Hlynk notification sound ('loud.wav') universally across devices.
+ * Built-in synthesized melodious notification chime (fallback when audio files fail to load)
+ */
+function playSynthesizedChime(ctx: AudioContext, volume = 1.0): boolean {
+  try {
+    const now = ctx.currentTime;
+    const masterGain = ctx.createGain();
+    masterGain.gain.setValueAtTime(Math.max(0, Math.min(1, volume * 0.8)), now);
+    masterGain.connect(ctx.destination);
+
+    // Two-tone bright notification bell: Note 1 (E5 - 659Hz) -> Note 2 (A5 - 880Hz)
+    const tones = [
+      { freq: 659.25, start: 0.0, duration: 0.15 },
+      { freq: 880.0, start: 0.12, duration: 0.35 },
+    ];
+
+    tones.forEach(({ freq, start, duration }) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, now + start);
+
+      gain.gain.setValueAtTime(0, now + start);
+      gain.gain.linearRampToValueAtTime(0.7, now + start + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + start + duration);
+
+      osc.connect(gain);
+      gain.connect(masterGain);
+
+      osc.start(now + start);
+      osc.stop(now + start + duration + 0.05);
+    });
+
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Play the Hlynk notification sound universally across devices.
  * 
  * @param options.force - If true, bypasses user mute preference (e.g. for user testing)
  * @param options.volume - Playback volume (0.0 to 1.0, defaults to 1.0)
@@ -142,38 +184,43 @@ export async function playNotificationSound(options: { force?: boolean; volume?:
     return false;
   }
 
-  // Prevent multiple overlapping plays within cooldown window
   const now = Date.now();
-  if (now - lastPlayTimestamp < SOUND_COOLDOWN_MS) {
+  if (!force && now - lastPlayTimestamp < SOUND_COOLDOWN_MS) {
     return false;
   }
   lastPlayTimestamp = now;
 
-  // Strategy 1: Try Web Audio API if running and unlocked (fastest, zero-latency)
-  try {
-    if (audioContext && audioContext.state === 'running') {
+  const ctx = getAudioContext();
+
+  // 1. Resume AudioContext if suspended (common after user click)
+  if (ctx && ctx.state === 'suspended') {
+    try {
+      await ctx.resume();
+    } catch (_) {}
+  }
+
+  // 2. Strategy 1: Web Audio API with decoded loud.wav buffer
+  if (ctx && ctx.state === 'running') {
+    try {
       const buffer = audioBuffer || (await loadAudioBuffer());
       if (buffer) {
-        const source = audioContext.createBufferSource();
-        const gainNode = audioContext.createGain();
+        const source = ctx.createBufferSource();
+        const gainNode = ctx.createGain();
         gainNode.gain.value = Math.max(0, Math.min(1, volume));
         source.buffer = buffer;
         source.connect(gainNode);
-        gainNode.connect(audioContext.destination);
+        gainNode.connect(ctx.destination);
         source.start(0);
         return true;
       }
-    }
-  } catch (_) {
-    // Fall back to HTMLAudioElement
+    } catch (_) {}
   }
 
-  // Strategy 2: HTMLAudioElement with clone/reset
+  // 3. Strategy 2: HTML5 Audio element playback
   try {
     const audio = getPreloadedAudio();
     audio.volume = Math.max(0, Math.min(1, volume));
 
-    // If audio is already playing or ended, reset or clone
     if (!audio.paused) {
       const clone = audio.cloneNode() as HTMLAudioElement;
       clone.volume = audio.volume;
@@ -192,13 +239,22 @@ export async function playNotificationSound(options: { force?: boolean; volume?:
     }
     return true;
   } catch (err: any) {
-    // If blocked by browser autoplay policy, resume context for next time
-    if (audioContext && audioContext.state === 'suspended') {
-      audioContext.resume().catch(() => {});
-    }
-    console.warn('[NotificationSound] Audio playback prevented by browser:', err?.message || err);
-    return false;
+    console.warn('[NotificationSound] HTMLAudio play failed, falling back to synthesizer:', err?.message || err);
   }
+
+  // 4. Strategy 3: Guaranteed Synthesized Web Audio chime fallback
+  if (ctx) {
+    try {
+      if (ctx.state === 'suspended') {
+        await ctx.resume();
+      }
+      if (ctx.state === 'running') {
+        return playSynthesizedChime(ctx, volume);
+      }
+    } catch (_) {}
+  }
+
+  return false;
 }
 
 /**

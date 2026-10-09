@@ -827,8 +827,12 @@ function NotificationsPanel({ settings = {}, onUpdate }: any) {
   const handleTestSound = async () => {
     setTestingSound(true);
     try {
-      await testNotificationSound();
-      toast.success('Playing universal notification sound (loud.wav)');
+      const ok = await testNotificationSound();
+      if (ok) {
+        toast.success('Playing universal notification sound');
+      } else {
+        toast.error('Browser prevented audio playback. Please check device sound/mute switch.');
+      }
     } catch (_) {
       toast.error('Unable to play sound');
     } finally {
