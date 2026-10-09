@@ -1,92 +1,185 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect } from "react";
 import {
-  User, Storefront as Store, Bell, Lock, FloppyDisk as Save, Camera, SignOut as LogOut, Trash as Trash2, Users, Shield, Envelope as Mail, Phone, ArrowRight, Plus, CheckCircle as CheckCircle2, PencilSimple as Edit, FileText, ArrowClockwise as RefreshCcw, Code, Sparkle as Sparkles, Eye, Warning as AlertTriangle, Terminal, ShieldCheck, CreditCard, CaretDown as ChevronDown
-} from '@phosphor-icons/react'
-import InlineLoader, { ButtonLoader } from '../../components/shared/InlineLoader'
-import { ConfirmModal } from '../../components/shared/ConfirmModal'
-import { toast } from 'sonner'
-import { useAuth } from '../../lib/auth/AuthContext'
-import { api } from '../../lib/api/client'
-import { providersApi } from '../../lib/api/providers'
-import { getErrorMessage } from '../../lib/utils/error'
-import { useLocation, NavLink, Link } from 'react-router-dom'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import FeatureGate from '../../components/shared/FeatureGate'
-import { hasOfflinePin, clearOfflinePin } from '../../lib/offline/offlinePin'
-import PinSetupModal from '../../components/auth/PinSetupModal'
-import { AnimatePresence } from 'framer-motion'
-import { subscribeToPushNotifications, unsubscribeFromPush, getPushSubscriptionState } from '../../lib/notifications/pushService'
-import { isNotificationSoundEnabled, setNotificationSoundEnabled, testNotificationSound } from '../../lib/notifications/sound'
+  User,
+  Storefront as Store,
+  Bell,
+  Lock,
+  FloppyDisk as Save,
+  Camera,
+  SignOut as LogOut,
+  Trash as Trash2,
+  Users,
+  Shield,
+  Envelope as Mail,
+  Phone,
+  ArrowRight,
+  Plus,
+  CheckCircle as CheckCircle2,
+  PencilSimple as Edit,
+  FileText,
+  ArrowClockwise as RefreshCcw,
+  Code,
+  Sparkle as Sparkles,
+  Eye,
+  Warning as AlertTriangle,
+  Terminal,
+  ShieldCheck,
+  CreditCard,
+  CaretDown as ChevronDown,
+} from "@phosphor-icons/react";
+import InlineLoader, {
+  ButtonLoader,
+} from "../../components/shared/InlineLoader";
+import { ConfirmModal } from "../../components/shared/ConfirmModal";
+import { toast } from "sonner";
+import { useAuth } from "../../lib/auth/AuthContext";
+import { api } from "../../lib/api/client";
+import { providersApi } from "../../lib/api/providers";
+import { getErrorMessage } from "../../lib/utils/error";
+import { useLocation, NavLink, Link } from "react-router-dom";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import FeatureGate from "../../components/shared/FeatureGate";
+import { hasOfflinePin, clearOfflinePin } from "../../lib/offline/offlinePin";
+import PinSetupModal from "../../components/auth/PinSetupModal";
+import { AnimatePresence } from "framer-motion";
+import {
+  subscribeToPushNotifications,
+  unsubscribeFromPush,
+  getPushSubscriptionState,
+} from "../../lib/notifications/pushService";
+import {
+  isNotificationSoundEnabled,
+  setNotificationSoundEnabled,
+  testNotificationSound,
+} from "../../lib/notifications/sound";
 
-const EtimsIcon = ({ className, size = 18 }: { className?: string, size?: number }) => (
-  <img src="https://etims.kra.go.ke/assets/images/logo.jpg" alt="eTIMS" style={{ width: size, height: size }} className={`${className || ''} object-contain mix-blend-darken shrink-0`} />
+const EtimsIcon = ({
+  className,
+  size = 18,
+}: {
+  className?: string;
+  size?: number;
+}) => (
+  <img
+    src="https://etims.kra.go.ke/assets/images/logo.jpg"
+    alt="eTIMS"
+    style={{ width: size, height: size }}
+    className={`${className || ""} object-contain mix-blend-darken shrink-0`}
+  />
 );
 
-const MpesaIcon = ({ className, size = 18 }: { className?: string, size?: number }) => (
-  <img src="https://monisnapcontent.kinsta.cloud/wp-content/uploads/2021/09/M-PESA_LOGO-640x467.png?v=1632335437" alt="M-Pesa" style={{ width: size, height: size }} className={`${className || ''} object-contain shrink-0`} />
+const MpesaIcon = ({
+  className,
+  size = 18,
+}: {
+  className?: string;
+  size?: number;
+}) => (
+  <img
+    src="https://monisnapcontent.kinsta.cloud/wp-content/uploads/2021/09/M-PESA_LOGO-640x467.png?v=1632335437"
+    alt="M-Pesa"
+    style={{ width: size, height: size }}
+    className={`${className || ""} object-contain shrink-0`}
+  />
 );
 
-const KcbIcon = ({ className, size = 18 }: { className?: string, size?: number }) => (
-  <img src="https://buni.kcbgroup.com/_nuxt/logo.71b8fc4b.svg" alt="KCB" style={{ width: size, height: size }} className={`${className || ''} object-contain shrink-0`} />
+const KcbIcon = ({
+  className,
+  size = 18,
+}: {
+  className?: string;
+  size?: number;
+}) => (
+  <img
+    src="https://buni.kcbgroup.com/_nuxt/logo.71b8fc4b.svg"
+    alt="KCB"
+    style={{ width: size, height: size }}
+    className={`${className || ""} object-contain shrink-0`}
+  />
 );
 
 export default function SettingsPage() {
-  const { user, refreshUser, logout, lock, patchUser } = useAuth()
-  const queryClient = useQueryClient()
-  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
-  const [activeTab, setActiveTab] = useState(() => window.innerWidth < 1024 ? 'Platform Hub' : 'Profile')
-  const [uploading, setUploading] = useState(false)
-  const [bannerUploading, setBannerUploading] = useState(false)
-  const [bannerPreview, setBannerPreview] = useState<string | null>(null)
-  const fileInputRef = useRef<HTMLInputElement>(null)
-  const bannerInputRef = useRef<HTMLInputElement>(null)
-  const [pinHasPin, setPinHasPin] = useState(() => hasOfflinePin())
-  const [showPinSetup, setShowPinSetup] = useState(false)
+  const { user, refreshUser, logout, lock, patchUser } = useAuth();
+  const queryClient = useQueryClient();
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState(() =>
+    window.innerWidth < 1024 ? "Platform Hub" : "Profile",
+  );
+  const [uploading, setUploading] = useState(false);
+  const [bannerUploading, setBannerUploading] = useState(false);
+  const [bannerPreview, setBannerPreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const bannerInputRef = useRef<HTMLInputElement>(null);
+  const [pinHasPin, setPinHasPin] = useState(() => hasOfflinePin());
+  const [showPinSetup, setShowPinSetup] = useState(false);
 
   const { data: profile, isLoading } = useQuery({
-    queryKey: ['my-profile'],
-    queryFn: providersApi.getMyProfile
-  })
+    queryKey: ["my-profile"],
+    queryFn: providersApi.getMyProfile,
+  });
 
-  const [formData, setFormData] = useState<any>({})
+  const [formData, setFormData] = useState<any>({});
 
   useEffect(() => {
     if (profile?.data) {
-      const d = profile.data
+      const d = profile.data;
       let mods: string[] = [];
-      if (Array.isArray(d.activeModules) && d.activeModules.length > 0) mods = d.activeModules;
-      else if (typeof d.activeModules === 'string') {
-        try { mods = JSON.parse(d.activeModules); } catch (_) { }
+      if (Array.isArray(d.activeModules) && d.activeModules.length > 0)
+        mods = d.activeModules;
+      else if (typeof d.activeModules === "string") {
+        try {
+          mods = JSON.parse(d.activeModules);
+        } catch (_) {}
       }
-      if (!mods.length && Array.isArray(user?.activeModules)) mods = user.activeModules;
-      else if (!mods.length && typeof user?.activeModules === 'string') {
-        try { mods = JSON.parse(user.activeModules); } catch (_) { }
+      if (!mods.length && Array.isArray(user?.activeModules))
+        mods = user.activeModules;
+      else if (!mods.length && typeof user?.activeModules === "string") {
+        try {
+          mods = JSON.parse(user.activeModules);
+        } catch (_) {}
       }
-      if (!mods.length) mods = ['POS'];
+      if (!mods.length) mods = ["POS"];
 
       setFormData((prev: any) => ({
         ...prev,
-        name: d.user?.name || '',
-        email: d.user?.email || '',
-        phone: d.phone || '',
-        businessName: d.businessName || '',
-        category: d.category || '',
-        location: d.location || '',
+        name: d.user?.name || "",
+        email: d.user?.email || "",
+        phone: d.phone || "",
+        businessName: d.businessName || "",
+        category: d.category || "",
+        location: d.location || "",
         activeModules: prev?.activeModules?.length ? prev.activeModules : mods,
-        notificationSettings: d.notificationSettings || { emailAlerts: true, smsNotifications: true, marketing: false },
-        operationalSettings: d.operationalSettings || { taxInclusive: true, autoPrint: false, lowStockThreshold: 5 }
-      }))
+        notificationSettings: d.notificationSettings || {
+          emailAlerts: true,
+          smsNotifications: true,
+          marketing: false,
+        },
+        operationalSettings: d.operationalSettings || {
+          taxInclusive: true,
+          autoPrint: false,
+          lowStockThreshold: 5,
+        },
+      }));
     }
-  }, [profile])
+  }, [profile]);
 
-  const handleModuleToggle = (moduleKey: 'POS' | 'HOSPITALITY', enable: boolean) => {
+  const handleModuleToggle = (
+    moduleKey: "POS" | "HOSPITALITY",
+    enable: boolean,
+  ) => {
     let current: string[] = [];
-    if (Array.isArray(formData.activeModules) && formData.activeModules.length > 0) {
+    if (
+      Array.isArray(formData.activeModules) &&
+      formData.activeModules.length > 0
+    ) {
       current = formData.activeModules;
-    } else if (Array.isArray(user?.activeModules) && user.activeModules.length > 0) {
+    } else if (
+      Array.isArray(user?.activeModules) &&
+      user.activeModules.length > 0
+    ) {
       current = user.activeModules;
     } else {
-      current = ['POS'];
+      current = ["POS"];
     }
 
     let updated: string[] = [];
@@ -97,7 +190,7 @@ export default function SettingsPage() {
     }
 
     if (updated.length === 0) {
-      toast.error('At least one active module must remain enabled');
+      toast.error("At least one active module must remain enabled");
       return;
     }
 
@@ -108,141 +201,160 @@ export default function SettingsPage() {
     patchUser({ activeModules: updated });
 
     // 3. Persist to backend database immediately
-    providersApi.updateProfile({
-      businessName: formData.businessName || user?.businessName,
-      activeModules: updated
-    }).then(async () => {
-      toast.success(`${moduleKey === 'POS' ? 'POS & Retail' : 'Bookings, Rentals & Services'} module updated`);
-      await refreshUser();
-      queryClient.invalidateQueries({ queryKey: ['my-profile'] });
-    }).catch((err) => {
-      toast.error(getErrorMessage(err));
-    });
+    providersApi
+      .updateProfile({
+        businessName: formData.businessName || user?.businessName,
+        activeModules: updated,
+      })
+      .then(async () => {
+        toast.success(
+          `${moduleKey === "POS" ? "POS & Retail" : "Bookings, Rentals & Services"} module updated`,
+        );
+        await refreshUser();
+        queryClient.invalidateQueries({ queryKey: ["my-profile"] });
+      })
+      .catch((err) => {
+        toast.error(getErrorMessage(err));
+      });
   };
 
   const updateMutation = useMutation({
     mutationFn: providersApi.updateProfile,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['my-profile'] })
+      queryClient.invalidateQueries({ queryKey: ["my-profile"] });
       patchUser({
         businessName: formData.businessName,
         name: formData.name,
         activeModules: formData.activeModules,
-      })
-      toast.success('Settings saved successfully')
+      });
+      toast.success("Settings saved successfully");
     },
-    onError: (err) => toast.error(getErrorMessage(err))
-  })
+    onError: (err) => toast.error(getErrorMessage(err)),
+  });
 
   const passwordMutation = useMutation({
     mutationFn: providersApi.changePassword,
     onSuccess: () => {
-      toast.success('Password updated successfully')
-      setFormData((prev: any) => ({ ...prev, currentPassword: '', newPassword: '', confirmPassword: '' }))
+      toast.success("Password updated successfully");
+      setFormData((prev: any) => ({
+        ...prev,
+        currentPassword: "",
+        newPassword: "",
+        confirmPassword: "",
+      }));
     },
-    onError: (err) => toast.error(getErrorMessage(err))
-  })
+    onError: (err) => toast.error(getErrorMessage(err)),
+  });
 
   const deactivateMutation = useMutation({
     mutationFn: providersApi.deactivateAccount,
     onSuccess: () => {
-      toast.success('Account deactivated')
-      logout()
+      toast.success("Account deactivated");
+      logout();
     },
-    onError: (err) => toast.error(getErrorMessage(err))
-  })
+    onError: (err) => toast.error(getErrorMessage(err)),
+  });
 
   const deleteAccountMutation = useMutation({
     mutationFn: providersApi.deleteProfileAndFacility,
     onSuccess: () => {
-      toast.success('Your profile, facility, and all business data have been permanently erased.')
-      localStorage.clear()
-      sessionStorage.clear()
-      logout()
-      window.location.href = '/register'
+      toast.success(
+        "Your profile, facility, and all business data have been permanently erased.",
+      );
+      localStorage.clear();
+      sessionStorage.clear();
+      logout();
+      window.location.href = "/register";
     },
-    onError: (err) => toast.error(getErrorMessage(err))
-  })
+    onError: (err) => toast.error(getErrorMessage(err)),
+  });
 
   const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
+    const file = e.target.files?.[0];
+    if (!file) return;
 
-    setUploading(true)
+    setUploading(true);
     try {
-      await providersApi.uploadPhoto(file)
-      await refreshUser()
-      queryClient.invalidateQueries({ queryKey: ['my-profile'] })
-      toast.success('Profile photo updated')
+      await providersApi.uploadPhoto(file);
+      await refreshUser();
+      queryClient.invalidateQueries({ queryKey: ["my-profile"] });
+      toast.success("Profile photo updated");
     } catch (err) {
-      toast.error(getErrorMessage(err))
+      toast.error(getErrorMessage(err));
     } finally {
-      setUploading(false)
+      setUploading(false);
     }
-  }
+  };
 
   const handleBannerUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
+    const file = e.target.files?.[0];
+    if (!file) return;
     // Show local preview immediately
-    setBannerPreview(URL.createObjectURL(file))
-    setBannerUploading(true)
+    setBannerPreview(URL.createObjectURL(file));
+    setBannerUploading(true);
     try {
-      await providersApi.uploadBanner(file)
-      queryClient.invalidateQueries({ queryKey: ['my-profile'] })
-      toast.success('Store banner updated')
+      await providersApi.uploadBanner(file);
+      queryClient.invalidateQueries({ queryKey: ["my-profile"] });
+      toast.success("Store banner updated");
     } catch (err) {
-      setBannerPreview(null)
-      toast.error(getErrorMessage(err))
+      setBannerPreview(null);
+      toast.error(getErrorMessage(err));
     } finally {
-      setBannerUploading(false)
+      setBannerUploading(false);
     }
-  }
+  };
 
   const handleSave = () => {
-    if (activeTab === 'Security') {
-      if (!formData.newPassword) return
+    if (activeTab === "Security") {
+      if (!formData.newPassword) return;
       if (formData.newPassword !== formData.confirmPassword) {
-        return toast.error('Passwords do not match')
+        return toast.error("Passwords do not match");
       }
       passwordMutation.mutate({
         currentPassword: formData.currentPassword,
-        newPassword: formData.newPassword
-      })
+        newPassword: formData.newPassword,
+      });
     } else {
-      updateMutation.mutate(formData)
+      updateMutation.mutate(formData);
     }
-  }
+  };
 
   interface SettingsTab {
-    name: string
-    icon: any
-    role?: string[]
-    plan?: 'PLUS' | 'MAX'
-    mobileOnly?: boolean
+    name: string;
+    icon: any;
+    role?: string[];
+    plan?: "PLUS" | "MAX";
+    mobileOnly?: boolean;
   }
 
   const allTabs: SettingsTab[] = [
-    { name: 'Platform Hub', icon: Sparkles, mobileOnly: true }, // NEW: Mini Bar for all hidden features
-    { name: 'Profile', icon: User },
-    { name: 'Business', icon: Store, role: ['PROVIDER', 'SUPER_ADMIN'] },
+    { name: "Platform Hub", icon: Sparkles, mobileOnly: true }, // NEW: Mini Bar for all hidden features
+    { name: "Profile", icon: User },
+    { name: "Business", icon: Store, role: ["PROVIDER", "SUPER_ADMIN"] },
     // { name: 'Customers', icon: Users, role: ['PROVIDER'], mobileOnly: true },
-    { name: 'Notifications', icon: Bell },
+    { name: "Notifications", icon: Bell },
     // { name: 'Payment Gateway', icon: CreditCard, role: ['PROVIDER'], mobileOnly: true },
     // { name: 'KRA eTIMS', icon: EtimsIcon, role: ['PROVIDER'], mobileOnly: true },
     // { name: 'My Plan', icon: Sparkles, role: ['PROVIDER', 'SUPER_ADMIN'], mobileOnly: true },
-    { name: 'Data Management', icon: Trash2, role: ['PROVIDER', 'SUPER_ADMIN'] },
-    { name: 'Security', icon: Lock },
-  ]
+    {
+      name: "Data Management",
+      icon: Trash2,
+      role: ["PROVIDER", "SUPER_ADMIN"],
+    },
+    { name: "Security", icon: Lock },
+  ];
 
-  const tabs = allTabs.filter(tab => {
+  const tabs = allTabs.filter((tab) => {
     // Role-based filtering
-    if (tab.role && !tab.role.includes(user?.role || '')) return false
+    if (tab.role && !tab.role.includes(user?.role || "")) return false;
 
     // Plan-based filtering
     if (tab.plan) {
-      const getPlanWeight = (p: string) => p.includes('MAX') ? 3 : p.includes('PLUS') ? 2 : 1;
-      const currentPlan = (user?.subscription?.planName || 'LITE').toUpperCase();
+      const getPlanWeight = (p: string) =>
+        p.includes("MAX") ? 3 : p.includes("PLUS") ? 2 : 1;
+      const currentPlan = (
+        user?.subscription?.planName || "LITE"
+      ).toUpperCase();
       const userWeight = getPlanWeight(currentPlan);
       const requiredWeight = getPlanWeight(tab.plan);
       if (userWeight < requiredWeight) return false;
@@ -251,8 +363,8 @@ export default function SettingsPage() {
     // Responsive filtering: Hide "mobileOnly" tabs on desktop (>=1024px)
     if (tab.mobileOnly && window.innerWidth >= 1024) return false;
 
-    return true
-  })
+    return true;
+  });
 
   if (isLoading) {
     return (
@@ -260,23 +372,26 @@ export default function SettingsPage() {
         <div className="h-10 w-48 bg-slate-200 rounded-lg" />
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           <div className="hidden lg:block space-y-3">
-            {[1, 2, 3, 4].map(i => (
+            {[1, 2, 3, 4].map((i) => (
               <div key={i} className="h-12 bg-slate-200 rounded-lg" />
             ))}
           </div>
           <div className="lg:col-span-3 h-96 bg-slate-200 rounded-xl" />
         </div>
       </div>
-    )
+    );
   }
 
   return (
     <div className="space-y-6 lg:space-y-8 animate-in fade-in duration-500 pt-4 lg:pt-6 pb-28 lg:pb-6">
-
       <div className="flex flex-col gap-4">
         <div>
-          <h1 className="text-2xl lg:text-3xl font-black text-gray-900 tracking-tight">Settings</h1>
-          <p className="text-gray-500 font-medium text-sm lg:text-base">Manage your personal profile and business configurations</p>
+          <h1 className="text-2xl lg:text-3xl font-black text-gray-900 tracking-tight">
+            Settings
+          </h1>
+          <p className="text-gray-500 font-medium text-sm lg:text-base">
+            Manage your personal profile and business configurations
+          </p>
         </div>
       </div>
 
@@ -289,56 +404,74 @@ export default function SettingsPage() {
             <button
               key={tab.name}
               onClick={() => setActiveTab(tab.name)}
-              className={`flex flex-col items-center justify-center gap-1.5 py-3 px-1.5 rounded-[.5rem] text-center transition-all ${activeTab === tab.name
-                ? 'bg-[#0D4A3E] text-white'
-                : 'bg-gray-50 text-gray-500 hover:bg-gray-100'
-                }`}
+              className={`flex flex-col items-center justify-center gap-1.5 py-3 px-1.5 rounded-[.5rem] text-center transition-all ${
+                activeTab === tab.name
+                  ? "bg-[#0D4A3E] text-white"
+                  : "bg-gray-50 text-gray-500 hover:bg-gray-100"
+              }`}
             >
               <tab.icon size={18} />
-              <span className="text-[10px] font-semibold leading-tight">{tab.name}</span>
+              <span className="text-[10px] font-semibold leading-tight">
+                {tab.name}
+              </span>
             </button>
           ))}
         </div>
 
         <div className="hidden lg:flex lg:flex-col lg:gap-2">
-          {tabs.filter((tab) => !tab.mobileOnly).map((tab) => (
-            <button
-              key={tab.name}
-              onClick={() => setActiveTab(tab.name)}
-              className={`w-full flex items-center gap-3 px-6 py-4 rounded-[.5rem] font-bold text-sm transition-all ${activeTab === tab.name
-                ? 'bg-white text-emerald-600 shadow-sm'
-                : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'
+          {tabs
+            .filter((tab) => !tab.mobileOnly)
+            .map((tab) => (
+              <button
+                key={tab.name}
+                onClick={() => setActiveTab(tab.name)}
+                className={`w-full flex items-center gap-3 px-6 py-4 rounded-[.5rem] font-bold text-sm transition-all ${
+                  activeTab === tab.name
+                    ? "bg-white text-emerald-600 shadow-sm"
+                    : "text-gray-400 hover:text-gray-600 hover:bg-gray-50"
                 }`}
-            >
-              <tab.icon size={18} />
-              {tab.name}
-            </button>
-          ))}
+              >
+                <tab.icon size={18} />
+                {tab.name}
+              </button>
+            ))}
         </div>
 
         <div className="lg:col-span-3">
           <div className="bg-white rounded-[.5rem] border border-gray-100 shadow-sm p-5 lg:p-8">
-            <h3 className="text-lg lg:text-xl font-black text-gray-900 mb-6 lg:mb-8 border-b border-gray-50 pb-4">{activeTab} Details</h3>
+            <h3 className="text-lg lg:text-xl font-black text-gray-900 mb-6 lg:mb-8 border-b border-gray-50 pb-4">
+              {activeTab} Details
+            </h3>
 
-            {activeTab === 'Platform Hub' && (
+            {activeTab === "Platform Hub" && (
               <div className="space-y-8 animate-in fade-in slide-in-from-top-4 duration-500">
                 <div className="bg-emerald-900 text-white p-6 md:p-8 rounded-[.5rem] relative overflow-hidden">
                   <div className="relative z-10">
-                    <h4 className="text-xl md:text-2xl font-black mb-1 md:mb-2">Platform Modules</h4>
-                    <p className="text-emerald-200 text-[10px] md:text-sm font-medium">Quick access to all system features</p>
+                    <h4 className="text-xl md:text-2xl font-black mb-1 md:mb-2">
+                      Platform Modules
+                    </h4>
+                    <p className="text-emerald-200 text-[10px] md:text-sm font-medium">
+                      Quick access to all system features
+                    </p>
                   </div>
-                  <Sparkles className="absolute -right-4 -bottom-4 text-white/10" size={100} />
+                  <Sparkles
+                    className="absolute -right-4 -bottom-4 text-white/10"
+                    size={100}
+                  />
                 </div>
               </div>
             )}
 
-            {activeTab === 'Profile' && (
+            {activeTab === "Profile" && (
               <div className="space-y-8">
                 <div className="flex items-center gap-6">
                   <div className="relative group">
                     <div className="h-20 w-20 lg:h-24 lg:w-24 rounded-full bg-gray-100 flex items-center justify-center overflow-hidden shadow-lg">
                       <img
-                        src={user?.photoUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(formData?.name || user?.name || '')}&background=0D4A3E&color=fff`}
+                        src={
+                          user?.photoUrl ||
+                          `https://ui-avatars.com/api/?name=${encodeURIComponent(formData?.name || user?.name || "")}&background=0D4A3E&color=fff`
+                        }
                         className="h-full w-full object-cover"
                         alt=""
                         referrerPolicy="no-referrer"
@@ -366,20 +499,31 @@ export default function SettingsPage() {
                   </div>
                   <div>
                     <h4 className="font-black text-gray-900">Profile Photo</h4>
-                    <p className="text-xs text-gray-500 font-medium">PNG, JPG or GIF. Max 5MB.</p>
+                    <p className="text-xs text-gray-500 font-medium">
+                      PNG, JPG or GIF. Max 5MB.
+                    </p>
                   </div>
                 </div>
 
                 {/* Store Banner */}
                 <div className="space-y-3">
                   <div>
-                    <h4 className="font-black text-gray-900 text-sm">Store Banner</h4>
-                    <p className="text-xs text-gray-500 font-medium mt-0.5">Shown at the top of your public store page. Recommended: 1600 × 640px.</p>
+                    <h4 className="font-black text-gray-900 text-sm">
+                      Store Banner
+                    </h4>
+                    <p className="text-xs text-gray-500 font-medium mt-0.5">
+                      Shown at the top of your public store page. Recommended:
+                      1600 × 640px.
+                    </p>
                   </div>
                   <div className="relative group w-full h-36 rounded-xl overflow-hidden bg-slate-900 border border-slate-200">
-                    {(bannerPreview || profile?.data?.operationalSettings?.bannerUrl) ? (
+                    {bannerPreview ||
+                    profile?.data?.operationalSettings?.bannerUrl ? (
                       <img
-                        src={bannerPreview || profile?.data?.operationalSettings?.bannerUrl}
+                        src={
+                          bannerPreview ||
+                          profile?.data?.operationalSettings?.bannerUrl
+                        }
                         alt="Store banner"
                         className="h-full w-full object-cover"
                       />
@@ -396,8 +540,12 @@ export default function SettingsPage() {
                         disabled={bannerUploading}
                         className="inline-flex items-center gap-2 rounded-full bg-white/90 px-4 py-2 text-xs font-bold text-slate-900 shadow transition hover:bg-white active:scale-95 disabled:opacity-60"
                       >
-                        {bannerUploading ? <ButtonLoader size={14} /> : <Camera size={14} />}
-                        {bannerUploading ? 'Uploading…' : 'Change banner'}
+                        {bannerUploading ? (
+                          <ButtonLoader size={14} />
+                        ) : (
+                          <Camera size={14} />
+                        )}
+                        {bannerUploading ? "Uploading…" : "Change banner"}
                       </button>
                     </div>
                     {bannerUploading && (
@@ -419,17 +567,17 @@ export default function SettingsPage() {
                   <InputGroup
                     label="Your Name"
                     value={formData.name}
-                    onChange={(v: string) => setFormData({ ...formData, name: v })}
+                    onChange={(v: string) =>
+                      setFormData({ ...formData, name: v })
+                    }
                   />
-                  <InputGroup
-                    label="Email"
-                    value={formData.email}
-                    disabled
-                  />
+                  <InputGroup label="Email" value={formData.email} disabled />
                   <InputGroup
                     label="Phone"
                     value={formData.phone}
-                    onChange={(v: string) => setFormData({ ...formData, phone: v })}
+                    onChange={(v: string) =>
+                      setFormData({ ...formData, phone: v })
+                    }
                     mono
                   />
                 </div>
@@ -440,14 +588,20 @@ export default function SettingsPage() {
                     disabled={updateMutation.isPending}
                     className="bg-[#0D4A3E] text-white h-11 px-8 rounded-full font-black text-sm hover:bg-[#0A3D33] transition-all flex items-center justify-center gap-2 disabled:opacity-50"
                   >
-                    {updateMutation.isPending ? <ButtonLoader size={16} /> : <Save size={16} />}
+                    {updateMutation.isPending ? (
+                      <ButtonLoader size={16} />
+                    ) : (
+                      <Save size={16} />
+                    )}
                     Save Profile
                   </button>
                 </div>
 
                 {/* Mobile & Desktop Account Session Controls */}
                 <div className="pt-6 border-t border-slate-100 mt-8 space-y-4">
-                  <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest">Session & Security Controls</h4>
+                  <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest">
+                    Session & Security Controls
+                  </h4>
                   <div className="flex flex-wrap gap-3">
                     {hasOfflinePin() && (
                       <button
@@ -459,11 +613,13 @@ export default function SettingsPage() {
                     )}
                     <button
                       onClick={async () => {
-                        await logout()
+                        await logout();
                         if (navigator.onLine) {
-                          window.location.href = '/login'
+                          window.location.href = "/login";
                         } else {
-                          toast.info('Session locked. Enter your PIN to continue.')
+                          toast.info(
+                            "Session locked. Enter your PIN to continue.",
+                          );
                         }
                       }}
                       className="flex items-center gap-2 px-5 py-3 bg-red-50 text-red-600 rounded-lg text-xs font-bold hover:bg-red-100 transition-all active:scale-95"
@@ -475,103 +631,109 @@ export default function SettingsPage() {
               </div>
             )}
 
-            {activeTab === 'Business' && (
+            {activeTab === "Business" && (
               <div className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <InputGroup
                     label="Business Name"
                     value={formData.businessName}
-                    onChange={(v: string) => setFormData({ ...formData, businessName: v })}
+                    onChange={(v: string) =>
+                      setFormData({ ...formData, businessName: v })
+                    }
                   />
                   <div className="space-y-2">
-                    <label className="text-xs font-black text-gray-400 uppercase tracking-widest">Business Category</label>
+                    <label className="text-xs font-black text-gray-400 uppercase tracking-widest">
+                      Business Category
+                    </label>
                     <input
                       list="business-categories"
                       value={formData.category}
-                      onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, category: e.target.value })
+                      }
                       placeholder="e.g. Retail Store, Salon, or type your own…"
                       className="hl-select"
                     />
                     <datalist id="business-categories">
                       {[
-                        'Accounting & Tax Services',
-                        'Agrovet',
-                        'Agricultural Cooperative',
-                        'Art & Craft Business',
-                        'Bakery',
-                        'Barber Shop',
-                        'Cafe',
-                        'Car Wash',
-                        'Car Yard',
-                        'Catering Services',
-                        'Church',
-                        'Clinic',
-                        'College',
-                        'Community Organization',
-                        'Construction Services',
-                        'Consultancy',
-                        'Cosmetics Shop',
-                        'Courier Services',
-                        'Cyber Cafe',
-                        'Cyber Security',
-                        'Dairy Business',
-                        'Daycare',
-                        'Dental Clinic',
-                        'Digital Agency',
-                        'Driving School',
-                        'E-commerce Business',
-                        'Electrical Services',
-                        'Electronics Shop',
-                        'Farm',
-                        'Fashion & Boutique',
-                        'Fast Food',
-                        'Financial Services',
-                        'Freelancer',
-                        'Furniture Workshop',
-                        'Garage',
-                        'Guest House',
-                        'Hardware Store',
-                        'Hospital',
-                        'Hotel',
-                        'Insurance Agency',
-                        'Interior Design',
-                        'Internet Service Provider',
-                        'IT Services',
-                        'Legal Services',
-                        'Lounge & Bar',
-                        'Manufacturing',
-                        'Marketing Agency',
-                        'Mechanic Garage',
-                        'Microfinance',
-                        'Mini Mart',
-                        'Mobile Phone Shop',
-                        'Mosque',
-                        'NGO',
-                        'Online Business',
-                        'Optical Clinic',
-                        'Other',
-                        'Pharmacy',
-                        'Plumbing Services',
-                        'Poultry Farm',
-                        'Printing & Branding',
-                        'Real Estate Agency',
-                        'Restaurant',
-                        'Retail Store',
-                        'SACCO',
-                        'Salon',
-                        'School',
-                        'Software Development',
-                        'Spa & Beauty',
-                        'Supermarket',
-                        'Tailoring & Fashion Design',
-                        'Training Centre',
-                        'Transport Services',
-                        'Travel Agency',
-                        'University',
-                        'Veterinary Clinic',
-                        'Welding & Fabrication',
-                        'Wholesale Shop'
-                      ].map(c => (
+                        "Accounting & Tax Services",
+                        "Agrovet",
+                        "Agricultural Cooperative",
+                        "Art & Craft Business",
+                        "Bakery",
+                        "Barber Shop",
+                        "Cafe",
+                        "Car Wash",
+                        "Car Yard",
+                        "Catering Services",
+                        "Church",
+                        "Clinic",
+                        "College",
+                        "Community Organization",
+                        "Construction Services",
+                        "Consultancy",
+                        "Cosmetics Shop",
+                        "Courier Services",
+                        "Cyber Cafe",
+                        "Cyber Security",
+                        "Dairy Business",
+                        "Daycare",
+                        "Dental Clinic",
+                        "Digital Agency",
+                        "Driving School",
+                        "E-commerce Business",
+                        "Electrical Services",
+                        "Electronics Shop",
+                        "Farm",
+                        "Fashion & Boutique",
+                        "Fast Food",
+                        "Financial Services",
+                        "Freelancer",
+                        "Furniture Workshop",
+                        "Garage",
+                        "Guest House",
+                        "Hardware Store",
+                        "Hospital",
+                        "Hotel",
+                        "Insurance Agency",
+                        "Interior Design",
+                        "Internet Service Provider",
+                        "IT Services",
+                        "Legal Services",
+                        "Lounge & Bar",
+                        "Manufacturing",
+                        "Marketing Agency",
+                        "Mechanic Garage",
+                        "Microfinance",
+                        "Mini Mart",
+                        "Mobile Phone Shop",
+                        "Mosque",
+                        "NGO",
+                        "Online Business",
+                        "Optical Clinic",
+                        "Other",
+                        "Pharmacy",
+                        "Plumbing Services",
+                        "Poultry Farm",
+                        "Printing & Branding",
+                        "Real Estate Agency",
+                        "Restaurant",
+                        "Retail Store",
+                        "SACCO",
+                        "Salon",
+                        "School",
+                        "Software Development",
+                        "Spa & Beauty",
+                        "Supermarket",
+                        "Tailoring & Fashion Design",
+                        "Training Centre",
+                        "Transport Services",
+                        "Travel Agency",
+                        "University",
+                        "Veterinary Clinic",
+                        "Welding & Fabrication",
+                        "Wholesale Shop",
+                      ].map((c) => (
                         <option key={c} value={c} />
                       ))}
                     </datalist>
@@ -580,42 +742,73 @@ export default function SettingsPage() {
                 <InputGroup
                   label="Where are you located?"
                   value={formData.location}
-                  onChange={(v: string) => setFormData({ ...formData, location: v })}
+                  onChange={(v: string) =>
+                    setFormData({ ...formData, location: v })
+                  }
                 />
 
                 <div className="space-y-2 mt-6">
-                  <label className="text-xs font-black text-gray-400 uppercase tracking-widest">Sales Channels / Sources</label>
+                  <label className="text-xs font-black text-gray-400 uppercase tracking-widest">
+                    Sales Channels / Sources
+                  </label>
                   <input
                     type="text"
                     placeholder="e.g. Walk-in, Uber Eats, Glovo (comma separated)"
-                    value={(formData.operationalSettings?.saleSources || ['In-Store', 'Walk-in']).join(', ')}
+                    value={(
+                      formData.operationalSettings?.saleSources || [
+                        "In-Store",
+                        "Walk-in",
+                      ]
+                    ).join(", ")}
                     onChange={(e) => {
-                      const raw = e.target.value.split(',').map(s => s.trimStart()).filter(Boolean);
+                      const raw = e.target.value
+                        .split(",")
+                        .map((s) => s.trimStart())
+                        .filter(Boolean);
                       setFormData({
                         ...formData,
-                        operationalSettings: { ...formData.operationalSettings, saleSources: raw }
-                      })
+                        operationalSettings: {
+                          ...formData.operationalSettings,
+                          saleSources: raw,
+                        },
+                      });
                     }}
                     className="w-full bg-gray-50 border-none rounded-[.5rem] py-3.5 px-4 outline-none focus:ring-2 focus:ring-emerald-500/10 transition-all text-sm font-bold"
                   />
                 </div>
 
                 <div className="pt-6 border-t border-gray-50 mt-6">
-                  <h4 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-1">Active Platform Modules</h4>
-                  <p className="text-xs text-gray-500 font-medium mb-6">Enable or disable modules for your business. Sidebar and navigation update in real time.</p>
+                  <h4 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-1">
+                    Active Platform Modules
+                  </h4>
+                  <p className="text-xs text-gray-500 font-medium mb-6">
+                    Enable or disable modules for your business. Sidebar and
+                    navigation update in real time.
+                  </p>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                     <ToggleItem
                       title="Point of Sale & Retail Inventory"
                       desc="Inventory Management, Cashier Terminal, Sales History & Expense Tracking"
-                      active={(formData.activeModules || user?.activeModules || ['POS']).includes('POS')}
-                      onToggle={(active: boolean) => handleModuleToggle('POS', active)}
+                      active={(
+                        formData.activeModules ||
+                        user?.activeModules || ["POS"]
+                      ).includes("POS")}
+                      onToggle={(active: boolean) =>
+                        handleModuleToggle("POS", active)
+                      }
                     />
                     <ToggleItem
                       title="Bookings, Rentals & Services"
                       desc="Units, Fleet/Car Rentals, Car Wash, Equipment, Stays, Rates & Operations"
-                      active={(formData.activeModules || user?.activeModules || []).includes('HOSPITALITY')}
-                      onToggle={(active: boolean) => handleModuleToggle('HOSPITALITY', active)}
+                      active={(
+                        formData.activeModules ||
+                        user?.activeModules ||
+                        []
+                      ).includes("HOSPITALITY")}
+                      onToggle={(active: boolean) =>
+                        handleModuleToggle("HOSPITALITY", active)
+                      }
                     />
                   </div>
                 </div>
@@ -626,50 +819,69 @@ export default function SettingsPage() {
                     disabled={updateMutation.isPending}
                     className="bg-[#0D4A3E] text-white h-11 px-8 rounded-full font-black text-sm hover:bg-[#0A3D33] transition-all flex items-center justify-center gap-2 disabled:opacity-50"
                   >
-                    {updateMutation.isPending ? <ButtonLoader size={16} /> : <Save size={16} />}
+                    {updateMutation.isPending ? (
+                      <ButtonLoader size={16} />
+                    ) : (
+                      <Save size={16} />
+                    )}
                     Save
                   </button>
                 </div>
               </div>
             )}
 
-            {activeTab === 'Data Management' && (
+            {activeTab === "Data Management" && (
               <DataManagementPanel
                 onConfirm={(id: string) => setConfirmDeleteId(id)}
                 profile={profile}
               />
             )}
 
-            {activeTab === 'Notifications' && (
+            {activeTab === "Notifications" && (
               <NotificationsPanel
                 settings={formData.notificationSettings}
-                onUpdate={(s: any) => setFormData({ ...formData, notificationSettings: s })}
+                onUpdate={(s: any) =>
+                  setFormData({ ...formData, notificationSettings: s })
+                }
               />
             )}
 
-            {activeTab === 'Security' && (
+            {activeTab === "Security" && (
               <div className="space-y-8 lg:space-y-10">
                 <ActivityLogViewer />
 
                 <div className="pt-8 lg:pt-10 border-t border-gray-100">
                   <div className="flex items-center gap-3 mb-6">
                     <ShieldCheck size={18} className="text-emerald-600" />
-                    <h4 className="text-xs font-black text-slate-700 uppercase tracking-widest">Offline PIN</h4>
+                    <h4 className="text-xs font-black text-slate-700 uppercase tracking-widest">
+                      Offline PIN
+                    </h4>
                   </div>
-                  <div className={`p-5 lg:p-6 rounded-[.5rem] border flex flex-col sm:flex-row sm:items-center justify-between gap-4 ${pinHasPin
-                    ? 'bg-emerald-50 border-emerald-100'
-                    : 'bg-amber-50 border-amber-100'
-                    }`}>
+                  <div
+                    className={`p-5 lg:p-6 rounded-[.5rem] border flex flex-col sm:flex-row sm:items-center justify-between gap-4 ${
+                      pinHasPin
+                        ? "bg-emerald-50 border-emerald-100"
+                        : "bg-amber-50 border-amber-100"
+                    }`}
+                  >
                     <div>
-                      <p className={`text-sm font-black mb-1 ${pinHasPin ? 'text-emerald-900' : 'text-amber-900'
-                        }`}>
-                        {pinHasPin ? '✓ Offline PIN is active' : 'No offline PIN set'}
-                      </p>
-                      <p className={`text-[10px] font-medium leading-relaxed max-w-md ${pinHasPin ? 'text-emerald-700' : 'text-amber-700'
-                        }`}>
+                      <p
+                        className={`text-sm font-black mb-1 ${
+                          pinHasPin ? "text-emerald-900" : "text-amber-900"
+                        }`}
+                      >
                         {pinHasPin
-                          ? 'Your session will lock (not log out) when you go offline. Enter your PIN to resume without internet.'
-                          : 'Without a PIN, you cannot log back in if you lose internet. Set one to protect your offline access.'}
+                          ? "✓ Offline PIN is active"
+                          : "No offline PIN set"}
+                      </p>
+                      <p
+                        className={`text-[10px] font-medium leading-relaxed max-w-md ${
+                          pinHasPin ? "text-emerald-700" : "text-amber-700"
+                        }`}
+                      >
+                        {pinHasPin
+                          ? "Your session will lock (not log out) when you go offline. Enter your PIN to resume without internet."
+                          : "Without a PIN, you cannot log back in if you lose internet. Set one to protect your offline access."}
                       </p>
                     </div>
                     {/* Fix button hierarchy: primary action first, destructive as text link below */}
@@ -678,14 +890,14 @@ export default function SettingsPage() {
                         onClick={() => setShowPinSetup(true)}
                         className="px-5 py-2.5 bg-[#0D4A3E] text-white rounded-[.5rem] text-[10px] font-black uppercase tracking-widest hover:bg-[#0A3D33] transition-all shadow-lg shadow-emerald-900/10"
                       >
-                        {pinHasPin ? 'Change PIN' : 'Set PIN'}
+                        {pinHasPin ? "Change PIN" : "Set PIN"}
                       </button>
                       {pinHasPin && (
                         <button
                           onClick={() => {
-                            clearOfflinePin()
-                            setPinHasPin(false)
-                            toast.success('Offline PIN removed')
+                            clearOfflinePin();
+                            setPinHasPin(false);
+                            toast.success("Offline PIN removed");
                           }}
                           className="text-[10px] font-bold text-red-400 hover:text-red-600 transition-colors underline underline-offset-2"
                         >
@@ -697,15 +909,22 @@ export default function SettingsPage() {
                 </div>
 
                 <div className="pt-8 lg:pt-10 border-t border-gray-100">
-                  <h4 className="text-xs font-black text-red-500 uppercase tracking-widest mb-6">Danger Zone</h4>
+                  <h4 className="text-xs font-black text-red-500 uppercase tracking-widest mb-6">
+                    Danger Zone
+                  </h4>
                   <div className="space-y-4">
                     <div className="p-5 lg:p-8 rounded-[.5rem] bg-amber-50 border border-amber-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                       <div>
-                        <p className="text-sm font-black text-amber-900">Deactivate Account</p>
-                        <p className="text-[10px] text-amber-700 font-bold mt-1">This will temporarily revoke access for all your staff logins.</p>
+                        <p className="text-sm font-black text-amber-900">
+                          Deactivate Account
+                        </p>
+                        <p className="text-[10px] text-amber-700 font-bold mt-1">
+                          This will temporarily revoke access for all your staff
+                          logins.
+                        </p>
                       </div>
                       <button
-                        onClick={() => setConfirmDeleteId('deactivate')}
+                        onClick={() => setConfirmDeleteId("deactivate")}
                         className="w-full sm:w-auto px-6 py-3 bg-amber-600 text-white rounded-[.5rem] text-[10px] font-black uppercase tracking-widest hover:bg-amber-700 transition-all shadow-lg shadow-amber-900/10"
                       >
                         Deactivate
@@ -714,11 +933,18 @@ export default function SettingsPage() {
 
                     <div className="p-5 lg:p-8 rounded-[.5rem] bg-red-50 border border-red-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                       <div>
-                        <p className="text-sm font-black text-red-900">Permanently Delete Profile & Facility Data</p>
-                        <p className="text-[10px] text-red-600 font-bold mt-1">Completely wipes your user account, staff, sales, inventory, and facility from hlynk.</p>
+                        <p className="text-sm font-black text-red-900">
+                          Permanently Delete Profile & Facility Data
+                        </p>
+                        <p className="text-[10px] text-red-600 font-bold mt-1">
+                          Completely wipes your user account, staff, sales,
+                          inventory, and facility from hlynk.
+                        </p>
                       </div>
                       <button
-                        onClick={() => setConfirmDeleteId('delete-profile-facility')}
+                        onClick={() =>
+                          setConfirmDeleteId("delete-profile-facility")
+                        }
                         className="w-full sm:w-auto px-6 py-3 bg-red-600 text-white rounded-[.5rem] text-[10px] font-black uppercase tracking-widest hover:bg-red-700 transition-all shadow-lg shadow-red-900/10"
                       >
                         Delete Profile & Facility
@@ -728,8 +954,6 @@ export default function SettingsPage() {
                 </div>
               </div>
             )}
-
-
           </div>
         </div>
       </div>
@@ -737,33 +961,41 @@ export default function SettingsPage() {
       <ConfirmModal
         isOpen={!!confirmDeleteId}
         title={
-          confirmDeleteId === 'delete-profile-facility'
-            ? 'PERMANENTLY DELETE PROFILE & FACILITY?'
-            : confirmDeleteId === 'deactivate'
-              ? 'Deactivate Account?'
-              : 'Reset Business Data?'
+          confirmDeleteId === "delete-profile-facility"
+            ? "PERMANENTLY DELETE PROFILE & FACILITY?"
+            : confirmDeleteId === "deactivate"
+              ? "Deactivate Account?"
+              : "Reset Business Data?"
         }
         message={
-          confirmDeleteId === 'delete-profile-facility'
-            ? 'CRITICAL WARNING: This will permanently erase your user profile, all staff logins, inventory, sales, financial records, and your facility tenant from hlynk. THIS CANNOT BE UNDONE. Are you absolutely sure?'
-            : confirmDeleteId === 'deactivate'
-              ? 'Are you sure you want to deactivate your account? This action will disable access for you and your staff.'
-              : 'Are you sure you want to reset workshop data? All sales and product data will be cleared.'
+          confirmDeleteId === "delete-profile-facility"
+            ? "CRITICAL WARNING: This will permanently erase your user profile, all staff logins, inventory, sales, financial records, and your facility tenant from hlynk. THIS CANNOT BE UNDONE. Are you absolutely sure?"
+            : confirmDeleteId === "deactivate"
+              ? "Are you sure you want to deactivate your account? This action will disable access for you and your staff."
+              : "Are you sure you want to reset workshop data? All sales and product data will be cleared."
         }
-        confirmText={confirmDeleteId === 'delete-profile-facility' ? 'Yes, Delete Everything' : 'Confirm'}
+        confirmText={
+          confirmDeleteId === "delete-profile-facility"
+            ? "Yes, Delete Everything"
+            : "Confirm"
+        }
         onConfirm={() => {
-          if (confirmDeleteId === 'deactivate') deactivateMutation.mutate()
-          if (confirmDeleteId === 'delete-profile-facility') deleteAccountMutation.mutate()
-          if (confirmDeleteId === 'clear-workshop') {
-            providersApi.clearData()
+          if (confirmDeleteId === "deactivate") deactivateMutation.mutate();
+          if (confirmDeleteId === "delete-profile-facility")
+            deleteAccountMutation.mutate();
+          if (confirmDeleteId === "clear-workshop") {
+            providersApi
+              .clearData()
               .then(() => {
-                toast.success('Business data, notifications & requests cleared')
-                queryClient.invalidateQueries()
-                setActiveTab('Profile')
+                toast.success(
+                  "Business data, notifications & requests cleared",
+                );
+                queryClient.invalidateQueries();
+                setActiveTab("Profile");
               })
-              .catch(err => toast.error(getErrorMessage(err)))
+              .catch((err) => toast.error(getErrorMessage(err)));
           }
-          setConfirmDeleteId(null)
+          setConfirmDeleteId(null);
         }}
         onCancel={() => setConfirmDeleteId(null)}
       />
@@ -772,26 +1004,30 @@ export default function SettingsPage() {
         {showPinSetup && (
           <PinSetupModal
             onDone={() => {
-              setShowPinSetup(false)
-              setPinHasPin(hasOfflinePin())
+              setShowPinSetup(false);
+              setPinHasPin(hasOfflinePin());
             }}
           />
         )}
       </AnimatePresence>
     </div>
-  )
+  );
 }
 
 function NotificationsPanel({ settings = {}, onUpdate }: any) {
-  const [pushState, setPushState] = useState<'subscribed' | 'denied' | 'prompt' | 'unsupported' | 'ios_browser'>('prompt');
+  const [pushState, setPushState] = useState<
+    "subscribed" | "denied" | "prompt" | "unsupported" | "ios_browser"
+  >("prompt");
   const [loading, setLoading] = useState(false);
-  const [soundEnabled, setSoundEnabled] = useState(isNotificationSoundEnabled());
+  const [soundEnabled, setSoundEnabled] = useState(
+    isNotificationSoundEnabled(),
+  );
   const [testingSound, setTestingSound] = useState(false);
 
   useEffect(() => {
     getPushSubscriptionState()
       .then(setPushState as any)
-      .catch(() => setPushState('prompt'));
+      .catch(() => setPushState("prompt"));
   }, []);
 
   const handlePushToggle = async (active: boolean) => {
@@ -799,15 +1035,15 @@ function NotificationsPanel({ settings = {}, onUpdate }: any) {
     try {
       if (active) {
         await subscribeToPushNotifications();
-        toast.success('Native notifications enabled!');
+        toast.success("Native notifications enabled!");
       } else {
         await unsubscribeFromPush();
-        toast.success('Native notifications disabled.');
+        toast.success("Native notifications disabled.");
       }
       const newState = await getPushSubscriptionState();
       setPushState(newState as any);
     } catch (err: any) {
-      toast.error(err.message || 'Failed to update push settings');
+      toast.error(err.message || "Failed to update push settings");
     } finally {
       setLoading(false);
     }
@@ -818,23 +1054,19 @@ function NotificationsPanel({ settings = {}, onUpdate }: any) {
     setNotificationSoundEnabled(active);
     if (active) {
       testNotificationSound();
-      toast.success('Notification tone enabled (loud.wav)');
+      toast.success("Notification tone enabled (loud.wav)");
     } else {
-      toast.info('Notification tone muted');
+      toast.info("Notification tone muted");
     }
   };
 
   const handleTestSound = async () => {
     setTestingSound(true);
     try {
-      const ok = await testNotificationSound();
-      if (ok) {
-        toast.success('Playing universal notification sound');
-      } else {
-        toast.error('Browser prevented audio playback. Please check device sound/mute switch.');
-      }
+      await testNotificationSound();
+      toast.success("Playing universal notification sound (loud.wav)");
     } catch (_) {
-      toast.error('Unable to play sound');
+      toast.error("Unable to play sound");
     } finally {
       setTimeout(() => setTestingSound(false), 800);
     }
@@ -845,9 +1077,13 @@ function NotificationsPanel({ settings = {}, onUpdate }: any) {
       <div className="bg-emerald-50 p-5 lg:p-6 rounded-[.5rem] border border-emerald-100 flex items-start gap-4">
         <Bell className="text-emerald-600 mt-1 shrink-0" size={24} />
         <div>
-          <h4 className="text-sm font-black text-emerald-900 uppercase tracking-widest mb-1">Native Alerts & Sound</h4>
+          <h4 className="text-sm font-black text-emerald-900 uppercase tracking-widest mb-1">
+            Native Alerts & Sound
+          </h4>
           <p className="text-xs text-emerald-700 leading-relaxed max-w-lg">
-            Enable native push notifications and alert tones to receive real-time audible alerts for M-Pesa payments, new orders, bookings, and critical security events across all your devices.
+            Enable native push notifications and alert tones to receive
+            real-time audible alerts for M-Pesa payments, new orders, bookings,
+            and critical security events across all your devices.
           </p>
         </div>
       </div>
@@ -856,43 +1092,61 @@ function NotificationsPanel({ settings = {}, onUpdate }: any) {
         {/* Push Notification Toggle */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 lg:p-6 bg-gray-50 rounded-[.5rem] border border-gray-100">
           <div>
-            <p className="font-black text-gray-900 text-sm">Web Push Notifications</p>
+            <p className="font-black text-gray-900 text-sm">
+              Web Push Notifications
+            </p>
             <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-1">
-              {pushState === 'subscribed' ? '✓ Currently Active' : pushState === 'denied' ? '⚠ Blocked in Browser' : 'Inactive'}
+              {pushState === "subscribed"
+                ? "✓ Currently Active"
+                : pushState === "denied"
+                  ? "⚠ Blocked in Browser"
+                  : "Inactive"}
             </p>
           </div>
           {loading ? (
             <ButtonLoader className="text-emerald-600" size={20} />
-          ) : pushState === 'unsupported' ? (
-            <span className="text-[10px] font-black text-red-400 uppercase tracking-widest">Unsupported</span>
-          ) : pushState === 'ios_browser' ? (
+          ) : pushState === "unsupported" ? (
+            <span className="text-[10px] font-black text-red-400 uppercase tracking-widest">
+              Unsupported
+            </span>
+          ) : pushState === "ios_browser" ? (
             <div className="flex flex-col items-start sm:items-end gap-2">
-              <span className="text-[10px] font-black text-amber-600 uppercase tracking-widest">Action Required</span>
+              <span className="text-[10px] font-black text-amber-600 uppercase tracking-widest">
+                Action Required
+              </span>
               <button
-                onClick={() => toast.info('To enable notifications on iPhone: Tap "Share" and select "Add to Home Screen". Push only works in standalone mode!')}
+                onClick={() =>
+                  toast.info(
+                    'To enable notifications on iPhone: Tap "Share" and select "Add to Home Screen". Push only works in standalone mode!',
+                  )
+                }
                 className="px-4 py-2 bg-amber-100 text-amber-700 rounded-[.5rem] text-[10px] font-black uppercase tracking-widest whitespace-nowrap"
               >
                 Setup on iPhone
               </button>
             </div>
-          ) : pushState === 'denied' ? (
+          ) : pushState === "denied" ? (
             <button
-              onClick={() => toast.info('Please reset notification permissions in your browser address bar.')}
+              onClick={() =>
+                toast.info(
+                  "Please reset notification permissions in your browser address bar.",
+                )
+              }
               className="px-4 py-2 bg-amber-100 text-amber-700 rounded-[.5rem] text-[10px] font-black uppercase tracking-widest"
             >
               How to fix?
             </button>
           ) : (
             <div className="flex items-center gap-3">
-              {pushState === 'subscribed' && (
+              {pushState === "subscribed" && (
                 <button
                   onClick={async () => {
                     try {
                       testNotificationSound();
-                      await api.post('/notifications/test');
-                      toast.success('Test notification sent!');
+                      await api.post("/notifications/test");
+                      toast.success("Test notification sent!");
                     } catch (err) {
-                      toast.error('Failed to send test');
+                      toast.error("Failed to send test");
                     }
                   }}
                   className="px-3 py-1.5 border border-emerald-100 text-emerald-600 rounded-[.4rem] text-[9px] font-black uppercase tracking-widest hover:bg-emerald-50 transition-all"
@@ -900,7 +1154,10 @@ function NotificationsPanel({ settings = {}, onUpdate }: any) {
                   Send Test
                 </button>
               )}
-              <Toggle active={pushState === 'subscribed'} onToggle={handlePushToggle} />
+              <Toggle
+                active={pushState === "subscribed"}
+                onToggle={handlePushToggle}
+              />
             </div>
           )}
         </div>
@@ -920,7 +1177,7 @@ function NotificationsPanel({ settings = {}, onUpdate }: any) {
               disabled={testingSound}
               className="px-3 py-1.5 border border-emerald-200 text-emerald-700 bg-emerald-50/60 rounded-[.4rem] text-[9px] font-black uppercase tracking-widest hover:bg-emerald-100 transition-all flex items-center gap-1.5 active:scale-95 cursor-pointer"
             >
-              <span>{testingSound ? '▶ Playing...' : '▶ Test Sound'}</span>
+              <span>{testingSound ? "▶ Playing..." : "▶ Test Sound"}</span>
             </button>
             <Toggle active={soundEnabled} onToggle={handleSoundToggle} />
           </div>
@@ -937,7 +1194,9 @@ function NotificationsPanel({ settings = {}, onUpdate }: any) {
             title="SMS Notifications"
             desc="Get critical alerts via SMS (charges apply)"
             active={settings?.smsNotifications || false}
-            onToggle={(v: boolean) => onUpdate({ ...settings, smsNotifications: v })}
+            onToggle={(v: boolean) =>
+              onUpdate({ ...settings, smsNotifications: v })
+            }
           />
           <ToggleItem
             title="Marketing updates"
@@ -951,20 +1210,30 @@ function NotificationsPanel({ settings = {}, onUpdate }: any) {
   );
 }
 
-function InputGroup({ label, value, onChange, placeholder, type = "text", mono = false, disabled = false }: any) {
+function InputGroup({
+  label,
+  value,
+  onChange,
+  placeholder,
+  type = "text",
+  mono = false,
+  disabled = false,
+}: any) {
   return (
-    <div className={`space-y-2 ${disabled ? 'opacity-60' : ''}`}>
-      <label className="text-xs font-black text-gray-400 uppercase tracking-widest">{label}</label>
+    <div className={`space-y-2 ${disabled ? "opacity-60" : ""}`}>
+      <label className="text-xs font-black text-gray-400 uppercase tracking-widest">
+        {label}
+      </label>
       <input
         type={type}
-        value={value ?? ''}
+        value={value ?? ""}
         onChange={(e) => onChange?.(e.target.value)}
         placeholder={placeholder}
         disabled={disabled}
-        className={`w-full bg-gray-50 border-none rounded-[.5rem] py-3.5 px-4 outline-none focus:ring-2 focus:ring-emerald-500/10 transition-all text-sm font-bold ${mono ? 'hl-mono' : ''} ${disabled ? 'cursor-not-allowed select-none' : ''}`}
+        className={`w-full bg-gray-50 border-none rounded-[.5rem] py-3.5 px-4 outline-none focus:ring-2 focus:ring-emerald-500/10 transition-all text-sm font-bold ${mono ? "hl-mono" : ""} ${disabled ? "cursor-not-allowed select-none" : ""}`}
       />
     </div>
-  )
+  );
 }
 
 function ToggleItem({ title, desc, active, onToggle }: any) {
@@ -976,76 +1245,106 @@ function ToggleItem({ title, desc, active, onToggle }: any) {
       </div>
       <Toggle active={active} onToggle={onToggle} />
     </div>
-  )
+  );
 }
 
-function Toggle({ active, onToggle }: { active: boolean; onToggle?: (v: boolean) => void }) {
+function Toggle({
+  active,
+  onToggle,
+}: {
+  active: boolean;
+  onToggle?: (v: boolean) => void;
+}) {
   return (
     <div
       onClick={() => onToggle?.(!active)}
-      className={`w-12 h-6 rounded-full p-1 transition-all cursor-pointer shrink-0 ${active ? 'bg-emerald-600' : 'bg-gray-300'}`}
+      className={`w-12 h-6 rounded-full p-1 transition-all cursor-pointer shrink-0 ${active ? "bg-emerald-600" : "bg-gray-300"}`}
     >
-      <div className={`w-4 h-4 bg-white rounded-full transition-all ${active ? 'translate-x-6' : 'translate-x-0'}`} />
+      <div
+        className={`w-4 h-4 bg-white rounded-full transition-all ${active ? "translate-x-6" : "translate-x-0"}`}
+      />
     </div>
-  )
+  );
 }
 
-
-function ModuleTile({ icon: Icon, label, sub, link, color, isImg = false, isComingSoon = false }: any) {
+function ModuleTile({
+  icon: Icon,
+  label,
+  sub,
+  link,
+  color,
+  isImg = false,
+  isComingSoon = false,
+}: any) {
   return (
-    <Link to={link} className={`p-5 lg:p-6 bg-gray-50 border border-gray-100 rounded-[.5rem] hover:bg-white hover:shadow-md transition-all group relative ${isComingSoon ? 'opacity-60 grayscale' : ''}`}>
+    <Link
+      to={link}
+      className={`p-5 lg:p-6 bg-gray-50 border border-gray-100 rounded-[.5rem] hover:bg-white hover:shadow-md transition-all group relative ${isComingSoon ? "opacity-60 grayscale" : ""}`}
+    >
       {isComingSoon && (
         <span className="absolute top-3 right-3 text-[8px] font-black bg-slate-200 text-slate-600 px-2 py-0.5 rounded-full uppercase tracking-widest">
           Soon
         </span>
       )}
-      <div className={`h-11 w-11 lg:h-12 lg:w-12 rounded-[.5rem] flex items-center justify-center mb-4 transition-transform group-hover:scale-110 ${color}`}>
+      <div
+        className={`h-11 w-11 lg:h-12 lg:w-12 rounded-[.5rem] flex items-center justify-center mb-4 transition-transform group-hover:scale-110 ${color}`}
+      >
         <Icon size={22} />
       </div>
       <div>
-        <p className="text-sm font-black text-gray-900 leading-none mb-1.5">{label}</p>
+        <p className="text-sm font-black text-gray-900 leading-none mb-1.5">
+          {label}
+        </p>
         {/* <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">{sub} {isComingSoon ? '(Coming Soon)' : ''}</p> */}
       </div>
     </Link>
-  )
+  );
 }
 
-
 function ActivityLogViewer() {
-  const [page, setPage] = useState(1)
-  const { data: logsData, isLoading: logsLoading, refetch } = useQuery({
-    queryKey: ['activity-logs', page],
-    queryFn: () => providersApi.getActivityLogs({ page, limit: 10 })
-  })
+  const [page, setPage] = useState(1);
+  const {
+    data: logsData,
+    isLoading: logsLoading,
+    refetch,
+  } = useQuery({
+    queryKey: ["activity-logs", page],
+    queryFn: () => providersApi.getActivityLogs({ page, limit: 10 }),
+  });
 
   const handleExport = () => {
-    if (!logsData?.data?.items) return
+    if (!logsData?.data?.items) return;
     const csvContent = [
-      ['Date', 'User', 'Action', 'Details', 'IP Address'],
+      ["Date", "User", "Action", "Details", "IP Address"],
       ...logsData.data.items.map((log: any) => [
         new Date(log.createdAt).toLocaleString(),
-        log.user?.name || 'System',
+        log.user?.name || "System",
         log.logName || log.action,
         log.details,
-        log.ipAddress
-      ])
-    ].map(e => e.join(",")).join("\n")
+        log.ipAddress,
+      ]),
+    ]
+      .map((e) => e.join(","))
+      .join("\n");
 
-    const blob = new Blob([csvContent], { type: 'text/csv' })
-    const url = window.URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `activity_logs_${new Date().toISOString()}.csv`
-    a.click()
-  }
+    const blob = new Blob([csvContent], { type: "text/csv" });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `activity_logs_${new Date().toISOString()}.csv`;
+    a.click();
+  };
 
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
         <div>
-          <h3 className="text-lg lg:text-xl font-black text-slate-900 tracking-tight mb-1">System Security Logs</h3>
+          <h3 className="text-lg lg:text-xl font-black text-slate-900 tracking-tight mb-1">
+            System Security Logs
+          </h3>
           <p className="text-[11px] text-slate-400 font-medium italic lowercase tracking-wider">
-            {logsData?.data?.pagination?.total || 0} secure events recorded in this audit period
+            {logsData?.data?.pagination?.total || 0} secure events recorded in
+            this audit period
           </p>
         </div>
         <div className="flex gap-2">
@@ -1069,32 +1368,65 @@ function ActivityLogViewer() {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-slate-50/50">
-                <th className="px-5 lg:px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest whitespace-nowrap">Event Timeline</th>
-                <th className="px-5 lg:px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest whitespace-nowrap">User Agent</th>
-                <th className="px-5 lg:px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest whitespace-nowrap">Operation</th>
-                <th className="px-5 lg:px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest whitespace-nowrap">Action Details</th>
+                <th className="px-5 lg:px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest whitespace-nowrap">
+                  Event Timeline
+                </th>
+                <th className="px-5 lg:px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest whitespace-nowrap">
+                  User Agent
+                </th>
+                <th className="px-5 lg:px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest whitespace-nowrap">
+                  Operation
+                </th>
+                <th className="px-5 lg:px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest whitespace-nowrap">
+                  Action Details
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50">
               {logsLoading ? (
-                <tr><td colSpan={4} className="p-20 text-center"><InlineLoader message="Loading activity..." /></td></tr>
+                <tr>
+                  <td colSpan={4} className="p-20 text-center">
+                    <InlineLoader message="Loading activity..." />
+                  </td>
+                </tr>
               ) : !logsData?.data?.items || logsData.data.items.length === 0 ? (
-                <tr><td colSpan={4} className="p-20 text-center text-slate-300 italic font-medium">No activity recorded for this period.</td></tr>
+                <tr>
+                  <td
+                    colSpan={4}
+                    className="p-20 text-center text-slate-300 italic font-medium"
+                  >
+                    No activity recorded for this period.
+                  </td>
+                </tr>
               ) : (
                 logsData.data.items.map((log: any) => (
-                  <tr key={log.id} className="hover:bg-emerald-50/30 transition-all group">
+                  <tr
+                    key={log.id}
+                    className="hover:bg-emerald-50/30 transition-all group"
+                  >
                     <td className="px-5 lg:px-8 py-5 whitespace-nowrap">
-                      <p className="text-xs font-black text-slate-900 leading-none mb-1">{new Date(log.createdAt).toLocaleDateString('en-US', { day: 'numeric', month: 'short' })}</p>
-                      <p className="text-[9px] font-bold text-slate-400 hl-mono">{new Date(log.createdAt).toLocaleTimeString()}</p>
+                      <p className="text-xs font-black text-slate-900 leading-none mb-1">
+                        {new Date(log.createdAt).toLocaleDateString("en-US", {
+                          day: "numeric",
+                          month: "short",
+                        })}
+                      </p>
+                      <p className="text-[9px] font-bold text-slate-400 hl-mono">
+                        {new Date(log.createdAt).toLocaleTimeString()}
+                      </p>
                     </td>
                     <td className="px-5 lg:px-8 py-5 whitespace-nowrap">
                       <div className="flex items-center gap-3">
                         <div className="h-8 w-8 rounded-[.5rem] bg-slate-50 flex items-center justify-center text-[10px] font-black text-slate-400 group-hover:bg-white transition-all shrink-0">
-                          {log.user?.name?.charAt(0).toUpperCase() || 'S'}
+                          {log.user?.name?.charAt(0).toUpperCase() || "S"}
                         </div>
                         <div>
-                          <p className="text-xs font-black text-slate-900 leading-none mb-1">{log.user?.name || 'System'}</p>
-                          <p className="text-[9px] font-medium text-slate-400">{log.ipAddress || 'Internal'}</p>
+                          <p className="text-xs font-black text-slate-900 leading-none mb-1">
+                            {log.user?.name || "System"}
+                          </p>
+                          <p className="text-[9px] font-medium text-slate-400">
+                            {log.ipAddress || "Internal"}
+                          </p>
                         </div>
                       </div>
                     </td>
@@ -1105,11 +1437,15 @@ function ActivityLogViewer() {
                     </td>
                     <td className="px-5 lg:px-8 py-5">
                       <div className="space-y-1.5">
-                        <p className="text-[11px] text-slate-600 font-medium max-w-[300px] leading-relaxed">{log.details}</p>
+                        <p className="text-[11px] text-slate-600 font-medium max-w-[300px] leading-relaxed">
+                          {log.details}
+                        </p>
                         {log.actionId && (
                           <div className="flex items-center gap-2">
                             <div className="h-1 w-1 rounded-full bg-emerald-500" />
-                            <span className="text-[9px] font-black uppercase tracking-widest text-emerald-600 hl-mono">Trace ID: {log.actionId}</span>
+                            <span className="text-[9px] font-black uppercase tracking-widest text-emerald-600 hl-mono">
+                              Trace ID: {log.actionId}
+                            </span>
                           </div>
                         )}
                       </div>
@@ -1121,36 +1457,47 @@ function ActivityLogViewer() {
           </table>
         </div>
 
-        {logsData?.data?.pagination && logsData.data.pagination.totalPages > 1 && (
-          <div className="p-5 lg:p-6 border-t border-slate-50 flex items-center justify-between bg-slate-50/20">
-            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-              Page {page} of {logsData.data.pagination.totalPages}
-            </p>
-            <div className="flex gap-2">
-              <button
-                onClick={() => setPage(p => Math.max(1, p - 1))}
-                disabled={page === 1}
-                className="h-10 px-4 bg-white border border-slate-100 rounded-[.5rem] text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-emerald-600 disabled:opacity-30"
-              >
-                Prev
-              </button>
-              <button
-                onClick={() => setPage(p => Math.min(logsData.data.pagination.totalPages, p + 1))}
-                disabled={page === logsData.data.pagination.totalPages}
-                className="h-10 px-4 bg-white border border-slate-100 rounded-[.5rem] text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-emerald-600 disabled:opacity-30"
-              >
-                Next
-              </button>
+        {logsData?.data?.pagination &&
+          logsData.data.pagination.totalPages > 1 && (
+            <div className="p-5 lg:p-6 border-t border-slate-50 flex items-center justify-between bg-slate-50/20">
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                Page {page} of {logsData.data.pagination.totalPages}
+              </p>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  disabled={page === 1}
+                  className="h-10 px-4 bg-white border border-slate-100 rounded-[.5rem] text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-emerald-600 disabled:opacity-30"
+                >
+                  Prev
+                </button>
+                <button
+                  onClick={() =>
+                    setPage((p) =>
+                      Math.min(logsData.data.pagination.totalPages, p + 1),
+                    )
+                  }
+                  disabled={page === logsData.data.pagination.totalPages}
+                  className="h-10 px-4 bg-white border border-slate-100 rounded-[.5rem] text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-emerald-600 disabled:opacity-30"
+                >
+                  Next
+                </button>
+              </div>
             </div>
-          </div>
-        )}
+          )}
       </div>
     </div>
-  )
+  );
 }
 
-function DataManagementPanel({ onConfirm, profile }: { onConfirm: (id: string) => void; profile: any }) {
-  const [showAdvanced, setShowAdvanced] = useState(false)
+function DataManagementPanel({
+  onConfirm,
+  profile,
+}: {
+  onConfirm: (id: string) => void;
+  profile: any;
+}) {
+  const [showAdvanced, setShowAdvanced] = useState(false);
 
   return (
     <div className="space-y-6 lg:space-y-8 animate-in fade-in slide-in-from-top-4 duration-500">
@@ -1158,13 +1505,18 @@ function DataManagementPanel({ onConfirm, profile }: { onConfirm: (id: string) =
       <div className="p-5 lg:p-8 bg-amber-50 border border-amber-100 rounded-[.5em] flex flex-col sm:flex-row items-start gap-5">
         <AlertTriangle className="text-amber-600 shrink-0 mt-1" size={24} />
         <div className="w-full">
-          <h4 className="text-lg font-black text-amber-900 mb-2">Reset Business Data</h4>
+          <h4 className="text-lg font-black text-amber-900 mb-2">
+            Reset Business Data
+          </h4>
           <p className="text-sm text-amber-800 leading-relaxed max-w-xl">
-            This action will <strong>permanently delete</strong> all your sales records, history, added products, expenses, customer logs, notifications, client orders, and hospitality records. This is useful for clearing test data before starting real operations.
+            This action will <strong>permanently delete</strong> all your sales
+            records, history, added products, expenses, customer logs,
+            notifications, client orders, and hospitality records. This is
+            useful for clearing test data before starting real operations.
           </p>
           <div className="mt-6 lg:mt-8 flex flex-col sm:flex-row gap-4">
             <button
-              onClick={() => onConfirm('clear-workshop')}
+              onClick={() => onConfirm("clear-workshop")}
               className="w-full sm:w-auto px-8 py-4 bg-amber-600 text-white rounded-[.5rem] font-black text-xs uppercase tracking-widest hover:bg-amber-700 transition-all shadow-xl shadow-amber-900/10 active:scale-95"
             >
               Reset Workshop Data
@@ -1175,13 +1527,17 @@ function DataManagementPanel({ onConfirm, profile }: { onConfirm: (id: string) =
 
       {/* Progressive Disclosure Toggle */}
       <button
-        onClick={() => setShowAdvanced(v => !v)}
+        onClick={() => setShowAdvanced((v) => !v)}
         className="w-full flex items-center justify-between p-4 bg-slate-50 border border-slate-100 rounded-[.5rem] text-slate-600 font-bold text-xs hover:bg-slate-100 transition-all"
       >
         <span className="flex items-center gap-2">
-          <AlertTriangle size={16} className="text-slate-400" /> Advanced & Destructive Danger Zone
+          <AlertTriangle size={16} className="text-slate-400" /> Advanced &
+          Destructive Danger Zone
         </span>
-        <ChevronDown size={16} className={`transition-transform ${showAdvanced ? 'rotate-180' : ''}`} />
+        <ChevronDown
+          size={16}
+          className={`transition-transform ${showAdvanced ? "rotate-180" : ""}`}
+        />
       </button>
 
       {showAdvanced && (
@@ -1189,13 +1545,18 @@ function DataManagementPanel({ onConfirm, profile }: { onConfirm: (id: string) =
           <div className="p-5 lg:p-8 bg-red-50 border border-red-100 rounded-[.5rem] flex flex-col sm:flex-row items-start gap-5">
             <Trash2 className="text-red-600 shrink-0 mt-1" size={24} />
             <div className="w-full">
-              <h4 className="text-lg font-black text-red-900 mb-2">Delete Profile & Facility Data</h4>
+              <h4 className="text-lg font-black text-red-900 mb-2">
+                Delete Profile & Facility Data
+              </h4>
               <p className="text-sm text-red-800 leading-relaxed max-w-xl">
-                Completely and permanently erases your user profile, facility tenant, staff logins, product catalog, sales, expenses, and financial logs from hlynk. <strong>This action cannot be undone.</strong>
+                Completely and permanently erases your user profile, facility
+                tenant, staff logins, product catalog, sales, expenses, and
+                financial logs from hlynk.{" "}
+                <strong>This action cannot be undone.</strong>
               </p>
               <div className="mt-6 lg:mt-8">
                 <button
-                  onClick={() => onConfirm('delete-profile-facility')}
+                  onClick={() => onConfirm("delete-profile-facility")}
                   className="w-full sm:w-auto px-8 py-4 bg-red-600 text-white rounded-[.5rem] font-black text-xs uppercase tracking-widest hover:bg-red-700 transition-all shadow-xl shadow-red-900/10 active:scale-95"
                 >
                   Delete Profile & Facility
@@ -1207,19 +1568,28 @@ function DataManagementPanel({ onConfirm, profile }: { onConfirm: (id: string) =
           <div className="p-5 lg:p-8 bg-blue-50 border border-blue-100 rounded-[.5rem] flex flex-col sm:flex-row items-start gap-5">
             <RefreshCcw className="text-blue-600 shrink-0 mt-1" size={24} />
             <div className="w-full">
-              <h4 className="text-lg font-black text-blue-900 mb-2">Wipe Application Cache</h4>
+              <h4 className="text-lg font-black text-blue-900 mb-2">
+                Wipe Application Cache
+              </h4>
               <p className="text-sm text-blue-800 leading-relaxed max-w-xl">
-                If you see errors like <strong>"Service worker took too long to activate"</strong> or "Old version detected", use this to force the app to refresh.
+                If you see errors like{" "}
+                <strong>"Service worker took too long to activate"</strong> or
+                "Old version detected", use this to force the app to refresh.
               </p>
               <div className="mt-6 lg:mt-8">
                 <button
                   onClick={async () => {
-                    if (confirm('This will wipe local caches and log you out to fix update issues. Proceed?')) {
-                      const registrations = await navigator.serviceWorker.getRegistrations();
+                    if (
+                      confirm(
+                        "This will wipe local caches and log you out to fix update issues. Proceed?",
+                      )
+                    ) {
+                      const registrations =
+                        await navigator.serviceWorker.getRegistrations();
                       for (let registration of registrations) {
                         await registration.unregister();
                       }
-                      if ('caches' in window) {
+                      if ("caches" in window) {
                         const keys = await caches.keys();
                         for (let key of keys) {
                           await caches.delete(key);
@@ -1228,14 +1598,19 @@ function DataManagementPanel({ onConfirm, profile }: { onConfirm: (id: string) =
                       const preserve: Record<string, string | null> = {};
                       for (let i = 0; i < localStorage.length; i++) {
                         const k = localStorage.key(i)!;
-                        if (k === 'hlynk_pin_prompted' || k.startsWith('hlynk_reviewed_')) {
+                        if (
+                          k === "hlynk_pin_prompted" ||
+                          k.startsWith("hlynk_reviewed_")
+                        ) {
                           preserve[k] = localStorage.getItem(k);
                         }
                       }
                       localStorage.clear();
-                      Object.entries(preserve).forEach(([k, v]) => { if (v !== null) localStorage.setItem(k, v); });
+                      Object.entries(preserve).forEach(([k, v]) => {
+                        if (v !== null) localStorage.setItem(k, v);
+                      });
                       sessionStorage.clear();
-                      window.location.href = '/login?reset=true';
+                      window.location.href = "/login?reset=true";
                     }
                   }}
                   className="w-full sm:w-auto px-8 py-4 bg-blue-600 text-white rounded-[.5rem] font-black text-xs uppercase tracking-widest hover:bg-blue-700 transition-all shadow-xl shadow-blue-900/10 active:scale-95"
@@ -1248,5 +1623,5 @@ function DataManagementPanel({ onConfirm, profile }: { onConfirm: (id: string) =
         </div>
       )}
     </div>
-  )
+  );
 }

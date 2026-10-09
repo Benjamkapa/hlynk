@@ -1,5 +1,5 @@
-import { useMemo, useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import { useMemo, useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import {
   Bell,
   Search,
@@ -16,190 +16,196 @@ import {
   Tag,
   Inbox,
   ShieldAlert,
-} from 'lucide-react'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { toast } from 'sonner'
-import { adminApi } from '../../lib/api/providers'
-import { api } from '../../lib/api/client'
-import { subscribeToPushNotifications, getPushSubscriptionState } from '../../lib/notifications/pushService'
-import { testNotificationSound } from '../../lib/notifications/sound'
-import InlineLoader, { ButtonLoader } from '../../components/shared/InlineLoader'
+} from "lucide-react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { adminApi } from "../../lib/api/providers";
+import { api } from "../../lib/api/client";
+import {
+  subscribeToPushNotifications,
+  getPushSubscriptionState,
+} from "../../lib/notifications/pushService";
+import { testNotificationSound } from "../../lib/notifications/sound";
+import InlineLoader, {
+  ButtonLoader,
+} from "../../components/shared/InlineLoader";
 
-type NotificationType = 'success' | 'warning' | 'danger' | string
+type NotificationType = "success" | "warning" | "danger" | string;
 
 function typeConfig(type: NotificationType) {
   switch (type) {
-    case 'success':
+    case "success":
       return {
         Icon: CheckCircle2,
-        label: 'Success',
-        icon: 'text-emerald-600',
-        iconBg: 'bg-emerald-50',
-        badge: 'bg-emerald-50 text-emerald-700 border-emerald-100',
-        accent: 'border-l-emerald-500',
-      }
-    case 'warning':
+        label: "Success",
+        icon: "text-emerald-600",
+        iconBg: "bg-emerald-50",
+        badge: "bg-emerald-50 text-emerald-700 border-emerald-100",
+        accent: "border-l-emerald-500",
+      };
+    case "warning":
       return {
         Icon: AlertCircle,
-        label: 'Warning',
-        icon: 'text-amber-600',
-        iconBg: 'bg-amber-50',
-        badge: 'bg-amber-50 text-amber-700 border-amber-100',
-        accent: 'border-l-amber-500',
-      }
-    case 'danger':
+        label: "Warning",
+        icon: "text-amber-600",
+        iconBg: "bg-amber-50",
+        badge: "bg-amber-50 text-amber-700 border-amber-100",
+        accent: "border-l-amber-500",
+      };
+    case "danger":
       return {
         Icon: AlertCircle,
-        label: 'Danger',
-        icon: 'text-red-600',
-        iconBg: 'bg-red-50',
-        badge: 'bg-red-50 text-red-700 border-red-100',
-        accent: 'border-l-red-500',
-      }
+        label: "Danger",
+        icon: "text-red-600",
+        iconBg: "bg-red-50",
+        badge: "bg-red-50 text-red-700 border-red-100",
+        accent: "border-l-red-500",
+      };
     default:
       return {
         Icon: Info,
-        label: type || 'System',
-        icon: 'text-blue-600',
-        iconBg: 'bg-blue-50',
-        badge: 'bg-blue-50 text-blue-700 border-blue-100',
-        accent: 'border-l-blue-500',
-      }
+        label: type || "System",
+        icon: "text-blue-600",
+        iconBg: "bg-blue-50",
+        badge: "bg-blue-50 text-blue-700 border-blue-100",
+        accent: "border-l-blue-500",
+      };
   }
 }
 
 function parseData(raw: unknown) {
-  if (!raw) return null
-  if (typeof raw === 'object') return raw as Record<string, unknown>
+  if (!raw) return null;
+  if (typeof raw === "object") return raw as Record<string, unknown>;
   try {
-    return JSON.parse(String(raw)) as Record<string, unknown>
+    return JSON.parse(String(raw)) as Record<string, unknown>;
   } catch {
-    return null
+    return null;
   }
 }
 
 function formatDate(value: unknown, detailed = false) {
-  const date = new Date(String(value))
-  if (Number.isNaN(date.getTime())) return 'Unknown date'
+  const date = new Date(String(value));
+  if (Number.isNaN(date.getTime())) return "Unknown date";
 
-  return date.toLocaleString([], detailed
-    ? {
-      weekday: 'short',
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    }
-    : {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    })
+  return date.toLocaleString(
+    [],
+    detailed
+      ? {
+          weekday: "short",
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+        }
+      : {
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+        },
+  );
 }
 
 export default function SystemNotificationsPage() {
-  const queryClient = useQueryClient()
-  const [search, setSearch] = useState('')
-  const [page, setPage] = useState(1)
-  const [selected, setSelected] = useState<any>(null)
-  const limit = 10
+  const queryClient = useQueryClient();
+  const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
+  const [selected, setSelected] = useState<any>(null);
+  const limit = 10;
 
   const { data, isLoading, isFetching } = useQuery<any>({
-    queryKey: ['admin-notifications', { search, page, limit }],
+    queryKey: ["admin-notifications", { search, page, limit }],
     queryFn: async () => {
-      const res = await adminApi.getNotifications({ search, page, limit })
-      return res.data
+      const res = await adminApi.getNotifications({ search, page, limit });
+      return res.data;
     },
-  })
+  });
 
   const deleteMutation = useMutation({
     mutationFn: (id: string) => adminApi.deleteNotification(id),
     onSuccess: () => {
-      toast.success('Notification deleted')
-      queryClient.invalidateQueries({ queryKey: ['admin-notifications'] })
-      setSelected(null)
+      toast.success("Notification deleted");
+      queryClient.invalidateQueries({ queryKey: ["admin-notifications"] });
+      setSelected(null);
     },
-    onError: () => toast.error('Failed to delete notification'),
-  })
+    onError: () => toast.error("Failed to delete notification"),
+  });
 
-  const items = data?.items ?? []
-  const total = Number(data?.pagination?.total ?? 0)
-  const pages = Number(data?.pagination?.pages ?? 1)
+  const items = data?.items ?? [];
+  const total = Number(data?.pagination?.total ?? 0);
+  const pages = Number(data?.pagination?.pages ?? 1);
 
   const unreadCount = useMemo(
     () => items.filter((item: any) => !item.isRead).length,
-    [items]
-  )
+    [items],
+  );
 
   const dangerCount = useMemo(
-    () => items.filter((item: any) => item.type === 'danger').length,
-    [items]
-  )
+    () => items.filter((item: any) => item.type === "danger").length,
+    [items],
+  );
 
   const handleDelete = (id: string) => {
-    if (window.confirm('Delete this notification permanently?')) {
-      deleteMutation.mutate(id)
+    if (window.confirm("Delete this notification permanently?")) {
+      deleteMutation.mutate(id);
     }
-  }
+  };
 
-  const [pushState, setPushState] = useState<'subscribed' | 'denied' | 'prompt' | 'unsupported' | 'ios_browser'>('prompt')
-  const [pushLoading, setPushLoading] = useState(false)
-  const [testSending, setTestSending] = useState(false)
+  const [pushState, setPushState] = useState<
+    "subscribed" | "denied" | "prompt" | "unsupported" | "ios_browser"
+  >("prompt");
+  const [pushLoading, setPushLoading] = useState(false);
+  const [testSending, setTestSending] = useState(false);
 
   useEffect(() => {
     getPushSubscriptionState()
       .then((s) => setPushState(s as any))
-      .catch(() => setPushState('prompt'))
-  }, [])
+      .catch(() => setPushState("prompt"));
+  }, []);
 
   const handleEnablePush = async () => {
-    setPushLoading(true)
+    setPushLoading(true);
     try {
-      await subscribeToPushNotifications()
-      toast.success('Native administrator push notifications enabled!')
-      const newState = await getPushSubscriptionState()
-      setPushState(newState as any)
+      await subscribeToPushNotifications();
+      toast.success("Native administrator push notifications enabled!");
+      const newState = await getPushSubscriptionState();
+      setPushState(newState as any);
     } catch (err: any) {
-      toast.error(err.message || 'Failed to enable notifications')
+      toast.error(err.message || "Failed to enable notifications");
     } finally {
-      setPushLoading(false)
+      setPushLoading(false);
     }
-  }
+  };
 
   const handleSendTestPush = async () => {
-    setTestSending(true)
+    setTestSending(true);
     try {
-      testNotificationSound()
-      await api.post('/notifications/test')
-      toast.success('Test notification sent with alert tone!')
+      testNotificationSound();
+      await api.post("/notifications/test");
+      toast.success("Test notification sent with alert tone!");
     } catch (err: any) {
-      toast.error(err.response?.data?.message || 'Failed to send test')
+      toast.error(err.response?.data?.message || "Failed to send test");
     } finally {
-      setTestSending(false)
+      setTestSending(false);
     }
-  }
+  };
 
   const handleTestTone = async () => {
     try {
-      const ok = await testNotificationSound()
-      if (ok) {
-        toast.success('Playing universal notification tone')
-      } else {
-        toast.error('Browser prevented audio playback. Please check device sound/mute switch.')
-      }
+      await testNotificationSound();
+      toast.success("Playing universal notification tone");
     } catch (_) {
-      toast.error('Unable to play tone')
+      toast.error("Unable to play tone");
     }
-  }
+  };
 
   const handleSearch = (value: string) => {
-    setSearch(value)
-    setPage(1)
-    setSelected(null)
-  }
+    setSearch(value);
+    setPage(1);
+    setSelected(null);
+  };
 
   return (
     <div className="w-full max-w-[1500px] mx-auto px-1 sm:px-2 pb-6">
@@ -227,25 +233,39 @@ export default function SystemNotificationsPage() {
                     )}
                   </div>
                   <p className="mt-1 text-xs sm:text-sm text-slate-500 font-medium">
-                    Monitor platform alerts, business activity and administrative events.
+                    Monitor platform alerts, business activity and
+                    administrative events.
                   </p>
                 </div>
               </div>
 
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 xl:min-w-[360px]">
                 <div className="rounded-xl border border-slate-100 bg-slate-50/70 px-3 py-2.5">
-                  <p className="text-[9px] font-black uppercase tracking-widest text-slate-400">Page</p>
+                  <p className="text-[9px] font-black uppercase tracking-widest text-slate-400">
+                    Page
+                  </p>
                   <p className="mt-0.5 text-sm font-black text-slate-800">
-                    {items.length} <span className="text-[10px] font-semibold text-slate-400">alerts</span>
+                    {items.length}{" "}
+                    <span className="text-[10px] font-semibold text-slate-400">
+                      alerts
+                    </span>
                   </p>
                 </div>
                 <div className="rounded-xl border border-amber-100 bg-amber-50/50 px-3 py-2.5">
-                  <p className="text-[9px] font-black uppercase tracking-widest text-amber-500">Unread</p>
-                  <p className="mt-0.5 text-sm font-black text-amber-700">{unreadCount}</p>
+                  <p className="text-[9px] font-black uppercase tracking-widest text-amber-500">
+                    Unread
+                  </p>
+                  <p className="mt-0.5 text-sm font-black text-amber-700">
+                    {unreadCount}
+                  </p>
                 </div>
                 <div className="hidden sm:block rounded-xl border border-red-100 bg-red-50/50 px-3 py-2.5">
-                  <p className="text-[9px] font-black uppercase tracking-widest text-red-400">Critical</p>
-                  <p className="mt-0.5 text-sm font-black text-red-600">{dangerCount}</p>
+                  <p className="text-[9px] font-black uppercase tracking-widest text-red-400">
+                    Critical
+                  </p>
+                  <p className="mt-0.5 text-sm font-black text-red-600">
+                    {dangerCount}
+                  </p>
                 </div>
               </div>
             </div>
@@ -253,16 +273,38 @@ export default function SystemNotificationsPage() {
             {/* Push Notification Quick Activation Strip */}
             <div className="mt-4 p-3.5 rounded-xl border border-slate-100 bg-slate-50/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div className="flex items-center gap-2.5">
-                <div className={`w-2 h-2 rounded-full shrink-0 ${pushState === 'subscribed' ? 'bg-emerald-500 animate-pulse' : 'bg-amber-400'}`} />
+                <div
+                  className={`w-2 h-2 rounded-full shrink-0 ${pushState === "subscribed" ? "bg-emerald-500 animate-pulse" : "bg-amber-400"}`}
+                />
                 <p className="text-xs font-semibold text-slate-700">
-                  {pushState === 'subscribed' ? (
-                    <span><strong className="text-slate-900">Web Push Active:</strong> You receive real-time OS alerts for payments, signups & system anomalies.</span>
-                  ) : pushState === 'denied' ? (
-                    <span><strong className="text-amber-700">Browser Blocked:</strong> Notification permissions are blocked. Click the lock/settings icon in your address bar to allow.</span>
-                  ) : pushState === 'unsupported' ? (
-                    <span className="text-slate-500">Push notifications are not supported in this browser.</span>
+                  {pushState === "subscribed" ? (
+                    <span>
+                      <strong className="text-slate-900">
+                        Web Push Active:
+                      </strong>{" "}
+                      You receive real-time OS alerts for payments, signups &
+                      system anomalies.
+                    </span>
+                  ) : pushState === "denied" ? (
+                    <span>
+                      <strong className="text-amber-700">
+                        Browser Blocked:
+                      </strong>{" "}
+                      Notification permissions are blocked. Click the
+                      lock/settings icon in your address bar to allow.
+                    </span>
+                  ) : pushState === "unsupported" ? (
+                    <span className="text-slate-500">
+                      Push notifications are not supported in this browser.
+                    </span>
                   ) : (
-                    <span><strong className="text-slate-900">Enable Desktop & Mobile Push:</strong> Receive instant alerts even when the admin portal is closed.</span>
+                    <span>
+                      <strong className="text-slate-900">
+                        Enable Desktop & Mobile Push:
+                      </strong>{" "}
+                      Receive instant alerts even when the admin portal is
+                      closed.
+                    </span>
                   )}
                 </p>
               </div>
@@ -275,22 +317,30 @@ export default function SystemNotificationsPage() {
                 >
                   ▶ Test Tone
                 </button>
-                {pushState === 'subscribed' ? (
+                {pushState === "subscribed" ? (
                   <button
                     onClick={handleSendTestPush}
                     disabled={testSending}
                     className="px-2.5 py-1 text-[11px] font-bold text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-all flex items-center gap-1.5 disabled:opacity-50 shadow-xs cursor-pointer"
                   >
-                    {testSending ? <ButtonLoader size={12} /> : <Bell size={12} />}
+                    {testSending ? (
+                      <ButtonLoader size={12} />
+                    ) : (
+                      <Bell size={12} />
+                    )}
                     Test Push Alert
                   </button>
                 ) : (
                   <button
                     onClick={handleEnablePush}
-                    disabled={pushLoading || pushState === 'unsupported'}
+                    disabled={pushLoading || pushState === "unsupported"}
                     className="px-3 py-1.5 text-[11px] font-bold text-white bg-slate-900 hover:bg-black rounded-lg transition-all flex items-center gap-1.5 disabled:opacity-50 shadow-sm cursor-pointer"
                   >
-                    {pushLoading ? <ButtonLoader size={12} /> : <Bell size={12} />}
+                    {pushLoading ? (
+                      <ButtonLoader size={12} />
+                    ) : (
+                      <Bell size={12} />
+                    )}
                     Enable Push Alerts
                   </button>
                 )}
@@ -314,7 +364,7 @@ export default function SystemNotificationsPage() {
                 />
                 {search && (
                   <button
-                    onClick={() => handleSearch('')}
+                    onClick={() => handleSearch("")}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700"
                     aria-label="Clear search"
                   >
@@ -335,166 +385,203 @@ export default function SystemNotificationsPage() {
       </div>
 
       {/* Content */}
-      <div className={`grid gap-4 ${selected ? 'xl:grid-cols-[minmax(0,1fr)_380px]' : 'grid-cols-1'}`}>
-
+      <div
+        className={`grid gap-4 ${selected ? "xl:grid-cols-[minmax(0,1fr)_380px]" : "grid-cols-1"}`}
+      >
         {/* ── Mobile bottom-sheet modal (hidden on xl+) ── */}
-        {selected && (() => {
-          const cfgM = typeConfig(selected.type)
-          const IconM = cfgM.Icon
-          const payloadM = parseData(selected.data)
-          const payloadEntriesM = payloadM
-            ? Object.entries(payloadM).filter(([key]) => key !== 'url')
-            : []
+        {selected &&
+          (() => {
+            const cfgM = typeConfig(selected.type);
+            const IconM = cfgM.Icon;
+            const payloadM = parseData(selected.data);
+            const payloadEntriesM = payloadM
+              ? Object.entries(payloadM).filter(([key]) => key !== "url")
+              : [];
 
-          return (
-            <div className="xl:hidden">
-              {/* Backdrop */}
-              <div
-                className="fixed inset-0 z-40 bg-black/40 backdrop-blur-[2px]   animate-fadeIn"
-                onClick={() => setSelected(null)} 
-              />
-
-              {/* Sheet */}
+            return (
+              <div className="xl:hidden">
+                {/* Backdrop */}
                 <div
-                 className="fixed inset-x-0 bottom-0 z-50 flex flex-col rounded-t-2xl border-t border-slate-200 bg-white shadow-2xl max-h-[85dvh] animate-slideUp"
-                style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
-              >
-                {/* Drag handle */}
-                <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
-                  <div className="w-10 h-1 rounded-full bg-slate-200" />
-                </div>
+                  className="fixed inset-0 z-40 bg-black/40 backdrop-blur-[2px]   animate-fadeIn"
+                  onClick={() => setSelected(null)}
+                />
 
-                {/* Sheet header */}
-                <div className="h-12 px-4 border-b border-slate-100 bg-slate-50/70 flex items-center justify-between flex-shrink-0">
-                  <div className="flex items-center gap-2">
-                    <ShieldAlert className="w-4 h-4 text-slate-500" />
-                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-600">
-                      Notification Detail
-                    </span>
+                {/* Sheet */}
+                <div
+                  className="fixed inset-x-0 bottom-0 z-50 flex flex-col rounded-t-2xl border-t border-slate-200 bg-white shadow-2xl max-h-[85dvh] animate-slideUp"
+                  style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
+                >
+                  {/* Drag handle */}
+                  <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
+                    <div className="w-10 h-1 rounded-full bg-slate-200" />
                   </div>
-                  <button
-                    onClick={() => setSelected(null)}
-                    className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:bg-slate-200 hover:text-slate-700"
-                    aria-label="Close details"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-                </div>
 
-                {/* Scrollable body */}
-                <div className="overflow-y-auto flex-1">
-                  <div className="p-5">
-                    <div className="flex items-start gap-3">
-                      <div className={`w-11 h-11 rounded-xl ${cfgM.iconBg} flex items-center justify-center flex-shrink-0`}>
-                        <IconM className={`w-5 h-5 ${cfgM.icon}`} />
-                      </div>
-                      <div className="min-w-0">
-                        <span className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-md border text-[9px] font-black uppercase tracking-wider ${cfgM.badge}`}>
-                          <Tag className="w-2.5 h-2.5" />
-                          {cfgM.label}
-                        </span>
-                        <h2 className="mt-2 text-sm font-black leading-snug text-slate-900">
-                          {selected.title}
-                        </h2>
-                      </div>
-                    </div>
-
-                    <div className="mt-5">
-                      <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-2">Message</p>
-                      <div className="rounded-xl border border-slate-100 bg-slate-50 p-3.5">
-                        <p className="text-xs font-medium leading-relaxed text-slate-700">{selected.message}</p>
-                      </div>
-                    </div>
-
-                    {(selected.shopName || selected.shopOwnerName) && (
-                      <div className="mt-5">
-                        <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-2">Related Business</p>
-                        <div className="rounded-xl border border-slate-100 overflow-hidden">
-                          {selected.shopName && (
-                            <div className="px-3 py-2.5 flex items-center gap-2.5">
-                              <div className="w-7 h-7 rounded-lg bg-emerald-50 flex items-center justify-center">
-                                <Store className="w-3.5 h-3.5 text-emerald-600" />
-                              </div>
-                              <span className="text-xs font-bold text-slate-700 truncate">{selected.shopName}</span>
-                            </div>
-                          )}
-                          {selected.shopOwnerName && (
-                            <div className="px-3 py-2.5 border-t border-slate-100 flex items-center gap-2.5">
-                              <div className="w-7 h-7 rounded-lg bg-slate-100 flex items-center justify-center">
-                                <User className="w-3.5 h-3.5 text-slate-500" />
-                              </div>
-                              <span className="text-xs font-semibold text-slate-500 truncate">{selected.shopOwnerName}</span>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    )}
-
-                    <div className="mt-5">
-                      <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-2">Created</p>
-                      <div className="flex items-center gap-2 text-xs font-semibold text-slate-600">
-                        <Clock3 className="w-3.5 h-3.5 text-slate-400" />
-                        {formatDate(selected.createdAt, true)}
-                      </div>
-                    </div>
-
-                    <div className="mt-5">
-                      <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-2">Read Status</p>
-                      <span className={`inline-flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[10px] font-black ${
-                        selected.isRead ? 'bg-slate-100 text-slate-500' : 'bg-amber-50 text-amber-700'
-                      }`}>
-                        <span className={`w-1.5 h-1.5 rounded-full ${selected.isRead ? 'bg-slate-400' : 'bg-amber-500'}`} />
-                        {selected.isRead ? 'Read' : 'Unread'}
+                  {/* Sheet header */}
+                  <div className="h-12 px-4 border-b border-slate-100 bg-slate-50/70 flex items-center justify-between flex-shrink-0">
+                    <div className="flex items-center gap-2">
+                      <ShieldAlert className="w-4 h-4 text-slate-500" />
+                      <span className="text-[10px] font-black uppercase tracking-widest text-slate-600">
+                        Notification Detail
                       </span>
                     </div>
+                    <button
+                      onClick={() => setSelected(null)}
+                      className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:bg-slate-200 hover:text-slate-700"
+                      aria-label="Close details"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
 
-                    {payloadM && Object.keys(payloadM).length > 0 && (
-                      <div className="mt-5">
-                        <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-2">Additional Data</p>
-                        <div className="space-y-1.5">
-                          {payloadM.url != null && (
-                            <div className="rounded-lg border border-blue-100 bg-blue-50 px-3 py-2">
-                              <p className="text-[9px] font-black uppercase tracking-wider text-blue-400">URL</p>
-                              <p className="mt-0.5 text-[10px] font-semibold text-blue-700 break-all">{String(payloadM.url)}</p>
-                            </div>
-                          )}
-                          {payloadEntriesM.map(([key, value]) => (
-                            <div key={key} className="rounded-lg border border-slate-100 bg-slate-50 px-3 py-2">
-                              <p className="text-[9px] font-black uppercase tracking-wider text-slate-400">{key}</p>
-                              <p className="mt-0.5 text-[10px] font-semibold text-slate-700 break-all">
-                                {value === null
-                                  ? 'null'
-                                  : typeof value === 'object'
-                                    ? JSON.stringify(value) ?? ''
-                                    : String(value)}
-                              </p>
-                            </div>
-                          ))}
+                  {/* Scrollable body */}
+                  <div className="overflow-y-auto flex-1">
+                    <div className="p-5">
+                      <div className="flex items-start gap-3">
+                        <div
+                          className={`w-11 h-11 rounded-xl ${cfgM.iconBg} flex items-center justify-center flex-shrink-0`}
+                        >
+                          <IconM className={`w-5 h-5 ${cfgM.icon}`} />
+                        </div>
+                        <div className="min-w-0">
+                          <span
+                            className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-md border text-[9px] font-black uppercase tracking-wider ${cfgM.badge}`}
+                          >
+                            <Tag className="w-2.5 h-2.5" />
+                            {cfgM.label}
+                          </span>
+                          <h2 className="mt-2 text-sm font-black leading-snug text-slate-900">
+                            {selected.title}
+                          </h2>
                         </div>
                       </div>
-                    )}
+
+                      <div className="mt-5">
+                        <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-2">
+                          Message
+                        </p>
+                        <div className="rounded-xl border border-slate-100 bg-slate-50 p-3.5">
+                          <p className="text-xs font-medium leading-relaxed text-slate-700">
+                            {selected.message}
+                          </p>
+                        </div>
+                      </div>
+
+                      {(selected.shopName || selected.shopOwnerName) && (
+                        <div className="mt-5">
+                          <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-2">
+                            Related Business
+                          </p>
+                          <div className="rounded-xl border border-slate-100 overflow-hidden">
+                            {selected.shopName && (
+                              <div className="px-3 py-2.5 flex items-center gap-2.5">
+                                <div className="w-7 h-7 rounded-lg bg-emerald-50 flex items-center justify-center">
+                                  <Store className="w-3.5 h-3.5 text-emerald-600" />
+                                </div>
+                                <span className="text-xs font-bold text-slate-700 truncate">
+                                  {selected.shopName}
+                                </span>
+                              </div>
+                            )}
+                            {selected.shopOwnerName && (
+                              <div className="px-3 py-2.5 border-t border-slate-100 flex items-center gap-2.5">
+                                <div className="w-7 h-7 rounded-lg bg-slate-100 flex items-center justify-center">
+                                  <User className="w-3.5 h-3.5 text-slate-500" />
+                                </div>
+                                <span className="text-xs font-semibold text-slate-500 truncate">
+                                  {selected.shopOwnerName}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="mt-5">
+                        <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-2">
+                          Created
+                        </p>
+                        <div className="flex items-center gap-2 text-xs font-semibold text-slate-600">
+                          <Clock3 className="w-3.5 h-3.5 text-slate-400" />
+                          {formatDate(selected.createdAt, true)}
+                        </div>
+                      </div>
+
+                      <div className="mt-5">
+                        <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-2">
+                          Read Status
+                        </p>
+                        <span
+                          className={`inline-flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[10px] font-black ${
+                            selected.isRead
+                              ? "bg-slate-100 text-slate-500"
+                              : "bg-amber-50 text-amber-700"
+                          }`}
+                        >
+                          <span
+                            className={`w-1.5 h-1.5 rounded-full ${selected.isRead ? "bg-slate-400" : "bg-amber-500"}`}
+                          />
+                          {selected.isRead ? "Read" : "Unread"}
+                        </span>
+                      </div>
+
+                      {payloadM && Object.keys(payloadM).length > 0 && (
+                        <div className="mt-5">
+                          <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-2">
+                            Additional Data
+                          </p>
+                          <div className="space-y-1.5">
+                            {payloadM.url != null && (
+                              <div className="rounded-lg border border-blue-100 bg-blue-50 px-3 py-2">
+                                <p className="text-[9px] font-black uppercase tracking-wider text-blue-400">
+                                  URL
+                                </p>
+                                <p className="mt-0.5 text-[10px] font-semibold text-blue-700 break-all">
+                                  {String(payloadM.url)}
+                                </p>
+                              </div>
+                            )}
+                            {payloadEntriesM.map(([key, value]) => (
+                              <div
+                                key={key}
+                                className="rounded-lg border border-slate-100 bg-slate-50 px-3 py-2"
+                              >
+                                <p className="text-[9px] font-black uppercase tracking-wider text-slate-400">
+                                  {key}
+                                </p>
+                                <p className="mt-0.5 text-[10px] font-semibold text-slate-700 break-all">
+                                  {value === null
+                                    ? "null"
+                                    : typeof value === "object"
+                                      ? (JSON.stringify(value) ?? "")
+                                      : String(value)}
+                                </p>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Delete footer */}
+                  <div className="px-5 py-4 border-t border-slate-100 bg-slate-50/60 flex-shrink-0">
+                    <button
+                      onClick={() => handleDelete(selected.id)}
+                      disabled={deleteMutation.isPending}
+                      className="w-full h-9 rounded-lg border border-red-200 bg-white text-red-600 hover:bg-red-50 text-[11px] font-black flex items-center justify-center gap-2 transition-colors disabled:opacity-50"
+                    >
+                      {deleteMutation.isPending ? (
+                        <ButtonLoader size={14} />
+                      ) : (
+                        <Trash2 className="w-3.5 h-3.5" />
+                      )}
+                      Delete Notification
+                    </button>
                   </div>
                 </div>
-
-                {/* Delete footer */}
-                <div className="px-5 py-4 border-t border-slate-100 bg-slate-50/60 flex-shrink-0">
-                  <button
-                    onClick={() => handleDelete(selected.id)}
-                    disabled={deleteMutation.isPending}
-                    className="w-full h-9 rounded-lg border border-red-200 bg-white text-red-600 hover:bg-red-50 text-[11px] font-black flex items-center justify-center gap-2 transition-colors disabled:opacity-50"
-                  >
-                    {deleteMutation.isPending ? (
-                      <ButtonLoader size={14} />
-                    ) : (
-                      <Trash2 className="w-3.5 h-3.5" />
-                    )}
-                    Delete Notification
-                  </button>
-                </div>
               </div>
-            </div>
-          )
-        })()}
+            );
+          })()}
         {/* Notification list */}
         <section className="min-w-0 rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
           <div className="h-12 px-4 sm:px-5 border-b border-slate-100 bg-slate-50/70 flex items-center justify-between">
@@ -515,7 +602,9 @@ export default function SystemNotificationsPage() {
             {isLoading ? (
               <div className="min-h-[420px] flex flex-col items-center justify-center">
                 <InlineLoader size="lg" message="Loading activity..." />
-                <p className="text-[11px] text-slate-400 mt-2">Fetching the latest notifications</p>
+                <p className="text-[11px] text-slate-400 mt-2">
+                  Fetching the latest notifications
+                </p>
               </div>
             ) : items.length === 0 ? (
               <div className="min-h-[420px] flex flex-col items-center justify-center px-6 text-center">
@@ -523,16 +612,18 @@ export default function SystemNotificationsPage() {
                   <Bell className="w-6 h-6 text-slate-300" />
                 </div>
                 <h3 className="text-sm font-black text-slate-700">
-                  {search ? 'No matching notifications' : 'No notifications yet'}
+                  {search
+                    ? "No matching notifications"
+                    : "No notifications yet"}
                 </h3>
                 <p className="max-w-sm mt-1.5 text-xs font-medium leading-relaxed text-slate-400">
                   {search
-                    ? 'Try a different search term or clear the current filter.'
-                    : 'System and business alerts will appear here when activity is recorded.'}
+                    ? "Try a different search term or clear the current filter."
+                    : "System and business alerts will appear here when activity is recorded."}
                 </p>
                 {search && (
                   <button
-                    onClick={() => handleSearch('')}
+                    onClick={() => handleSearch("")}
                     className="mt-4 px-3.5 py-2 rounded-lg bg-slate-900 text-white text-[11px] font-bold hover:bg-slate-800"
                   >
                     Clear search
@@ -542,32 +633,40 @@ export default function SystemNotificationsPage() {
             ) : (
               <div className="divide-y divide-slate-100">
                 {items.map((item: any) => {
-                  const cfg = typeConfig(item.type)
-                  const Icon = cfg.Icon
-                  const active = selected?.id === item.id
+                  const cfg = typeConfig(item.type);
+                  const Icon = cfg.Icon;
+                  const active = selected?.id === item.id;
 
                   return (
                     <button
                       key={item.id}
                       type="button"
                       onClick={() => setSelected(active ? null : item)}
-                      className={`w-full text-left px-4 sm:px-5 py-3.5 border-l-2 transition-all group ${active
+                      className={`w-full text-left px-4 sm:px-5 py-3.5 border-l-2 transition-all group ${
+                        active
                           ? `${cfg.accent} bg-emerald-50/40`
-                          : 'border-l-transparent hover:border-l-slate-300 hover:bg-slate-50/70'
-                        }`}
+                          : "border-l-transparent hover:border-l-slate-300 hover:bg-slate-50/70"
+                      }`}
                     >
                       <div className="flex items-start gap-3">
-                        <div className={`w-9 h-9 rounded-xl ${cfg.iconBg} flex items-center justify-center flex-shrink-0`}>
+                        <div
+                          className={`w-9 h-9 rounded-xl ${cfg.iconBg} flex items-center justify-center flex-shrink-0`}
+                        >
                           <Icon className={`w-[17px] h-[17px] ${cfg.icon}`} />
                         </div>
 
                         <div className="min-w-0 flex-1">
                           <div className="flex flex-wrap items-center gap-1.5">
-                            <p className={`text-xs font-black truncate ${active ? 'text-emerald-700' : 'text-slate-800'}`}>
+                            <p
+                              className={`text-xs font-black truncate ${active ? "text-emerald-700" : "text-slate-800"}`}
+                            >
                               {item.title}
                             </p>
                             {!item.isRead && (
-                              <span className="w-1.5 h-1.5 rounded-full bg-amber-500 flex-shrink-0" title="Unread" />
+                              <span
+                                className="w-1.5 h-1.5 rounded-full bg-amber-500 flex-shrink-0"
+                                title="Unread"
+                              />
                             )}
                           </div>
 
@@ -576,7 +675,9 @@ export default function SystemNotificationsPage() {
                           </p>
 
                           <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1">
-                            <span className={`inline-flex items-center px-1.5 py-0.5 rounded border text-[9px] font-black uppercase tracking-wider ${cfg.badge}`}>
+                            <span
+                              className={`inline-flex items-center px-1.5 py-0.5 rounded border text-[9px] font-black uppercase tracking-wider ${cfg.badge}`}
+                            >
                               {cfg.label}
                             </span>
 
@@ -594,11 +695,16 @@ export default function SystemNotificationsPage() {
                           </div>
                         </div>
 
-                        <ChevronRight className={`w-4 h-4 mt-2 flex-shrink-0 transition-transform ${active ? 'rotate-90 text-emerald-600' : 'text-slate-300 group-hover:text-slate-500'
-                          }`} />
+                        <ChevronRight
+                          className={`w-4 h-4 mt-2 flex-shrink-0 transition-transform ${
+                            active
+                              ? "rotate-90 text-emerald-600"
+                              : "text-slate-300 group-hover:text-slate-500"
+                          }`}
+                        />
                       </div>
                     </button>
-                  )
+                  );
                 })}
               </div>
             )}
@@ -609,21 +715,20 @@ export default function SystemNotificationsPage() {
               <p className="text-[10px] sm:text-[11px] font-semibold text-slate-400">
                 <span className="text-slate-700 font-black">
                   {Math.min((page - 1) * limit + 1, total)}
-                </span>
-                {' '}–{' '}
+                </span>{" "}
+                –{" "}
                 <span className="text-slate-700 font-black">
                   {Math.min(page * limit, total)}
-                </span>
-                {' '}of{' '}
-                <span className="text-slate-700 font-black">{total}</span>
+                </span>{" "}
+                of <span className="text-slate-700 font-black">{total}</span>
               </p>
 
               <div className="flex items-center gap-1">
                 <button
                   disabled={page <= 1 || isFetching}
                   onClick={() => {
-                    setPage((p) => p - 1)
-                    setSelected(null)
+                    setPage((p) => p - 1);
+                    setSelected(null);
                   }}
                   className="w-8 h-8 rounded-lg border border-slate-200 bg-white flex items-center justify-center text-slate-500 hover:text-slate-900 hover:bg-slate-50 disabled:opacity-40 disabled:pointer-events-none"
                   aria-label="Previous page"
@@ -636,8 +741,8 @@ export default function SystemNotificationsPage() {
                 <button
                   disabled={page >= pages || isFetching}
                   onClick={() => {
-                    setPage((p) => p + 1)
-                    setSelected(null)
+                    setPage((p) => p + 1);
+                    setSelected(null);
                   }}
                   className="w-8 h-8 rounded-lg border border-slate-200 bg-white flex items-center justify-center text-slate-500 hover:text-slate-900 hover:bg-slate-50 disabled:opacity-40 disabled:pointer-events-none"
                   aria-label="Next page"
@@ -650,168 +755,182 @@ export default function SystemNotificationsPage() {
         </section>
 
         {/* Detail panel */}
-        {selected && (() => {
-          const cfg = typeConfig(selected.type)
-          const Icon = cfg.Icon
-          const payload = parseData(selected.data)
-          const payloadEntries = payload
-            ? Object.entries(payload).filter(([key]) => key !== 'url')
-            : []
+        {selected &&
+          (() => {
+            const cfg = typeConfig(selected.type);
+            const Icon = cfg.Icon;
+            const payload = parseData(selected.data);
+            const payloadEntries = payload
+              ? Object.entries(payload).filter(([key]) => key !== "url")
+              : [];
 
-          return (
-            <aside className="hidden xl:block rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden h-fit xl:sticky xl:top-4">
-              <div className="h-12 px-4 border-b border-slate-100 bg-slate-50/70 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <ShieldAlert className="w-4 h-4 text-slate-500" />
-                  <span className="text-[10px] font-black uppercase tracking-widest text-slate-600">
-                    Notification Detail
-                  </span>
-                </div>
-                <button
-                  onClick={() => setSelected(null)}
-                  className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:bg-slate-200 hover:text-slate-700"
-                  aria-label="Close details"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-
-              <div className="p-5">
-                <div className="flex items-start gap-3">
-                  <div className={`w-11 h-11 rounded-xl ${cfg.iconBg} flex items-center justify-center flex-shrink-0`}>
-                    <Icon className={`w-5 h-5 ${cfg.icon}`} />
-                  </div>
-                  <div className="min-w-0">
-                    <span className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-md border text-[9px] font-black uppercase tracking-wider ${cfg.badge}`}>
-                      <Tag className="w-2.5 h-2.5" />
-                      {cfg.label}
+            return (
+              <aside className="hidden xl:block rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden h-fit xl:sticky xl:top-4">
+                <div className="h-12 px-4 border-b border-slate-100 bg-slate-50/70 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <ShieldAlert className="w-4 h-4 text-slate-500" />
+                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-600">
+                      Notification Detail
                     </span>
-                    <h2 className="mt-2 text-sm font-black leading-snug text-slate-900">
-                      {selected.title}
-                    </h2>
                   </div>
+                  <button
+                    onClick={() => setSelected(null)}
+                    className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:bg-slate-200 hover:text-slate-700"
+                    aria-label="Close details"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
                 </div>
 
-                <div className="mt-5">
-                  <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-2">
-                    Message
-                  </p>
-                  <div className="rounded-xl border border-slate-100 bg-slate-50 p-3.5">
-                    <p className="text-xs font-medium leading-relaxed text-slate-700">
-                      {selected.message}
-                    </p>
-                  </div>
-                </div>
-
-                {(selected.shopName || selected.shopOwnerName) && (
-                  <div className="mt-5">
-                    <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-2">
-                      Related Business
-                    </p>
-                    <div className="rounded-xl border border-slate-100 overflow-hidden">
-                      {selected.shopName && (
-                        <div className="px-3 py-2.5 flex items-center gap-2.5">
-                          <div className="w-7 h-7 rounded-lg bg-emerald-50 flex items-center justify-center">
-                            <Store className="w-3.5 h-3.5 text-emerald-600" />
-                          </div>
-                          <span className="text-xs font-bold text-slate-700 truncate">
-                            {selected.shopName}
-                          </span>
-                        </div>
-                      )}
-                      {selected.shopOwnerName && (
-                        <div className="px-3 py-2.5 border-t border-slate-100 flex items-center gap-2.5">
-                          <div className="w-7 h-7 rounded-lg bg-slate-100 flex items-center justify-center">
-                            <User className="w-3.5 h-3.5 text-slate-500" />
-                          </div>
-                          <span className="text-xs font-semibold text-slate-500 truncate">
-                            {selected.shopOwnerName}
-                          </span>
-                        </div>
-                      )}
+                <div className="p-5">
+                  <div className="flex items-start gap-3">
+                    <div
+                      className={`w-11 h-11 rounded-xl ${cfg.iconBg} flex items-center justify-center flex-shrink-0`}
+                    >
+                      <Icon className={`w-5 h-5 ${cfg.icon}`} />
+                    </div>
+                    <div className="min-w-0">
+                      <span
+                        className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-md border text-[9px] font-black uppercase tracking-wider ${cfg.badge}`}
+                      >
+                        <Tag className="w-2.5 h-2.5" />
+                        {cfg.label}
+                      </span>
+                      <h2 className="mt-2 text-sm font-black leading-snug text-slate-900">
+                        {selected.title}
+                      </h2>
                     </div>
                   </div>
-                )}
 
-                <div className="mt-5">
-                  <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-2">
-                    Created
-                  </p>
-                  <div className="flex items-center gap-2 text-xs font-semibold text-slate-600">
-                    <Clock3 className="w-3.5 h-3.5 text-slate-400" />
-                    {formatDate(selected.createdAt, true)}
-                  </div>
-                </div>
-
-                <div className="mt-5">
-                  <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-2">
-                    Read Status
-                  </p>
-                  <span className={`inline-flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[10px] font-black ${selected.isRead
-                      ? 'bg-slate-100 text-slate-500'
-                      : 'bg-amber-50 text-amber-700'
-                    }`}>
-                    <span className={`w-1.5 h-1.5 rounded-full ${selected.isRead ? 'bg-slate-400' : 'bg-amber-500'
-                      }`} />
-                    {selected.isRead ? 'Read' : 'Unread'}
-                  </span>
-                </div>
-
-                {payload && Object.keys(payload).length > 0 && (
                   <div className="mt-5">
                     <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-2">
-                      Additional Data
+                      Message
                     </p>
-
-                    <div className="space-y-1.5">
-                      {payload.url != null && (
-                        <div className="rounded-lg border border-blue-100 bg-blue-50 px-3 py-2">
-                          <p className="text-[9px] font-black uppercase tracking-wider text-blue-400">
-                            URL
-                          </p>
-                          <p className="mt-0.5 text-[10px] font-semibold text-blue-700 break-all">
-                            {String(payload.url)}
-                          </p>
-                        </div>
-                      )}
-
-                      {payloadEntries.map(([key, value]) => (
-                        <div key={key} className="rounded-lg border border-slate-100 bg-slate-50 px-3 py-2">
-                          <p className="text-[9px] font-black uppercase tracking-wider text-slate-400">
-                            {key}
-                          </p>
-                          <p className="mt-0.5 text-[10px] font-semibold text-slate-700 break-all">
-                            {value === null
-                              ? 'null'
-                              : typeof value === 'object'
-                                ? JSON.stringify(value) ?? ''
-                                : String(value)}
-                          </p>
-                        </div>
-                      ))}
+                    <div className="rounded-xl border border-slate-100 bg-slate-50 p-3.5">
+                      <p className="text-xs font-medium leading-relaxed text-slate-700">
+                        {selected.message}
+                      </p>
                     </div>
                   </div>
-                )}
-              </div>
 
-              <div className="px-5 py-4 border-t border-slate-100 bg-slate-50/60">
-                <button
-                  onClick={() => handleDelete(selected.id)}
-                  disabled={deleteMutation.isPending}
-                  className="w-full h-9 rounded-lg border border-red-200 bg-white text-red-600 hover:bg-red-50 text-[11px] font-black flex items-center justify-center gap-2 transition-colors disabled:opacity-50"
-                >
-                  {deleteMutation.isPending ? (
-                    <ButtonLoader size={14} />
-                  ) : (
-                    <Trash2 className="w-3.5 h-3.5" />
+                  {(selected.shopName || selected.shopOwnerName) && (
+                    <div className="mt-5">
+                      <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-2">
+                        Related Business
+                      </p>
+                      <div className="rounded-xl border border-slate-100 overflow-hidden">
+                        {selected.shopName && (
+                          <div className="px-3 py-2.5 flex items-center gap-2.5">
+                            <div className="w-7 h-7 rounded-lg bg-emerald-50 flex items-center justify-center">
+                              <Store className="w-3.5 h-3.5 text-emerald-600" />
+                            </div>
+                            <span className="text-xs font-bold text-slate-700 truncate">
+                              {selected.shopName}
+                            </span>
+                          </div>
+                        )}
+                        {selected.shopOwnerName && (
+                          <div className="px-3 py-2.5 border-t border-slate-100 flex items-center gap-2.5">
+                            <div className="w-7 h-7 rounded-lg bg-slate-100 flex items-center justify-center">
+                              <User className="w-3.5 h-3.5 text-slate-500" />
+                            </div>
+                            <span className="text-xs font-semibold text-slate-500 truncate">
+                              {selected.shopOwnerName}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
                   )}
-                  Delete Notification
-                </button>
-              </div>
-            </aside>
-          )
-        })()}
+
+                  <div className="mt-5">
+                    <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-2">
+                      Created
+                    </p>
+                    <div className="flex items-center gap-2 text-xs font-semibold text-slate-600">
+                      <Clock3 className="w-3.5 h-3.5 text-slate-400" />
+                      {formatDate(selected.createdAt, true)}
+                    </div>
+                  </div>
+
+                  <div className="mt-5">
+                    <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-2">
+                      Read Status
+                    </p>
+                    <span
+                      className={`inline-flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[10px] font-black ${
+                        selected.isRead
+                          ? "bg-slate-100 text-slate-500"
+                          : "bg-amber-50 text-amber-700"
+                      }`}
+                    >
+                      <span
+                        className={`w-1.5 h-1.5 rounded-full ${
+                          selected.isRead ? "bg-slate-400" : "bg-amber-500"
+                        }`}
+                      />
+                      {selected.isRead ? "Read" : "Unread"}
+                    </span>
+                  </div>
+
+                  {payload && Object.keys(payload).length > 0 && (
+                    <div className="mt-5">
+                      <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-2">
+                        Additional Data
+                      </p>
+
+                      <div className="space-y-1.5">
+                        {payload.url != null && (
+                          <div className="rounded-lg border border-blue-100 bg-blue-50 px-3 py-2">
+                            <p className="text-[9px] font-black uppercase tracking-wider text-blue-400">
+                              URL
+                            </p>
+                            <p className="mt-0.5 text-[10px] font-semibold text-blue-700 break-all">
+                              {String(payload.url)}
+                            </p>
+                          </div>
+                        )}
+
+                        {payloadEntries.map(([key, value]) => (
+                          <div
+                            key={key}
+                            className="rounded-lg border border-slate-100 bg-slate-50 px-3 py-2"
+                          >
+                            <p className="text-[9px] font-black uppercase tracking-wider text-slate-400">
+                              {key}
+                            </p>
+                            <p className="mt-0.5 text-[10px] font-semibold text-slate-700 break-all">
+                              {value === null
+                                ? "null"
+                                : typeof value === "object"
+                                  ? (JSON.stringify(value) ?? "")
+                                  : String(value)}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <div className="px-5 py-4 border-t border-slate-100 bg-slate-50/60">
+                  <button
+                    onClick={() => handleDelete(selected.id)}
+                    disabled={deleteMutation.isPending}
+                    className="w-full h-9 rounded-lg border border-red-200 bg-white text-red-600 hover:bg-red-50 text-[11px] font-black flex items-center justify-center gap-2 transition-colors disabled:opacity-50"
+                  >
+                    {deleteMutation.isPending ? (
+                      <ButtonLoader size={14} />
+                    ) : (
+                      <Trash2 className="w-3.5 h-3.5" />
+                    )}
+                    Delete Notification
+                  </button>
+                </div>
+              </aside>
+            );
+          })()}
       </div>
     </div>
-  )
+  );
 }
