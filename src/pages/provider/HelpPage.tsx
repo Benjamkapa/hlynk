@@ -114,7 +114,14 @@ export default function HelpPage() {
       {/* Support Box */}
       <div className="p-6 bg-gray-50 rounded-[16px] border border-gray-100 flex items-center justify-between">
         <p className="text-sm font-medium text-gray-600">Need more help? Our team is available via chat.</p>
-        <a href="https://wa.me/254790590653" className="text-emerald-600 font-black text-sm hover:underline cursor-pointer">Contact Support</a>
+        <a 
+          href="https://wa.me/254750954980" 
+          target="_blank" 
+          rel="noopener noreferrer" 
+          className="text-emerald-600 font-black text-sm hover:underline cursor-pointer"
+        >
+          Contact Support
+        </a>
       </div>
 
       {/* Simple Step-by-Step Modal */}

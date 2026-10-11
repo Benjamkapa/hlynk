@@ -211,7 +211,7 @@ export default function PartnerProgram() {
                   </Link>
 
                   <a
-                    href="https://wa.me/254790590653?text=Hi%20hlynk%2C%20I%20want%20to%20know%20more%20about%20the%20Partner%20Program."
+                    href="https://wa.me/254750954980?text=Hi%20hlynk%2C%20I%20want%20to%20know%20more%20about%20the%20Partner%20Program."
                     target="_blank"
                     rel="noopener noreferrer"
                     className="w-full sm:w-auto px-6 py-4 border border-slate-200 hover:border-emerald-300 hover:bg-emerald-50/50 text-slate-600 hover:text-emerald-700 font-bold text-xs text-center rounded-xl transition-all flex items-center justify-center gap-2"

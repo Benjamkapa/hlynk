@@ -69,9 +69,9 @@ export default function SupportPage() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-        <ContactMethod icon={Phone} title="Call Us" value="+254 790 590 653" sub="Mon - Fri, 8am - 5pm" />
-        <ContactMethod icon={Mail} title="Email Us" value="info@hlynk.co.ke" sub="24/7 Response time" />
-        {/* <ContactMethod icon={MessageCircle} title="Live Chat" value="Start Chat" sub="Average wait: 2 mins" isAction /> */}
+        <ContactMethod icon={Phone} title="Call Us" value="+254 750 954 980" href="tel:+254750954980" sub="Mon - Fri, 8am - 5pm" />
+        <ContactMethod icon={MessageCircle} title="WhatsApp Us" value="0750954980" href="https://wa.me/254750954980" sub="Quick chat support" isAction />
+        <ContactMethod icon={Mail} title="Email Us" value="info@hlynk.co.ke" href="mailto:info@hlynk.co.ke" sub="24/7 Response time" />
       </div>
 
       <div className="bg-white rounded-[14px] border border-gray-100 shadow-sm p-8">
@@ -172,15 +172,25 @@ export default function SupportPage() {
   )
 }
 
-function ContactMethod({ icon: Icon, title, value, sub, isAction = false }: any) {
-  return (
-    <div className="bg-white p-8 rounded-[14px] border border-gray-100 shadow-sm text-center space-y-3 hover:shadow-md transition-all">
-      <div className="h-16 w-16 rounded-[14px] bg-emerald-50 text-emerald-600 flex items-center justify-center mx-auto mb-2">
+function ContactMethod({ icon: Icon, title, value, sub, isAction = false, href }: any) {
+  const content = (
+    <div className="bg-white p-8 rounded-[14px] border border-gray-100 shadow-sm text-center space-y-3 hover:shadow-md hover:border-emerald-200 transition-all cursor-pointer group">
+      <div className="h-16 w-16 rounded-[14px] bg-emerald-50 text-emerald-600 flex items-center justify-center mx-auto mb-2 group-hover:scale-105 transition-transform">
         <Icon size={32} />
       </div>
       <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{title}</p>
-      <h3 className={`text-lg font-black ${isAction ? 'text-emerald-600' : 'text-gray-900'}`}>{value}</h3>
+      <h3 className={`text-lg font-black transition-colors ${isAction ? 'text-emerald-600 group-hover:text-emerald-700' : 'text-gray-900 group-hover:text-emerald-600'}`}>{value}</h3>
       <p className="text-[10px] text-gray-500 font-bold">{sub}</p>
     </div>
   )
+
+  if (href) {
+    return (
+      <a href={href} target={href.startsWith('http') ? '_blank' : undefined} rel={href.startsWith('http') ? 'noopener noreferrer' : undefined} className="block">
+        {content}
+      </a>
+    )
+  }
+
+  return content
 }
