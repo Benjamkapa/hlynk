@@ -38,6 +38,10 @@ const faqs = [
   {
     question: "Can I install hlynk as an app on my iPhone or Android device?",
     answer: "Yes. hlynk is a Progressive Web App (PWA) that can be installed on your iPhone or Android device. Simply tap the 'Add to Home Screen' option in your browser to install Hlynk as an app on your device."
+  },
+  {
+    question:"How to install PWA in both android phone using chrome browser and safris in iO",
+    answer: "In android phone open chrome browser, type hlynk.co.ke, click on the three dots in the top right corner, click on 'Add to Home Screen'. In iOS phone open Safari browser, type hlynk.co.ke, click on the share button in the bottom, click on 'Add to Home Screen'."
   }
 ]
 

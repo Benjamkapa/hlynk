@@ -26,6 +26,8 @@ import {
   ShieldCheck,
   CreditCard,
   CaretDown as ChevronDown,
+  Wallet,
+  CheckSquare,
 } from "@phosphor-icons/react";
 import InlineLoader, {
   ButtonLoader,
@@ -810,6 +812,266 @@ export default function SettingsPage() {
                         handleModuleToggle("HOSPITALITY", active)
                       }
                     />
+                  </div>
+                </div>
+
+                {/* ── DIRECT PAYMENT CONFIGURATION ── */}
+                <div className="pt-6 border-t border-gray-50 mt-2">
+                  <div className="flex items-start gap-3 mb-4">
+                    <div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-[#0D4A3E]/10 text-[#0D4A3E]">
+                      <Wallet size={18} />
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-black text-gray-900">
+                        Direct Payment Configuration
+                      </h4>
+                      <p className="text-xs text-gray-500 font-medium mt-0.5">
+                        Configure your payment details so customers on your public store page get clear, step-by-step payment instructions (M-Pesa Paybill, Till, Send Money, etc.).
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="rounded-xl border border-gray-100 bg-gray-50/70 p-4 space-y-4">
+                    {/* Enable toggle */}
+                    <div className="flex items-center justify-between gap-4">
+                      <div>
+                        <p className="text-sm font-bold text-gray-800">Enable Direct Payment Guidance</p>
+                        <p className="text-[11px] text-gray-500 mt-0.5">Show a payment guide card at checkout on your public store page.</p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setFormData({
+                            ...formData,
+                            operationalSettings: {
+                              ...formData.operationalSettings,
+                              directPayment: {
+                                ...(formData.operationalSettings?.directPayment || {}),
+                                enabled: !(formData.operationalSettings?.directPayment?.enabled !== false),
+                              },
+                            },
+                          })
+                        }
+                        className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full transition-colors focus:outline-none ${
+                          formData.operationalSettings?.directPayment?.enabled !== false
+                            ? "bg-[#0D4A3E]"
+                            : "bg-gray-200"
+                        }`}
+                      >
+                        <span
+                          className={`inline-block h-5 w-5 mt-0.5 rounded-full bg-white shadow-sm transition-transform ${
+                            formData.operationalSettings?.directPayment?.enabled !== false
+                              ? "translate-x-5"
+                              : "translate-x-0.5"
+                          }`}
+                        />
+                      </button>
+                    </div>
+
+                    {formData.operationalSettings?.directPayment?.enabled !== false && (
+                      <div className="space-y-4 pt-2 border-t border-gray-100">
+                        {/* Method Type */}
+                        <div className="space-y-1.5">
+                          <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                            Payment Method Type *
+                          </label>
+                          <select
+                            value={formData.operationalSettings?.directPayment?.methodType || "MPESA_PAYBILL"}
+                            onChange={(e) =>
+                              setFormData({
+                                ...formData,
+                                operationalSettings: {
+                                  ...formData.operationalSettings,
+                                  directPayment: {
+                                    ...(formData.operationalSettings?.directPayment || {}),
+                                    methodType: e.target.value,
+                                  },
+                                },
+                              })
+                            }
+                            className="hl-select"
+                          >
+                            <option value="MPESA_PAYBILL">M-Pesa Paybill (Business Number)</option>
+                            <option value="MPESA_TILL">M-Pesa Till Number (Buy Goods)</option>
+                            <option value="MPESA_POCHI">M-Pesa Send Money / Pochi La Biashara</option>
+                            <option value="BANK_TRANSFER">Bank Transfer / Paybill</option>
+                            <option value="CUSTOM">Custom Instructions</option>
+                          </select>
+                        </div>
+
+                        {/* Business/Till Number */}
+                        {(formData.operationalSettings?.directPayment?.methodType !== "CUSTOM") && (
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-1.5">
+                              <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                                {formData.operationalSettings?.directPayment?.methodType === "MPESA_TILL"
+                                  ? "Till Number *"
+                                  : formData.operationalSettings?.directPayment?.methodType === "MPESA_POCHI"
+                                  ? "Phone Number *"
+                                  : "Paybill / Business Number *"}
+                              </label>
+                              <input
+                                type="text"
+                                value={formData.operationalSettings?.directPayment?.businessNumber || ""}
+                                onChange={(e) =>
+                                  setFormData({
+                                    ...formData,
+                                    operationalSettings: {
+                                      ...formData.operationalSettings,
+                                      directPayment: {
+                                        ...(formData.operationalSettings?.directPayment || {}),
+                                        businessNumber: e.target.value,
+                                      },
+                                    },
+                                  })
+                                }
+                                placeholder={
+                                  formData.operationalSettings?.directPayment?.methodType === "MPESA_TILL"
+                                    ? "e.g. 8765432"
+                                    : formData.operationalSettings?.directPayment?.methodType === "MPESA_POCHI"
+                                    ? "e.g. 0712345678"
+                                    : "e.g. 522522 or 4082140"
+                                }
+                                className="w-full bg-white border border-gray-200 rounded-[.5rem] py-3 px-4 outline-none focus:ring-2 focus:ring-emerald-500/20 text-sm font-mono font-bold"
+                              />
+                            </div>
+
+                            {/* Account Number — shown for all method types */}
+                            {formData.operationalSettings?.directPayment?.methodType !== "CUSTOM" && (
+                              <div className="space-y-1.5">
+                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                                  {formData.operationalSettings?.directPayment?.methodType === "BANK_TRANSFER"
+                                    ? "Bank Account Number *"
+                                    : formData.operationalSettings?.directPayment?.methodType === "MPESA_PAYBILL"
+                                    ? "Paybill Account Number (Optional)"
+                                    : "Account Number / Name (Optional)"}
+                                </label>
+                                <input
+                                  type="text"
+                                  value={formData.operationalSettings?.directPayment?.accountNumber || ""}
+                                  onChange={(e) =>
+                                    setFormData({
+                                      ...formData,
+                                      operationalSettings: {
+                                        ...formData.operationalSettings,
+                                        directPayment: {
+                                          ...(formData.operationalSettings?.directPayment || {}),
+                                          accountNumber: e.target.value,
+                                        },
+                                      },
+                                    })
+                                  }
+                                  placeholder={
+                                    formData.operationalSettings?.directPayment?.methodType === "BANK_TRANSFER"
+                                      ? "e.g. 01109012345600"
+                                      : formData.operationalSettings?.directPayment?.methodType === "MPESA_PAYBILL"
+                                      ? "e.g. STORE01 (leave empty to use Order #)"
+                                      : "e.g. MYSTORE (shown to customer as reference)"
+                                  }
+                                  className="w-full bg-white border border-gray-200 rounded-[.5rem] py-3 px-4 outline-none focus:ring-2 focus:ring-emerald-500/20 text-sm font-mono"
+                                />
+                                {formData.operationalSettings?.directPayment?.methodType === "MPESA_PAYBILL" && (
+                                  <p className="text-[11px] text-gray-400 font-medium">
+                                    This is shown to customers as the account number to enter during payment (e.g. your store code or your name).
+                                  </p>
+                                )}
+                                {(formData.operationalSettings?.directPayment?.methodType === "MPESA_TILL" ||
+                                  formData.operationalSettings?.directPayment?.methodType === "MPESA_POCHI") && (
+                                  <p className="text-[11px] text-gray-400 font-medium">
+                                    Optional label shown to your customer on the payment screen (e.g. your store name or a short reference).
+                                  </p>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        )}
+
+                        {/* Account Name */}
+                        <div className="space-y-1.5">
+                          <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                            Account / Business Name (shown to customers)
+                          </label>
+                          <input
+                            type="text"
+                            value={formData.operationalSettings?.directPayment?.accountName || formData.businessName || ""}
+                            onChange={(e) =>
+                              setFormData({
+                                ...formData,
+                                operationalSettings: {
+                                  ...formData.operationalSettings,
+                                  directPayment: {
+                                    ...(formData.operationalSettings?.directPayment || {}),
+                                    accountName: e.target.value,
+                                  },
+                                },
+                              })
+                            }
+                            placeholder="e.g. My Business Name"
+                            className="w-full bg-white border border-gray-200 rounded-[.5rem] py-3 px-4 outline-none focus:ring-2 focus:ring-emerald-500/20 text-sm font-semibold"
+                          />
+                        </div>
+
+                        {/* Custom Instructions */}
+                        {formData.operationalSettings?.directPayment?.methodType === "CUSTOM" && (
+                          <div className="space-y-1.5">
+                            <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                              Payment Instructions *
+                            </label>
+                            <textarea
+                              rows={4}
+                              value={formData.operationalSettings?.directPayment?.instructions || ""}
+                              onChange={(e) =>
+                                setFormData({
+                                  ...formData,
+                                  operationalSettings: {
+                                    ...formData.operationalSettings,
+                                    directPayment: {
+                                      ...(formData.operationalSettings?.directPayment || {}),
+                                      instructions: e.target.value,
+                                    },
+                                  },
+                                })
+                              }
+                              placeholder="Describe exactly how customers should pay you. E.g. Send money to 0712345678 (John Doe) via M-Pesa and take a screenshot as proof."
+                              className="w-full bg-white border border-gray-200 rounded-[.5rem] py-3 px-4 outline-none focus:ring-2 focus:ring-emerald-500/20 text-sm resize-none"
+                            />
+                          </div>
+                        )}
+
+                        {/* Footer note */}
+                        <div className="space-y-1.5">
+                          <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                            Footer Note (optional)
+                          </label>
+                          <input
+                            type="text"
+                            value={formData.operationalSettings?.directPayment?.footerNote || ""}
+                            onChange={(e) =>
+                              setFormData({
+                                ...formData,
+                                operationalSettings: {
+                                  ...formData.operationalSettings,
+                                  directPayment: {
+                                    ...(formData.operationalSettings?.directPayment || {}),
+                                    footerNote: e.target.value,
+                                  },
+                                },
+                              })
+                            }
+                            placeholder="e.g. Official payment for verified order"
+                            className="w-full bg-white border border-gray-200 rounded-[.5rem] py-3 px-4 outline-none focus:ring-2 focus:ring-emerald-500/20 text-sm"
+                          />
+                        </div>
+
+                        {/* Info notice */}
+                        <div className="flex items-start gap-2.5 rounded-xl border border-emerald-100 bg-emerald-50 p-3">
+                          <CheckSquare size={15} className="mt-0.5 shrink-0 text-emerald-600" />
+                          <p className="text-[11px] text-emerald-800 leading-relaxed font-medium">
+                            These payment details will appear as a <strong>step-by-step guided card</strong> in your public store checkout. Customers will be able to copy numbers and upload their receipt screenshot as proof of payment.
+                          </p>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
 

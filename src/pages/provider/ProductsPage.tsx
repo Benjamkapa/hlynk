@@ -366,6 +366,57 @@ export default function ProductsPage() {
                       const sStatus = req.saleStatus !== undefined && req.saleStatus !== null ? Number(req.saleStatus) : (payOption === 'PAY_UPFRONT' ? 2 : 1);
                       const mpesaReceipt = req.mpesaReceipt || msgData?.mpesaReceipt;
 
+                      // Direct manual payment (PAY_DIRECT)
+                      if (payOption === 'PAY_DIRECT') {
+                        const evidence = msgData?.paymentEvidence || {};
+                        const txCode = evidence.transactionCode || msgData?.transactionCode || req.transactionCode;
+                        const receiptUrl = evidence.receiptUrl || msgData?.receiptUrl;
+                        const paidAmt = evidence.paidAmount || msgData?.totalAmount;
+                        return (
+                          <div className="flex flex-col gap-2 p-3 rounded-[.5rem] bg-violet-50 border border-violet-200 text-violet-900 text-xs">
+                            <span className="font-bold flex items-center gap-1.5 text-violet-800">
+                              <CreditCard size={14} className="text-violet-600" />
+                              DIRECT PAYMENT — EVIDENCE PROVIDED
+                            </span>
+                            {txCode ? (
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <span className="text-violet-700">Transaction Code:</span>
+                                <span className="font-mono font-bold text-violet-950 bg-violet-100 px-2 py-0.5 rounded-md select-all tracking-widest">
+                                  {txCode}
+                                </span>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    navigator.clipboard.writeText(txCode);
+                                    toast.success('Transaction code copied');
+                                  }}
+                                  className="flex items-center gap-1 px-2 py-0.5 rounded bg-white border border-violet-200 text-[10px] font-semibold text-violet-700 hover:bg-violet-50 transition"
+                                >
+                                  <Clipboard size={11} /> Copy
+                                </button>
+                              </div>
+                            ) : (
+                              <span className="text-[10px] text-violet-600 italic">No transaction code provided by customer.</span>
+                            )}
+                            {paidAmt && (
+                              <span className="text-violet-700">Paid Amount: <strong className="text-violet-950">KES {Number(paidAmt).toLocaleString()}</strong></span>
+                            )}
+                            {receiptUrl && (
+                              <div className="mt-1">
+                                <p className="text-[10px] text-violet-700 font-semibold mb-1">Receipt Screenshot:</p>
+                                <a href={receiptUrl} target="_blank" rel="noopener noreferrer" className="inline-block">
+                                  <img
+                                    src={receiptUrl}
+                                    alt="Payment receipt"
+                                    className="h-28 rounded-lg border border-violet-200 object-cover shadow-sm hover:opacity-90 transition"
+                                  />
+                                </a>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      }
+
                       if (payOption === 'PAY_UPFRONT') {
                         if (sStatus === 0) {
                           return (
@@ -376,7 +427,7 @@ export default function ProductsPage() {
                               </span>
                               {mpesaReceipt && (
                                 <span className="text-[10px] text-emerald-700 font-mono">
-                                  {/* Receipt No: <strong className="text-slate-950">{mpesaReceipt}</strong> */}
+                                  Receipt: <strong className="text-emerald-950">{mpesaReceipt}</strong>
                                 </span>
                               )}
                             </div>

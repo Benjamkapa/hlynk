@@ -1,4 +1,10 @@
-import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from "react";
+import {
+  useEffect,
+  useMemo,
+  useState,
+  type FormEvent,
+  type ReactNode,
+} from "react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
 import {
@@ -27,8 +33,14 @@ import {
   SlidersHorizontal,
   Truck,
   Smartphone,
+  Wallet,
+  Clock,
 } from "lucide-react";
 import InlineLoader, { ButtonLoader } from "../components/shared/InlineLoader";
+import PaymentGuidanceCard, {
+  DirectPaymentConfig,
+  PaymentEvidence,
+} from "../components/shared/PaymentGuidanceCard";
 import { AnimatePresence, motion } from "framer-motion";
 import { toast } from "sonner";
 
@@ -97,6 +109,8 @@ interface Listing {
   businessType?: string;
   bannerUrl?: string;
   hasMpesaGateway?: boolean;
+  directPayment?: DirectPaymentConfig;
+  operationalSettings?: any;
   properties: Property[];
   rooms: Room[];
   products: Product[];
@@ -126,7 +140,10 @@ function formatPrice(price: number) {
 function formatWhatsAppNumber(phone?: string): string {
   if (!phone) return "";
   let cleaned = phone.replace(/[^0-9]/g, "");
-  if (cleaned.startsWith("0") && (cleaned.length === 10 || cleaned.length === 9)) {
+  if (
+    cleaned.startsWith("0") &&
+    (cleaned.length === 10 || cleaned.length === 9)
+  ) {
     cleaned = "254" + cleaned.slice(1);
   }
   return cleaned;
@@ -186,12 +203,18 @@ function GalleryModal({
 
         <div className="mt-3 flex items-center justify-between px-1 text-sm text-white/70">
           <span className="truncate">{title}</span>
-          {images.length > 0 && <span>{index + 1} / {images.length}</span>}
+          {images.length > 0 && (
+            <span>
+              {index + 1} / {images.length}
+            </span>
+          )}
         </div>
 
         {description && (
           <div className="mt-2 px-1 pb-2 max-h-[25vh] overflow-y-auto custom-scrollbar">
-            <p className="text-sm text-white/90 whitespace-pre-wrap break-words">{description}</p>
+            <p className="text-sm text-white/90 whitespace-pre-wrap break-words">
+              {description}
+            </p>
           </div>
         )}
 
@@ -208,7 +231,9 @@ function GalleryModal({
           <>
             <button
               type="button"
-              onClick={() => setIndex((value) => (value - 1 + images.length) % images.length)}
+              onClick={() =>
+                setIndex((value) => (value - 1 + images.length) % images.length)
+              }
               className="absolute left-3 top-1/2 grid h-11 w-11 -translate-y-1/2 place-items-center rounded-full bg-black/40 text-white backdrop-blur hover:bg-black/60"
               aria-label="Previous image"
             >
@@ -236,9 +261,13 @@ function EmptyState({ query }: { query: string }) {
       <div className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-slate-100 text-slate-500">
         <Search size={24} />
       </div>
-      <h3 className="mt-4 text-lg font-semibold text-slate-900">Nothing found</h3>
+      <h3 className="mt-4 text-lg font-semibold text-slate-900">
+        Nothing found
+      </h3>
       <p className="mt-1 text-sm text-slate-500">
-        {query ? `No results match "${query}". Try another search.` : "There are no items in this category yet."}
+        {query
+          ? `No results match "${query}". Try another search.`
+          : "There are no items in this category yet."}
       </p>
     </div>
   );
@@ -269,9 +298,10 @@ function CatalogCard({
   const description =
     "title" in item ? item.meta?.description : item.description;
   const price = "title" in item ? Number(item.basePrice) : Number(item.price);
-  const fallback = "title" in item ? <BedDouble size={24} /> : <Package size={24} />;
+  const fallback =
+    "title" in item ? <BedDouble size={24} /> : <Package size={24} />;
 
-  const allImgs = images.length > 0 ? images : (image ? [image] : []);
+  const allImgs = images.length > 0 ? images : image ? [image] : [];
   const activeImg = allImgs[currentIndex] || allImgs[0];
 
   const prevImg = (e: React.MouseEvent) => {
@@ -294,7 +324,13 @@ function CatalogCard({
           disabled={!activeImg && !description}
           onClick={onImageClick}
           className="relative h-[68px] w-[68px] min-w-[68px] overflow-hidden bg-[#f3f1ec] text-left disabled:cursor-default sm:h-[76px] sm:w-[76px] sm:min-w-[76px]"
-          aria-label={activeImg ? `View photos of ${title}` : (description ? `View details of ${title}` : undefined)}
+          aria-label={
+            activeImg
+              ? `View photos of ${title}`
+              : description
+                ? `View details of ${title}`
+                : undefined
+          }
         >
           {activeImg ? (
             <img
@@ -303,7 +339,9 @@ function CatalogCard({
               className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.03]"
             />
           ) : (
-            <div className="grid h-full place-items-center text-slate-400">{fallback}</div>
+            <div className="grid h-full place-items-center text-slate-400">
+              {fallback}
+            </div>
           )}
           {allImgs.length > 1 && (
             <span className="absolute bottom-1 right-1 rounded-full bg-slate-950/70 px-1.5 py-0.5 text-[8px] font-semibold text-white">
@@ -315,7 +353,9 @@ function CatalogCard({
         <div className="flex min-w-0 flex-1 items-center gap-3 px-3 py-2 sm:px-3.5">
           <div className="min-w-0 flex-1">
             <div className="flex min-w-0 items-center gap-2">
-              <h3 className="truncate text-[13px] font-semibold tracking-tight text-slate-950">{title}</h3>
+              <h3 className="truncate text-[13px] font-semibold tracking-tight text-slate-950">
+                {title}
+              </h3>
               {category && (
                 <span className="hidden shrink-0 rounded-full bg-slate-100 px-2 py-0.5 text-[8px] font-bold uppercase tracking-[0.08em] text-slate-500 sm:inline-flex">
                   {category}
@@ -360,7 +400,9 @@ function CatalogCard({
             className="h-full w-full object-cover transition duration-500 group-hover/card:scale-[1.035]"
           />
         ) : (
-          <div className="grid h-full place-items-center text-slate-400">{fallback}</div>
+          <div className="grid h-full place-items-center text-slate-400">
+            {fallback}
+          </div>
         )}
 
         <span className="absolute left-2 top-2 max-w-[calc(100%-16px)] truncate rounded-full bg-white/95 px-2 py-1 text-[8px] font-bold uppercase tracking-[0.08em] text-slate-600 shadow-sm backdrop-blur z-10">
@@ -398,8 +440,11 @@ function CatalogCard({
                     e.preventDefault();
                     setCurrentIndex(idx);
                   }}
-                  className={`h-1.5 rounded-full transition-all ${idx === currentIndex ? 'w-3 bg-white' : 'w-1.5 bg-white/50 hover:bg-white/80'
-                    }`}
+                  className={`h-1.5 rounded-full transition-all ${
+                    idx === currentIndex
+                      ? "w-3 bg-white"
+                      : "w-1.5 bg-white/50 hover:bg-white/80"
+                  }`}
                   title={`Photo ${idx + 1}`}
                 />
               ))}
@@ -409,14 +454,18 @@ function CatalogCard({
 
         {allImgs.length > 0 && (
           <span className="absolute bottom-2 right-2 rounded-full bg-slate-950/65 px-2 py-0.5 text-[8px] font-medium text-white backdrop-blur z-10">
-            {allImgs.length > 1 ? `${currentIndex + 1}/${allImgs.length}` : '1 photo'}
+            {allImgs.length > 1
+              ? `${currentIndex + 1}/${allImgs.length}`
+              : "1 photo"}
           </span>
         )}
       </div>
 
       <div className="flex min-h-[108px] flex-1 flex-col p-2.5 sm:p-3">
         <div className="min-w-0">
-          <h3 className="truncate text-[13px] font-semibold tracking-tight text-slate-950">{title}</h3>
+          <h3 className="truncate text-[13px] font-semibold tracking-tight text-slate-950">
+            {title}
+          </h3>
           {description && (
             <p className="mt-0.5 line-clamp-1 text-[10px] leading-4 text-slate-500">
               {description}
@@ -455,14 +504,15 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
   const isShopPath =
     isShopMode ||
     (typeof window !== "undefined" &&
-      (window.location.pathname.startsWith("/shop") || window.location.pathname.startsWith("/store")));
+      (window.location.pathname.startsWith("/shop") ||
+        window.location.pathname.startsWith("/store")));
 
   const [listing, setListing] = useState<Listing | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const [activeTab, setActiveTab] = useState<"rooms" | "products">(
-    isShopPath ? "products" : "rooms"
+    isShopPath ? "products" : "rooms",
   );
   const [filter, setFilter] = useState("all");
   const [categoryFilter, setCategoryFilter] = useState("all");
@@ -482,19 +532,78 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
   const [notes, setNotes] = useState("");
   const [submittingOrder, setSubmittingOrder] = useState(false);
 
-  const [paymentOption, setPaymentOption] = useState<"PAY_ON_DELIVERY" | "PAY_UPFRONT">("PAY_ON_DELIVERY");
+  const [paymentOption, setPaymentOption] = useState<
+    "DIRECT_PAYMENT" | "PAY_UPFRONT" | "PAY_ON_DELIVERY"
+  >("DIRECT_PAYMENT");
+  const [paymentEvidence, setPaymentEvidence] = useState<PaymentEvidence>({
+    transactionCode: "",
+  });
+  const [uploadingReceipt, setUploadingReceipt] = useState(false);
   const [mpesaPhone, setMpesaPhone] = useState("");
-  const [stkStatus, setStkStatus] = useState<"IDLE" | "SENDING" | "SENT" | "FAILED">("IDLE");
-  const [checkoutRequestId, setCheckoutRequestId] = useState<string | null>(null);
+  const [stkStatus, setStkStatus] = useState<
+    "IDLE" | "SENDING" | "SENT" | "FAILED"
+  >("IDLE");
+  const [checkoutRequestId, setCheckoutRequestId] = useState<string | null>(
+    null,
+  );
+  const checkoutRef = useMemo(
+    () => `ORD-${Math.floor(1000 + Math.random() * 9000)}`,
+    [],
+  );
+
+  const hasDirectPayment = Boolean(
+    listing?.directPayment &&
+    listing.directPayment.enabled !== false &&
+    listing.directPayment.businessNumber &&
+    listing.directPayment.businessNumber.trim().length > 0,
+  );
+
+  const effectiveDirectPayment: DirectPaymentConfig | null = useMemo(() => {
+    if (hasDirectPayment && listing?.directPayment) {
+      return listing.directPayment;
+    }
+    return null;
+  }, [listing, hasDirectPayment]);
 
   useEffect(() => {
-    if (listing && listing.hasMpesaGateway === false && paymentOption === "PAY_UPFRONT") {
-      setPaymentOption("PAY_ON_DELIVERY");
+    if (listing) {
+      if (hasDirectPayment) {
+        setPaymentOption("DIRECT_PAYMENT");
+      } else if (listing.hasMpesaGateway) {
+        setPaymentOption("PAY_UPFRONT");
+      } else {
+        setPaymentOption("PAY_ON_DELIVERY");
+      }
     }
-  }, [listing, paymentOption]);
+  }, [listing, hasDirectPayment]);
+
+  const handleUploadReceipt = async (file: File): Promise<string | null> => {
+    setUploadingReceipt(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const res = await axios.post(
+        `${API_URL}/api/v1/public/receipt`,
+        formData,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+        },
+      );
+      if (res.data.success && res.data.data?.url) {
+        toast.success("Receipt screenshot attached");
+        return res.data.data.url;
+      }
+      return null;
+    } catch (err: any) {
+      console.warn("Receipt upload fallback to local preview");
+      return null;
+    } finally {
+      setUploadingReceipt(false);
+    }
+  };
 
   const handleInitiateStkPush = async (): Promise<string | null> => {
-    const phoneToUse = (mpesaPhone.trim() || customerPhone.trim());
+    const phoneToUse = mpesaPhone.trim() || customerPhone.trim();
     if (!phoneToUse) {
       toast.error("Please enter your M-Pesa phone number");
       return null;
@@ -526,7 +635,9 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
       }
     } catch (err: any) {
       setStkStatus("FAILED");
-      toast.error(err.response?.data?.message || "Failed to send M-Pesa prompt");
+      toast.error(
+        err.response?.data?.message || "Failed to send M-Pesa prompt",
+      );
       return null;
     }
   };
@@ -549,6 +660,16 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
       return;
     }
 
+    if (
+      paymentOption === "DIRECT_PAYMENT" &&
+      !paymentEvidence.transactionCode.trim()
+    ) {
+      toast.error(
+        "Please enter your M-Pesa transaction code from the SMS receipt to confirm order.",
+      );
+      return;
+    }
+
     setSubmittingOrder(true);
     let activeReqId = checkoutRequestId;
 
@@ -561,6 +682,17 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
         }
       }
 
+      const backendPaymentOption =
+        paymentOption === "DIRECT_PAYMENT" ? "PAY_DIRECT" : paymentOption;
+      const backendPaymentEvidence =
+        paymentOption === "DIRECT_PAYMENT"
+          ? {
+              ...paymentEvidence,
+              paidAmount: totalCartAmount,
+              methodType: effectiveDirectPayment?.methodType || "MPESA_PAYBILL",
+            }
+          : undefined;
+
       const response = await axios.post(`${API_URL}/api/v1/public/order`, {
         slug,
         customerName,
@@ -568,16 +700,34 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
         deliveryAddress,
         notes,
         items: cart,
-        paymentOption,
+        paymentOption: backendPaymentOption,
+        paymentEvidence: backendPaymentEvidence,
         checkoutRequestId: activeReqId,
       });
 
+      const serverData = response.data?.data || {};
+      const isAutoVerified =
+        serverData.paymentStatus === "PAID" || serverData.verified === true;
+
       setOrderSuccess({
-        ...response.data.data,
+        ...serverData,
         orderedByName: customerName,
-        paymentOption,
-        paymentStatus: paymentOption === "PAY_UPFRONT" ? "PENDING_STK" : "PAY_ON_DELIVERY",
-        mpesaReceipt: null,
+        paymentOption: backendPaymentOption,
+        paymentEvidence: backendPaymentEvidence,
+        transactionCode:
+          paymentOption === "DIRECT_PAYMENT"
+            ? paymentEvidence.transactionCode || serverData.transactionCode
+            : null,
+        paymentStatus:
+          paymentOption === "DIRECT_PAYMENT"
+            ? isAutoVerified
+              ? "PAID"
+              : "AWAITING_VERIFICATION"
+            : paymentOption === "PAY_UPFRONT"
+              ? "PENDING_STK"
+              : "PAY_ON_DELIVERY",
+        mpesaReceipt:
+          paymentEvidence.transactionCode || serverData.transactionCode || null,
       });
 
       setCart([]);
@@ -586,16 +736,17 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
       setDeliveryAddress("");
       setNotes("");
       setMpesaPhone("");
+      setPaymentEvidence({ transactionCode: "" });
       setCheckoutRequestId(null);
       setStkStatus("IDLE");
       setIsOrdering(false);
       setIsCartOpen(false);
 
-      toast.success("Order submitted successfully");
+      // toast.success("Order submitted successfully");
     } catch (err: any) {
       toast.error(
         err.response?.data?.message ||
-        "Failed to submit order. Please try again."
+          "Failed to submit order. Please try again.",
       );
     } finally {
       setSubmittingOrder(false);
@@ -603,8 +754,15 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
   };
 
   useEffect(() => {
-    if (!orderSuccess?.saleId || orderSuccess.paymentOption !== "PAY_UPFRONT") return;
-    if (orderSuccess.paymentStatus === "PAID" || orderSuccess.paymentStatus === "CANCELLED" || orderSuccess.paymentStatus === "FAILED" || orderSuccess.paymentStatus === "TIMED_OUT") return;
+    if (!orderSuccess?.saleId || orderSuccess.paymentOption !== "PAY_UPFRONT")
+      return;
+    if (
+      orderSuccess.paymentStatus === "PAID" ||
+      orderSuccess.paymentStatus === "CANCELLED" ||
+      orderSuccess.paymentStatus === "FAILED" ||
+      orderSuccess.paymentStatus === "TIMED_OUT"
+    )
+      return;
 
     let pollAttempts = 0;
     const maxPolls = 12; // 12 polls * 3s = 36 seconds maximum spinning
@@ -612,16 +770,27 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
     const interval = setInterval(async () => {
       pollAttempts++;
       try {
-        const res = await axios.get(`${API_URL}/api/v1/public/order-status/${orderSuccess.saleId}`);
+        const res = await axios.get(
+          `${API_URL}/api/v1/public/order-status/${orderSuccess.saleId}`,
+        );
         if (res.data.success && res.data.data) {
           const { status, statusLabel, mpesaReceipt } = res.data.data;
           if (status === 0 || statusLabel === "PAID") {
-            setOrderSuccess((prev: any) => (prev ? { ...prev, paymentStatus: "PAID", mpesaReceipt } : null));
+            setOrderSuccess((prev: any) =>
+              prev ? { ...prev, paymentStatus: "PAID", mpesaReceipt } : null,
+            );
             toast.success(`M-Pesa payment received! Receipt: ${mpesaReceipt}`);
             clearInterval(interval);
             return;
-          } else if (status === 3 || statusLabel === "CANCELLED" || status === 4 || statusLabel === "FAILED") {
-            setOrderSuccess((prev: any) => (prev ? { ...prev, paymentStatus: "CANCELLED" } : null));
+          } else if (
+            status === 3 ||
+            statusLabel === "CANCELLED" ||
+            status === 4 ||
+            statusLabel === "FAILED"
+          ) {
+            setOrderSuccess((prev: any) =>
+              prev ? { ...prev, paymentStatus: "CANCELLED" } : null,
+            );
             toast.error("M-Pesa payment was cancelled or failed.");
             clearInterval(interval);
             return;
@@ -633,12 +802,20 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
 
       if (pollAttempts >= maxPolls) {
         clearInterval(interval);
-        setOrderSuccess((prev: any) => (prev && prev.paymentStatus === "PENDING_STK" ? { ...prev, paymentStatus: "TIMED_OUT" } : prev));
+        setOrderSuccess((prev: any) =>
+          prev && prev.paymentStatus === "PENDING_STK"
+            ? { ...prev, paymentStatus: "TIMED_OUT" }
+            : prev,
+        );
       }
     }, 3000);
 
     return () => clearInterval(interval);
-  }, [orderSuccess?.saleId, orderSuccess?.paymentOption, orderSuccess?.paymentStatus]);
+  }, [
+    orderSuccess?.saleId,
+    orderSuccess?.paymentOption,
+    orderSuccess?.paymentStatus,
+  ]);
 
   useEffect(() => {
     if (!slug) return;
@@ -690,7 +867,7 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
         return current.map((entry) =>
           entry.id === item.id
             ? { ...entry, quantity: entry.quantity + 1 }
-            : entry
+            : entry,
         );
       }
 
@@ -704,11 +881,9 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
     setCart((current) =>
       current
         .map((item) =>
-          item.id === id
-            ? { ...item, quantity: item.quantity + delta }
-            : item
+          item.id === id ? { ...item, quantity: item.quantity + delta } : item,
         )
-        .filter((item) => item.quantity > 0)
+        .filter((item) => item.quantity > 0),
     );
   };
 
@@ -717,22 +892,21 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
   };
 
   const totalCartAmount = useMemo(
-    () =>
-      cart.reduce(
-        (total, item) => total + item.price * item.quantity,
-        0
-      ),
-    [cart]
+    () => cart.reduce((total, item) => total + item.price * item.quantity, 0),
+    [cart],
   );
 
   const cartItemCount = useMemo(
     () => cart.reduce((total, item) => total + item.quantity, 0),
-    [cart]
+    [cart],
   );
 
   // ── Sticky header show/hide on scroll ──────────────────────────────────────
   const [headerVisible, setHeaderVisible] = useState(true);
-  const lastScrollYRef = typeof window !== 'undefined' ? { current: window.scrollY } : { current: 0 };
+  const lastScrollYRef =
+    typeof window !== "undefined"
+      ? { current: window.scrollY }
+      : { current: 0 };
 
   useEffect(() => {
     const onScroll = () => {
@@ -740,15 +914,18 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
       setHeaderVisible(currentY <= 10 || currentY < lastScrollYRef.current);
       lastScrollYRef.current = currentY;
     };
-    window.addEventListener('scroll', onScroll, { passive: true });
-    return () => window.removeEventListener('scroll', onScroll);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
   }, []);
-
 
   if (loading) {
     return (
       <div className="grid min-h-screen place-items-center bg-[#f6f6f4]">
-        <InlineLoader size="lg" message="Loading store..." color="text-slate-900" />
+        <InlineLoader
+          size="lg"
+          message="Loading store..."
+          color="text-slate-900"
+        />
       </div>
     );
   }
@@ -800,10 +977,14 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
   const allRooms = listing.rooms || [];
   const allProducts = listing.products || [];
 
-  const roomTypes = [...new Set(allRooms.map((room) => room.type).filter(Boolean))];
+  const roomTypes = [
+    ...new Set(allRooms.map((room) => room.type).filter(Boolean)),
+  ];
   const productCategories = [
     ...new Set(
-      allProducts.map((product) => product.category || "General").filter(Boolean)
+      allProducts
+        .map((product) => product.category || "General")
+        .filter(Boolean),
     ),
   ];
 
@@ -815,25 +996,24 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
       (room) =>
         !normalizedQuery ||
         room.title.toLowerCase().includes(normalizedQuery) ||
-        room.type.toLowerCase().includes(normalizedQuery)
+        room.type.toLowerCase().includes(normalizedQuery),
     );
 
   const filteredProducts = allProducts
     .filter(
       (product) =>
         categoryFilter === "all" ||
-        (product.category || "General") === categoryFilter
+        (product.category || "General") === categoryFilter,
     )
     .filter(
       (product) =>
         !normalizedQuery ||
         product.name.toLowerCase().includes(normalizedQuery) ||
-        (product.category || "").toLowerCase().includes(normalizedQuery)
+        (product.category || "").toLowerCase().includes(normalizedQuery),
     );
 
   const activeItems =
     activeTab === "rooms" && allRooms.length ? allRooms : allProducts;
-
 
   const activeCategories =
     activeTab === "rooms" ? roomTypes : productCategories;
@@ -843,8 +1023,7 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
     else setCategoryFilter(value);
   };
 
-  const currentFilter =
-    activeTab === "rooms" ? filter : categoryFilter;
+  const currentFilter = activeTab === "rooms" ? filter : categoryFilter;
 
   const sectionTitle =
     activeTab === "rooms" ? "Stay your way" : "Popular picks";
@@ -853,7 +1032,6 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
     activeTab === "rooms"
       ? "Choose the space that fits your visit."
       : "Explore what is available in store.";
-
 
   return (
     <div
@@ -864,10 +1042,10 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
       <header
         className="sticky top-0 z-[100] border-b border-slate-200/80 bg-white/85 backdrop-blur-2xl shadow-sm transition-transform duration-300"
         style={{
-          paddingTop: 'max(0.75rem, env(safe-area-inset-top, 0px))',
-          paddingLeft: 'max(1rem, env(safe-area-inset-left, 1rem))',
-          paddingRight: 'max(1rem, env(safe-area-inset-right, 1rem))',
-          transform: headerVisible ? 'translateY(0)' : 'translateY(-100%)',
+          paddingTop: "max(0.75rem, env(safe-area-inset-top, 0px))",
+          paddingLeft: "max(1rem, env(safe-area-inset-left, 1rem))",
+          paddingRight: "max(1rem, env(safe-area-inset-right, 1rem))",
+          transform: headerVisible ? "translateY(0)" : "translateY(-100%)",
         }}
       >
         <div className="mx-auto flex h-[56px] max-w-[1440px] items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
@@ -887,16 +1065,18 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
               className="truncate text-lg font-semibold tracking-tight text-slate-950 sm:text-xl"
               style={serif}
             >
-              {listing.businessName}
+              {/* {listing.businessName} */}
             </a>
           </div>
 
           {/* Glass nav pills */}
           <nav className="hidden items-center gap-1 md:flex">
             {[
-              { href: '#catalog', label: 'Shop' },
-              { href: '#featured', label: 'Featured' },
-              ...(listing.phone ? [{ href: '#contact', label: 'Contact' }] : []),
+              { href: "#catalog", label: "Shop" },
+              { href: "#featured", label: "Featured" },
+              ...(listing.phone
+                ? [{ href: "#contact", label: "Contact" }]
+                : []),
             ].map(({ href, label }) => (
               <a
                 key={href}
@@ -925,9 +1105,7 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
         </div>
       </header>
 
-      <main
-        className="mx-auto max-w-[1440px] px-4 pb-5 sm:px-6 lg:px-8 lg:pb-7"
-      >
+      <main className="mx-auto max-w-[1440px] px-4 pb-5 sm:px-6 lg:px-8 lg:pb-7">
         {/* UNIVERSAL STOREFRONT BANNER
             Product/service photos stay exclusively inside the catalogue. */}
         <section className="relative mt-1 overflow-hidden rounded-[26px] bg-slate-950">
@@ -943,7 +1121,7 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
 
           <div className="relative flex min-h-[300px] items-end p-6 sm:min-h-[350px] sm:p-9 lg:min-h-[390px]">
             <div className="max-w-2xl">
-              <div className="mb-4 flex flex-wrap items-center gap-2">
+              {/* <div className="mb-4 flex flex-wrap items-center gap-2">
                 <span className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.15em] text-white backdrop-blur">
                   <Sparkles size={12} />
                   {listing.category || listing.businessType || "Store"}
@@ -955,7 +1133,7 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
                     {listing.location}
                   </span>
                 )}
-              </div>
+              </div> */}
 
               <h1
                 className="text-4xl leading-[1.02] text-white sm:text-5xl lg:text-6xl"
@@ -1023,10 +1201,11 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
               <button
                 type="button"
                 onClick={() => switchTab("rooms")}
-                className={`relative px-4 py-3 text-sm font-semibold transition ${activeTab === "rooms"
-                  ? "text-slate-950"
-                  : "text-slate-400 hover:text-slate-700"
-                  }`}
+                className={`relative px-4 py-3 text-sm font-semibold transition ${
+                  activeTab === "rooms"
+                    ? "text-slate-950"
+                    : "text-slate-400 hover:text-slate-700"
+                }`}
               >
                 <span className="inline-flex items-center gap-2">
                   <BedDouble size={16} /> Hospitality
@@ -1039,10 +1218,11 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
               <button
                 type="button"
                 onClick={() => switchTab("products")}
-                className={`relative px-4 py-3 text-sm font-semibold transition ${activeTab === "products"
-                  ? "text-slate-950"
-                  : "text-slate-400 hover:text-slate-700"
-                  }`}
+                className={`relative px-4 py-3 text-sm font-semibold transition ${
+                  activeTab === "products"
+                    ? "text-slate-950"
+                    : "text-slate-400 hover:text-slate-700"
+                }`}
               >
                 <span className="inline-flex items-center gap-2">
                   <Package size={16} /> Products
@@ -1059,7 +1239,10 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
               <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-400">
                 {activeTab === "rooms" ? "Availability" : "Shop the collection"}
               </p>
-              <h2 className="mt-1 text-3xl text-slate-950 sm:text-4xl" style={serif}>
+              <h2
+                className="mt-1 text-3xl text-slate-950 sm:text-4xl"
+                style={serif}
+              >
                 {sectionTitle}
               </h2>
               <p className="mt-2 text-sm text-slate-500">{sectionSubtitle}</p>
@@ -1075,7 +1258,11 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
                   type="text"
                   value={searchQuery}
                   onChange={(event) => setSearchQuery(event.target.value)}
-                  placeholder={activeTab === "rooms" ? "Search spaces..." : "Search products..."}
+                  placeholder={
+                    activeTab === "rooms"
+                      ? "Search spaces..."
+                      : "Search products..."
+                  }
                   className="h-11 w-full rounded-full border border-slate-200 bg-white pl-10 pr-10 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-slate-400"
                 />
                 {searchQuery && (
@@ -1095,10 +1282,11 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
                 <button
                   type="button"
                   onClick={() => setViewMode("grid")}
-                  className={`grid h-9 w-9 place-items-center rounded-full transition active:scale-95 ${viewMode === "grid"
-                    ? "bg-slate-950 text-white shadow-sm"
-                    : "text-slate-400 hover:bg-white/80 hover:text-slate-700"
-                    }`}
+                  className={`grid h-9 w-9 place-items-center rounded-full transition active:scale-95 ${
+                    viewMode === "grid"
+                      ? "bg-slate-950 text-white shadow-sm"
+                      : "text-slate-400 hover:bg-white/80 hover:text-slate-700"
+                  }`}
                   aria-label="Grid view"
                 >
                   <LayoutGrid size={16} />
@@ -1106,10 +1294,11 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
                 <button
                   type="button"
                   onClick={() => setViewMode("list")}
-                  className={`grid h-9 w-9 place-items-center rounded-full transition active:scale-95 ${viewMode === "list"
-                    ? "bg-slate-950 text-white shadow-sm"
-                    : "text-slate-400 hover:bg-white/80 hover:text-slate-700"
-                    }`}
+                  className={`grid h-9 w-9 place-items-center rounded-full transition active:scale-95 ${
+                    viewMode === "list"
+                      ? "bg-slate-950 text-white shadow-sm"
+                      : "text-slate-400 hover:bg-white/80 hover:text-slate-700"
+                  }`}
                   aria-label="List view"
                 >
                   <List size={16} />
@@ -1130,10 +1319,11 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
               <button
                 type="button"
                 onClick={() => setActiveCategory("all")}
-                className={`whitespace-nowrap rounded-full border px-4 py-2 text-xs font-semibold backdrop-blur-xl transition active:scale-95 ${currentFilter === "all"
-                  ? "border-slate-950/80 bg-slate-950/85 text-white shadow-sm"
-                  : "border-white/60 bg-white/55 text-slate-600 hover:bg-white/80"
-                  }`}
+                className={`whitespace-nowrap rounded-full border px-4 py-2 text-xs font-semibold backdrop-blur-xl transition active:scale-95 ${
+                  currentFilter === "all"
+                    ? "border-slate-950/80 bg-slate-950/85 text-white shadow-sm"
+                    : "border-white/60 bg-white/55 text-slate-600 hover:bg-white/80"
+                }`}
               >
                 All
               </button>
@@ -1143,10 +1333,11 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
                   key={category}
                   type="button"
                   onClick={() => setActiveCategory(category)}
-                  className={`whitespace-nowrap rounded-full border px-4 py-2 text-xs font-semibold backdrop-blur-xl transition active:scale-95 ${currentFilter === category
-                    ? "border-slate-950/80 bg-slate-950/85 text-white shadow-sm"
-                    : "border-white/60 bg-white/55 text-slate-600 hover:bg-white/80"
-                    }`}
+                  className={`whitespace-nowrap rounded-full border px-4 py-2 text-xs font-semibold backdrop-blur-xl transition active:scale-95 ${
+                    currentFilter === category
+                      ? "border-slate-950/80 bg-slate-950/85 text-white shadow-sm"
+                      : "border-white/60 bg-white/55 text-slate-600 hover:bg-white/80"
+                  }`}
                 >
                   {category}
                 </button>
@@ -1155,8 +1346,9 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
           )}
 
           <div className="mt-4">
-            {activeTab === "rooms" && allRooms.length > 0 && (
-              filteredRooms.length ? (
+            {activeTab === "rooms" &&
+              allRooms.length > 0 &&
+              (filteredRooms.length ? (
                 <div
                   className={
                     viewMode === "grid"
@@ -1175,7 +1367,11 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
                         imageCount={images.length}
                         onImageClick={() =>
                           (images.length || room.meta?.description) &&
-                          setGallery({ images, title: room.title, description: room.meta?.description })
+                          setGallery({
+                            images,
+                            title: room.title,
+                            description: room.meta?.description,
+                          })
                         }
                         onAdd={() =>
                           addToCart({
@@ -1194,8 +1390,7 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
                 </div>
               ) : (
                 <EmptyState query={searchQuery} />
-              )
-            )}
+              ))}
 
             {(activeTab === "products" || allRooms.length === 0) &&
               allProducts.length > 0 &&
@@ -1218,7 +1413,11 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
                         imageCount={images.length}
                         onImageClick={() =>
                           (images.length || product.description) &&
-                          setGallery({ images, title: product.name, description: product.description })
+                          setGallery({
+                            images,
+                            title: product.name,
+                            description: product.description,
+                          })
                         }
                         onAdd={() =>
                           addToCart({
@@ -1239,9 +1438,7 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
                 <EmptyState query={searchQuery} />
               ))}
 
-            {!allRooms.length && !allProducts.length && (
-              <EmptyState query="" />
-            )}
+            {!allRooms.length && !allProducts.length && <EmptyState query="" />}
           </div>
         </section>
 
@@ -1254,7 +1451,10 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
             <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-white/45">
               Directly connected
             </p>
-            <h2 className="mt-3 max-w-2xl text-3xl leading-tight sm:text-5xl" style={serif}>
+            <h2
+              className="mt-3 max-w-2xl text-3xl leading-tight sm:text-5xl"
+              style={serif}
+            >
               Questions before you order?
               <span className="block italic text-white/65">
                 Talk to {listing.businessName}.
@@ -1367,7 +1567,10 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
               {/* Glass drawer header */}
               <div
                 className="flex items-center justify-between border-b border-white/50 bg-white/60 px-5 pb-5 backdrop-blur-xl sm:px-7"
-                style={{ paddingTop: 'max(1.75rem, calc(env(safe-area-inset-top, 0px) + 1.25rem))' }}
+                style={{
+                  paddingTop:
+                    "max(1.75rem, calc(env(safe-area-inset-top, 0px) + 1.25rem))",
+                }}
               >
                 <div>
                   <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-slate-400">
@@ -1396,8 +1599,12 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
                       <div className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-slate-100 text-slate-400">
                         <ShoppingBag size={24} />
                       </div>
-                      <h3 className="mt-4 text-lg font-semibold text-slate-950">Your cart is empty</h3>
-                      <p className="mt-1 text-sm text-slate-500">Add something from the collection to continue.</p>
+                      <h3 className="mt-4 text-lg font-semibold text-slate-950">
+                        Your cart is empty
+                      </h3>
+                      <p className="mt-1 text-sm text-slate-500">
+                        Add something from the collection to continue.
+                      </p>
                     </div>
                   </div>
                 ) : (
@@ -1485,7 +1692,10 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
                           Continue to checkout
                         </button>
                       ) : (
-                        <form onSubmit={handleOrderSubmit} className="space-y-4">
+                        <form
+                          onSubmit={handleOrderSubmit}
+                          className="space-y-4"
+                        >
                           <div className="grid gap-4">
                             <Field
                               label="Your full name *"
@@ -1518,7 +1728,9 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
                               <textarea
                                 rows={2}
                                 value={notes}
-                                onChange={(event) => setNotes(event.target.value)}
+                                onChange={(event) =>
+                                  setNotes(event.target.value)
+                                }
                                 placeholder="Any specific requests?"
                                 className="w-full resize-none rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition placeholder:text-slate-400 focus:border-slate-400"
                               />
@@ -1529,58 +1741,143 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
                               <label className="mb-2 block text-[11px] font-bold uppercase tracking-[0.12em] text-slate-400">
                                 Payment Method
                               </label>
-                              <div className="grid grid-cols-2 gap-2">
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    setPaymentOption("PAY_ON_DELIVERY");
-                                    setStkStatus("IDLE");
-                                    setCheckoutRequestId(null);
-                                  }}
-                                  className={`flex flex-col justify-between rounded-2xl border p-3.5 text-left transition ${paymentOption === "PAY_ON_DELIVERY"
-                                    ? "border-slate-950 bg-slate-950 text-white shadow-sm"
-                                    : "border-slate-200 bg-white text-slate-700 hover:border-slate-300"
-                                    }`}
-                                >
-                                  <div className="flex items-center gap-2">
-                                    <Truck size={15} className={paymentOption === "PAY_ON_DELIVERY" ? "text-white" : "text-slate-500"} />
-                                    <span className="text-xs font-bold">Pay on Delivery</span>
-                                  </div>
-                                  <span className={`mt-2 text-[11px] leading-tight ${paymentOption === "PAY_ON_DELIVERY" ? "text-slate-300" : "text-slate-500"}`}>
-                                    Pay cash or transfer upon receiving
-                                  </span>
-                                </button>
+                              {(() => {
+                                const count =
+                                  (hasDirectPayment ? 1 : 0) +
+                                  1 +
+                                  (listing?.hasMpesaGateway ? 1 : 0);
+                                const gridCols =
+                                  count === 3
+                                    ? "grid-cols-3"
+                                    : count === 2
+                                      ? "grid-cols-2"
+                                      : "grid-cols-1";
+                                return (
+                                  <div className={`grid gap-2 ${gridCols}`}>
+                                    {hasDirectPayment &&
+                                      effectiveDirectPayment && (
+                                        <button
+                                          type="button"
+                                          onClick={() => {
+                                            setPaymentOption("DIRECT_PAYMENT");
+                                            setStkStatus("IDLE");
+                                            setCheckoutRequestId(null);
+                                          }}
+                                          className={`flex flex-col justify-between rounded-2xl border p-3 sm:p-3.5 text-left transition ${
+                                            paymentOption === "DIRECT_PAYMENT"
+                                              ? "border-slate-950 bg-slate-950 text-white shadow-sm"
+                                              : "border-slate-200 bg-white text-slate-700 hover:border-slate-300"
+                                          }`}
+                                        >
+                                          <div className="flex items-center gap-2">
+                                            <Wallet
+                                              size={15}
+                                              className={
+                                                paymentOption ===
+                                                "DIRECT_PAYMENT"
+                                                  ? "text-white"
+                                                  : "text-slate-500"
+                                              }
+                                            />
+                                            <span className="text-xs font-bold leading-tight">
+                                              Pay Directly
+                                            </span>
+                                          </div>
+                                          <span
+                                            className={`mt-2 text-[10px] sm:text-[11px] leading-tight ${paymentOption === "DIRECT_PAYMENT" ? "text-slate-300" : "text-slate-500"}`}
+                                          >
+                                            Guided M-Pesa payment
+                                          </span>
+                                        </button>
+                                      )}
 
-                                <button
-                                  type="button"
-                                  disabled={listing?.hasMpesaGateway === false}
-                                  onClick={() => {
-                                    if (listing?.hasMpesaGateway !== false) {
-                                      setPaymentOption("PAY_UPFRONT");
-                                    }
-                                  }}
-                                  className={`flex flex-col justify-between rounded-2xl border p-3.5 text-left transition ${listing?.hasMpesaGateway === false
-                                    ? "cursor-not-allowed border-slate-100 bg-slate-50 opacity-60 text-slate-400"
-                                    : paymentOption === "PAY_UPFRONT"
-                                      ? "border-slate-950 bg-slate-950 text-white shadow-sm"
-                                      : "border-slate-200 bg-white text-slate-700 hover:border-slate-300"
-                                    }`}
-                                >
-                                  <div className="flex items-center gap-2">
-                                    <Smartphone size={15} className={paymentOption === "PAY_UPFRONT" && listing?.hasMpesaGateway !== false ? "text-white" : "text-slate-400"} />
-                                    <span className="text-xs font-bold">Pay Upfront</span>
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        setPaymentOption("PAY_ON_DELIVERY");
+                                        setStkStatus("IDLE");
+                                        setCheckoutRequestId(null);
+                                      }}
+                                      className={`flex flex-col justify-between rounded-2xl border p-3 sm:p-3.5 text-left transition ${
+                                        paymentOption === "PAY_ON_DELIVERY"
+                                          ? "border-slate-950 bg-slate-950 text-white shadow-sm"
+                                          : "border-slate-200 bg-white text-slate-700 hover:border-slate-300"
+                                      }`}
+                                    >
+                                      <div className="flex items-center gap-2">
+                                        <Truck
+                                          size={15}
+                                          className={
+                                            paymentOption === "PAY_ON_DELIVERY"
+                                              ? "text-white"
+                                              : "text-slate-500"
+                                          }
+                                        />
+                                        <span className="text-xs font-bold leading-tight">
+                                          Pay on Delivery
+                                        </span>
+                                      </div>
+                                      <span
+                                        className={`mt-2 text-[10px] sm:text-[11px] leading-tight ${paymentOption === "PAY_ON_DELIVERY" ? "text-slate-300" : "text-slate-500"}`}
+                                      >
+                                        Pay upon collection
+                                      </span>
+                                    </button>
+
+                                    {listing?.hasMpesaGateway && (
+                                      <button
+                                        type="button"
+                                        onClick={() =>
+                                          setPaymentOption("PAY_UPFRONT")
+                                        }
+                                        className={`flex flex-col justify-between rounded-2xl border p-3 sm:p-3.5 text-left transition ${
+                                          paymentOption === "PAY_UPFRONT"
+                                            ? "border-slate-950 bg-slate-950 text-white shadow-sm"
+                                            : "border-slate-200 bg-white text-slate-700 hover:border-slate-300"
+                                        }`}
+                                      >
+                                        <div className="flex items-center gap-2">
+                                          <Smartphone
+                                            size={15}
+                                            className={
+                                              paymentOption === "PAY_UPFRONT"
+                                                ? "text-white"
+                                                : "text-slate-400"
+                                            }
+                                          />
+                                          <span className="text-xs font-bold leading-tight">
+                                            STK Push
+                                          </span>
+                                        </div>
+                                        <span
+                                          className={`mt-2 text-[10px] sm:text-[11px] leading-tight ${paymentOption === "PAY_UPFRONT" ? "text-slate-300" : "text-slate-500"}`}
+                                        >
+                                          Instant PIN prompt
+                                        </span>
+                                      </button>
+                                    )}
                                   </div>
-                                  <span className={`mt-2 text-[11px] leading-tight ${listing?.hasMpesaGateway === false
-                                    ? "text-slate-400 font-medium"
-                                    : paymentOption === "PAY_UPFRONT"
-                                      ? "text-slate-300"
-                                      : "text-slate-500"
-                                    }`}>
-                                    {listing?.hasMpesaGateway === false ? "Not configured by vendor" : "M-Pesa STK push prompt"}
-                                  </span>
-                                </button>
-                              </div>
+                                );
+                              })()}
                             </div>
+
+                            {/* DIRECT PAYMENT GUIDANCE CARD (MATCHING USER SCREENSHOT) */}
+                            {paymentOption === "DIRECT_PAYMENT" &&
+                              effectiveDirectPayment && (
+                                <div className="pt-1">
+                                  <PaymentGuidanceCard
+                                    directPayment={effectiveDirectPayment}
+                                    amount={totalCartAmount}
+                                    orderReference={checkoutRef}
+                                    businessName={listing?.businessName}
+                                    isInteractive={true}
+                                    evidence={paymentEvidence}
+                                    onEvidenceChange={setPaymentEvidence}
+                                    onUploadReceipt={handleUploadReceipt}
+                                    uploadingReceipt={uploadingReceipt}
+                                  />
+                                </div>
+                              )}
 
                             {/* MPESA STK PUSH DETAILS (UPFRONT PAYMENT) */}
                             {paymentOption === "PAY_UPFRONT" && (
@@ -1595,16 +1892,33 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
 
                                 {stkStatus === "SENT" ? (
                                   <div className="rounded-xl border border-emerald-200 bg-emerald-50/80 p-3 flex items-start gap-2.5 text-emerald-900">
-                                    <CheckCircle2 size={16} className="mt-0.5 shrink-0 text-emerald-600" />
+                                    <CheckCircle2
+                                      size={16}
+                                      className="mt-0.5 shrink-0 text-emerald-600"
+                                    />
                                     <p className="text-xs font-medium leading-relaxed">
-                                      STK push prompt sent to <span className="font-bold">{mpesaPhone || customerPhone}</span>. Enter your M-Pesa PIN on your phone to complete payment.
+                                      STK push prompt sent to{" "}
+                                      <span className="font-bold">
+                                        {mpesaPhone || customerPhone}
+                                      </span>
+                                      . Enter your M-Pesa PIN on your phone to
+                                      complete payment.
                                     </p>
                                   </div>
                                 ) : (
                                   <div className="rounded-xl border border-slate-200 bg-white p-3 flex items-start gap-2 text-slate-600">
-                                    <Smartphone size={15} className="mt-0.5 shrink-0 text-slate-500" />
+                                    <Smartphone
+                                      size={15}
+                                      className="mt-0.5 shrink-0 text-slate-500"
+                                    />
                                     <p className="text-xs leading-relaxed">
-                                      An M-Pesa PIN prompt will be sent to <span className="font-semibold text-slate-900">{mpesaPhone || customerPhone || "your phone"}</span> when you click submit below.
+                                      An M-Pesa PIN prompt will be sent to{" "}
+                                      <span className="font-semibold text-slate-900">
+                                        {mpesaPhone ||
+                                          customerPhone ||
+                                          "your phone"}
+                                      </span>{" "}
+                                      when you click submit below.
                                     </p>
                                   </div>
                                 )}
@@ -1614,8 +1928,12 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
 
                           <div className="rounded-[20px] bg-slate-950 p-5 text-white">
                             <div className="flex items-center justify-between">
-                              <span className="text-xs font-medium text-white/55">Total due</span>
-                              <span className="text-xl font-bold">{formatPrice(totalCartAmount)}</span>
+                              <span className="text-xs font-medium text-white/55">
+                                Total due
+                              </span>
+                              <span className="text-xl font-bold">
+                                {formatPrice(totalCartAmount)}
+                              </span>
                             </div>
 
                             <button
@@ -1626,10 +1944,18 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
                               {submittingOrder ? (
                                 <>
                                   <ButtonLoader size={16} />
-                                  {paymentOption === "PAY_UPFRONT" ? "Initiating STK Push..." : "Submitting Order..."}
+                                  {paymentOption === "PAY_UPFRONT"
+                                    ? "Initiating STK Push..."
+                                    : "Submitting Order..."}
                                 </>
+                              ) : paymentOption === "DIRECT_PAYMENT" ? (
+                                "Confirm & Complete Order"
                               ) : paymentOption === "PAY_UPFRONT" ? (
-                                stkStatus === "SENT" ? "Confirm & Complete Order" : "Pay with M-Pesa & Submit Order"
+                                stkStatus === "SENT" ? (
+                                  "Confirm & Complete Order"
+                                ) : (
+                                  "Pay with M-Pesa & Submit Order"
+                                )
                               ) : (
                                 "Confirm Order (Pay on Delivery)"
                               )}
@@ -1671,11 +1997,72 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
               </h2>
 
               <p className="mt-3 text-sm leading-6 text-slate-500">
-                Thank you, <span className="font-semibold text-slate-800">{orderSuccess.orderedByName}</span>.
-                Your order has been sent to {listing?.businessName || "the business owner"}.
+                Thank you,{" "}
+                <span className="font-semibold text-slate-800">
+                  {orderSuccess.orderedByName}
+                </span>
+                . Your order has been sent to{" "}
+                {listing?.businessName || "the business owner"}.
               </p>
 
-              {orderSuccess.paymentOption === "PAY_UPFRONT" ? (
+              {orderSuccess.paymentOption === "PAY_DIRECT" ? (
+                orderSuccess.paymentStatus === "PAID" ? (
+                  <div className="mt-4 rounded-2xl border border-emerald-200 bg-emerald-50/80 p-4 text-left text-xs leading-relaxed transition-all">
+                    <div className="flex items-center gap-1.5 font-bold text-emerald-900 mb-1.5">
+                      <CheckCircle2
+                        size={16}
+                        className="text-emerald-600 shrink-0"
+                      />
+                      <span>M-Pesa Payment Verified via Logs! 🎉</span>
+                    </div>
+                    {orderSuccess.transactionCode && (
+                      <p className="text-emerald-800 font-medium">
+                        Transaction Code:{" "}
+                        <span className="font-mono font-bold text-slate-950 px-1.5 py-0.5 bg-white rounded border border-emerald-300">
+                          {orderSuccess.transactionCode}
+                        </span>
+                      </p>
+                    )}
+                    <p className="mt-2 text-[11px] text-emerald-700">
+                      Your transaction code was verified in incoming payment
+                      logs with matching order total.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50/90 p-4 text-left text-xs leading-relaxed transition-all">
+                    <div className="flex items-center gap-1.5 font-bold text-amber-900 mb-1.5">
+                      <Clock size={16} className="text-amber-600 shrink-0" />
+                      <span>Order Placed — Payment Awaiting Verification</span>
+                    </div>
+                    {orderSuccess.transactionCode && (
+                      <p className="text-amber-900 font-medium">
+                        Submitted Code:{" "}
+                        <span className="font-mono font-bold text-slate-950 px-1.5 py-0.5 bg-white rounded border border-amber-300">
+                          {orderSuccess.transactionCode}
+                        </span>
+                      </p>
+                    )}
+                    {orderSuccess.paymentEvidence?.receiptUrl && (
+                      <div className="mt-2.5">
+                        <p className="text-[10px] text-amber-700 font-semibold mb-1">
+                          Receipt Evidence Attached:
+                        </p>
+                        <img
+                          src={orderSuccess.paymentEvidence.receiptUrl}
+                          alt="Receipt"
+                          className="h-16 w-16 object-cover rounded-xl border border-amber-200 shadow-2xs"
+                        />
+                      </div>
+                    )}
+                    <div className="mt-2.5 rounded-xl border border-amber-200/60 bg-amber-100/70 p-2.5 text-[11px] text-amber-800 font-medium leading-normal">
+                      Notice: Your payment reference is recorded. The merchant
+                      will cross-check and verify receipt of funds on their
+                      official M-Pesa terminal before completing or dispatching
+                      your order.
+                    </div>
+                  </div>
+                )
+              ) : orderSuccess.paymentOption === "PAY_UPFRONT" ? (
                 <div className="mt-4 rounded-2xl border p-4 text-left text-xs leading-relaxed transition-all duration-300">
                   {orderSuccess.paymentStatus === "PAID" ? (
                     <div className="border-emerald-200 bg-emerald-50 text-emerald-950 p-3 rounded-xl space-y-1">
@@ -1684,10 +2071,15 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
                         <span>M-Pesa Payment Verified! 🎉</span>
                       </div>
                       <p className="text-[11px] text-emerald-700">
-                        Receipt No: <span className="font-mono font-bold text-slate-900">{orderSuccess.mpesaReceipt}</span>
+                        Receipt No:{" "}
+                        <span className="font-mono font-bold text-slate-900">
+                          {orderSuccess.mpesaReceipt}
+                        </span>
                       </p>
                     </div>
-                  ) : orderSuccess.paymentStatus === "CANCELLED" || orderSuccess.paymentStatus === "FAILED" || orderSuccess.paymentStatus === "TIMED_OUT" ? (
+                  ) : orderSuccess.paymentStatus === "CANCELLED" ||
+                    orderSuccess.paymentStatus === "FAILED" ||
+                    orderSuccess.paymentStatus === "TIMED_OUT" ? (
                     <div className="border-red-200 bg-red-50 text-red-950 p-3 rounded-xl space-y-2">
                       <div className="flex items-center gap-1.5 font-bold text-red-800">
                         <AlertTriangle size={16} className="text-red-600" />
@@ -1700,7 +2092,17 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
                       </p>
                       <button
                         type="button"
-                        onClick={() => setOrderSuccess((prev: any) => prev ? { ...prev, paymentOption: "PAY_ON_DELIVERY", paymentStatus: "PAY_ON_DELIVERY" } : null)}
+                        onClick={() =>
+                          setOrderSuccess((prev: any) =>
+                            prev
+                              ? {
+                                  ...prev,
+                                  paymentOption: "PAY_ON_DELIVERY",
+                                  paymentStatus: "PAY_ON_DELIVERY",
+                                }
+                              : null,
+                          )
+                        }
                         className="w-full py-2 bg-white border border-red-200 text-red-900 font-semibold text-xs rounded-xl hover:bg-red-50 transition-colors flex items-center justify-center gap-1.5"
                       >
                         <Truck size={14} className="text-red-700" />
@@ -1714,7 +2116,8 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
                         <span>Awaiting M-Pesa PIN entry...</span>
                       </div>
                       <p className="text-[11px] text-amber-800 leading-snug">
-                        An M-Pesa prompt was sent to your phone. Enter your PIN to complete instant payment.
+                        An M-Pesa prompt was sent to your phone. Enter your PIN
+                        to complete instant payment.
                       </p>
                     </div>
                   )}
@@ -1722,9 +2125,11 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
               ) : (
                 <div className="mt-4 rounded-2xl border border-slate-100 bg-slate-50/80 p-4 text-left text-xs leading-relaxed text-slate-700">
                   <p className="font-bold text-slate-900 mb-1 flex items-center gap-1.5">
-                    <Truck size={15} className="text-slate-600" /> Pay on Delivery Selected
+                    <Truck size={15} className="text-slate-600" /> Pay on
+                    Delivery Selected
                   </p>
-                  You can pay cash or make a mobile transfer directly to the business owner upon delivery or arrival.
+                  You can pay cash or make a mobile transfer directly to the
+                  business owner upon delivery or arrival.
                 </div>
               )}
 
@@ -1732,7 +2137,11 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
                 {listing?.phone && (
                   <a
                     href={`https://wa.me/${formatWhatsAppNumber(listing.phone)}?text=${encodeURIComponent(
-                      `Hi ${listing.businessName}, I just placed an order (${orderSuccess.paymentOption === "PAY_UPFRONT" ? (orderSuccess.paymentStatus === "PAID" ? `Paid Upfront M-Pesa Receipt: ${orderSuccess.mpesaReceipt}` : "M-Pesa STK Prompt Sent") : "Pay on Delivery"}). My name is ${orderSuccess.orderedByName}.`
+                      orderSuccess.paymentOption === "PAY_DIRECT"
+                        ? `Hi ${listing.businessName}, I just placed an order and paid directly. Name: ${orderSuccess.orderedByName}${orderSuccess.transactionCode ? `, M-Pesa Code: ${orderSuccess.transactionCode}` : ""}. Total: KES ${Number(orderSuccess.totalAmount || 0).toLocaleString()}.`
+                        : orderSuccess.paymentOption === "PAY_UPFRONT"
+                          ? `Hi ${listing.businessName}, I just placed an order (${orderSuccess.paymentStatus === "PAID" ? `Paid Upfront M-Pesa Receipt: ${orderSuccess.mpesaReceipt}` : "M-Pesa STK Prompt Sent"}). My name is ${orderSuccess.orderedByName}.`
+                          : `Hi ${listing.businessName}, I just placed an order (Pay on Delivery). My name is ${orderSuccess.orderedByName}.`,
                     )}`}
                     target="_blank"
                     rel="noopener noreferrer"
