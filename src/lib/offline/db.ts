@@ -4,7 +4,7 @@
  */
 
 const DB_NAME = 'hlynk-offline'
-const DB_VERSION = 2
+const DB_VERSION = 3
 
 export interface PendingSale {
   id: string          // client-generated UUID
@@ -37,6 +37,26 @@ export interface PendingEvent {
   action: 'CREATE' | 'UPDATE' | 'RECORD_PAYMENT'
   targetId?: string
   payload: any
+  createdAt: number
+  retries?: number
+  lastError?: string
+}
+
+export interface PendingProduct {
+  id: string          // client-generated UUID (temporary, replaced on sync)
+  action: 'CREATE' | 'UPDATE' | 'DELETE'
+  targetId?: string   // for UPDATE/DELETE: the real server product ID
+  payload: {
+    name: string
+    price: number
+    buyingPrice?: number
+    category?: string
+    type?: string
+    stockLevel?: number
+    unit?: string
+    description?: string
+    imageUrl?: string
+  }
   createdAt: number
   retries?: number
   lastError?: string
@@ -75,6 +95,9 @@ function openDB(): Promise<IDBDatabase> {
     req.onupgradeneeded = (e) => {
       const db = (e.target as IDBOpenDBRequest).result
 
+      if (!db.objectStoreNames.contains('pendingProducts')) {
+        db.createObjectStore('pendingProducts', { keyPath: 'id' })
+      }
       if (!db.objectStoreNames.contains('pendingSales')) {
         const store = db.createObjectStore('pendingSales', { keyPath: 'id' })
         store.createIndex('createdAt', 'createdAt')
@@ -330,3 +353,34 @@ export async function removePendingOperation(id: string): Promise<void> {
   })
 }
 
+// ── Pending Products (offline add/edit) ────────────────────────────────────────
+
+export async function enqueuePendingProduct(item: PendingProduct): Promise<void> {
+  const db = await openDB()
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction('pendingProducts', 'readwrite')
+    tx.objectStore('pendingProducts').put(item)
+    tx.oncomplete = () => resolve()
+    tx.onerror = () => reject(tx.error)
+  })
+}
+
+export async function getPendingProducts(): Promise<PendingProduct[]> {
+  const db = await openDB()
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction('pendingProducts', 'readonly')
+    const req = tx.objectStore('pendingProducts').getAll()
+    req.onsuccess = () => resolve(req.result as PendingProduct[])
+    req.onerror = () => reject(req.error)
+  })
+}
+
+export async function removePendingProduct(id: string): Promise<void> {
+  const db = await openDB()
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction('pendingProducts', 'readwrite')
+    tx.objectStore('pendingProducts').delete(id)
+    tx.oncomplete = () => resolve()
+    tx.onerror = () => reject(tx.error)
+  })
+}

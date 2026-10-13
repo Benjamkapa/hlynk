@@ -16,7 +16,8 @@ import { useNavigate, useLocation } from 'react-router-dom'
 
 import { keepPreviousData } from '@tanstack/react-query'
 import { PaginatedResponse } from '../../lib/types/api'
-import { cacheInventory, getCachedInventory } from '../../lib/offline/db'
+import { cacheInventory, getCachedInventory, enqueuePendingProduct } from '../../lib/offline/db'
+import { useOfflineStatus } from '../../lib/offline/useOfflineStatus'
 
 const PRESET_PRODUCT_PHOTOS = [
   { name: "Fresh Vegetables", url: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=800" },
@@ -43,6 +44,7 @@ const PRESET_PRODUCT_PHOTOS = [
 
 export default function ProductsPage() {
   const { user } = useAuth()
+  const { isOnline } = useOfflineStatus()
   const navigate = useNavigate()
   const location = useLocation()
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
@@ -951,7 +953,33 @@ function ProductForm({ onClose }: { onClose: () => void }) {
 
   const mutation = useMutation({
     mutationFn: async (data: any) => {
-      // Remove base64 image and file before sending to create
+      // ── OFFLINE: queue product for later sync ──────────────────────────────
+      if (!navigator.onLine) {
+        const tempId = 'pending-prod-' + crypto.randomUUID()
+        const payload = { ...data }
+        delete payload.file
+        await enqueuePendingProduct({
+          id: tempId,
+          action: 'CREATE',
+          payload,
+          createdAt: Date.now(),
+          retries: 0,
+        })
+        // Also add to local inventory cache so it appears immediately in POS
+        await cacheInventory([{
+          id: tempId,
+          name: data.name || 'Unnamed Product',
+          price: Number(data.price || 0),
+          stockLevel: Number(data.stockLevel || 0),
+          category: data.category || 'General',
+          type: data.type || 'PRODUCT',
+          imageUrl: data.imageUrl,
+        }])
+        toast.success('Product saved offline — will sync when back online', { duration: 4000 })
+        return { offline: true }
+      }
+
+      // ── ONLINE: normal create ──────────────────────────────────────────────
       const payload = { ...data };
       delete payload.file;
       if (data.file) delete payload.imageUrl;
@@ -1266,9 +1294,12 @@ function ProductForm({ onClose }: { onClose: () => void }) {
           })
         }}
         disabled={mutation.isPending}
-        className="w-full py-3.5 mt-4 bg-[#0D4A3E] text-white rounded-full text-sm font-medium hover:bg-[#0A3D33] transition-colors"
+        className="w-full py-3.5 mt-4 bg-[#0D4A3E] text-white rounded-full text-sm font-medium hover:bg-[#0A3D33] transition-colors flex items-center justify-center gap-2 disabled:opacity-60"
       >
-        {mutation.isPending ? 'Saving…' : 'Save inventory item'}
+        {mutation.isPending
+          ? <><ButtonLoader /> {navigator.onLine ? 'Saving…' : 'Saving offline…'}</>
+          : (navigator.onLine ? 'Save inventory item' : '📶 Save offline (will sync later)')
+        }
       </button>
     </div>
   )

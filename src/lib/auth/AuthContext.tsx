@@ -2,7 +2,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react'
 import { authApi, type AuthUser } from '../api/auth'
 import { queryClient } from '../query/queryClient'
 import { storage } from '../utils/storage'
-import { verifyOfflinePin, clearOfflinePin, hasOfflinePin, ensureDefaultOfflinePin } from '../offline/offlinePin'
+import { verifyOfflinePin, clearOfflinePin, hasOfflinePin, hasPinBeenPrompted } from '../offline/offlinePin'
 
 interface AuthContextValue {
   user: AuthUser | null
@@ -37,15 +37,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return !!token
   })
   const [isLocked, setIsLocked] = useState(() => {
-    const isLockedStored = storage.getItem('session_locked') === 'true'
-    const isOffline = typeof navigator !== 'undefined' && !navigator.onLine
-    return isLockedStored || (isOffline && hasOfflinePin())
+    // Only lock if EXPLICITLY locked via storage — never auto-lock on startup
+    // (hasOfflinePin returns true for everyone due to auto-default, causing false locks)
+    return storage.getItem('session_locked') === 'true'
   })
 
   useEffect(() => {
-    ensureDefaultOfflinePin()
+    // Only lock on offline if the user has EXPLICITLY set a custom PIN in Settings
+    // (hasPinBeenPrompted = user went to Settings and saved their own PIN)
     const handleOffline = () => {
-      if (hasOfflinePin()) {
+      if (hasPinBeenPrompted() && hasOfflinePin()) {
         setIsLocked(true)
         storage.setItem('session_locked', 'true')
       }
@@ -107,7 +108,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setIsLocked(false)
     storage.removeItem('session_locked')
     setUser(userData)
-    ensureDefaultOfflinePin()
+    // Note: do NOT auto-create a default PIN here — it causes isLocked to always trigger
+    // on any offline event. Users set their PIN explicitly in Settings.
   }
 
   /**

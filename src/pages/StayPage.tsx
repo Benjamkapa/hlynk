@@ -1500,7 +1500,7 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
                 follow up using the contact details you provide.
               </p>
               <p className="mt-5 text-xs font-semibold text-white">
-                Powered by Hlynk
+                Powered by <a href="https://hlynk.co.ke" className="hover:underline text-emerald-600 ">hlynk</a>
               </p>
             </div>
           </div>

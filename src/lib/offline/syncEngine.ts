@@ -2,9 +2,10 @@ import {
   getPendingSales, removePendingSale, updatePendingSale, countPendingSales,
   getPendingResources, removePendingResource,
   getPendingEvents, removePendingEvent,
-  getPendingOperations, removePendingOperation
+  getPendingOperations, removePendingOperation,
+  getPendingProducts, removePendingProduct,
 } from './db'
-import { salesApi } from '../api/providers'
+import { salesApi, inventoryApi } from '../api/providers'
 import { resourcesApi, eventsApi, operationsApi } from '../api/universal'
 import { toast } from 'sonner'
 
@@ -39,14 +40,15 @@ class SyncEngine {
   async flush(): Promise<boolean> {
     if (this.isSyncing || !navigator.onLine) return false
     
-    const [pendingSales, pendingRes, pendingEvt, pendingOps] = await Promise.all([
+    const [pendingSales, pendingRes, pendingEvt, pendingOps, pendingProds] = await Promise.all([
       getPendingSales(),
       getPendingResources(),
       getPendingEvents(),
       getPendingOperations(),
+      getPendingProducts(),
     ])
 
-    const totalPending = pendingSales.length + pendingRes.length + pendingEvt.length + pendingOps.length
+    const totalPending = pendingSales.length + pendingRes.length + pendingEvt.length + pendingOps.length + pendingProds.length
     if (totalPending === 0) return true
 
     this.isSyncing = true
@@ -122,12 +124,30 @@ class SyncEngine {
       }
     }
 
+    // 5. Flush Offline Products
+    for (const item of pendingProds) {
+      try {
+        if (item.action === 'CREATE') {
+          await inventoryApi.create(item.payload)
+        } else if (item.action === 'UPDATE' && item.targetId) {
+          await inventoryApi.update(item.targetId, item.payload)
+        } else if (item.action === 'DELETE' && item.targetId) {
+          await inventoryApi.delete(item.targetId)
+        }
+        await removePendingProduct(item.id)
+        successCount++
+      } catch (err: any) {
+        console.error('[SyncEngine] Failed product sync:', err)
+      }
+    }
+
     this.isSyncing = false
     const remainingSales = await countPendingSales()
     const remainingRes = (await getPendingResources()).length
     const remainingEvt = (await getPendingEvents()).length
     const remainingOps = (await getPendingOperations()).length
-    const remainingTotal = remainingSales + remainingRes + remainingEvt + remainingOps
+    const remainingProds = (await getPendingProducts()).length
+    const remainingTotal = remainingSales + remainingRes + remainingEvt + remainingOps + remainingProds
 
     if (remainingTotal === 0) {
       toast.success('All offline records synced successfully!')
