@@ -304,6 +304,11 @@ function CatalogCard({
   const allImgs = images.length > 0 ? images : image ? [image] : [];
   const activeImg = allImgs[currentIndex] || allImgs[0];
 
+  // Stock awareness — only relevant for products (not rooms)
+  const stockLevel = 'stockLevel' in item ? Number(item.stockLevel) : null;
+  const isOutOfStock = stockLevel !== null && stockLevel <= 0;
+  const isLowStock = stockLevel !== null && stockLevel > 0 && stockLevel <= 5;
+
   const prevImg = (e: React.MouseEvent) => {
     e.stopPropagation();
     e.preventDefault();
@@ -369,14 +374,29 @@ function CatalogCard({
             )}
           </div>
 
-          <div className="flex shrink-0 items-center gap-2 sm:gap-3">
+        <div className="flex shrink-0 items-center gap-2 sm:gap-3">
+            {isOutOfStock && (
+              <span className="shrink-0 rounded-full bg-red-100 px-2 py-0.5 text-[8px] font-bold uppercase tracking-[0.08em] text-red-600">
+                Out of stock
+              </span>
+            )}
+            {isLowStock && (
+              <span className="shrink-0 rounded-full bg-amber-100 px-2 py-0.5 text-[8px] font-bold uppercase tracking-[0.08em] text-amber-700">
+                Only {stockLevel} left
+              </span>
+            )}
             <span className="whitespace-nowrap text-xs font-bold tracking-tight text-slate-950 sm:text-[13px]">
               {formatPrice(price)}
             </span>
             <button
               type="button"
               onClick={onAdd}
-              className="inline-flex h-8 items-center gap-1 rounded-full bg-slate-950 px-2.5 text-[10px] font-semibold text-white transition hover:bg-slate-800 active:scale-95 sm:px-3"
+              title={isOutOfStock ? 'This item may be out of stock — you can still place an order' : undefined}
+              className={`inline-flex h-8 items-center gap-1 rounded-full px-2.5 text-[10px] font-semibold text-white transition active:scale-95 sm:px-3 ${
+                isOutOfStock
+                  ? 'bg-slate-400 hover:bg-slate-500'
+                  : 'bg-slate-950 hover:bg-slate-800'
+              }`}
             >
               <Plus size={12} />
               <span className="hidden xs:inline">{ctaLabel}</span>
@@ -459,6 +479,18 @@ function CatalogCard({
               : "1 photo"}
           </span>
         )}
+
+        {/* Out-of-stock / low-stock overlay badge */}
+        {isOutOfStock && (
+          <span className="absolute top-2 right-2 z-10 rounded-full bg-red-600 px-2 py-0.5 text-[8px] font-bold uppercase tracking-[0.08em] text-white shadow">
+            Out of stock
+          </span>
+        )}
+        {isLowStock && !isOutOfStock && (
+          <span className="absolute top-2 right-2 z-10 rounded-full bg-amber-500 px-2 py-0.5 text-[8px] font-bold uppercase tracking-[0.08em] text-white shadow">
+            Only {stockLevel} left
+          </span>
+        )}
       </div>
 
       <div className="flex min-h-[108px] flex-1 flex-col p-2.5 sm:p-3">
@@ -486,10 +518,15 @@ function CatalogCard({
           <button
             type="button"
             onClick={onAdd}
-            className="inline-flex h-8 shrink-0 items-center gap-1 rounded-full bg-slate-950 px-2.5 text-[10px] font-semibold text-white transition hover:bg-slate-800 active:scale-95"
+            title={isOutOfStock ? 'This item may be out of stock — you can still place an order' : undefined}
+            className={`inline-flex h-8 shrink-0 items-center gap-1 rounded-full px-2.5 text-[10px] font-semibold text-white transition active:scale-95 ${
+              isOutOfStock
+                ? 'bg-slate-400 hover:bg-slate-500'
+                : 'bg-slate-950 hover:bg-slate-800'
+            }`}
           >
             <Plus size={12} />
-            {ctaLabel}
+            {isOutOfStock ? 'Order anyway' : ctaLabel}
           </button>
         </div>
       </div>

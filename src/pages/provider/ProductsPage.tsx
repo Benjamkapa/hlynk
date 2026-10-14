@@ -90,6 +90,8 @@ export default function ProductsPage() {
   const publicStoreUrl = slug ? `${window.location.origin}/store/${slug}` : null;
 
   const [isOrdersOpen, setIsOrdersOpen] = useState(false)
+  const [cancelConfirmId, setCancelConfirmId] = useState<string | null>(null)
+  const [cancelVoidSale, setCancelVoidSale] = useState(false)
 
   // Auto-open client orders drawer when deep-linking from notification
   useEffect(() => {
@@ -114,6 +116,23 @@ export default function ProductsPage() {
       refetchRequests()
     } catch (err: any) {
       toast.error('Failed to update order status')
+    }
+  }
+
+  const handleCancelOrder = async (id: string, voidSale: boolean) => {
+    try {
+      await requestsApi.updateStatus(id, 'CANCELLED', voidSale)
+      toast.success(voidSale ? 'Order cancelled and sale voided. Stock restored.' : 'Order cancelled.')
+      setCancelConfirmId(null)
+      setCancelVoidSale(false)
+      refetchRequests()
+      if (voidSale) {
+        queryClient.invalidateQueries({ queryKey: ['inventory'] })
+        queryClient.invalidateQueries({ queryKey: ['sales-history'] })
+        queryClient.invalidateQueries({ queryKey: ['provider-stats'] })
+      }
+    } catch (err: any) {
+      toast.error('Failed to cancel order')
     }
   }
 
@@ -329,7 +348,8 @@ export default function ProductsPage() {
                       </div>
                       <div className="flex items-center gap-2">
                         <span className={`text-[10px] font-medium px-2 py-1 rounded-full ${req.status === 'PENDING' ? 'bg-amber-50 text-amber-700' :
-                            req.status === 'COMPLETED' ? 'bg-emerald-50 text-emerald-700' : 'bg-gray-100 text-gray-500'
+                            req.status === 'COMPLETED' ? 'bg-emerald-50 text-emerald-700' :
+                            req.status === 'CANCELLED' ? 'bg-red-50 text-red-600' : 'bg-gray-100 text-gray-500'
                           }`}>
                           {req.status}
                         </span>
@@ -491,13 +511,31 @@ export default function ProductsPage() {
                           <div>
                             <strong className="text-gray-700 block mb-1">Items ordered:</strong>
                             <ul className="divide-y divide-gray-100">
-                              {msgData.items.map((it: any, idx: number) => (
-                                <li key={idx} className="py-1 flex justify-between">
-                                  <span>{it.quantity}x {it.name}</span>
-                                  <span className="font-medium text-gray-800">KES {(it.price * it.quantity).toLocaleString()}</span>
-                                </li>
-                              ))}
+                              {msgData.items.map((it: any, idx: number) => {
+                                // Check stock level for this item in current inventory
+                                const inventoryItem = products.find((p: any) => p.id === it.id && p.type !== 'SERVICE')
+                                const stockLevel = inventoryItem ? Number(inventoryItem.stockLevel) : null
+                                const hasStockIssue = stockLevel !== null && stockLevel < Number(it.quantity || 1)
+                                return (
+                                  <li key={idx} className="py-1 flex justify-between items-center gap-2">
+                                    <span className={hasStockIssue ? 'text-amber-700' : ''}>{it.quantity}x {it.name}{hasStockIssue && stockLevel === 0 ? ' ⚠️' : hasStockIssue ? ` (only ${stockLevel} in stock)` : ''}</span>
+                                    <span className="font-medium text-gray-800">KES {(it.price * it.quantity).toLocaleString()}</span>
+                                  </li>
+                                )
+                              })}
                             </ul>
+                            {/* Stock warning banner */}
+                            {msgData.items.some((it: any) => {
+                              const inv = products.find((p: any) => p.id === it.id && p.type !== 'SERVICE')
+                              return inv && Number(inv.stockLevel) < Number(it.quantity || 1)
+                            }) && (
+                              <div className="mt-2 flex items-start gap-2 rounded-[.5rem] bg-amber-50 border border-amber-200 px-2.5 py-2">
+                                <AlertTriangle size={12} className="text-amber-600 flex-shrink-0 mt-0.5" />
+                                <p className="text-[10px] text-amber-700 leading-tight">
+                                  One or more items may have insufficient stock. Check inventory before fulfilling.
+                                </p>
+                              </div>
+                            )}
                           </div>
                         )}
                         {msgData.totalAmount && (
@@ -510,24 +548,76 @@ export default function ProductsPage() {
                     )}
 
                     {/* Status actions */}
-                    <div className="flex gap-2 pt-1">
-                      {req.status !== 'COMPLETED' && (
+                    {req.status !== 'COMPLETED' && req.status !== 'CANCELLED' && (
+                      <div className="flex gap-2 pt-1">
+                        {req.status !== 'COMPLETED' && (
+                          <button
+                            onClick={() => handleUpdateOrderStatus(req.id, 'COMPLETED')}
+                            className="flex-1 py-1.5 bg-emerald-50 text-emerald-700 font-medium text-xs rounded-[.5rem] border border-emerald-100 hover:bg-emerald-100 transition-colors flex items-center justify-center gap-1"
+                          >
+                            <Check size={13} /> Mark completed
+                          </button>
+                        )}
+                        {req.status === 'PENDING' && (
+                          <button
+                            onClick={() => handleUpdateOrderStatus(req.id, 'CONTACTED')}
+                            className="flex-1 py-1.5 bg-blue-50 text-blue-700 font-medium text-xs rounded-[.5rem] border border-blue-100 hover:bg-blue-100 transition-colors flex items-center justify-center gap-1"
+                          >
+                            Mark contacted
+                          </button>
+                        )}
                         <button
-                          onClick={() => handleUpdateOrderStatus(req.id, 'COMPLETED')}
-                          className="flex-1 py-1.5 bg-emerald-50 text-emerald-700 font-medium text-xs rounded-[.5rem] border border-emerald-100 hover:bg-emerald-100 transition-colors flex items-center justify-center gap-1"
+                          onClick={() => { setCancelConfirmId(req.id); setCancelVoidSale(false) }}
+                          className="py-1.5 px-3 bg-red-50 text-red-600 font-medium text-xs rounded-[.5rem] border border-red-100 hover:bg-red-100 transition-colors flex items-center justify-center gap-1"
+                          title="Cancel this order"
                         >
-                          <Check size={13} /> Mark completed
+                          <Ban size={13} /> Cancel
                         </button>
-                      )}
-                      {req.status === 'PENDING' && (
-                        <button
-                          onClick={() => handleUpdateOrderStatus(req.id, 'CONTACTED')}
-                          className="flex-1 py-1.5 bg-blue-50 text-blue-700 font-medium text-xs rounded-[.5rem] border border-blue-100 hover:bg-blue-100 transition-colors flex items-center justify-center gap-1"
-                        >
-                          Mark contacted
-                        </button>
-                      )}
-                    </div>
+                      </div>
+                    )}
+
+                    {/* Cancelled badge */}
+                    {req.status === 'CANCELLED' && (
+                      <div className="flex items-center gap-2 pt-1 px-2.5 py-2 bg-red-50 border border-red-100 rounded-[.5rem]">
+                        <Ban size={13} className="text-red-500 flex-shrink-0" />
+                        <span className="text-xs text-red-600 font-medium">This order was cancelled</span>
+                      </div>
+                    )}
+
+                    {/* Inline cancel confirmation */}
+                    {cancelConfirmId === req.id && (
+                      <div className="mt-2 bg-red-50 border border-red-100 rounded-[.5rem] p-3.5 space-y-3">
+                        <div className="flex items-start gap-2">
+                          <AlertTriangle size={14} className="text-red-500 flex-shrink-0 mt-0.5" />
+                          <p className="text-xs font-semibold text-red-800">Cancel this order?</p>
+                        </div>
+                        <label className="flex items-start gap-2 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={cancelVoidSale}
+                            onChange={e => setCancelVoidSale(e.target.checked)}
+                            className="mt-0.5 accent-red-600"
+                          />
+                          <span className="text-[11px] text-red-700 leading-tight">
+                            Also void the linked sale record and restore stock
+                          </span>
+                        </label>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => { setCancelConfirmId(null); setCancelVoidSale(false) }}
+                            className="flex-1 h-8 rounded-[.5rem] border border-gray-200 bg-white text-gray-500 text-xs font-medium hover:bg-gray-50 transition-colors"
+                          >
+                            Keep order
+                          </button>
+                          <button
+                            onClick={() => handleCancelOrder(req.id, cancelVoidSale)}
+                            className="flex-1 h-8 rounded-[.5rem] bg-red-600 text-white text-xs font-semibold hover:bg-red-700 transition-colors flex items-center justify-center gap-1"
+                          >
+                            <Ban size={12} /> Yes, cancel
+                          </button>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 );
               })

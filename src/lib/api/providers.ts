@@ -100,8 +100,8 @@ export const servicesApi = {
 export const requestsApi = {
   list: (params?: { status?: string; page?: number }) =>
     api.get('/requests', { params }).then(r => r.data),
-  updateStatus: (id: string, status: string) =>
-    api.put(`/requests/${id}/status`, { status }).then(r => r.data),
+  updateStatus: (id: string, status: string, voidSale?: boolean) =>
+    api.put(`/requests/${id}/status`, { status, ...(voidSale !== undefined ? { voidSale } : {}) }).then(r => r.data),
   delete: (id: string) =>
     api.delete(`/requests/${id}`).then(r => r.data),
   clear: (status: 'COMPLETED' | 'ALL' = 'ALL') =>
