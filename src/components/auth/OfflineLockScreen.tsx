@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Lock, Delete, WifiOff, LogOut, AlertTriangle } from 'lucide-react'
 import { useAuth } from '../../lib/auth/AuthContext'
 import { hasOfflinePin } from '../../lib/offline/offlinePin'
+import { storage } from '../../lib/utils/storage'
 
 const PIN_LENGTH = 6
 
@@ -16,6 +17,26 @@ export default function OfflineLockScreen() {
   const [showForceLogout, setShowForceLogout] = useState(false)
   const [confirmForceLogout, setConfirmForceLogout] = useState(false)
   const noPinSet = !hasOfflinePin()
+
+  // Guard: if device is online or comes back online, automatically unlock and dismiss
+  useEffect(() => {
+    const handleOnline = () => {
+      unlock('').catch(() => {})
+    }
+    if (typeof navigator !== 'undefined' && navigator.onLine) {
+      unlock('').catch(() => {})
+    }
+    window.addEventListener('online', handleOnline)
+    return () => window.removeEventListener('online', handleOnline)
+  }, [unlock])
+
+  // Never render when online or without an existing user profile
+  if (typeof navigator !== 'undefined' && navigator.onLine) {
+    return null
+  }
+  if (!user && !storage.getItem('user_profile')) {
+    return null
+  }
 
   // Auto-verify when PIN is fully entered
   useEffect(() => {

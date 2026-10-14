@@ -392,7 +392,7 @@ export default function ProviderLayout() {
                         <User size={16} className="text-emerald-600" /> View Profile & Business Info
                       </button>
 
-                      {hasOfflinePin() && (
+                      {!navigator.onLine && hasOfflinePin() && (
                         <button
                           onClick={() => {
                             setShowProfileModal(false);
@@ -594,7 +594,7 @@ export default function ProviderLayout() {
               <User size={16} className="text-emerald-600" /> View Profile & Business Info
             </button>
 
-            {hasOfflinePin() && (
+            {!navigator.onLine && hasOfflinePin() && (
               <button
                 onClick={() => {
                   setShowProfileModal(false);
@@ -860,7 +860,7 @@ function MobileBottomNav({ user, targetEndDate, filteredGroups = [], onOpenMobil
                   <User size={16} className="text-emerald-600" /> My Profile & Settings
                 </Link>
 
-                {hasOfflinePin() && (
+                {!navigator.onLine && hasOfflinePin() && (
                   <button
                     onClick={() => {
                       setShowProfileSheet(false);

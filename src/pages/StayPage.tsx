@@ -1522,7 +1522,7 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
               )}
             </div>
           </div>
-
+                                                                                                      
           <div className="flex items-end border-t border-white/10 bg-white/[0.035] p-7 sm:p-10 lg:border-l lg:border-t-0">
             <div>
               <div className="flex items-center gap-1 text-amber-300">

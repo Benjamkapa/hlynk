@@ -37,23 +37,46 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return !!token
   })
   const [isLocked, setIsLocked] = useState(() => {
-    // Only lock if EXPLICITLY locked via storage — never auto-lock on startup
-    // (hasOfflinePin returns true for everyone due to auto-default, causing false locks)
-    return storage.getItem('session_locked') === 'true'
+    // NEVER lock when online! Offline lock screen is strictly for offline mode.
+    if (typeof navigator !== 'undefined' && navigator.onLine) {
+      storage.removeItem('session_locked')
+      return false
+    }
+    // Only lock if offline AND an existing user profile exists AND explicitly locked
+    const cachedUser = storage.getItem('user_profile')
+    return !!cachedUser && storage.getItem('session_locked') === 'true'
   })
 
   useEffect(() => {
-    // Only lock on offline if the user has EXPLICITLY set a custom PIN in Settings
-    // (hasPinBeenPrompted = user went to Settings and saved their own PIN)
+    // Only lock on offline if an existing profile exists AND user has set up a PIN
     const handleOffline = () => {
-      if (hasPinBeenPrompted() && hasOfflinePin()) {
+      const hasProfile = !!storage.getItem('user_profile') || !!user
+      if (hasProfile && hasPinBeenPrompted() && hasOfflinePin()) {
         setIsLocked(true)
         storage.setItem('session_locked', 'true')
       }
     }
+
+    const handleOnline = () => {
+      // NEVER show offline lock when online: automatically clear lock when connection is active
+      setIsLocked(false)
+      storage.removeItem('session_locked')
+    }
+
     window.addEventListener('offline', handleOffline)
-    return () => window.removeEventListener('offline', handleOffline)
-  }, [])
+    window.addEventListener('online', handleOnline)
+
+    // Ensure state is clean if app loaded while online
+    if (typeof navigator !== 'undefined' && navigator.onLine) {
+      setIsLocked(false)
+      storage.removeItem('session_locked')
+    }
+
+    return () => {
+      window.removeEventListener('offline', handleOffline)
+      window.removeEventListener('online', handleOnline)
+    }
+  }, [user])
 
   useEffect(() => {
     const token = storage.getItem('accessToken')
@@ -146,17 +169,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(null)
   }
 
-  /** Lock the screen without ending the session */
+  /** Lock the screen without ending the session — only permitted in offline mode with an existing profile */
   const lock = () => {
-    setIsLocked(true)
-    storage.setItem('session_locked', 'true')
+    const hasProfile = !!user || !!storage.getItem('user_profile')
+    if (!navigator.onLine && hasProfile) {
+      setIsLocked(true)
+      storage.setItem('session_locked', 'true')
+    }
   }
 
   /**
    * Attempt to unlock the session with a PIN.
    * Returns true on success, false on wrong PIN.
+   * If online, always unlocks immediately.
    */
   const unlock = async (pin: string): Promise<boolean> => {
+    if (typeof navigator !== 'undefined' && navigator.onLine) {
+      setIsLocked(false)
+      storage.removeItem('session_locked')
+      return true
+    }
     const valid = await verifyOfflinePin(pin)
     if (valid) {
       setIsLocked(false)

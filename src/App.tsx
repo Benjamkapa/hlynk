@@ -3,9 +3,8 @@ import { Routes, Route, Navigate } from 'react-router-dom'
 import { AnimatePresence } from 'framer-motion'
 import { useAuth } from './lib/auth/AuthContext'
 import InlineLoader from './components/shared/InlineLoader'
-import { hasOfflinePin, hasPinBeenPrompted, markPinPrompted } from './lib/offline/offlinePin'
 import OfflineLockScreen from './components/auth/OfflineLockScreen'
-import PinSetupModal from './components/auth/PinSetupModal'
+import { useOfflineStatus } from './lib/offline/useOfflineStatus'
 
 // Layouts
 import ProviderLayout from './components/shared/ProviderLayout'
@@ -104,7 +103,8 @@ function RootRedirect() {
 }
 
 export default function App() {
-  const { isLocked } = useAuth()
+  const { isLocked, user } = useAuth()
+  const { isOnline } = useOfflineStatus()
 
   // Initialize universal notification sound engine & listen for incoming push events
   useEffect(() => {
@@ -137,9 +137,9 @@ export default function App() {
       <ReloadPrompt />
       <OfflineBanner />
 
-      {/* Offline lock screen — shown when session is locked */}
+      {/* Offline lock screen — shown ONLY in offline mode with an existing profile, never when online */}
       <AnimatePresence>
-        {isLocked && <OfflineLockScreen />}
+        {!isOnline && isLocked && user && <OfflineLockScreen />}
       </AnimatePresence>
       <Routes>
         {/* Public */}
