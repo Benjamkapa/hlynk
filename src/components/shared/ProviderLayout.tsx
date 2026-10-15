@@ -15,6 +15,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { MobileGestures } from "./MobileGestures";
 import { hasOfflinePin } from "../../lib/offline/offlinePin";
 import { Modal } from "./Modal";
+import { canUseCustomSidebarLogo } from "./FeatureGate";
 
 const EtimsIcon = ({ className, size = 20 }: { className?: string, size?: number }) => (
   <img src="https://etims.kra.go.ke/assets/images/logo.jpg" alt="eTIMS" style={{ width: size, height: size }} className={`${className || ''} object-contain mix-blend-darken shrink-0`} />
@@ -181,40 +182,55 @@ export default function ProviderLayout() {
   const RAIL_W = isDesktop ? 68 : 60;
   const FULL_W = 220;
 
-  const sidebarContent = useMemo(() => (
-    <div className="flex flex-col h-full">
-      <div className={`h-16 lg:h-20 flex items-center flex-shrink-0 pt-[max(1.5rem,calc(env(safe-area-inset-top,0px)+0.75rem))] lg:pt-0 ${sidebarExpanded ? 'px-5' : 'justify-center'}`}>
-        <AnimatePresence mode="wait" initial={false}>
-          {sidebarExpanded ? (
-            <motion.div
-              key="full"
-              initial={{ opacity: 0, x: -8 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -8 }}
-              transition={{ duration: 0.18 }}
-              className="flex items-center gap-3 overflow-hidden"
-            >
-              <img src="/fav.png" alt="hlynk" className="h-8 w-8 lg:h-9 lg:w-9 object-contain" />
-              <div className="flex flex-col min-w-0">
-                <span className="text-sm text-emerald-900 font-bold text-[#00694B] truncate tracking-tight leading-none">
-                  {user?.businessName}
-                </span>
-              </div>
-            </motion.div>
-          ) : (
-            <motion.img
-              key="icon"
-              src="/fav.png"
-              alt="hlynk"
-              className="h-6 w-6 lg:h-7 lg:w-7 object-contain"
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.8 }}
-              transition={{ duration: 0.15 }}
-            />
-          )}
-        </AnimatePresence>
-      </div>
+  const sidebarContent = useMemo(() => {
+    const isCustomLogoAllowed = canUseCustomSidebarLogo(user);
+    const activeLogo = isCustomLogoAllowed && user?.logoUrl ? user.logoUrl : null;
+    const sidebarLogo = activeLogo || '/fav.png';
+
+    return (
+      <div className="flex flex-col h-full">
+        <div className={`h-16 lg:h-20 flex items-center flex-shrink-0 pt-[max(1.5rem,calc(env(safe-area-inset-top,0px)+0.75rem))] lg:pt-0 ${sidebarExpanded ? 'px-5' : 'justify-center'}`}>
+          <AnimatePresence mode="wait" initial={false}>
+            {sidebarExpanded ? (
+              <motion.div
+                key="full"
+                initial={{ opacity: 0, x: -8 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -8 }}
+                transition={{ duration: 0.18 }}
+                className="flex items-center gap-3 overflow-hidden"
+              >
+                <img
+                  src={sidebarLogo}
+                  alt={user?.businessName || 'hlynk'}
+                  className={`h-8 w-8 lg:h-9 lg:w-9 object-contain ${activeLogo ? 'rounded-lg p-0.5' : ''}`}
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = '/fav.png';
+                  }}
+                />
+                <div className="flex flex-col min-w-0">
+                  <span className="text-sm text-emerald-900 font-bold text-[#00694B] truncate tracking-tight leading-none">
+                    {user?.businessName}
+                  </span>
+                </div>
+              </motion.div>
+            ) : (
+              <motion.img
+                key="icon"
+                src={sidebarLogo}
+                alt={user?.businessName || 'hlynk'}
+                className={`h-6 w-6 lg:h-7 lg:w-7 object-contain ${activeLogo ? 'rounded-md p-0.5' : ''}`}
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.8 }}
+                transition={{ duration: 0.15 }}
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src = '/fav.png';
+                }}
+              />
+            )}
+          </AnimatePresence>
+        </div>
 
       <nav className="flex-1 px-3 space-y-4 overflow-y-auto overflow-x-hidden pt-2 custom-scrollbar">
         {filteredGroups.map((group) => (
@@ -462,7 +478,8 @@ export default function ProviderLayout() {
         </div>
       </div>
     </div>
-  ), [sidebarExpanded, filteredGroups, user, isTrial, isCritical, targetEndDate, logout]);
+    );
+  }, [sidebarExpanded, filteredGroups, user, isTrial, isCritical, targetEndDate, logout]);
 
   return (
     <MobileGestures>

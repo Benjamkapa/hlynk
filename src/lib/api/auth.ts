@@ -14,6 +14,7 @@ export interface AuthUser {
   category?: string
   avatar?: string
   photoUrl?: string
+  logoUrl?: string
   phoneVerified: boolean
   subscription?: {
     planName: string

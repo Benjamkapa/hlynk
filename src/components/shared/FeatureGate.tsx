@@ -15,6 +15,7 @@ type Feature =
   | 'public_store'
   | 'audit_logs'
   | 'kcb_settlement'
+  | 'custom_sidebar_logo'
 
 interface FeatureGateProps {
   feature: Feature
@@ -37,6 +38,20 @@ export const FEATURE_PLANS: Record<Feature, string[]> = {
   public_store: ['MAX'],
   audit_logs: ['MAX'],
   kcb_settlement: ['MAX'],
+  custom_sidebar_logo: ['MAX'],
+}
+
+/**
+ * Check if the user is allowed to replace the sidebar hlynk icon with a custom/preferred logo.
+ * Allowed in:
+ * - The superior package (MAX / Business Pro)
+ * - The free tier (isTrial / Trial status)
+ * - SUPER_ADMIN
+ * Blocked in:
+ * - The Starter package of 4450 (PLUS / Starter paid plan)
+ */
+export function canUseCustomSidebarLogo(user: any): boolean {
+  return canAccessFeature(user, 'custom_sidebar_logo');
 }
 
 export function canAccessFeature(user: any, feature: Feature): boolean {

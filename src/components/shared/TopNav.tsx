@@ -3,6 +3,7 @@ import { useLocation } from 'react-router-dom';
 import { PanelLeftClose, PanelLeft } from 'lucide-react';
 import NotificationBell from './NotificationBell';
 import { useAuth } from '../../lib/auth/AuthContext';
+import { canUseCustomSidebarLogo } from './FeatureGate';
 
 export interface TopNavProps {
   isMobileOpen?: boolean;
@@ -55,6 +56,10 @@ export default function TopNav({
   const location = useLocation();
   const { user } = useAuth();
 
+  const isCustomLogoAllowed = canUseCustomSidebarLogo(user);
+  const activeLogo = isCustomLogoAllowed && user?.logoUrl ? user.logoUrl : null;
+  const navLogo = activeLogo || '/fav.png';
+
   const pageTitle =
     title ||
     routeTitles[location.pathname] ||
@@ -86,7 +91,14 @@ export default function TopNav({
             </button>
           )}
           <div className="flex items-center gap-2.5 min-w-0">
-            <img src="/fav.png" alt="hlynk" className="h-7 w-7 object-contain shrink-0 lg:hidden" />
+            <img
+              src={navLogo}
+              alt={businessName || 'hlynk'}
+              className={`h-7 w-7 object-contain shrink-0 lg:hidden ${activeLogo ? 'rounded-md p-0.5' : ''}`}
+              onError={(e) => {
+                (e.target as HTMLImageElement).src = '/fav.png';
+              }}
+            />
             <h1 className="text-base sm:text-lg font-extrabold text-[#00694B] tracking-tight leading-tight truncate">
               <span className="lg:hidden">{businessName}</span>
               {/* <span className="hidden lg:inline">{pageTitle}</span> */}

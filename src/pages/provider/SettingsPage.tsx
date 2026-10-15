@@ -40,7 +40,7 @@ import { providersApi } from "../../lib/api/providers";
 import { getErrorMessage } from "../../lib/utils/error";
 import { useLocation, NavLink, Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import FeatureGate from "../../components/shared/FeatureGate";
+import FeatureGate, { canUseCustomSidebarLogo } from "../../components/shared/FeatureGate";
 import { hasOfflinePin, clearOfflinePin } from "../../lib/offline/offlinePin";
 import PinSetupModal from "../../components/auth/PinSetupModal";
 import { AnimatePresence } from "framer-motion";
@@ -110,10 +110,16 @@ export default function SettingsPage() {
   const [uploading, setUploading] = useState(false);
   const [bannerUploading, setBannerUploading] = useState(false);
   const [bannerPreview, setBannerPreview] = useState<string | null>(null);
+  const [logoUploading, setLogoUploading] = useState(false);
+  const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const bannerInputRef = useRef<HTMLInputElement>(null);
+  const logoInputRef = useRef<HTMLInputElement>(null);
   const [pinHasPin, setPinHasPin] = useState(() => hasOfflinePin());
   const [showPinSetup, setShowPinSetup] = useState(false);
+
+  const isTrial = Number(user?.subscription?.status) === 2 || user?.subscription?.status === "TRIAL";
+  const isCustomLogoAllowed = canUseCustomSidebarLogo(user);
 
   const { data: profile, isLoading } = useQuery({
     queryKey: ["my-profile"],
@@ -303,6 +309,52 @@ export default function SettingsPage() {
       toast.error(getErrorMessage(err));
     } finally {
       setBannerUploading(false);
+    }
+  };
+
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!isCustomLogoAllowed) {
+      toast.error(
+        "Custom sidebar branding is exclusively available on Business Pro and Free Trial tiers. Upgrade from Starter (KES 4,450) to unlock.",
+      );
+      return;
+    }
+
+    setLogoPreview(URL.createObjectURL(file));
+    setLogoUploading(true);
+    try {
+      const res = await providersApi.uploadLogo(file);
+      const url = res?.data?.url;
+      if (url) {
+        patchUser({ logoUrl: url });
+      }
+      await refreshUser();
+      queryClient.invalidateQueries({ queryKey: ["my-profile"] });
+      toast.success("Sidebar brand logo updated successfully");
+    } catch (err) {
+      setLogoPreview(null);
+      toast.error(getErrorMessage(err));
+    } finally {
+      setLogoUploading(false);
+    }
+  };
+
+  const handleRemoveLogo = async () => {
+    setLogoUploading(true);
+    try {
+      await providersApi.deleteLogo();
+      setLogoPreview(null);
+      patchUser({ logoUrl: undefined });
+      await refreshUser();
+      queryClient.invalidateQueries({ queryKey: ["my-profile"] });
+      toast.success("Sidebar icon reset to default hlynk logo");
+    } catch (err) {
+      toast.error(getErrorMessage(err));
+    } finally {
+      setLogoUploading(false);
     }
   };
 
@@ -635,6 +687,121 @@ export default function SettingsPage() {
 
             {activeTab === "Business" && (
               <div className="space-y-6">
+                {/* Business Logo & Custom Sidebar Brand Icon */}
+                <div className="p-5 sm:p-6 rounded-2xl border border-slate-200/80 bg-gradient-to-br from-white to-slate-50/60 shadow-sm space-y-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <Sparkles size={18} className="text-emerald-700" weight="fill" />
+                        <h4 className="font-black text-gray-950 text-sm tracking-tight">
+                          Brand Logo & Sidebar Icon
+                        </h4>
+                      </div>
+                      <p className="text-xs text-gray-500 font-medium mt-0.5">
+                        Replace the default hlynk icon at the top of your sidebar navigation and mobile header with your preferred image.
+                      </p>
+                    </div>
+
+                    {isCustomLogoAllowed ? (
+                      <span className="self-start sm:self-auto inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/60 shrink-0">
+                        <CheckCircle2 size={13} weight="bold" />
+                        {isTrial ? "Free Trial Active" : "Business Pro Active"}
+                      </span>
+                    ) : (
+                      <span className="self-start sm:self-auto inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-amber-50 text-amber-700 border border-amber-200/60 shrink-0">
+                        <Lock size={12} weight="bold" />
+                        Locked on Starter [KES 4,450]
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5 pt-2">
+                    {/* Visual Mockup Container */}
+                    <div className="relative group shrink-0">
+                      <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-[#0d2419] border border-emerald-900/40 flex items-center justify-center p-2.5 shadow-md relative overflow-hidden">
+                        <img
+                          src={
+                            logoPreview ||
+                            (isCustomLogoAllowed
+                              ? user?.logoUrl || profile?.data?.operationalSettings?.logoUrl || profile?.data?.logoUrl
+                              : null) ||
+                            "/fav.png"
+                          }
+                          alt="Brand Logo"
+                          className="w-full h-full object-contain rounded-lg"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).src = "/fav.png";
+                          }}
+                        />
+                        {logoUploading && (
+                          <div className="absolute inset-0 bg-black/50 backdrop-blur-[1px] flex items-center justify-center">
+                            <ButtonLoader size={20} className="text-white" />
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Controls & Explanations */}
+                    <div className="flex-1 space-y-2.5">
+                      {isCustomLogoAllowed ? (
+                        <>
+                          <div className="flex flex-wrap items-center gap-2.5">
+                            <button
+                              type="button"
+                              onClick={() => logoInputRef.current?.click()}
+                              disabled={logoUploading}
+                              className="inline-flex items-center gap-2 px-4 py-2 bg-[#0D4A3E] hover:bg-[#0A3D33] text-white text-xs font-bold rounded-xl shadow-sm transition active:scale-95 disabled:opacity-60"
+                            >
+                              {logoUploading ? <ButtonLoader size={14} /> : <Camera size={14} />}
+                              {logoUploading
+                                ? "Uploading…"
+                                : user?.logoUrl || profile?.data?.operationalSettings?.logoUrl
+                                ? "Change Logo"
+                                : "Upload Brand Logo"}
+                            </button>
+
+                            {(user?.logoUrl || profile?.data?.operationalSettings?.logoUrl) && (
+                              <button
+                                type="button"
+                                onClick={handleRemoveLogo}
+                                disabled={logoUploading}
+                                className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-bold text-red-600 hover:bg-red-50 hover:text-red-700 rounded-xl transition active:scale-95 border border-red-200/50"
+                              >
+                                <Trash2 size={13} /> Reset to Default Icon
+                              </button>
+                            )}
+                          </div>
+                          <p className="text-[11px] text-gray-500 font-medium">
+                            Square PNG, JPG, WEBP, or SVG. Transparent background recommended. Max 5MB.
+                          </p>
+                        </>
+                      ) : (
+                        <div className="p-3.5 rounded-xl bg-amber-50/80 border border-amber-200/70 text-amber-900 text-xs space-y-2">
+                          <p className="font-semibold text-[11.5px] leading-relaxed">
+                            Custom sidebar branding is available in the <strong className="font-black text-amber-950">Business Pro</strong> package and during the <strong className="font-black text-amber-950">Free Trial</strong> tier. The Starter plan (KES 4,450 / month) displays the standard hlynk icon.
+                          </p>
+                          <div>
+                            <Link
+                              to="/dashboard/subscription"
+                              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white font-bold text-[11px] rounded-lg shadow-sm transition active:scale-95"
+                            >
+                              <Sparkles size={12} weight="fill" /> Upgrade to Business Pro to Unlock
+                            </Link>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <input
+                    type="file"
+                    ref={logoInputRef}
+                    onChange={handleLogoUpload}
+                    className="hidden"
+                    accept="image/*"
+                  />
+                </div>
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <InputGroup
                     label="Business Name"
