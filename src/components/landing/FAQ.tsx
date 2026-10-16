@@ -44,52 +44,52 @@ const faqs = [
   //   answer: "In android phone open chrome browser, type hlynk.co.ke, click on the three dots in the top right corner, click on 'Add to Home Screen'. In iOS phone open Safari browser, type hlynk.co.ke, click on the share button in the bottom, click on 'Add to Home Screen'."
   // }
   {
-    "question": "What is Hlynk?",
-    "answer": "Hlynk is a business management system designed to help Kenyan business owners manage sales, stock, expenses, customers, and business performance in one place."
+    "question": "What is hlynk?",
+    "answer": "hlynk is a business management system designed to help Kenyan business owners manage sales, stock, expenses, customers, and business performance in one place."
   },
   {
-    "question": "Who is Hlynk designed for?",
-    "answer": "Hlynk is built for small and growing businesses, including retail shops, minimarts, boutiques, BnBs, guest houses, and service-based businesses."
+    "question": "Who is hlynk designed for?",
+    "answer": "hlynk is built for small and growing businesses, including retail shops, minimarts, boutiques, BnBs, guest houses, and service-based businesses."
   },
   {
-    "question": "Can Hlynk help reduce employee theft and dishonesty?",
-    "answer": "Hlynk helps you maintain clear records of sales, stock, and expenses, making discrepancies easier to identify and investigate. Regular reconciliation and proper staff controls help you stay in control of your business, even when you are away."
+    "question": "Can hlynk help reduce employee theft and dishonesty?",
+    "answer": "hlynk helps you maintain clear records of sales, stock, and expenses, making discrepancies easier to identify and investigate. Regular reconciliation and proper staff controls help you stay in control of your business, even when you are away."
   },
   {
     "question": "Can I track my sales and stock in real time?",
-    "answer": "Hlynk helps you record sales and monitor inventory, making it easier to understand what is selling, what remains in stock, and where discrepancies may exist. Accurate records depend on consistently recording business transactions."
+    "answer": "hlynk helps you record sales and monitor inventory, making it easier to understand what is selling, what remains in stock, and where discrepancies may exist. Accurate records depend on consistently recording business transactions."
   },
   {
-    "question": "Does Hlynk support M-Pesa payments?",
-    "answer": "Hlynk is designed to support M-Pesa and other configured payment methods, helping you organize business transactions and track recorded payments. Available payment options depend on your account setup."
+    "question": "Does hlynk support M-Pesa payments?",
+    "answer": "hlynk is designed to support M-Pesa and other configured payment methods, helping you organize business transactions and track recorded payments. Available payment options depend on your account setup."
   },
   {
-    "question": "Can I manage my BnB or guest house with Hlynk?",
-    "answer": "Hlynk's hospitality offering is designed to help accommodation businesses organize operations such as rooms, bookings, guest records, payments, and business reporting, depending on the features enabled in your account."
+    "question": "Can I manage my BnB or guest house with hlynk?",
+    "answer": "hlynk's hospitality offering is designed to help accommodation businesses organize operations such as rooms, bookings, guest records, payments, and business reporting, depending on the features enabled in your account."
   },
   {
-    "question": "How much does Hlynk cost?",
-    "answer": "Hlynk offers subscription plans designed for different business needs. Visit the pricing section at hlynk.co.ke to explore available plans, prices, and included features."
+    "question": "How much does hlynk cost?",
+    "answer": "hlynk offers subscription plans designed for different business needs. Visit the pricing section at hlynk.co.ke to explore available plans, prices, and included features."
   },
   {
     "question": "Can I monitor my business when I am away?",
-    "answer": "Yes. Hlynk helps you access recorded business information, including sales, expenses, stock, and performance reports, so you can stay informed without being physically present at your business."
+    "answer": "Yes. hlynk helps you access recorded business information, including sales, expenses, stock, and performance reports, so you can stay informed without being physically present at your business."
   },
   {
     "question": "Can I track my business expenses and profits?",
-    "answer": "Hlynk helps you record expenses and review sales and profit reports, giving you a clearer picture of your business performance. The accuracy of these reports depends on keeping your records complete and up to date."
+    "answer": "hlynk helps you record expenses and review sales and profit reports, giving you a clearer picture of your business performance. The accuracy of these reports depends on keeping your records complete and up to date."
   },
   {
-    "question": "How do I get started with Hlynk?",
+    "question": "How do I get started with hlynk?",
     "answer": "Visit hlynk.co.ke, create your business account through the available registration process, and follow the setup steps for your business type."
   },
   {
     "question": "Can I manage products and services in one system?",
-    "answer": "Hlynk supports the management of goods and services, helping you organize your sales and business records from one platform."
+    "answer": "hlynk supports the management of goods and services, helping you organize your sales and business records from one platform."
   },
   {
-    "question": "Is Hlynk suitable for a small business?",
-    "answer": "Yes. Hlynk is designed to help small and growing businesses organize daily operations, improve visibility into sales and expenses, manage stock, and make more informed business decisions."
+    "question": "Is hlynk suitable for a small business?",
+    "answer": "Yes. hlynk is designed to help small and growing businesses organize daily operations, improve visibility into sales and expenses, manage stock, and make more informed business decisions."
   }
 ]
 
