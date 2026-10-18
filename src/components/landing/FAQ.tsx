@@ -1,6 +1,6 @@
-import { useState } from 'react'
-import { Plus, Minus } from 'lucide-react'
-import { FadeUp } from './Animations'
+import { useState } from "react";
+import { Plus, Minus } from "lucide-react";
+import { FadeUp } from "./Animations";
 
 const faqs = [
   // {
@@ -44,64 +44,94 @@ const faqs = [
   //   answer: "In android phone open chrome browser, type hlynk.co.ke, click on the three dots in the top right corner, click on 'Add to Home Screen'. In iOS phone open Safari browser, type hlynk.co.ke, click on the share button in the bottom, click on 'Add to Home Screen'."
   // }
   {
-    "question": "What is hlynk?",
-    "answer": "hlynk is a business management system designed to help Kenyan business owners manage sales, stock, expenses, customers, and business performance in one place."
+    question: "What is hlynk?",
+    answer:
+      "hlynk is a business management system designed to help Kenyan business owners manage sales, stock, expenses, customers, and business performance in one place.",
   },
   {
-    "question": "Who is hlynk designed for?",
-    "answer": "hlynk is built for small and growing businesses, including retail shops, minimarts, boutiques, BnBs, guest houses, and service-based businesses."
+    question: "Who is hlynk designed for?",
+    answer:
+      "hlynk is built for small and growing businesses, including retail shops, minimarts, boutiques, BnBs, guest houses, and service-based businesses.",
   },
   {
-    "question": "Can hlynk help reduce employee theft and dishonesty?",
-    "answer": "hlynk helps you maintain clear records of sales, stock, and expenses, making discrepancies easier to identify and investigate. Regular reconciliation and proper staff controls help you stay in control of your business, even when you are away."
+    question: "Can hlynk help reduce employee theft and dishonesty?",
+    answer:
+      "hlynk helps you maintain clear records of sales, stock, and expenses, making discrepancies easier to identify and investigate. Regular reconciliation and proper staff controls help you stay in control of your business, even when you are away.",
   },
   {
-    "question": "Can I track my sales and stock in real time?",
-    "answer": "hlynk helps you record sales and monitor inventory, making it easier to understand what is selling, what remains in stock, and where discrepancies may exist. Accurate records depend on consistently recording business transactions."
+    question: "Can I track my sales and stock in real time?",
+    answer:
+      "hlynk helps you record sales and monitor inventory, making it easier to understand what is selling, what remains in stock, and where discrepancies may exist. Accurate records depend on consistently recording business transactions.",
   },
   {
-    "question": "Does hlynk support M-Pesa payments?",
-    "answer": "hlynk is designed to support M-Pesa and other configured payment methods, helping you organize business transactions and track recorded payments. Available payment options depend on your account setup."
+    question: "Does hlynk support M-Pesa payments?",
+    answer:
+      "hlynk is designed to support M-Pesa and other configured payment methods, helping you organize business transactions and track recorded payments. Available payment options depend on your account setup.",
   },
   {
-    "question": "Can I manage my BnB or guest house with hlynk?",
-    "answer": "hlynk's hospitality offering is designed to help accommodation businesses organize operations such as rooms, bookings, guest records, payments, and business reporting, depending on the features enabled in your account."
+    question: "Can I manage my BnB or guest house with hlynk?",
+    answer:
+      "hlynk's hospitality offering is designed to help accommodation businesses organize operations such as rooms, bookings, guest records, payments, and business reporting, depending on the features enabled in your account.",
   },
   {
-    "question": "How much does hlynk cost?",
-    "answer": "hlynk offers subscription plans designed for different business needs. Visit the pricing section at hlynk.co.ke to explore available plans, prices, and included features."
+    question: "How much does hlynk cost?",
+    answer:
+      "hlynk offers subscription plans designed for different business needs. Visit the pricing section at hlynk.co.ke to explore available plans, prices, and included features.",
   },
   {
-    "question": "Can I monitor my business when I am away?",
-    "answer": "Yes. hlynk helps you access recorded business information, including sales, expenses, stock, and performance reports, so you can stay informed without being physically present at your business."
+    question: "Can I monitor my business when I am away?",
+    answer:
+      "Yes. hlynk helps you access recorded business information, including sales, expenses, stock, and performance reports, so you can stay informed without being physically present at your business.",
   },
   {
-    "question": "Can I track my business expenses and profits?",
-    "answer": "hlynk helps you record expenses and review sales and profit reports, giving you a clearer picture of your business performance. The accuracy of these reports depends on keeping your records complete and up to date."
+    question: "Can I track my business expenses and profits?",
+    answer:
+      "hlynk helps you record expenses and review sales and profit reports, giving you a clearer picture of your business performance. The accuracy of these reports depends on keeping your records complete and up to date.",
   },
   {
-    "question": "How do I get started with hlynk?",
-    "answer": "Visit hlynk.co.ke, create your business account through the available registration process, and follow the setup steps for your business type."
+    question: "How do I get started with hlynk?",
+    answer:
+      "Visit hlynk.co.ke, create your business account through the available registration process, and follow the setup steps for your business type.",
   },
   {
-    "question": "Can I manage products and services in one system?",
-    "answer": "hlynk supports the management of goods and services, helping you organize your sales and business records from one platform."
+    question: "Can I manage products and services in one system?",
+    answer:
+      "hlynk supports the management of goods and services, helping you organize your sales and business records from one platform.",
   },
   {
-    "question": "Is hlynk suitable for a small business?",
-    "answer": "Yes. hlynk is designed to help small and growing businesses organize daily operations, improve visibility into sales and expenses, manage stock, and make more informed business decisions."
-  }
-]
+    question: "Is hlynk suitable for a small business?",
+    answer:
+      "Yes. hlynk is designed to help small and growing businesses organize daily operations, improve visibility into sales and expenses, manage stock, and make more informed business decisions.",
+  },
+  {
+    question: "Can hlynk help with business finance tracking?",
+    answer:
+      "Yes. hlynk helps you record expenses and review sales and profit reports, giving you a clearer picture of your business performance. The accuracy of these reports depends on keeping your records complete and up to date.",
+  },
+  {
+    question: "Does hlynk have a mobile app?",
+    answer:
+      "Yes. hlynk is a Progressive Web App (PWA) that can be installed on your iPhone or Android device. Simply tap the 'Add to Home Screen' option in your browser to install Hlynk as an app on your device.",
+  },
+  {
+    question: "How to install PWA in both android phone using chrome browser and safaris in iPhone?",
+    answer:
+      "In Android phone open chrome browser, type hlynk.co.ke, click on the three dots in the top right corner, click on 'Add to Home Screen'. In iOS phone open Safari browser, type hlynk.co.ke, click on the share button in the bottom, click on 'Add to Home Screen'.",
+  },
+];
 
 export default function FAQ() {
-  const [openIndex, setOpenIndex] = useState<number | null>(null)
+  const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   const toggle = (index: number) => {
-    setOpenIndex(openIndex === index ? null : index)
-  }
+    setOpenIndex(openIndex === index ? null : index);
+  };
 
   return (
-    <section id="faq" className="py-32 bg-slate-950 text-white relative overflow-hidden border-t border-slate-800">
+    <section
+      id="faq"
+      className="py-32 bg-slate-950 text-white relative overflow-hidden border-t border-slate-800"
+    >
       <div className="max-w-4xl mx-auto px-6 md:px-12 relative z-10">
         <div className="text-center mb-20">
           <FadeUp delay={0.1}>
@@ -109,31 +139,36 @@ export default function FAQ() {
               Frequently Asked Questions
             </h2>
             <p className="text-slate-400 font-medium max-w-2xl mx-auto">
-              Everything you need to know about hlynk's POS, stay bookings, payments, and plans.
+              Everything you need to know about hlynk's POS, stay bookings,
+              payments, and plans.
             </p>
           </FadeUp>
         </div>
 
         <div className="space-y-4">
           {faqs.map((faq, i) => {
-            const isOpen = openIndex === i
+            const isOpen = openIndex === i;
             return (
               <FadeUp key={i} delay={0.1 * (i + 1)}>
-                <div 
-                  className={`bg-slate-900 border transition-all duration-300 rounded-2xl overflow-hidden cursor-pointer ${isOpen ? 'border-emerald-500/40 shadow-md' : 'border-slate-800 hover:border-slate-700'}`}
+                <div
+                  className={`bg-slate-900 border transition-all duration-300 rounded-2xl overflow-hidden cursor-pointer ${isOpen ? "border-emerald-500/40 shadow-md" : "border-slate-800 hover:border-slate-700"}`}
                   onClick={() => toggle(i)}
                 >
                   <div className="p-6 md:p-8 flex items-center justify-between gap-6">
-                    <h3 className={`text-md md:text-lg font-thin transition-colors ${isOpen ? 'text-emerald-400' : 'text-slate-100'}`}>
+                    <h3
+                      className={`text-md md:text-lg font-thin transition-colors ${isOpen ? "text-emerald-400" : "text-slate-100"}`}
+                    >
                       {faq.question}
                     </h3>
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-colors ${isOpen ? 'bg-emerald-500/10 text-emerald-400' : 'bg-slate-800 text-slate-400'}`}>
+                    <div
+                      className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-colors ${isOpen ? "bg-emerald-500/10 text-emerald-400" : "bg-slate-800 text-slate-400"}`}
+                    >
                       {isOpen ? <Minus size={20} /> : <Plus size={20} />}
                     </div>
                   </div>
-                  
-                  <div 
-                    className={`px-6 md:px-8 overflow-hidden transition-all duration-500 ease-in-out ${isOpen ? 'max-h-96 pb-6 md:pb-8 opacity-100' : 'max-h-0 opacity-0'}`}
+
+                  <div
+                    className={`px-6 md:px-8 overflow-hidden transition-all duration-500 ease-in-out ${isOpen ? "max-h-96 pb-6 md:pb-8 opacity-100" : "max-h-0 opacity-0"}`}
                   >
                     <p className="text-slate-400 leading-relaxed font-medium">
                       {faq.answer}
@@ -141,10 +176,10 @@ export default function FAQ() {
                   </div>
                 </div>
               </FadeUp>
-            )
+            );
           })}
         </div>
       </div>
     </section>
-  )
+  );
 }
