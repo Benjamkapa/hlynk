@@ -30,7 +30,7 @@ const Partners = lazy(() => import('./pages/Partners'))
 const FrontPage = lazy(() => import('./pages/front/FrontPage'))
 
 // Dashboards
-import DashboardPage from './pages/provider/DashboardPage'
+const DashboardPage = lazy(() => import('./pages/provider/DashboardPage'))
 const AdminDashboardPage = lazy(() => import('./pages/admin/AdminDashboardPage'))
 
 // Admin Pages
@@ -49,13 +49,13 @@ const CloudStoragePage = lazy(() => import('./pages/admin/CloudStoragePage'))
 const SystemNotificationsPage = lazy(() => import('./pages/admin/SystemNotificationsPage'))
 
 // Provider Pages
-import RecordSalePage from './pages/provider/RecordSalePage'
-import CustomersPage from './pages/provider/CustomersPage'
-import ReportsPageProvider from './pages/provider/ReportsPage'
-import ProductsPage from './pages/provider/ProductsPage'
-import ExpensesPage from './pages/provider/ExpensesPage'
-import SalesHistoryPage from './pages/provider/SalesHistoryPage'
-import SettingsPageProvider from './pages/provider/SettingsPage'
+const RecordSalePage = lazy(() => import('./pages/provider/RecordSalePage'))
+const CustomersPage = lazy(() => import('./pages/provider/CustomersPage'))
+const ReportsPageProvider = lazy(() => import('./pages/provider/ReportsPage'))
+const ProductsPage = lazy(() => import('./pages/provider/ProductsPage'))
+const ExpensesPage = lazy(() => import('./pages/provider/ExpensesPage'))
+const SalesHistoryPage = lazy(() => import('./pages/provider/SalesHistoryPage'))
+const SettingsPageProvider = lazy(() => import('./pages/provider/SettingsPage'))
 const SubscriptionPage = lazy(() => import('./pages/provider/SubscriptionPage'))
 const StaffManagementPage = lazy(() => import('./pages/provider/StaffManagementPage'))
 const SupportPageProvider = lazy(() => import('./pages/provider/SupportPage'))
