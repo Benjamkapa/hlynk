@@ -981,6 +981,9 @@ function withTimeout<T>(promise: Promise<T>, ms = 45000): Promise<T> {
         title={editingResource ? `Edit: ${editingResource.title}` : "Add unit"}
         maxWidth="xl"
       >
+        {isCameraOpen && (
+          <CameraCapture onCapture={handleCameraCapture} onClose={() => setIsCameraOpen(false)} />
+        )}
         <form onSubmit={handleSaveRoom} className="space-y-4">
           {/* Title & Code */}
           <div className="grid grid-cols-2 gap-3">
@@ -1131,9 +1134,6 @@ function withTimeout<T>(promise: Promise<T>, ms = 45000): Promise<T> {
           </button>
         </form>
       </Modal>
-
-      {/* Camera */}
-      {isCameraOpen && <CameraCapture onCapture={handleCameraCapture} onClose={() => setIsCameraOpen(false)} />}
 
       {/* Gallery Lightbox */}
       <AnimatePresence>

@@ -70,7 +70,7 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ onCapture, onClose
   };
 
   return (
-    <div className="fixed inset-0 z-[100] bg-black flex flex-col items-center justify-center">
+    <div className="fixed inset-0 z-[100] bg-black flex flex-col items-center justify-center rounded-[inherit] overflow-hidden">
       {error ? (
         <div className="text-white text-center p-6 bg-red-900/20 rounded-xl border border-red-500/50">
           <p className="font-bold mb-4">{error}</p>
@@ -92,7 +92,7 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ onCapture, onClose
             />
             
             {/* UI Overlay */}
-            <div className="absolute inset-0 flex flex-col justify-between p-6">
+            <div className="absolute inset-0 flex flex-col justify-between p-5 sm:p-6 pt-[max(1.5rem,env(safe-area-inset-top))]">
               <div className="flex justify-between items-center">
                 <button 
                   onClick={() => { stopCamera(); onClose(); }}
