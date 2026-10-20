@@ -8,7 +8,6 @@ import {
 import { useParams } from "react-router-dom";
 import axios from "axios";
 import {
-  ArrowLeft,
   BedDouble,
   Check,
   CheckCircle2,
@@ -89,6 +88,7 @@ interface Product {
   category: string;
   price: number;
   stockLevel: number;
+  trackStock?: boolean | number;
   imageUrl?: string;
   description?: string;
   type?: string;
@@ -107,6 +107,7 @@ interface Listing {
   phone?: string;
   slug: string;
   businessType?: string;
+  logoUrl?: string | null;
   bannerUrl?: string;
   hasMpesaGateway?: boolean;
   directPayment?: DirectPaymentConfig;
@@ -304,10 +305,13 @@ function CatalogCard({
   const allImgs = images.length > 0 ? images : image ? [image] : [];
   const activeImg = allImgs[currentIndex] || allImgs[0];
 
-  // Stock awareness — only relevant for products (not rooms)
+  // Stock awareness:
+  // - Untracked products (trackStock: false, reseller / made-to-order) are always available.
+  // - Tracked products (trackStock: true) whose count is 0 as a result of sales are Out of stock.
+  const isTracked = 'trackStock' in item ? Boolean((item as any).trackStock) : false;
   const stockLevel = 'stockLevel' in item ? Number(item.stockLevel) : null;
-  const isOutOfStock = stockLevel !== null && stockLevel <= 0;
-  const isLowStock = stockLevel !== null && stockLevel > 0 && stockLevel <= 5;
+  const isOutOfStock = isTracked && stockLevel !== null && stockLevel <= 0;
+  const isLowStock = isTracked && stockLevel !== null && stockLevel > 0 && stockLevel <= 5;
 
   const prevImg = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -1070,39 +1074,40 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
       ? "Choose the space that fits your visit."
       : "Explore what is available in store.";
 
+  const activeLogo = listing.logoUrl || listing.operationalSettings?.logoUrl || "/fav.png";
+
   return (
     <div
       className="min-h-screen bg-[#f7f7f5] pb-28 text-slate-900"
       style={{ fontFamily: "'DM Sans', Inter, sans-serif" }}
     >
-      {/* HEADER — Sticky hide-on-scroll-down / show-on-swipe-up glass bar */}
+      {/* HEADER — Always-visible sticky glass bar */}
       <header
-        className="sticky top-0 z-[100] border-b border-slate-200/80 bg-white/85 backdrop-blur-2xl shadow-sm transition-transform duration-300"
+        className="sticky top-0 z-[100] border-b border-slate-200/80 bg-white/90 backdrop-blur-2xl shadow-sm"
         style={{
           paddingTop: "max(0.75rem, env(safe-area-inset-top, 0px))",
           paddingLeft: "max(1rem, env(safe-area-inset-left, 1rem))",
           paddingRight: "max(1rem, env(safe-area-inset-right, 1rem))",
-          transform: headerVisible ? "translateY(0)" : "translateY(-100%)",
         }}
       >
         <div className="mx-auto flex h-[56px] max-w-[1440px] items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
-          <div className="flex min-w-0 items-center gap-3">
-            {/* Glass back button */}
-            <button
-              type="button"
-              onClick={() => window.history.back()}
-              className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-white/60 bg-white/50 text-slate-700 shadow-sm backdrop-blur-xl transition hover:bg-white/80 active:scale-95"
-              aria-label="Go back"
-            >
-              <ArrowLeft size={18} />
-            </button>
-
+          <div className="flex min-w-0 items-center">
+            {/* Logo — displays the provider's brand logo or fallback icon, matching provider portal */}
             <a
               href="/"
-              className="truncate text-lg font-semibold tracking-tight text-slate-950 sm:text-xl"
-              style={serif}
+              className="shrink-0 flex items-center"
+              aria-label={listing.businessName || "Home"}
             >
-              {/* {listing.businessName} */}
+              <img
+                src={activeLogo}
+                alt={listing.businessName || "Brand Logo"}
+                className={`h-9 w-9 sm:h-10 sm:w-10 object-contain ${
+                  activeLogo !== "/fav.png" ? "rounded-lg" : ""
+                }`}
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src = "/fav.png";
+                }}
+              />
             </a>
           </div>
 

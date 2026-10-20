@@ -810,9 +810,19 @@ export default function ProductsPage() {
                       </div>
                     </td>
                     <td className="px-5 py-3.5 text-center">
-                      <span className={`text-sm font-medium hl-mono ${p.stockLevel > 0 && p.stockLevel <= (p.minLevel ?? threshold) ? 'text-red-600 font-bold' : p.stockLevel === 0 ? 'text-emerald-700 font-semibold' : 'text-gray-900'}`}>
-                        {p.stockLevel === 0 ? 'Available' : p.stockLevel}
-                      </span>
+                      {!p.trackStock || p.type === 'SERVICE' ? (
+                        <span className="text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full">
+                          {p.type === 'SERVICE' ? 'Service' : 'Unlimited'}
+                        </span>
+                      ) : p.stockLevel <= 0 ? (
+                        <span className="text-[11px] font-bold text-red-600 bg-red-50 px-2 py-0.5 rounded-full hl-mono">
+                          0 (Out of stock)
+                        </span>
+                      ) : (
+                        <span className={`text-sm font-medium hl-mono ${p.stockLevel <= (p.minLevel ?? threshold) ? 'text-amber-600 font-bold' : 'text-gray-900'}`}>
+                          {p.stockLevel}
+                        </span>
+                      )}
                     </td>
                     <td className="px-5 py-3.5 text-right text-gray-400 text-sm hl-mono">KES {Number(p.buyingPrice || 0).toLocaleString()}</td>
                     <td className="px-5 py-3.5 text-right font-medium text-gray-900 text-sm hl-mono">KES {Number(p.price).toLocaleString()}</td>
@@ -887,9 +897,19 @@ export default function ProductsPage() {
                       </div>
                       <div className="flex items-end justify-between">
                         <p className="text-xs font-semibold text-[#0D4A3E] hl-mono">KES {Number(p.price).toLocaleString()}</p>
-                        <span className={`text-[10px] hl-mono ${p.stockLevel > 0 && p.stockLevel <= (p.minLevel ?? threshold) ? 'text-red-500 font-bold' : p.stockLevel === 0 ? 'text-emerald-600 font-semibold' : 'text-gray-400'}`}>
-                          {p.stockLevel === 0 ? 'Available' : `${p.stockLevel} in stock`}
-                        </span>
+                        {!p.trackStock || p.type === 'SERVICE' ? (
+                          <span className="text-[10px] hl-mono text-emerald-600 font-semibold">
+                            {p.type === 'SERVICE' ? 'Service' : 'Unlimited'}
+                          </span>
+                        ) : p.stockLevel <= 0 ? (
+                          <span className="text-[10px] hl-mono text-red-600 font-bold">
+                            Out of stock
+                          </span>
+                        ) : (
+                          <span className={`text-[10px] hl-mono ${p.stockLevel <= (p.minLevel ?? threshold) ? 'text-amber-600 font-bold' : 'text-gray-400'}`}>
+                            {p.stockLevel} in stock
+                          </span>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -976,7 +996,7 @@ function ProductForm({ onClose }: { onClose: () => void }) {
   const [form, setForm] = useState({
     name: '', category: 'Groceries', buyingPrice: '', price: '', stock: '', minLevel: '5',
     imageUrl: '', file: null as File | null, isPerishable: false, expiryDate: '', type: 'GOOD',
-    description: ''
+    description: '', trackStock: false
   })
   const [isCameraOpen, setIsCameraOpen] = useState(false)
   const [showAllPhotos, setShowAllPhotos] = useState(false)
@@ -1327,9 +1347,27 @@ function ProductForm({ onClose }: { onClose: () => void }) {
       </div>
 
       {form.type === 'GOOD' && (
-        <div className="grid grid-cols-2 gap-4">
-          <InputGroup label="Initial stock" inputType="number" placeholder="Leave blank for reseller / unlimited" mono value={form.stock} onChange={(v: string) => setForm({ ...form, stock: v })} />
-          <InputGroup label="Low stock alert level" inputType="number" placeholder="5" mono value={form.minLevel} onChange={(v: string) => setForm({ ...form, minLevel: v })} />
+        <div className="space-y-3 mt-1">
+          <div className="flex items-center justify-between p-3.5 bg-gray-50 rounded-[.5rem] border border-gray-100">
+            <div>
+              <label htmlFor="trackStockAdd" className="text-sm font-medium text-gray-800 cursor-pointer block">Track stock quantity</label>
+              <p className="text-xs text-gray-400">Enable to track available units and show out of stock when sold out. Leave off for unlimited / reseller items.</p>
+            </div>
+            <input
+              type="checkbox"
+              id="trackStockAdd"
+              checked={form.trackStock}
+              onChange={(e) => setForm({ ...form, trackStock: e.target.checked })}
+              className="h-4 w-4 accent-[#0D4A3E] rounded border-gray-300 cursor-pointer"
+            />
+          </div>
+
+          {form.trackStock && (
+            <div className="grid grid-cols-2 gap-4 animate-in fade-in slide-in-from-top-1">
+              <InputGroup label="Available stock count" inputType="number" placeholder="0" mono value={form.stock} onChange={(v: string) => setForm({ ...form, stock: v })} />
+              <InputGroup label="Low stock alert level" inputType="number" placeholder="5" mono value={form.minLevel} onChange={(v: string) => setForm({ ...form, minLevel: v })} />
+            </div>
+          )}
         </div>
       )}
 
@@ -1376,7 +1414,8 @@ function ProductForm({ onClose }: { onClose: () => void }) {
             ...form,
             price: parseFloat(form.price) || 0,
             buyingPrice: parseFloat(form.buyingPrice) || 0,
-            stock: form.stock.trim() === '' ? 0 : (parseInt(form.stock) || 0),
+            trackStock: form.trackStock,
+            stock: form.trackStock ? (form.stock.trim() === '' ? 0 : (parseInt(form.stock) || 0)) : 0,
             minLevel: parseInt(form.minLevel) || 5,
             isPerishable: form.isPerishable,
             expiryDate: form.expiryDate || undefined,
@@ -1410,7 +1449,8 @@ function EditProductForm({ product, onClose }: { product: any; onClose: () => vo
     file: null as File | null,
     isPerishable: !!product.isPerishable,
     expiryDate: product.expiryDate ? product.expiryDate.split('T')[0] : '',
-    description: product.description || ''
+    description: product.description || '',
+    trackStock: Boolean(product.trackStock)
   })
   const [isCameraOpen, setIsCameraOpen] = useState(false);
   const [showAllPhotos, setShowAllPhotos] = useState(false);
@@ -1655,9 +1695,27 @@ function EditProductForm({ product, onClose }: { product: any; onClose: () => vo
       </div>
 
       {form.type === 'GOOD' && (
-        <div className="grid grid-cols-2 gap-4">
-          <InputGroup label="Current stock" inputType="number" placeholder="0" mono value={form.stock} onChange={(v: string) => setForm({ ...form, stock: v })} />
-          <InputGroup label="Low stock alert level" inputType="number" placeholder="5" mono value={form.minLevel} onChange={(v: string) => setForm({ ...form, minLevel: v })} />
+        <div className="space-y-3 mt-1">
+          <div className="flex items-center justify-between p-3.5 bg-gray-50 rounded-[.5rem] border border-gray-100">
+            <div>
+              <label htmlFor="trackStockEdit" className="text-sm font-medium text-gray-800 cursor-pointer block">Track stock quantity</label>
+              <p className="text-xs text-gray-400">Enable to track available units and show out of stock when sold out. Leave off for unlimited / reseller items.</p>
+            </div>
+            <input
+              type="checkbox"
+              id="trackStockEdit"
+              checked={form.trackStock}
+              onChange={(e) => setForm({ ...form, trackStock: e.target.checked })}
+              className="h-4 w-4 accent-[#0D4A3E] rounded border-gray-300 cursor-pointer"
+            />
+          </div>
+
+          {form.trackStock && (
+            <div className="grid grid-cols-2 gap-4 animate-in fade-in slide-in-from-top-1">
+              <InputGroup label="Current stock" inputType="number" placeholder="0" mono value={form.stock} onChange={(v: string) => setForm({ ...form, stock: v })} />
+              <InputGroup label="Low stock alert level" inputType="number" placeholder="5" mono value={form.minLevel} onChange={(v: string) => setForm({ ...form, minLevel: v })} />
+            </div>
+          )}
         </div>
       )}
 
@@ -1703,7 +1761,8 @@ function EditProductForm({ product, onClose }: { product: any; onClose: () => vo
             ...form,
             price: parseFloat(form.price) || 0,
             buyingPrice: parseFloat(form.buyingPrice) || 0,
-            stock: form.stock.trim() === '' ? 0 : (parseInt(form.stock) || 0),
+            trackStock: form.trackStock,
+            stock: form.trackStock ? (form.stock.trim() === '' ? 0 : (parseInt(form.stock) || 0)) : 0,
             minLevel: parseInt(form.minLevel) || 5,
             isPerishable: form.isPerishable,
             expiryDate: form.expiryDate || undefined,

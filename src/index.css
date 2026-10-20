@@ -68,6 +68,15 @@
     scroll-behavior: smooth; 
     -webkit-tap-highlight-color: transparent; 
     overflow-x: hidden;
+    overscroll-behavior-y: contain;
+  }
+  body {
+    overscroll-behavior-y: contain;
+  }
+
+  /* Prevent swipe/overscroll inside modals from triggering parent/browser refreshes */
+  [role="dialog"], [data-modal], .custom-scrollbar, .overflow-y-auto {
+    overscroll-behavior: contain;
   }
 
   /* Safe Area Utility Classes */

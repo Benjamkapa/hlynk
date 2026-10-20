@@ -133,6 +133,19 @@ export const eventsApi = {
     return res.data;
   },
 
+  updateEvent: async (id: string, data: {
+    startTime?: string;
+    endTime?: string;
+    totalAmount?: number;
+    paidAmount?: number;
+    paymentMethod?: string;
+    notes?: string;
+    meta?: Record<string, any>;
+  }) => {
+    const res = await api.put<{ success: boolean; data: { totalAmount: number; paidAmount: number; balance: number } }>(`/events/${id}`, data);
+    return res.data.data;
+  },
+
   deleteEvent: async (id: string) => {
     const res = await api.delete<{ success: boolean; message: string }>(`/events/${id}`);
     return res.data;

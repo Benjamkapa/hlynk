@@ -16,12 +16,35 @@ export function MobileGestures({ children }: { children: React.ReactNode }) {
     isAtTop: false
   })
 
-  // Block accidental page refresh when offline to protect active operations
+  // Helper to detect if a modal, dialog, sheet, or form is currently active
+  const isInteractiveContext = (e?: TouchEvent): boolean => {
+    if (typeof document === 'undefined') return false
+    // 1. Any modal, dialog, or overlay currently mounted
+    if (document.querySelector('[role="dialog"], [data-modal], .fixed.inset-0, [aria-modal="true"]')) {
+      return true
+    }
+    // 2. Touch started on/within form controls or dialogs
+    if (e?.target) {
+      const el = e.target as HTMLElement
+      if (el.closest?.('input, textarea, select, button, form, [contenteditable="true"], [role="dialog"], [data-modal]')) {
+        return true
+      }
+    }
+    // 3. Active input/textarea currently focused
+    const active = document.activeElement
+    if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA' || active.tagName === 'SELECT')) {
+      return true
+    }
+    return false
+  }
+
+  // Block accidental page refresh when offline or during active modal operations
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      if (!navigator.onLine) {
+      const modalOpen = !!document.querySelector('[role="dialog"], [data-modal], .fixed.inset-0, [aria-modal="true"]')
+      if (!navigator.onLine || modalOpen) {
         e.preventDefault()
-        e.returnValue = 'You are currently offline. Refreshing may interrupt active offline operations.'
+        e.returnValue = 'You have unsaved changes or active operations. Are you sure you want to leave?'
         return e.returnValue
       }
     }
@@ -32,7 +55,7 @@ export function MobileGestures({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const handleTouchStart = (e: TouchEvent) => {
-      if (e.touches.length !== 1) return
+      if (e.touches.length !== 1 || isInteractiveContext(e)) return
       const touch = e.touches[0]
       const isLeftEdge = touch.clientX <= 35
       const isAtTop = window.scrollY === 0
@@ -46,7 +69,11 @@ export function MobileGestures({ children }: { children: React.ReactNode }) {
     }
 
     const handleTouchMove = (e: TouchEvent) => {
-      if (e.touches.length !== 1) return
+      if (e.touches.length !== 1 || isInteractiveContext(e)) {
+        if (pullDistance > 0) setPullDistance(0)
+        if (swipeBackProgress > 0) setSwipeBackProgress(0)
+        return
+      }
       const touch = e.touches[0]
       const deltaX = touch.clientX - touchStartRef.current.x
       const deltaY = touch.clientY - touchStartRef.current.y
@@ -66,21 +93,27 @@ export function MobileGestures({ children }: { children: React.ReactNode }) {
         return
       }
 
-      if (touchStartRef.current.isAtTop && deltaY > 80 && Math.abs(deltaX) < deltaY * 0.5 && !isRefreshing) {
-        const dist = Math.min(130, (deltaY - 80) * 0.4)
+      if (touchStartRef.current.isAtTop && deltaY > 90 && Math.abs(deltaX) < deltaY * 0.5 && !isRefreshing) {
+        const dist = Math.min(130, (deltaY - 90) * 0.35)
         setPullDistance(dist)
       }
     }
 
     const handleTouchEnd = (e: TouchEvent) => {
+      if (isInteractiveContext(e)) {
+        setPullDistance(0)
+        setSwipeBackProgress(0)
+        return
+      }
+
       // Handle Swipe Back trigger
       if (swipeBackProgress > 60) {
         navigate(-1)
       }
       setSwipeBackProgress(0)
 
-      // Handle Pull to Refresh trigger (Higher threshold: requires dist > 110)
-      if (pullDistance > 110 && !isRefreshing && navigator.onLine) {
+      // Handle Pull to Refresh trigger (Higher threshold: requires dist > 115)
+      if (pullDistance > 115 && !isRefreshing && navigator.onLine) {
         setIsRefreshing(true)
         setPullDistance(70)
         setTimeout(() => {

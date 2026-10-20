@@ -683,7 +683,7 @@ function withTimeout<T>(promise: Promise<T>, ms = 45000): Promise<T> {
           ) : (
             <button
               onClick={openAddUnitModal}
-              className="mt-4 text-sm font-medium text-slate-900 underline underline-offset-2"
+              className="text-xs w-fit mx-auto font-medium text-slate-700 mt-1 block bg-[#0D4A3E] text-white text-sm font-medium px-4 py-2.5 rounded-full hover:bg-[#0A3D33] transition-colors"
             >
               Add your first unit
             </button>

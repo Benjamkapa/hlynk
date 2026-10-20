@@ -176,7 +176,7 @@ export default function HospitalityOverviewPage() {
           ) : units.length === 0 ? (
             <div className="text-center py-8">
               <p className="text-xs text-slate-400">No units added yet</p>
-              <Link to="/dashboard/hospitality/properties" className="text-xs font-medium text-slate-700 underline underline-offset-2 mt-1 block">
+              <Link to="/dashboard/hospitality/properties" className="text-xs w-fit mx-auto font-medium text-slate-700 mt-1 block bg-[#0D4A3E] text-white text-sm font-medium px-4 py-2.5 rounded-full hover:bg-[#0A3D33] transition-colors">
                 Add your first unit
               </Link>
             </div>
@@ -212,7 +212,7 @@ export default function HospitalityOverviewPage() {
           ) : activeBookings.length === 0 ? (
             <div className="text-center py-8">
               <p className="text-xs text-slate-400">No active bookings</p>
-              <Link to="/dashboard/hospitality/bookings" className="text-xs font-medium text-slate-700 underline underline-offset-2 mt-1 block">
+              <Link to="/dashboard/hospitality/bookings" className="text-xs w-fit mx-auto font-medium text-slate-700 mt-1 block bg-[#0D4A3E] text-white text-sm font-medium px-4 py-2.5 rounded-full hover:bg-[#0A3D33] transition-colors">
                 Create a booking
               </Link>
             </div>
