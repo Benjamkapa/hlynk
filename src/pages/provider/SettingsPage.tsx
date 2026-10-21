@@ -1483,7 +1483,7 @@ function NotificationsPanel({ settings = {}, onUpdate }: any) {
     setNotificationSoundEnabled(active);
     if (active) {
       testNotificationSound();
-      toast.success("Notification tone enabled (loud.wav)");
+      toast.success("Notification tone enabled");
     } else {
       toast.info("Notification tone muted");
     }
@@ -1493,7 +1493,7 @@ function NotificationsPanel({ settings = {}, onUpdate }: any) {
     setTestingSound(true);
     try {
       await testNotificationSound();
-      toast.success("Playing notification tone (loud.wav)");
+      toast.success("Playing notification tone");
     } catch (_) {
       toast.error("Unable to play sound");
     } finally {
@@ -1591,12 +1591,12 @@ function NotificationsPanel({ settings = {}, onUpdate }: any) {
           )}
         </div>
 
-        {/* Universal Hlynk Notification Tone (loud.wav) */}
+        {/* Universal Hlynk Notification Tone */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 lg:p-6 bg-gray-50 rounded-[.5rem] border border-gray-100">
           <div>
             <p className="font-black text-gray-900 text-sm">Hlynk Alert Tone</p>
             <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-1">
-              Universal sound on website & PWA (loud.wav)
+              Universal sound on website & PWA
             </p>
           </div>
           <div className="flex items-center gap-3">
