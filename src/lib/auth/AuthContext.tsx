@@ -33,8 +33,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(() => {
     const token = storage.getItem('accessToken')
     const cached = storage.getItem('user_profile')
-    if (token && (!cached || cached === 'undefined')) return true
-    return !!token
+    return !!(token || cached)
   })
   const [isLocked, setIsLocked] = useState(() => {
     // NEVER lock when online! Offline lock screen is strictly for offline mode.
@@ -79,15 +78,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [user])
 
   useEffect(() => {
+    // If offline, fall back to cached profile immediately — no network calls
+    if (!navigator.onLine) {
+      setIsLoading(false)
+      return
+    }
+
     const token = storage.getItem('accessToken')
+    const cached = storage.getItem('user_profile')
+
+    // If unauthenticated guest (no token and no cached profile), finish immediately
+    if (!token && !cached) {
+      setIsLoading(false)
+      return
+    }
+
+    let intervalId: ReturnType<typeof setInterval>
 
     const fetchUser = async () => {
-      // If we are offline, don't even try to reach the server, just keep using cached profile
-      if (!navigator.onLine) {
-        setIsLoading(false)
-        return
-      }
-
+      if (!navigator.onLine) return
       try {
         const res = await authApi.me()
         if (res.success && res.data) {
@@ -95,15 +104,44 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           storage.setItem('user_profile', JSON.stringify(res.data))
         }
       } catch (err: any) {
-        // Only clear token if server explicitly returned 401 with unauthorized message AND user is online
-        const isAuthError = err.response?.status === 401 && err.response?.data?.message?.toLowerCase().includes('unauthorized')
+        const status = err.response?.status
         const cachedUser = storage.getItem('user_profile')
 
-        if (isAuthError && !cachedUser) {
-          storage.removeItem('accessToken')
-          storage.removeItem('user_profile')
-          setUser(null)
+        if (status === 401) {
+          // Access token expired or missing — try a silent refresh via httpOnly cookie
+          try {
+            const { default: axios } = await import('axios')
+            const API_URL = (import.meta.env.VITE_API_URL || '').replace(/\/+$/, '')
+            const { data } = await axios.post(
+              `${API_URL}/api/v1/auth/refresh`,
+              {},
+              { withCredentials: true }
+            )
+            const newToken = data?.data?.accessToken
+            if (newToken) {
+              storage.setItem('accessToken', newToken)
+              // Retry fetching user with the new token
+              const { api } = await import('../api/client')
+              const retry = await api.get('/auth/me')
+              if (retry.data?.success && retry.data?.data) {
+                setUser(retry.data.data)
+                storage.setItem('user_profile', JSON.stringify(retry.data.data))
+                return
+              }
+            }
+          } catch (_refreshErr) {
+            // Refresh cookie is expired or invalid — only now is the user truly logged out
+          }
+          // Only clear state if there's no cached profile to fall back on
+          if (!cachedUser) {
+            storage.removeItem('accessToken')
+            storage.removeItem('user_profile')
+            setUser(null)
+          } else {
+            console.log('[Auth] Refresh failed but cached profile exists. Preserving session.')
+          }
         } else {
+          // Network error or server unreachable — keep whatever we have
           console.log('[Auth] Network error or server unreachable. Preserving session.')
         }
       } finally {
@@ -111,17 +149,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     }
 
-    if (token) {
-      fetchUser()
+    fetchUser()
 
-      const intervalId = setInterval(() => {
+    if (token) {
+      intervalId = setInterval(() => {
         if (navigator.onLine) fetchUser()
       }, 60000)
-
-      return () => clearInterval(intervalId)
     }
 
-    setIsLoading(false)
+    return () => clearInterval(intervalId)
   }, [])
 
   const login = (tokens: { accessToken: string; refreshToken?: string }, userData: AuthUser) => {

@@ -48,22 +48,23 @@ api.interceptors.response.use(
           return Promise.reject(error)
         }
 
-        // Detect admin session displacement — someone else logged in with admin credentials
-        const errCode = err.response?.data?.code
-        if (errCode === 'SESSION_DISPLACED') {
-          storage.removeItem('accessToken')
-          storage.removeItem('user_profile')
-          queryClient.clear()
-          // Use sessionStorage to pass the warning message to the login page
-          sessionStorage.setItem('auth_warning', 'SESSION_DISPLACED')
-          window.location.href = '/login'
-          return Promise.reject(err)
-        }
-
         storage.removeItem('accessToken')
         storage.removeItem('user_profile')
         queryClient.clear()
-        window.location.href = '/login'
+
+        // Only redirect to /login if not already on an auth or public page to prevent infinite reload loops
+        const currentPath = window.location.pathname
+        const isAuthOrPublicPage = 
+          currentPath === '/login' || 
+          currentPath === '/register' || 
+          currentPath === '/forgot-password' || 
+          currentPath === '/reset-password' || 
+          currentPath === '/' || 
+          currentPath.startsWith('/stay')
+
+        if (!isAuthOrPublicPage) {
+          window.location.href = '/login'
+        }
       }
     }
 

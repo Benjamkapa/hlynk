@@ -98,7 +98,7 @@ _self.addEventListener('push', (event: PushEvent) => {
       icon: iconUrl,
       sound: soundUrl,
       silent: false,
-      vibrate: [200, 100, 200],
+      vibrate: [80, 50, 100, 50, 200],
       // NOTE: 'badge' is intentionally omitted — iOS ignores it and
       // older iOS versions silently drop the notification when it's present
       data: data.data || {},

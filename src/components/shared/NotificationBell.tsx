@@ -262,7 +262,7 @@ export default function NotificationBell() {
           const hasNewUnread = items.some(
             (item) => !item.isRead && !knownNotificationIds.current.has(item.id)
           );
-          if (hasNewUnread || opts?.isPushTrigger) {
+          if (hasNewUnread) {
             playNotificationSound();
           }
         } else {
@@ -276,11 +276,25 @@ export default function NotificationBell() {
     } catch (_) {}
   }, []);
 
-  // Initial fetch + poll every 30 s
+  // Fast polling (every 8s) + instant fetch when tab becomes visible or focused
   useEffect(() => {
     fetchNotifications();
-    const interval = setInterval(fetchNotifications, 30_000);
-    return () => clearInterval(interval);
+    const interval = setInterval(fetchNotifications, 8_000);
+
+    const handleVisibility = () => {
+      if (typeof document !== 'undefined' && document.visibilityState === 'visible') {
+        fetchNotifications();
+      }
+    };
+
+    window.addEventListener('focus', handleVisibility);
+    document.addEventListener('visibilitychange', handleVisibility);
+
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('focus', handleVisibility);
+      document.removeEventListener('visibilitychange', handleVisibility);
+    };
   }, [fetchNotifications]);
 
   // Load existing review so modal pre-populates previous rating/feedback if available
@@ -298,13 +312,13 @@ export default function NotificationBell() {
   // Sync PWA badge
   useEffect(() => { setAppBadge(unread); }, [unread]);
 
-  // Re-sync on push notification
+  // Re-sync on push notification: play sound IMMEDIATELY and refresh list in background
   useEffect(() => {
     if (!('serviceWorker' in navigator)) return;
     const handleMessage = (event: MessageEvent) => {
       if (event.data?.type === 'PUSH_NOTIFICATION') {
         playNotificationSound();
-        fetchNotifications({ isPushTrigger: true });
+        fetchNotifications();
       }
     };
     navigator.serviceWorker.addEventListener('message', handleMessage);

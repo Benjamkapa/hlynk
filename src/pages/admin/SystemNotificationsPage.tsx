@@ -195,7 +195,7 @@ export default function SystemNotificationsPage() {
   const handleTestTone = async () => {
     try {
       await testNotificationSound();
-      toast.success("Playing universal notification tone");
+      toast.success("Playing notification tone (loud.wav)");
     } catch (_) {
       toast.error("Unable to play tone");
     }

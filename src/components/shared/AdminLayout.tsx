@@ -113,14 +113,6 @@ export default function AdminLayout() {
               </div>
             )}
           </div>
-
-          {/* <button
-            onClick={() => setIsCollapsed(v => !v)}
-            className="hidden lg:flex p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
-            title={isCollapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
-          >
-            {isCollapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
-          </button> */}
         </div>
 
         {/* Navigation Items */}

@@ -83,6 +83,8 @@ export function initAudioUnlock(): void {
         if (audioContext.state === "suspended") {
           audioContext.resume().catch(() => {});
         }
+        // Pre-fetch and decode loud.wav into memory immediately
+        loadAudioBuffer().catch(() => {});
       }
 
       isAudioUnlocked = true;
@@ -125,7 +127,7 @@ export function initAudioUnlock(): void {
 }
 
 /**
- * Fetch and decode the audio buffer for zero-latency Web Audio playback
+ * Fetch and decode the audio buffer for zero-latency Web Audio playback of 'loud.wav'
  */
 async function loadAudioBuffer(): Promise<AudioBuffer | null> {
   if (audioBuffer) return audioBuffer;
@@ -133,18 +135,29 @@ async function loadAudioBuffer(): Promise<AudioBuffer | null> {
     const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
     if (!AudioCtx) return null;
     if (!audioContext) audioContext = new AudioCtx();
+    if (audioContext.state === "suspended") {
+      await audioContext.resume().catch(() => {});
+    }
 
     const response = await fetch(NOTIFICATION_SOUND_URL);
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const arrayBuffer = await response.arrayBuffer();
-    audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+
+    audioBuffer = await new Promise<AudioBuffer>((resolve, reject) => {
+      const res = audioContext!.decodeAudioData(arrayBuffer, resolve, reject);
+      if (res && typeof res.then === "function") {
+        res.then(resolve).catch(reject);
+      }
+    });
     return audioBuffer;
-  } catch {
+  } catch (err) {
+    console.warn("[NotificationSound] Could not decode loud.wav AudioBuffer:", err);
     return null;
   }
 }
 
 /**
- * Play the Hlynk notification sound ('loud.wav') universally across devices.
+ * Play the Hlynk notification sound ('loud.wav') across devices.
  *
  * @param options.force - If true, bypasses user mute preference (e.g. for user testing)
  * @param options.volume - Playback volume (0.0 to 1.0, defaults to 1.0)
@@ -168,50 +181,43 @@ export async function playNotificationSound(
   }
   lastPlayTimestamp = now;
 
-  // Strategy 1: Try Web Audio API if running and unlocked (fastest, zero-latency)
+  // Strategy 1: Web Audio API with pre-decoded 'loud.wav' buffer (zero-latency, bypasses HTMLAudio restrictions)
   try {
-    if (audioContext && audioContext.state === "running") {
-      const buffer = audioBuffer || (await loadAudioBuffer());
-      if (buffer) {
-        const source = audioContext.createBufferSource();
-        const gainNode = audioContext.createGain();
-        gainNode.gain.value = Math.max(0, Math.min(1, volume));
-        source.buffer = buffer;
-        source.connect(gainNode);
-        gainNode.connect(audioContext.destination);
-        source.start(0);
-        return true;
+    const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+    if (AudioCtx) {
+      if (!audioContext) audioContext = new AudioCtx();
+      if (audioContext.state === "suspended") {
+        await audioContext.resume().catch(() => {});
+      }
+      if (audioContext.state === "running") {
+        const buffer = audioBuffer || (await loadAudioBuffer());
+        if (buffer) {
+          const source = audioContext.createBufferSource();
+          const gainNode = audioContext.createGain();
+          gainNode.gain.value = Math.max(0, Math.min(1, volume));
+          source.buffer = buffer;
+          source.connect(gainNode);
+          gainNode.connect(audioContext.destination);
+          source.start(0);
+          return true;
+        }
       }
     }
-  } catch (_) {
-    // Fall back to HTMLAudioElement
+  } catch (e) {
+    console.warn("[NotificationSound] Web Audio buffer playback failed, falling back to HTMLAudio:", e);
   }
 
-  // Strategy 2: HTMLAudioElement with clone/reset
+  // Strategy 2: HTMLAudioElement fallback
   try {
-    const audio = getPreloadedAudio();
+    const audio = new Audio(NOTIFICATION_SOUND_URL);
     audio.volume = Math.max(0, Math.min(1, volume));
-
-    // If audio is already playing or ended, reset or clone
-    if (!audio.paused) {
-      const clone = audio.cloneNode() as HTMLAudioElement;
-      clone.volume = audio.volume;
-      const playPromise = clone.play();
-      if (playPromise !== undefined) {
-        await playPromise;
-        return true;
-      }
-    } else {
-      audio.currentTime = 0;
-      const playPromise = audio.play();
-      if (playPromise !== undefined) {
-        await playPromise;
-        return true;
-      }
+    const playPromise = audio.play();
+    if (playPromise !== undefined) {
+      await playPromise;
+      return true;
     }
     return true;
   } catch (err: any) {
-    // If blocked by browser autoplay policy, resume context for next time
     if (audioContext && audioContext.state === "suspended") {
       audioContext.resume().catch(() => {});
     }
@@ -224,13 +230,14 @@ export async function playNotificationSound(
 }
 
 /**
- * Preview / Test the notification sound
+ * Preview / Test the notification sound ('loud.wav')
  */
 export async function testNotificationSound(): Promise<boolean> {
   return playNotificationSound({ force: true, volume: 1.0 });
 }
 
-// Automatically trigger unlock listeners when module loads in browser
+// Automatically trigger unlock listeners & eagerly pre-decode loud.wav into RAM
 if (typeof window !== "undefined") {
   initAudioUnlock();
+  loadAudioBuffer().catch(() => {});
 }

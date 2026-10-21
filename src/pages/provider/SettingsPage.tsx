@@ -1493,7 +1493,7 @@ function NotificationsPanel({ settings = {}, onUpdate }: any) {
     setTestingSound(true);
     try {
       await testNotificationSound();
-      toast.success("Playing universal notification sound (loud.wav)");
+      toast.success("Playing notification tone (loud.wav)");
     } catch (_) {
       toast.error("Unable to play sound");
     } finally {
