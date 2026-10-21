@@ -97,7 +97,7 @@ export default function AdminLayout() {
           <div className="flex items-center gap-3 overflow-hidden">
             <div className="">
               <img
-                src="https://kommodo.ai/i/gHM7NDLWkuTP7E2oURLt"
+                src="/hlynk.png"
                 className="h-[40px]"
                 alt="hlynk Logo"
               />
