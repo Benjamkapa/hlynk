@@ -13,7 +13,11 @@
  * - LocalStorage sound enabled toggle (enabled by default)
  */
 
-export const NOTIFICATION_SOUND_URL = "/assets/tone/loud.wav";
+const API_URL = (import.meta.env.VITE_API_URL || "https://api.hlynk.co.ke").replace(/\/+$/, "");
+export const NOTIFICATION_SOUND_URL = `${API_URL}/assets/tone/loud.wav`;
+// export const NOTIFICATION_SOUND_URL = "https://api.hlynk.co.ke/assets/tone/loud.wav";
+const FALLBACK_SOUND_URL = "/assets/tone/loud.wav";
+
 const SOUND_STORAGE_KEY = "hlynk_notification_sound_enabled";
 const SOUND_COOLDOWN_MS = 600; // Minimum time between consecutive sound triggers
 
@@ -139,8 +143,13 @@ async function loadAudioBuffer(): Promise<AudioBuffer | null> {
       await audioContext.resume().catch(() => {});
     }
 
-    const response = await fetch(NOTIFICATION_SOUND_URL);
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    let response = await fetch(NOTIFICATION_SOUND_URL).catch(() => null);
+    const isHtml = response && response.headers.get("content-type")?.includes("text/html");
+    if (!response || !response.ok || isHtml) {
+      response = await fetch(FALLBACK_SOUND_URL).catch(() => null);
+    }
+    if (!response || !response.ok) throw new Error("Failed to fetch loud.wav");
+
     const arrayBuffer = await response.arrayBuffer();
 
     audioBuffer = await new Promise<AudioBuffer>((resolve, reject) => {

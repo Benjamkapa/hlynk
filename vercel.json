@@ -16,7 +16,7 @@
   ],
   "rewrites": [
     {
-      "source": "/(.*)",
+      "source": "/((?!assets/|favicon|.*\\.[\\w]+$).*)",
       "destination": "/index.html"
     }
   ]
