@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query'
 import { subscriptionsApi } from '../../lib/api/providers'
 import { AlertCircle, CreditCard } from 'lucide-react'
 import InlineLoader from './InlineLoader'
+import CompletePhoneModal from './CompletePhoneModal'
 
 export default function SubscriptionGuard({ children }: { children?: React.ReactNode }) {
   const { user, isLoading: authLoading } = useAuth()
@@ -66,6 +67,7 @@ export default function SubscriptionGuard({ children }: { children?: React.React
 
   return (
     <>
+      <CompletePhoneModal />
       {inGracePeriod && !location.pathname.includes('/dashboard/subscription') && (
         <div className="bg-red-600 text-white px-4 py-3 flex items-center justify-center gap-3 relative z-50 animate-in slide-in-from-top-full shadow-md">
           <AlertCircle size={18} className="animate-pulse" />

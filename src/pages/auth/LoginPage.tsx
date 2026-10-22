@@ -2,13 +2,15 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   Building2, MapPin, Phone, Tag,
-  Check, ArrowLeft, Star, WifiOff, RefreshCw
+  Check, ArrowLeft, Star, WifiOff, RefreshCw,
+  User, AlertCircle
 } from 'lucide-react'
 import { ButtonLoader } from '../../components/shared/InlineLoader'
 import { toast } from 'sonner'
 import { authApi } from '../../lib/api/auth'
 import { useAuth } from '../../lib/auth/AuthContext'
 import { getErrorMessage } from '../../lib/utils/error'
+import { validateKenyanPhone } from '../../lib/validation/phone'
 import GoogleAuthButton from '../../components/auth/GoogleAuthButton'
 import { platformApi, type PlatformReview } from '../../lib/api/platform'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -286,15 +288,23 @@ export default function LoginPage() {
         setGoogleCredential(credential)
         setFormData(f => ({
           ...f,
-          ownerName: res.data.googleDetails.name || '',
+          businessName: res.data.existingDetails?.businessName || f.businessName || '',
+          ownerName: res.data.existingDetails?.ownerName || res.data.googleDetails?.name || f.ownerName || '',
+          county: res.data.existingDetails?.county || f.county || '',
+          location: res.data.existingDetails?.location || f.location || '',
+          category: res.data.existingDetails?.category || f.category || '',
+          phone: res.data.existingDetails?.phone || f.phone || '',
           isTrial: isTrialRequest || !!urlReferralCode
         }))
         setRequiresRegistration(true)
-        toast.info('Google account verified. Setup your business profile.')
+        if (res.data.message) {
+          toast.info(res.data.message)
+        } else {
+          toast.info('Google account verified. Setup your business profile.')
+        }
       } else {
         login({ accessToken: res.data.accessToken, refreshToken: res.data.refreshToken }, res.data.user)
         navigate(res.data.user.role === 'SUPER_ADMIN' ? '/admin' : '/dashboard', { replace: true })
-        // toast.success('Welcome Back!')
       }
     } catch (err: any) { toast.error(getErrorMessage(err)) }
     finally { setGoogleLoading(false) }
@@ -302,9 +312,54 @@ export default function LoginPage() {
 
   const handleRegistrationSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+
+    // 1. Enforce complete information
+    const cleanBusinessName = formData.businessName.trim()
+    if (!cleanBusinessName || cleanBusinessName.length < 2) {
+      toast.error('Please enter a valid Biashara / Shop name (at least 2 characters).')
+      return
+    }
+
+    const cleanOwnerName = formData.ownerName.trim()
+    if (!cleanOwnerName) {
+      toast.error('Please enter your full name as the shop owner.')
+      return
+    }
+
+    if (!formData.county || !formData.county.trim()) {
+      toast.error('Please select the County where your shop is located.')
+      return
+    }
+
+    if (!formData.category || !formData.category.trim()) {
+      toast.error('Please specify your business category.')
+      return
+    }
+
+    if (!formData.location || !formData.location.trim()) {
+      toast.error('Please enter your specific Town or Area.')
+      return
+    }
+
+    // 2. Enforce valid & complete Kenyan M-Pesa phone number
+    const phoneCheck = validateKenyanPhone(formData.phone)
+    if (!phoneCheck.isValid) {
+      toast.error(phoneCheck.error || 'Please enter a valid, complete 10-digit Kenyan phone number (07xx or 01xx).')
+      return
+    }
+
     setFormLoading(true)
     try {
-      const res = await authApi.googleAuth({ credential: googleCredential, registration: formData })
+      const payload = {
+        ...formData,
+        businessName: cleanBusinessName,
+        ownerName: cleanOwnerName,
+        county: formData.county.trim(),
+        category: formData.category.trim(),
+        location: formData.location.trim(),
+        phone: phoneCheck.normalized, // Standard 10-digit 07... or 01... format
+      }
+      const res = await authApi.googleAuth({ credential: googleCredential, registration: payload })
       login({ accessToken: res.data.accessToken, refreshToken: res.data.refreshToken }, res.data.user)
       navigate('/dashboard', { replace: true })
 
@@ -644,6 +699,11 @@ export default function LoginPage() {
                         <Field label="Biashara Name" icon={Building2}>
                           <input type="text" value={formData.businessName} onChange={e => setFormData({ ...formData, businessName: e.target.value })} className={inputCls} placeholder="e.g. John's Shop" required />
                         </Field>
+
+                        <Field label="Owner / Your Name" icon={User}>
+                          <input type="text" value={formData.ownerName} onChange={e => setFormData({ ...formData, ownerName: e.target.value })} className={inputCls} placeholder="e.g. John Doe" required />
+                        </Field>
+
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                           <Field label="County" icon={MapPin}>
                             <select value={formData.county} onChange={e => setFormData({ ...formData, county: e.target.value })} className={inputCls} required>
@@ -668,10 +728,48 @@ export default function LoginPage() {
                         <Field label="Town / Area" icon={MapPin}>
                           <input type="text" value={formData.location} onChange={e => setFormData({ ...formData, location: e.target.value })} className={inputCls} placeholder="e.g. Utoma, Beirut" required />
                         </Field>
-                        <Field label="M-Pesa Number" icon={Phone}>
-                          <input type="number" value={formData.phone} onChange={e => setFormData({ ...formData, phone: e.target.value })} className={inputCls} placeholder="07xx xxx xxx" required />
-                        </Field>
 
+                        <div className="flex flex-col gap-1.5">
+                          <Field label="M-Pesa Number (Required)" icon={Phone}>
+                            <input
+                              type="tel"
+                              inputMode="tel"
+                              autoComplete="tel"
+                              value={formData.phone}
+                              onChange={e => {
+                                const cleaned = e.target.value.replace(/[^\d\s\+]/g, '')
+                                setFormData({ ...formData, phone: cleaned })
+                              }}
+                              className={`${inputCls} ${
+                                formData.phone
+                                  ? validateKenyanPhone(formData.phone).isValid
+                                    ? 'border-emerald-500/60 focus:border-emerald-500'
+                                    : 'border-amber-400/60 focus:border-amber-400'
+                                  : ''
+                              }`}
+                              placeholder="07xx xxx xxx"
+                              maxLength={14}
+                              required
+                            />
+                          </Field>
+                          {formData.phone ? (
+                            <div className="flex items-center gap-1.5 px-1 text-[11px] transition-all">
+                              {validateKenyanPhone(formData.phone).isValid ? (
+                                <span className="text-emerald-400 flex items-center gap-1 font-medium">
+                                  <Check size={12} className="stroke-[3]" /> Valid M-Pesa number ({validateKenyanPhone(formData.phone).normalized})
+                                </span>
+                              ) : (
+                                <span className="text-amber-400 flex items-center gap-1">
+                                  <AlertCircle size={12} /> {validateKenyanPhone(formData.phone).error}
+                                </span>
+                              )}
+                            </div>
+                          ) : (
+                            <span className="text-[11px] px-1 text-white/40">
+                              Enter a 10-digit Kenyan mobile number (e.g. 0712 345 678 or 0110 123 456)
+                            </span>
+                          )}
+                        </div>
 
                       </div>
                       <button type="submit" disabled={formLoading} className="lp-btn-submit">
@@ -764,15 +862,20 @@ export default function LoginPage() {
                     transition={{ duration: 0.35 }}
                   >
                     <form onSubmit={handleRegistrationSubmit} className="flex flex-col h-full">
-                      <div className="text-center mb-8">
+                      <div className="text-center mb-6">
                         <h2 className="lp-serif text-[42px] leading-tight text-black mb-2">Setup Shop</h2>
                         <p className="text-gray-400 font-light text-sm">Tell us about your biashara to get started.</p>
                       </div>
-                      <div className="flex flex-col gap-4 mb-8">
+                      <div className="flex flex-col gap-3.5 mb-6">
                         <Field label="Biashara Name" icon={Building2}>
                           <input type="text" value={formData.businessName} onChange={e => setFormData({ ...formData, businessName: e.target.value })} className={inputCls} placeholder="e.g. Mama Mboga Pro" required />
                         </Field>
-                        <div className="grid grid-cols-2 gap-4">
+
+                        <Field label="Owner / Your Full Name" icon={User}>
+                          <input type="text" value={formData.ownerName} onChange={e => setFormData({ ...formData, ownerName: e.target.value })} className={inputCls} placeholder="e.g. Jane Doe" required />
+                        </Field>
+
+                        <div className="grid grid-cols-2 gap-3.5">
                           <Field label="County Location" icon={MapPin}>
                             <select value={formData.county} onChange={e => setFormData({ ...formData, county: e.target.value })} className={inputCls} required>
                               <option value="" className="bg-[#14181A] lg:bg-white">Where is your shop?</option>
@@ -796,16 +899,54 @@ export default function LoginPage() {
                         <Field label="Specific Town/Area" icon={MapPin}>
                           <input type="text" value={formData.location} onChange={e => setFormData({ ...formData, location: e.target.value })} className={inputCls} placeholder="e.g. Westlands, Nairobi" required />
                         </Field>
-                        <Field label="M-Pesa Number" icon={Phone}>
-                          <input type="number" value={formData.phone} onChange={e => setFormData({ ...formData, phone: e.target.value })} className={inputCls} placeholder="07xx xxx xxx" required />
-                        </Field>
 
+                        <div className="flex flex-col gap-1.5">
+                          <Field label="M-Pesa Number (Required)" icon={Phone}>
+                            <input
+                              type="tel"
+                              inputMode="tel"
+                              autoComplete="tel"
+                              value={formData.phone}
+                              onChange={e => {
+                                const cleaned = e.target.value.replace(/[^\d\s\+]/g, '')
+                                setFormData({ ...formData, phone: cleaned })
+                              }}
+                              className={`${inputCls} ${
+                                formData.phone
+                                  ? validateKenyanPhone(formData.phone).isValid
+                                    ? 'border-emerald-500/60 focus:border-emerald-500'
+                                    : 'border-amber-400/60 focus:border-amber-400'
+                                  : ''
+                              }`}
+                              placeholder="07xx xxx xxx"
+                              maxLength={14}
+                              required
+                            />
+                          </Field>
+                          {formData.phone ? (
+                            <div className="flex items-center gap-1.5 px-1 text-[11px] transition-all">
+                              {validateKenyanPhone(formData.phone).isValid ? (
+                                <span className="text-emerald-600 flex items-center gap-1 font-medium">
+                                  <Check size={12} className="stroke-[3]" /> Valid M-Pesa number ({validateKenyanPhone(formData.phone).normalized})
+                                </span>
+                              ) : (
+                                <span className="text-amber-600 flex items-center gap-1">
+                                  <AlertCircle size={12} /> {validateKenyanPhone(formData.phone).error}
+                                </span>
+                              )}
+                            </div>
+                          ) : (
+                            <span className="text-[11px] px-1 text-slate-400">
+                              Enter a 10-digit Kenyan mobile number (e.g. 0712 345 678 or 0110 123 456)
+                            </span>
+                          )}
+                        </div>
 
                       </div>
                       <button type="submit" disabled={formLoading} className="lp-btn-submit">
                         {formLoading ? <ButtonLoader size={18} /> : 'Launch My biashara'}
                       </button>
-                      <button type="button" disabled={formLoading} onClick={() => { setRequiresRegistration(false); setGoogleCredential('') }} className="text-left mt-8 cursor-pointer text-black font-normal pl-5 hover:underline">
+                      <button type="button" disabled={formLoading} onClick={() => { setRequiresRegistration(false); setGoogleCredential('') }} className="text-left mt-6 cursor-pointer text-black font-normal pl-2 text-xs hover:underline">
                         Back to Login
                       </button>
                     </form>

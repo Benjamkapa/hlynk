@@ -8,6 +8,7 @@ import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tansta
 import { adminApi } from '../../lib/api/providers'
 import InlineLoader from '../../components/shared/InlineLoader'
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts'
+import { validateKenyanPhone } from '../../lib/validation/phone'
 
 export default function ProvidersPage() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
@@ -218,7 +219,7 @@ export default function ProvidersPage() {
           </table>
         </div>
 
-        <div className="border-t border-slate-50 p-6">
+        {/* <div className="border-t border-slate-50 p-6">
           <Pagination
             page={page}
             pages={pagination.pages}
@@ -226,7 +227,7 @@ export default function ProvidersPage() {
             onPageChange={setPage}
             label="Provider"
           />
-        </div>
+        </div> */}
       </div>
 
       <SlideOver isOpen={!!selectedProvider} onClose={() => setSelectedProvider(null)} title="Business Details">
@@ -588,7 +589,19 @@ function AddBusinessForm({ onClose }: { onClose: () => void }) {
       </div>
 
       <button
-        onClick={() => mutation.mutate(form)}
+        onClick={() => {
+          if (!form.businessName.trim() || form.businessName.trim().length < 2) {
+            return toast.error('Business name is required (at least 2 characters)')
+          }
+          if (!form.ownerName.trim()) {
+            return toast.error('Owner full name is required')
+          }
+          const phoneCheck = validateKenyanPhone(form.phone)
+          if (!phoneCheck.isValid) {
+            return toast.error(phoneCheck.error || 'A valid 10-digit Kenyan phone number (07xx or 01xx) is required')
+          }
+          mutation.mutate({ ...form, phone: phoneCheck.normalized })
+        }}
         disabled={mutation.isPending}
         className="w-full py-3.5 mt-4 bg-[#0D4A3E] text-white rounded-md font-medium text-sm hover:bg-[#0A3D33] transition-all flex items-center justify-center"
       >
