@@ -108,18 +108,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const cachedUser = storage.getItem('user_profile')
 
         if (status === 401) {
-          // Access token expired or missing — try a silent refresh via httpOnly cookie
+          // Access token expired or missing — try a silent refresh via httpOnly cookie + stored refresh token
           try {
             const { default: axios } = await import('axios')
             const API_URL = (import.meta.env.VITE_API_URL || '').replace(/\/+$/, '')
+            const storedRefreshToken = storage.getItem('refreshToken')
             const { data } = await axios.post(
               `${API_URL}/api/v1/auth/refresh`,
-              {},
+              { refreshToken: storedRefreshToken || undefined },
               { withCredentials: true }
             )
             const newToken = data?.data?.accessToken
+            const newRefreshToken = data?.data?.refreshToken
             if (newToken) {
               storage.setItem('accessToken', newToken)
+              if (newRefreshToken) storage.setItem('refreshToken', newRefreshToken)
               // Retry fetching user with the new token
               const { api } = await import('../api/client')
               const retry = await api.get('/auth/me')
@@ -130,11 +133,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               }
             }
           } catch (_refreshErr) {
-            // Refresh cookie is expired or invalid — only now is the user truly logged out
+            // Refresh token is expired or invalid — only now is the user truly logged out
           }
           // Only clear state if there's no cached profile to fall back on
           if (!cachedUser) {
             storage.removeItem('accessToken')
+            storage.removeItem('refreshToken')
             storage.removeItem('user_profile')
             setUser(null)
           } else {
@@ -151,17 +155,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     fetchUser()
 
+    // Revalidate on tab focus so the token refreshes when the user returns to the tab
+    const handleFocus = () => { if (navigator.onLine) fetchUser() }
+    window.addEventListener('focus', handleFocus)
+
+    // Poll every 5 minutes (instead of every 60s) to keep the session alive in the background
     if (token) {
       intervalId = setInterval(() => {
         if (navigator.onLine) fetchUser()
-      }, 60000)
+      }, 300000)
     }
 
-    return () => clearInterval(intervalId)
+    return () => {
+      clearInterval(intervalId)
+      window.removeEventListener('focus', handleFocus)
+    }
   }, [])
 
   const login = (tokens: { accessToken: string; refreshToken?: string }, userData: AuthUser) => {
     storage.setItem('accessToken', tokens.accessToken)
+    // Persist refresh token so the session survives browser restarts
+    if (tokens.refreshToken) storage.setItem('refreshToken', tokens.refreshToken)
     storage.setItem('user_profile', JSON.stringify(userData))
     queryClient.clear()
     setIsLocked(false)
@@ -198,6 +212,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     // Preserving offline PIN across logouts so the user only has to set it once
     storage.removeItem('accessToken')
+    storage.removeItem('refreshToken')
     storage.removeItem('user_profile')
     storage.removeItem('session_locked')
     queryClient.clear()

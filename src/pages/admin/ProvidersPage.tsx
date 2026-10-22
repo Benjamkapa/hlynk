@@ -291,11 +291,14 @@ function ProviderDetailsPanel({ provider, onClose }: { provider: any, onClose: (
   const impersonateMutation = useMutation({
     mutationFn: () => adminApi.impersonateUser(provider.primaryUserId),
     onSuccess: (res: any) => {
-      localStorage.setItem('accessToken', res.data.accessToken)
-      localStorage.setItem('refreshToken', res.data.refreshToken)
-      localStorage.setItem('user', JSON.stringify(res.data.user))
-      toast.success(`Logged in as ${provider.businessName}`)
-      window.location.href = '/provider/dashboard'
+      // Use storage util + correct keys so AuthContext picks up the session on next load
+      import('../../lib/utils/storage').then(({ storage }) => {
+        storage.setItem('accessToken', res.data.accessToken)
+        if (res.data.refreshToken) storage.setItem('refreshToken', res.data.refreshToken)
+        storage.setItem('user_profile', JSON.stringify(res.data.user))
+        toast.success(`Logged in as ${provider.businessName}`)
+        window.location.href = '/provider/dashboard'
+      })
     },
     onError: (err: any) => toast.error(err.response?.data?.message || 'Failed to impersonate user')
   })
