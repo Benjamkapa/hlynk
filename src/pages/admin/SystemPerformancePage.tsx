@@ -1,447 +1,665 @@
 import {
-  ResponsiveContainer, AreaChart, Area, XAxis, YAxis,
-  CartesianGrid, Tooltip
+  ResponsiveContainer,
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
 } from 'recharts'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { adminApi } from '../../lib/api/providers'
 import { toast } from 'sonner'
-import { Globe, Database, Cpu, ShieldCheck, Activity, Server, ArrowUpRight, ArrowDownRight, Minus } from 'lucide-react'
+import {
+  Activity,
+  ArrowDownRight,
+  ArrowUpRight,
+  CheckCircle2,
+  Clock3,
+  Cpu,
+  Database,
+  Download,
+  Globe,
+  RefreshCw,
+  Search,
+  Server,
+  ShieldAlert,
+  ShieldCheck,
+  Zap,
+} from 'lucide-react'
 import { getErrorMessage } from '../../lib/utils/error'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import InlineLoader from '../../components/shared/InlineLoader'
 
-// ─── Live history ──────────────────────────────────────────────────────────────
-// The health endpoint returns current values only, so every 60s poll is stored
-// here to draw real trend lines. History resets when the page is reloaded.
-
-type Point = { ts: number; time: string; api: number; db: number; cpu: number; mpesa: number }
-type Key = 'api' | 'db' | 'cpu' | 'mpesa'
-type Status = 'good' | 'warn' | 'bad'
-
-const MAX_POINTS = 120
-const num = (v: any) => { const n = parseFloat(String(v ?? '')); return isNaN(n) ? 0 : n }
-
-const RANGES = [
-  { id: 'all', label: 'All', points: MAX_POINTS },
-  { id: '5m',  label: '5m',  points: 5 },
-  { id: '15m', label: '15m', points: 15 },
-  { id: '1h',  label: '1h',  points: 60 },
-]
-
-function changePct(pts: Point[], key: Key): number | null {
-  if (pts.length < 2) return null
-  const a = pts[0][key], b = pts[pts.length - 1][key]
-  if (a === 0) return b === 0 ? 0 : null
-  return ((b - a) / a) * 100
+type Point = {
+  ts: number
+  time: string
+  api: number
+  db: number
+  cpu: number
+  mpesa: number
+}
+type MetricKey = 'api' | 'db' | 'cpu' | 'mpesa'
+type HealthStatus = 'healthy' | 'warning' | 'critical' | 'unknown'
+type ClusterNode = {
+  name?: string
+  region?: string
+  status?: string
+  load?: string | number
 }
 
-const STATUS_DOT: Record<Status, string> = { good: 'bg-emerald-500', warn: 'bg-amber-500', bad: 'bg-red-500' }
+const MAX_POINTS = 120
+const POLL_MS = 60_000
+const THEME = '#10B981'
 
-function statusOf(value: number, warnAt: number, badAt: number): Status {
-  return value >= badAt ? 'bad' : value >= warnAt ? 'warn' : 'good'
+const numberValue = (value: unknown): number => {
+  const parsed = Number.parseFloat(String(value ?? '').replace('%', '').replace('ms', '').trim())
+  return Number.isFinite(parsed) ? parsed : 0
+}
+
+const formatMetric = (value: unknown, unit = '') => {
+  if (value === null || value === undefined || value === '') return `—${unit}`
+  return `${value}${unit}`
+}
+
+function getStatus(value: number, warningAt: number, criticalAt: number): HealthStatus {
+  if (!Number.isFinite(value)) return 'unknown'
+  if (value >= criticalAt) return 'critical'
+  if (value >= warningAt) return 'warning'
+  return 'healthy'
+}
+
+function overallStatus(values: HealthStatus[]): HealthStatus {
+  if (values.includes('critical')) return 'critical'
+  if (values.includes('warning')) return 'warning'
+  if (values.every((value) => value === 'healthy')) return 'healthy'
+  return 'unknown'
+}
+
+function changePercent(points: Point[], key: MetricKey): number | null {
+  if (points.length < 2) return null
+  const first = points[0][key]
+  const last = points[points.length - 1][key]
+  if (first === 0) return last === 0 ? 0 : null
+  return ((last - first) / Math.abs(first)) * 100
+}
+
+function statusLabel(status: HealthStatus) {
+  return ({
+    healthy: 'Operational',
+    warning: 'Degraded',
+    critical: 'Critical',
+    unknown: 'Unknown',
+  })[status]
+}
+
+function StatusPill({ status }: { status: HealthStatus }) {
+  const styles: Record<HealthStatus, string> = {
+    healthy: 'bg-emerald-50 text-emerald-700 ring-emerald-200',
+    warning: 'bg-amber-50 text-amber-700 ring-amber-200',
+    critical: 'bg-rose-50 text-rose-700 ring-rose-200',
+    unknown: 'bg-slate-100 text-slate-600 ring-slate-200',
+  }
+  const dot: Record<HealthStatus, string> = {
+    healthy: 'bg-emerald-500',
+    warning: 'bg-amber-500',
+    critical: 'bg-rose-500',
+    unknown: 'bg-slate-400',
+  }
+  return (
+    <span className={`inline-flex items-center gap-2 rounded-full px-2.5 py-1 text-xs font-semibold ring-1 ring-inset ${styles[status]}`}>
+      <span className={`h-1.5 w-1.5 rounded-full ${dot[status]} ${status === 'healthy' ? 'animate-pulse' : ''}`} />
+      {statusLabel(status)}
+    </span>
+  )
+}
+
+function MetricCard({
+  title,
+  value,
+  description,
+  icon: Icon,
+  status,
+  color,
+  points,
+  metricKey,
+}: {
+  title: string
+  value: string
+  description: string
+  icon: typeof Activity
+  status: HealthStatus
+  color: string
+  points: Point[]
+  metricKey?: MetricKey
+}) {
+  const delta = metricKey ? changePercent(points, metricKey) : null
+  const latest = metricKey && points.length ? points[points.length - 1][metricKey] : null
+  const chartPoints = metricKey ? points.slice(-24) : []
+
+  return (
+    <section className="group relative overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:shadow-md">
+      <div className="absolute inset-x-0 top-0 h-1" style={{ backgroundColor: color }} />
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex h-10 w-10 items-center justify-center rounded-xl" style={{ backgroundColor: `${color}15`, color }}>
+          <Icon size={19} />
+        </div>
+        <StatusPill status={status} />
+      </div>
+      <p className="mt-5 text-sm font-medium text-slate-500">{title}</p>
+      <div className="mt-1 flex items-end justify-between gap-2">
+        <p className="text-3xl font-semibold tracking-tight text-slate-950">{value}</p>
+        {delta !== null && (
+          <span className={`mb-1 inline-flex items-center gap-0.5 text-xs font-semibold ${delta > 0 ? 'text-amber-600' : delta < 0 ? 'text-emerald-600' : 'text-slate-400'}`}>
+            {delta > 0 ? <ArrowUpRight size={14} /> : delta < 0 ? <ArrowDownRight size={14} /> : null}
+            {Math.abs(delta).toFixed(1)}%
+          </span>
+        )}
+      </div>
+      <p className="mt-1 text-xs text-slate-400">{description}</p>
+      {metricKey && chartPoints.length > 1 && (
+        <div className="mt-4 h-12">
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart data={chartPoints} margin={{ top: 2, right: 0, bottom: 0, left: 0 }}>
+              <defs>
+                <linearGradient id={`metric-${metricKey}`} x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor={color} stopOpacity={0.24} />
+                  <stop offset="100%" stopColor={color} stopOpacity={0.01} />
+                </linearGradient>
+              </defs>
+              <YAxis hide domain={['auto', 'auto']} />
+              <Area dataKey={metricKey} type="monotone" stroke={color} strokeWidth={2} fill={`url(#metric-${metricKey})`} dot={false} isAnimationActive={false} />
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
+      )}
+      {metricKey && latest !== null && (
+        <p className="mt-2 text-[11px] text-slate-400">Latest sampled reading</p>
+      )}
+    </section>
+  )
+}
+
+function ResourceCard({
+  title,
+  value,
+  detail,
+  icon: Icon,
+  color,
+}: {
+  title: string
+  value: number
+  detail: string
+  icon: typeof Cpu
+  color: string
+}) {
+  const safeValue = Math.min(100, Math.max(0, Number.isFinite(value) ? value : 0))
+  return (
+    <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-4">
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2.5">
+          <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-white text-slate-600 shadow-sm ring-1 ring-slate-200/70">
+            <Icon size={17} />
+          </span>
+          <div>
+            <p className="text-sm font-semibold text-slate-800">{title}</p>
+            <p className="mt-0.5 text-xs text-slate-500">{detail}</p>
+          </div>
+        </div>
+        <p className="text-lg font-semibold tabular-nums text-slate-900">{safeValue.toFixed(0)}%</p>
+      </div>
+      <div className="mt-4 h-2 overflow-hidden rounded-full bg-slate-200">
+        <div className="h-full rounded-full transition-all duration-700" style={{ width: `${safeValue}%`, backgroundColor: color }} />
+      </div>
+    </div>
+  )
+}
+
+function TrendPanel({
+  title,
+  description,
+  dataKey,
+  unit,
+  color,
+  history,
+}: {
+  title: string
+  description: string
+  dataKey: MetricKey
+  unit: string
+  color: string
+  history: Point[]
+}) {
+  const [range, setRange] = useState<'15' | '60' | 'all'>('15')
+  const visiblePoints = range === 'all' ? history : history.slice(-Number(range))
+  const values = visiblePoints.map((point) => point[dataKey])
+  const latest = values.length ? values[values.length - 1] : null
+  const low = values.length ? Math.min(...values) : null
+  const high = values.length ? Math.max(...values) : null
+
+  return (
+    <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h3 className="font-semibold text-slate-900">{title}</h3>
+          <p className="mt-1 text-xs text-slate-500">{description}</p>
+        </div>
+        <div className="flex rounded-lg bg-slate-100 p-1">
+          {([{ value: '15', label: '15 pts' }, { value: '60', label: '60 pts' }, { value: 'all', label: 'All' }] as const).map((item) => (
+            <button
+              key={item.value}
+              type="button"
+              onClick={() => setRange(item.value)}
+              aria-pressed={range === item.value}
+              className={`rounded-md px-2.5 py-1.5 text-[11px] font-semibold transition ${range === item.value ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-800'}`}
+            >
+              {item.label}
+            </button>
+          ))}
+        </div>
+      </div>
+      <div className="mt-5 flex flex-wrap items-end gap-x-5 gap-y-2">
+        <div>
+          <p className="text-3xl font-semibold tracking-tight text-slate-950">
+            {latest === null ? '—' : latest}
+            <span className="ml-1 text-sm font-medium text-slate-400">{unit}</span>
+          </p>
+          <p className="mt-1 text-xs text-slate-500">Latest sample</p>
+        </div>
+        <div className="flex gap-4 pb-1 text-xs text-slate-500">
+          <span>Low <b className="text-slate-700">{low === null ? '—' : `${low}${unit}`}</b></span>
+          <span>High <b className="text-slate-700">{high === null ? '—' : `${high}${unit}`}</b></span>
+        </div>
+      </div>
+      <div className="mt-4 h-52">
+        {visiblePoints.length < 2 ? (
+          <div className="flex h-full flex-col items-center justify-center rounded-xl border border-dashed border-slate-200 bg-slate-50/60 px-5 text-center">
+            <Activity className="mb-2 text-slate-300" size={24} />
+            <p className="text-sm font-medium text-slate-600">Collecting trend data</p>
+            <p className="mt-1 max-w-xs text-xs leading-5 text-slate-400">Leave this page open while the health check refreshes to build a live history.</p>
+          </div>
+        ) : (
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart data={visiblePoints} margin={{ top: 8, right: 5, left: -24, bottom: 0 }}>
+              <defs>
+                <linearGradient id={`trend-fill-${dataKey}`} x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor={color} stopOpacity={0.2} />
+                  <stop offset="100%" stopColor={color} stopOpacity={0.01} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid stroke="#E9EEF4" strokeDasharray="3 5" vertical={false} />
+              <XAxis dataKey="time" tick={{ fill: '#94A3B8', fontSize: 10 }} tickLine={false} axisLine={false} minTickGap={24} />
+              <YAxis tick={{ fill: '#94A3B8', fontSize: 10 }} tickLine={false} axisLine={false} width={38} />
+              <Tooltip
+                labelFormatter={(label) => `Time: ${label}`}
+                formatter={(value) => [`${value}${unit}`, title]}
+                contentStyle={{ border: '1px solid #E2E8F0', borderRadius: 12, boxShadow: '0 12px 30px rgba(15,23,42,.08)', fontSize: 12 }}
+              />
+              <Area type="monotone" dataKey={dataKey} stroke={color} strokeWidth={2.2} fill={`url(#trend-fill-${dataKey})`} activeDot={{ r: 4, stroke: '#fff', strokeWidth: 2 }} dot={false} isAnimationActive={false} />
+            </AreaChart>
+          </ResponsiveContainer>
+        )}
+      </div>
+    </section>
+  )
 }
 
 export default function SystemPerformancePage() {
   const queryClient = useQueryClient()
   const [history, setHistory] = useState<Point[]>([])
+  const [nodeSearch, setNodeSearch] = useState('')
+  const [nodeFilter, setNodeFilter] = useState<'all' | 'healthy' | 'attention'>('all')
+  const [confirmRestart, setConfirmRestart] = useState(false)
 
-  const { data: rawHealth, isLoading, error, dataUpdatedAt } = useQuery<any>({
+  const {
+    data: rawHealth,
+    isLoading,
+    isFetching,
+    error,
+    dataUpdatedAt,
+    refetch,
+  } = useQuery({
     queryKey: ['system-health'],
     queryFn: adminApi.getSystemHealth,
-    refetchInterval: 60000
+    refetchInterval: POLL_MS,
+    retry: 1,
   })
 
   useEffect(() => {
-    if (error) toast.error('Failed to load system health')
+    if (error) toast.error('Unable to load system health. Check the connection and try again.')
   }, [error])
 
-  const health = rawHealth?.data || rawHealth
-  const performanceData = health?.performanceData || []
-  const clusterNodes = health?.nodes || []
+  const health = (rawHealth as any)?.data || rawHealth || {}
+  const nodes: ClusterNode[] = Array.isArray(health.nodes) ? health.nodes : []
+  const apiLatency = numberValue(health.apiLatency)
+  const dbLatency = numberValue(health.dbLatency)
+  const cpuLoad = numberValue(health.cpuLoad)
+  const mpesaLatency = numberValue(health.safaricomLatency)
+  const incidentRate = numberValue(health.incidentRate)
+  const apiStatus = getStatus(apiLatency, 200, 500)
+  const dbStatus = getStatus(dbLatency, 50, 200)
+  const cpuStatus = getStatus(cpuLoad, 70, 90)
+  const paymentStatus: HealthStatus = health.safaricomStatus === 'Healthy'
+    ? 'healthy'
+    : health.safaricomStatus
+      ? 'warning'
+      : 'unknown'
+  const serviceStatus = overallStatus([apiStatus, dbStatus, cpuStatus, paymentStatus])
+  const healthyNodes = nodes.filter((node) => node.status === 'Healthy').length
+  const attentionNodes = nodes.length - healthyNodes
 
   useEffect(() => {
     if (!health || !dataUpdatedAt) return
-    setHistory(prev => {
-      if (prev.length && prev[prev.length - 1].ts === dataUpdatedAt) return prev
+    setHistory((previous) => {
+      if (previous.length && previous[previous.length - 1].ts === dataUpdatedAt) return previous
       const point: Point = {
         ts: dataUpdatedAt,
         time: new Date(dataUpdatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        api: num(health.apiLatency),
-        db: num(health.dbLatency),
-        cpu: num(health.cpuLoad),
-        mpesa: num(health.safaricomLatency),
+        api: apiLatency,
+        db: dbLatency,
+        cpu: cpuLoad,
+        mpesa: mpesaLatency,
       }
-      return [...prev, point].slice(-MAX_POINTS)
+      return [...previous, point].slice(-MAX_POINTS)
     })
-  }, [dataUpdatedAt, health])
+  }, [dataUpdatedAt, apiLatency, dbLatency, cpuLoad, mpesaLatency])
 
   const restartMutation = useMutation({
     mutationFn: adminApi.restartCluster,
     onSuccess: () => {
-      toast.success('Global cluster restart sequence initiated')
+      toast.success('Cluster restart sequence initiated')
+      setConfirmRestart(false)
       queryClient.invalidateQueries({ queryKey: ['system-health'] })
     },
-    onError: (err: any) => toast.error(`Restart Failed: ${getErrorMessage(err)}`)
+    onError: (err: unknown) => {
+      toast.error(`Restart failed: ${getErrorMessage(err)}`)
+      setConfirmRestart(false)
+    },
   })
 
-  const incidents = num(health?.incidentRate)
+  const filteredNodes = useMemo(() => {
+    const search = nodeSearch.trim().toLowerCase()
+    return nodes.filter((node) => {
+      const matchesSearch = !search || `${node.name ?? ''} ${node.region ?? ''}`.toLowerCase().includes(search)
+      const matchesFilter = nodeFilter === 'all'
+        || (nodeFilter === 'healthy' && node.status === 'Healthy')
+        || (nodeFilter === 'attention' && node.status !== 'Healthy')
+      return matchesSearch && matchesFilter
+    })
+  }, [nodes, nodeSearch, nodeFilter])
 
-  return (
-    <div className="space-y-8 pt-4 animate-in fade-in duration-700">
-
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h1 className="text-xl font-semibold text-gray-900">System Health</h1>
-          <p className="text-gray-400 text-sm mt-0.5">Live server and cluster status, refreshed every minute</p>
-        </div>
-        <div className="flex items-center gap-3 bg-white p-2 rounded-lg border border-slate-100 shadow-sm">
-          <div className="flex items-center gap-2 px-3 py-1.5 bg-emerald-50 text-emerald-700 rounded-md border border-emerald-100">
-            <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="text-xs font-semibold">Live</span>
-          </div>
-          <div className="px-3 py-1.5 bg-slate-50 text-slate-500 rounded-md border border-slate-100">
-            <span className="text-xs font-semibold hl-mono">{health?.version || 'v1.0.0'}</span>
-          </div>
-        </div>
-      </div>
-
-      {/* KPI Grid */}
-      <div className="grid grid-cols-2 xl:grid-cols-4 gap-px bg-gray-100 rounded-[.5rem] overflow-hidden border border-gray-100">
-        <MetricCell icon={Globe} label="API response" value={health?.apiLatency || '0ms'} sub="Average, last 5 minutes"
-          history={history} dataKey="api" color="#2EA3F2" status={statusOf(num(health?.apiLatency), 200, 500)} />
-        <MetricCell icon={Database} label="Database query time" value={health?.dbLatency || '0ms'} sub="Node-01 cluster"
-          history={history} dataKey="db" color="#10B981" status={statusOf(num(health?.dbLatency), 50, 200)} />
-        <MetricCell icon={Cpu} label="CPU load" value={health?.cpuLoad || '0%'} sub="Average across all nodes"
-          history={history} dataKey="cpu" color="#8B5CF6" status={statusOf(num(health?.cpuLoad), 70, 90)} />
-        <MetricCell icon={ShieldCheck} label="Incident rate" value={health?.incidentRate || '0%'}
-          sub={incidents === 0 ? 'No critical incidents' : 'Needs attention'}
-          status={incidents === 0 ? 'good' : incidents < 2 ? 'warn' : 'bad'} />
-      </div>
-
-      {/* Performance Chart + Capacity Panel */}
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-
-        <div className="xl:col-span-2 bg-white rounded-[.5rem] border border-gray-100 p-6 relative overflow-hidden">
-          <div className="flex justify-between items-start mb-6 relative z-10">
-            <div>
-              <h3 className="text-sm font-medium text-gray-900">Performance trajectory</h3>
-              <p className="text-xs text-gray-400 mt-0.5">API latency and throughput over time</p>
-            </div>
-            <div className="h-8 w-8 rounded-md bg-slate-50 flex items-center justify-center text-slate-400">
-              <Activity size={16} />
-            </div>
-          </div>
-          <div className="h-[320px] relative z-10">
-            <ResponsiveContainer width="100%" height="100%" debounce={100}>
-              <AreaChart data={performanceData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-                <defs>
-                  <linearGradient id="perfGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%"  stopColor="#10B981" stopOpacity={0.06} />
-                    <stop offset="95%" stopColor="#10B981" stopOpacity={0}    />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="0" vertical={false} stroke="#F8FAFC" />
-                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 9, fill: '#CBD5E1', fontWeight: 700, fontFamily: 'JetBrains Mono' }} dy={15} />
-                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 9, fill: '#CBD5E1', fontWeight: 700, fontFamily: 'JetBrains Mono' }} dx={-10} />
-                <Tooltip
-                  cursor={{ stroke: '#F1F5F9', strokeWidth: 1 }}
-                  contentStyle={{ borderRadius: '12px', border: '1px solid #f1f5f9', boxShadow: '0 20px 40px -12px rgba(0,0,0,0.05)', padding: '12px 16px' }}
-                  itemStyle={{ fontWeight: 800, color: '#0F172A', fontFamily: 'JetBrains Mono', fontSize: 11 }}
-                />
-                <Area type="monotone" dataKey="value" stroke="#10B981" strokeWidth={1} fillOpacity={1} fill="url(#perfGradient)" dot={false} activeDot={{ r: 4, fill: '#10B981', strokeWidth: 2, stroke: '#fff' }} />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
-          <div className="absolute top-0 right-0 h-64 w-64 bg-emerald-50 rounded-full blur-[100px] -mr-32 -mt-32 opacity-50" />
-        </div>
-
-        <div className="space-y-6">
-          {/* Capacity bars */}
-          <div className="bg-white rounded-[.5rem] border border-gray-100 p-6">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="h-8 w-8 rounded-md bg-slate-900 text-white flex items-center justify-center">
-                <Server size={15} />
-              </div>
-              <div>
-                <h3 className="text-sm font-medium text-slate-900">Infrastructure capacity</h3>
-                <p className="text-xs text-slate-400 mt-0.5">Current resource usage</p>
-              </div>
-            </div>
-            <div className="space-y-5">
-              <CapacityBar label="Processing power" value={health?.cpuLoad || '0%'} widthStyle={health?.cpuLoad || '0%'} color="bg-amber-500" note="Load across all cluster nodes" />
-              <CapacityBar
-                label="Memory (RAM)"
-                value={`${health?.memoryCapacity?.percent || 0}%`}
-                subValue={`${health?.memoryCapacity?.used || '0MB'} / ${health?.memoryCapacity?.total || '0MB'}`}
-                widthStyle={`${health?.memoryCapacity?.percent || 0}%`}
-                color="bg-blue-500"
-                note="Memory used by running processes"
-              />
-              <CapacityBar
-                label="Storage"
-                value={`${health?.diskCapacity?.percent || 0}%`}
-                subValue={`${health?.diskCapacity?.used || '0GB'} / ${health?.diskCapacity?.total || '0GB'}`}
-                widthStyle={`${health?.diskCapacity?.percent || 0}%`}
-                color="bg-emerald-500"
-                note="Space used on primary storage nodes"
-              />
-            </div>
-          </div>
-
-          {/* Live status rows */}
-          <div className="bg-white rounded-[.5rem] border border-gray-100 p-6">
-            <h4 className="text-sm font-medium text-gray-900 mb-4">Live status</h4>
-            <div className="divide-y divide-gray-50">
-              <div className="flex items-center justify-between py-3">
-                <span className="text-xs text-gray-400">API response</span>
-                <span className="text-xs font-medium text-gray-900 hl-mono">{health?.apiLatency || '0ms'}</span>
-              </div>
-              <div className="flex items-center justify-between py-3">
-                <span className="text-xs text-gray-400">Safaricom M-Pesa</span>
-                <span className={`text-xs font-medium ${health?.safaricomStatus === 'Healthy' ? 'text-emerald-600' : 'text-amber-600'}`}>
-                  {health?.safaricomStatus || 'Unknown'}
-                </span>
-              </div>
-              <div className="flex items-center justify-between py-3">
-                <span className="text-xs text-gray-400">Safaricom response time</span>
-                <span className="text-xs font-medium text-[#0D4A3E] hl-mono">{health?.safaricomLatency || '0ms'}</span>
-              </div>
-              <div className="flex items-center justify-between py-3">
-                <span className="text-xs text-gray-400">Incident rate</span>
-                <span className="text-xs font-medium text-gray-900 hl-mono">{health?.incidentRate || '0%'}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Trend graphs (replace the old gauges) */}
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-        <TrendCard title="API response time" sub="How fast the platform answers requests" icon={Activity}
-          history={history} dataKey="api" unit="ms" color="#2EA3F2" />
-        <TrendCard title="Safaricom M-Pesa" sub="Payment confirmation response time" icon={Globe}
-          history={history} dataKey="mpesa" unit="ms" color="#10B981"
-          iconBg={health?.safaricomStatus === 'Healthy' ? 'bg-emerald-500' : 'bg-amber-500'} />
-        <TrendCard title="Cluster load" sub="Processor usage across nodes" icon={Server}
-          history={history} dataKey="cpu" unit="%" color="#8B5CF6" />
-      </div>
-
-      {/* Cluster Nodes Table */}
-      <div className="bg-white rounded-[.5rem] border border-gray-100 overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-50 flex justify-between items-center">
-          <div>
-            <h3 className="text-sm font-medium text-gray-900">Cluster availability</h3>
-            <p className="text-xs text-gray-400 mt-0.5">Current status of each server node</p>
-          </div>
-          <button
-            onClick={() => restartMutation.mutate()}
-            disabled={restartMutation.isPending}
-            className="px-4 py-2 border border-gray-100 rounded-md text-xs font-semibold text-gray-500 hover:text-gray-900 hover:border-gray-200 transition-all disabled:opacity-40"
-          >
-            {restartMutation.isPending ? 'Restarting...' : 'Restart cluster'}
-          </button>
-        </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-left">
-            <thead>
-              <tr className="bg-slate-50/50">
-                <th className="px-10 py-5 text-xs font-medium text-slate-400">Node</th>
-                <th className="px-10 py-5 text-xs font-medium text-slate-400">Region</th>
-                <th className="px-10 py-5 text-xs font-medium text-slate-400">Status</th>
-                <th className="px-10 py-5 text-xs font-medium text-slate-400 text-right">Load</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-50">
-              {isLoading ? (
-                <tr>
-                  <td colSpan={4} className="py-16 text-center">
-                    <InlineLoader message="Checking cluster nodes..." />
-                  </td>
-                </tr>
-              ) : clusterNodes.length > 0 ? clusterNodes.map((node: any, i: number) => (
-                <tr key={i} className="group hover:bg-slate-50/30 transition-all">
-                  <td className="px-10 py-5 text-xs font-semibold text-slate-900 hl-mono">{node.name}</td>
-                  <td className="px-10 py-5 text-xs text-slate-400 font-medium">{node.region}</td>
-                  <td className="px-10 py-5">
-                    <div className="flex items-center gap-2">
-                      <div className={`h-2 w-2 rounded-full ${node.status === 'Healthy' ? 'bg-emerald-500' : 'bg-amber-500'}`} />
-                      <span className={`text-xs font-medium ${node.status === 'Healthy' ? 'text-emerald-600' : 'text-amber-600'}`}>{node.status}</span>
-                    </div>
-                  </td>
-                  <td className="px-10 py-5 text-right text-xs font-semibold text-slate-900 hl-mono">{node.load}</td>
-                </tr>
-              )) : (
-                <tr>
-                  <td colSpan={4} className="px-10 py-16 text-center text-slate-400 text-sm">
-                    No nodes reported yet. They appear here once the cluster sends its first status update.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-// ─── Sub-components ────────────────────────────────────────────────────────────
-
-function Change({ pct }: { pct: number | null }) {
-  // For latency and load, a rise is bad and a fall is good.
-  if (pct === null) return <span className="text-[11px] text-gray-300">collecting data</span>
-  if (Math.abs(pct) < 0.5) {
-    return <span className="flex items-center gap-0.5 text-[11px] font-semibold text-gray-400"><Minus size={11} /> steady</span>
+  const exportSnapshot = () => {
+    const snapshot = {
+      generatedAt: new Date().toISOString(),
+      version: health.version ?? 'unknown',
+      overallStatus: statusLabel(serviceStatus),
+      apiLatency: health.apiLatency ?? null,
+      dbLatency: health.dbLatency ?? null,
+      cpuLoad: health.cpuLoad ?? null,
+      incidentRate: health.incidentRate ?? null,
+      safaricomStatus: health.safaricomStatus ?? 'Unknown',
+      nodes,
+    }
+    const blob = new Blob([JSON.stringify(snapshot, null, 2)], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const anchor = document.createElement('a')
+    anchor.href = url
+    anchor.download = `system-health-${new Date().toISOString().slice(0, 10)}.json`
+    anchor.click()
+    URL.revokeObjectURL(url)
+    toast.success('Health snapshot exported')
   }
-  const up = pct > 0
-  return (
-    <span className={`flex items-center gap-0.5 text-[11px] font-semibold hl-mono ${up ? 'text-amber-600' : 'text-emerald-600'}`}>
-      {up ? <ArrowUpRight size={11} /> : <ArrowDownRight size={11} />} {Math.abs(pct).toFixed(0)}%
-    </span>
-  )
-}
 
-function MetricCell({ icon: Icon, label, value, sub, status, history, dataKey, color }: {
-  icon: any; label: string; value: string; sub: string; status: Status
-  history?: Point[]; dataKey?: Key; color?: string
-}) {
-  const hasSpark = history && dataKey && history.length > 1
   return (
-    <div className="bg-white p-5 sm:p-6">
-      <div className="flex items-center gap-2 mb-2">
-        <Icon size={13} className="text-gray-300" />
-        <p className="text-xs text-gray-400">{label}</p>
-        <span className={`ml-auto h-1.5 w-1.5 rounded-full ${STATUS_DOT[status]}`} title={status === 'good' ? 'Healthy' : status === 'warn' ? 'Watch' : 'Critical'} />
-      </div>
-      <div className="flex items-baseline gap-2">
-        <p className="text-xl sm:text-2xl font-semibold hl-mono tracking-tight text-gray-900">{value}</p>
-        {history && dataKey && <Change pct={changePct(history, dataKey)} />}
-      </div>
-      <p className="text-xs text-gray-400 mt-1">{sub}</p>
-      {history && dataKey && (
-        <div className="h-9 mt-3 -mx-1">
-          {hasSpark && (
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={history} margin={{ top: 2, right: 0, left: 0, bottom: 0 }}>
-                <defs>
-                  <linearGradient id={`spark-${dataKey}`} x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor={color} stopOpacity={0.2} />
-                    <stop offset="100%" stopColor={color} stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <YAxis hide domain={['auto', 'auto']} />
-                <Area type="monotone" dataKey={dataKey} stroke={color} strokeWidth={1.25} fill={`url(#spark-${dataKey})`} dot={false} isAnimationActive={false} />
-              </AreaChart>
-            </ResponsiveContainer>
-          )}
+    <main className="min-h-full space-y-6 bg-slate-50/60 pb-8 pt-4 text-slate-900">
+      {/* Hero / command header */}
+      <header className="relative overflow-hidden rounded-3xl bg-slate-950 px-5 py-6 text-white shadow-xl sm:px-7 sm:py-8">
+        <div className="pointer-events-none absolute -right-16 -top-28 h-72 w-72 rounded-full bg-emerald-400/20 blur-3xl" />
+        <div className="pointer-events-none absolute -bottom-32 right-1/3 h-64 w-64 rounded-full bg-cyan-400/10 blur-3xl" />
+        <div className="relative flex flex-col justify-between gap-6 xl:flex-row xl:items-end">
+          <div>
+            <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-emerald-400/30 bg-emerald-400/10 px-3 py-1.5 text-xs font-semibold text-emerald-300">
+              <span className="relative flex h-2 w-2">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-400" />
+              </span>
+              SYSTEM TELEMETRY · LIVE
+            </div>
+            <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">Performance command center</h1>
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-300">
+              Monitor application responsiveness, infrastructure capacity, payment connectivity and cluster availability from one operational view.
+            </p>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={() => refetch()}
+              disabled={isFetching}
+              className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/5 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-white/10 disabled:opacity-60"
+            >
+              <RefreshCw size={15} className={isFetching ? 'animate-spin' : ''} />
+              Refresh
+            </button>
+            <button
+              type="button"
+              onClick={exportSnapshot}
+              disabled={!rawHealth}
+              className="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-400 px-4 py-2.5 text-sm font-semibold text-slate-950 transition hover:bg-emerald-300 disabled:opacity-50"
+            >
+              <Download size={15} />
+              Export snapshot
+            </button>
+            <button
+              type="button"
+              onClick={() => setConfirmRestart(true)}
+              disabled={restartMutation.isPending}
+              className="inline-flex items-center justify-center gap-2 rounded-xl border border-rose-300/30 bg-rose-500/10 px-4 py-2.5 text-sm font-semibold text-rose-100 transition hover:bg-rose-500/20 disabled:opacity-50"
+            >
+              <RefreshCw size={15} />
+              Restart cluster
+            </button>
+          </div>
+        </div>
+        <div className="relative mt-7 grid grid-cols-2 gap-3 border-t border-white/10 pt-5 md:grid-cols-4">
+          <HeroFact label="Overall status" value={statusLabel(serviceStatus)} icon={ShieldCheck} />
+          <HeroFact label="Cluster nodes" value={`${nodes.length}`} icon={Server} />
+          <HeroFact label="Healthy nodes" value={`${healthyNodes}`} icon={CheckCircle2} />
+          <HeroFact label="Auto-refresh" value="60 seconds" icon={Clock3} />
+        </div>
+      </header>
+
+      {error && (
+        <div role="alert" className="flex flex-col gap-3 rounded-2xl border border-rose-200 bg-rose-50 p-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-start gap-3">
+            <ShieldAlert className="mt-0.5 shrink-0 text-rose-600" size={20} />
+            <div>
+              <p className="font-semibold text-rose-900">Health data could not be refreshed</p>
+              <p className="mt-1 text-sm text-rose-700">The figures may be stale. Retry the health check before taking operational action.</p>
+            </div>
+          </div>
+          <button type="button" onClick={() => refetch()} className="rounded-lg border border-rose-200 bg-white px-3 py-2 text-sm font-semibold text-rose-800 hover:bg-rose-100">Try again</button>
         </div>
       )}
-    </div>
-  )
-}
 
-function CapacityBar({ label, value, subValue, widthStyle, color, note }: {
-  label: string; value: string; subValue?: string; widthStyle: string; color: string; note: string
-}) {
-  return (
-    <div className="space-y-1.5">
-      <div className="flex justify-between items-center">
-        <span className="text-xs text-gray-400">{label}</span>
-        <div className="text-right">
-          <span className="text-xs font-semibold text-gray-900 hl-mono">{value}</span>
-          {subValue && <p className="text-[10px] text-slate-400 hl-mono leading-none">{subValue}</p>}
-        </div>
-      </div>
-      <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
-        <div className={`h-full ${color} transition-all duration-1000 rounded-full`} style={{ width: widthStyle }} />
-      </div>
-      <p className="text-[10px] text-slate-400">{note}</p>
-    </div>
-  )
-}
-
-function TrendCard({ title, sub, icon: Icon, history, dataKey, unit, color, iconBg }: {
-  title: string; sub: string; icon: any; history: Point[]; dataKey: Key
-  unit: string; color: string; iconBg?: string
-}) {
-  const [range, setRange] = useState('all')
-  const size = RANGES.find(r => r.id === range)?.points ?? MAX_POINTS
-  const pts = history.slice(-size)
-  const latest = pts.length ? pts[pts.length - 1][dataKey] : 0
-  const values = pts.map(p => p[dataKey])
-  const gradId = `trend-${dataKey}`
-
-  return (
-    <div className="bg-white p-6 rounded-[.5rem] border border-gray-100 shadow-sm">
-      <div className="flex justify-between items-start gap-3">
-        <div className="flex items-start gap-3 min-w-0">
-          <div className={`h-9 w-9 shrink-0 rounded-md flex items-center justify-center ${iconBg ? `${iconBg} text-white` : 'bg-slate-50 text-slate-400'}`}>
-            <Icon size={18} />
+      {/* Primary service metrics */}
+      <section>
+        <div className="mb-3 flex flex-wrap items-end justify-between gap-2">
+          <div>
+            <h2 className="text-base font-semibold text-slate-900">Service performance</h2>
+            <p className="mt-1 text-xs text-slate-500">Current readings with locally collected trend samples.</p>
           </div>
-          <div className="min-w-0">
-            <h3 className="text-sm font-medium text-slate-900 truncate">{title}</h3>
-            <p className="text-xs text-slate-400 mt-0.5">{sub}</p>
+          <p className="inline-flex items-center gap-1.5 text-xs text-slate-400">
+            <Clock3 size={13} />
+            {dataUpdatedAt ? `Updated ${new Date(dataUpdatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}` : 'Waiting for first reading'}
+          </p>
+        </div>
+        {isLoading ? (
+          <div className="rounded-2xl border border-slate-200 bg-white p-12"><InlineLoader message="Loading performance telemetry..." /></div>
+        ) : (
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 2xl:grid-cols-4">
+            <MetricCard title="API response time" value={formatMetric(health.apiLatency, typeof health.apiLatency === 'number' ? ' ms' : '')} description="Application endpoint latency" icon={Globe} status={apiStatus} color="#10B981" points={history} metricKey="api" />
+            <MetricCard title="Database query time" value={formatMetric(health.dbLatency, typeof health.dbLatency === 'number' ? ' ms' : '')} description="Database response latency" icon={Database} status={dbStatus} color="#0EA5E9" points={history} metricKey="db" />
+            <MetricCard title="CPU load" value={formatMetric(health.cpuLoad, typeof health.cpuLoad === 'number' ? '%' : '')} description="Reported processor utilisation" icon={Cpu} status={cpuStatus} color="#8B5CF6" points={history} metricKey="cpu" />
+            <MetricCard title="Incident rate" value={formatMetric(health.incidentRate, typeof health.incidentRate === 'number' ? '%' : '')} description={incidentRate === 0 ? 'No incidents reported by the health endpoint' : 'Review current incidents'} icon={ShieldCheck} status={incidentRate === 0 ? 'healthy' : incidentRate < 2 ? 'warning' : 'critical'} color="#F59E0B" points={history} />
+          </div>
+        )}
+      </section>
+
+      {/* Capacity and payment service */}
+      <section className="grid grid-cols-1 gap-5 xl:grid-cols-3">
+        <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm xl:col-span-2">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <h2 className="font-semibold text-slate-900">Infrastructure capacity</h2>
+              <p className="mt-1 text-xs text-slate-500">Resource utilisation reported by the health endpoint.</p>
+            </div>
+            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50 text-emerald-700"><Zap size={19} /></span>
+          </div>
+          <div className="mt-5 grid grid-cols-1 gap-3 md:grid-cols-3">
+            <ResourceCard title="Processor" value={cpuLoad} detail="CPU utilisation" icon={Cpu} color="#10B981" />
+            <ResourceCard title="Memory" value={numberValue(health.memoryCapacity?.percent)} detail={`${health.memoryCapacity?.used ?? '—'} / ${health.memoryCapacity?.total ?? '—'}`} icon={Database} color="#0EA5E9" />
+            <ResourceCard title="Storage" value={numberValue(health.diskCapacity?.percent)} detail={`${health.diskCapacity?.used ?? '—'} / ${health.diskCapacity?.total ?? '—'}`} icon={Server} color="#8B5CF6" />
+          </div>
+          <p className="mt-4 text-xs leading-5 text-slate-400">Capacity values depend on what the backend health endpoint reports. Missing values are shown as zero utilisation in the visual bar and should be verified against the source.</p>
+        </div>
+
+        <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <h2 className="font-semibold text-slate-900">M-Pesa connectivity</h2>
+              <p className="mt-1 text-xs text-slate-500">Safaricom payment service health</p>
+            </div>
+            <span className={`flex h-10 w-10 items-center justify-center rounded-xl ${paymentStatus === 'healthy' ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'}`}>
+              <Activity size={19} />
+            </span>
+          </div>
+          <div className="mt-6 flex items-center justify-between gap-3">
+            <div>
+              <p className="text-2xl font-semibold tracking-tight text-slate-950">{formatMetric(health.safaricomLatency, typeof health.safaricomLatency === 'number' ? ' ms' : '')}</p>
+              <p className="mt-1 text-xs text-slate-500">Reported response time</p>
+            </div>
+            <StatusPill status={paymentStatus} />
+          </div>
+          <div className="mt-5 rounded-xl bg-slate-50 p-4">
+            <p className="text-xs font-medium uppercase tracking-wide text-slate-400">Service status</p>
+            <p className="mt-1 text-sm font-semibold text-slate-800">{health.safaricomStatus || 'Unknown'}</p>
+          </div>
+          <p className="mt-4 text-xs leading-5 text-slate-400">This reflects the backend's reported status, not a direct independent test of Safaricom services.</p>
+        </div>
+      </section>
+
+      {/* Trends */}
+      <section>
+        <div className="mb-3">
+          <h2 className="text-base font-semibold text-slate-900">Performance trends</h2>
+          <p className="mt-1 text-xs text-slate-500">Historical points are collected while this page is open and reset on reload.</p>
+        </div>
+        <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
+          <TrendPanel title="API latency" description="Application response time over polling intervals" dataKey="api" unit=" ms" color="#10B981" history={history} />
+          <TrendPanel title="Database latency" description="Database query response time over polling intervals" dataKey="db" unit=" ms" color="#0EA5E9" history={history} />
+          <TrendPanel title="CPU utilisation" description="Processor load reported by the server" dataKey="cpu" unit="%" color="#8B5CF6" history={history} />
+          <TrendPanel title="M-Pesa response time" description="Payment service latency over polling intervals" dataKey="mpesa" unit=" ms" color="#F59E0B" history={history} />
+        </div>
+      </section>
+
+      {/* Nodes */}
+      <section className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm">
+        <div className="flex flex-col gap-4 border-b border-slate-200 p-5 lg:flex-row lg:items-center lg:justify-between">
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-900 text-white"><Server size={17} /></span>
+              <div>
+                <h2 className="font-semibold text-slate-900">Cluster inventory</h2>
+                <p className="mt-0.5 text-xs text-slate-500">{healthyNodes} healthy · {attentionNodes} requiring attention · {nodes.length} total</p>
+              </div>
+            </div>
+          </div>
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <label className="relative block">
+              <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+              <input value={nodeSearch} onChange={(event) => setNodeSearch(event.target.value)} placeholder="Search node or region" className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-9 pr-3 text-sm outline-none transition placeholder:text-slate-400 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 sm:w-56" />
+            </label>
+            <select value={nodeFilter} onChange={(event) => setNodeFilter(event.target.value as typeof nodeFilter)} className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100">
+              <option value="all">All nodes</option>
+              <option value="healthy">Healthy only</option>
+              <option value="attention">Needs attention</option>
+            </select>
           </div>
         </div>
-        <div className="flex items-center gap-1 shrink-0">
-          {RANGES.map(r => (
-            <button
-              key={r.id}
-              onClick={() => setRange(r.id)}
-              aria-pressed={range === r.id}
-              className={`px-2.5 py-1 rounded-md text-[11px] font-semibold transition-colors ${range === r.id ? 'text-white' : 'text-gray-400 hover:text-gray-700'}`}
-              style={range === r.id ? { backgroundColor: color } : undefined}
-            >
-              {r.label}
-            </button>
-          ))}
-        </div>
-      </div>
 
-      <div className="mt-5 flex items-baseline gap-2">
-        <p className="text-2xl font-semibold text-slate-900 hl-mono tracking-tight">
-          {latest}<span className="text-sm text-slate-400 ml-0.5">{unit}</span>
-        </p>
-        <Change pct={changePct(pts, dataKey)} />
-      </div>
-      <p className="text-xs text-slate-400 mt-0.5">
-        {values.length > 1 ? `Low ${Math.min(...values)}${unit} · High ${Math.max(...values)}${unit}` : 'Waiting for more readings'}
-      </p>
-
-      <div className="h-[220px] mt-4">
-        {pts.length < 2 ? (
-          <div className="h-full flex items-center justify-center text-center text-xs text-slate-400 px-6">
-            The graph fills in as new readings arrive, one per minute. Keep this page open to build the trend.
+        {isLoading ? (
+          <div className="p-12"><InlineLoader message="Checking cluster nodes..." /></div>
+        ) : filteredNodes.length ? (
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[620px] text-left">
+              <thead>
+                <tr className="bg-slate-50 text-[11px] uppercase tracking-wider text-slate-400">
+                  <th className="px-5 py-3.5 font-semibold">Node</th>
+                  <th className="px-5 py-3.5 font-semibold">Region</th>
+                  <th className="px-5 py-3.5 font-semibold">Status</th>
+                  <th className="px-5 py-3.5 text-right font-semibold">Reported load</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {filteredNodes.map((node, index) => {
+                  const nodeStatus: HealthStatus = node.status === 'Healthy' ? 'healthy' : node.status ? 'warning' : 'unknown'
+                  return (
+                    <tr key={`${node.name ?? 'node'}-${node.region ?? index}`} className="transition hover:bg-emerald-50/30">
+                      <td className="px-5 py-4">
+                        <div className="flex items-center gap-3">
+                          <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-slate-100 text-slate-600"><Server size={16} /></span>
+                          <span className="text-sm font-semibold text-slate-800">{node.name || `Node ${index + 1}`}</span>
+                        </div>
+                      </td>
+                      <td className="px-5 py-4 text-sm text-slate-500">{node.region || '—'}</td>
+                      <td className="px-5 py-4"><StatusPill status={nodeStatus} /></td>
+                      <td className="px-5 py-4 text-right text-sm font-semibold tabular-nums text-slate-800">{node.load ?? '—'}</td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
           </div>
         ) : (
-          <ResponsiveContainer width="100%" height="100%" debounce={100}>
-            <AreaChart data={pts} margin={{ top: 8, right: 0, left: 0, bottom: 0 }}>
-              <defs>
-                <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor={color} stopOpacity={0.28} />
-                  <stop offset="100%" stopColor={color} stopOpacity={0.02} />
-                </linearGradient>
-              </defs>
-              <CartesianGrid vertical={false} stroke="#F1F5F9" strokeDasharray="3 4" />
-              <XAxis dataKey="time" hide />
-              <YAxis hide domain={['auto', 'auto']} />
-              <Tooltip
-                cursor={{ stroke: color, strokeWidth: 1, strokeDasharray: '3 3' }}
-                labelFormatter={(l) => `At ${l}`}
-                formatter={(v: any) => [`${v}${unit}`, title]}
-                contentStyle={{ borderRadius: 10, border: '1px solid #f1f5f9', boxShadow: '0 12px 28px -10px rgba(0,0,0,0.12)', padding: '8px 12px', fontSize: 12 }}
-              />
-              <Area
-                type="monotone" dataKey={dataKey} stroke={color} strokeWidth={1.75}
-                fill={`url(#${gradId})`} dot={false}
-                activeDot={{ r: 4, fill: color, stroke: '#fff', strokeWidth: 2 }}
-              />
-            </AreaChart>
-          </ResponsiveContainer>
+          <div className="flex flex-col items-center px-6 py-14 text-center">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 text-slate-400"><Server size={22} /></div>
+            <p className="mt-3 font-semibold text-slate-800">{nodes.length ? 'No matching nodes' : 'No cluster nodes reported'}</p>
+            <p className="mt-1 max-w-sm text-sm leading-6 text-slate-500">{nodes.length ? 'Try changing the search term or filter.' : 'Nodes will appear here when the health endpoint reports them.'}</p>
+          </div>
         )}
+      </section>
+
+      {/* Restart confirmation */}
+      {confirmRestart && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4 backdrop-blur-sm">
+          <div role="dialog" aria-modal="true" aria-labelledby="restart-title" className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-rose-50 text-rose-600"><ShieldAlert size={22} /></div>
+            <h2 id="restart-title" className="mt-4 text-lg font-semibold text-slate-950">Restart the cluster?</h2>
+            <p className="mt-2 text-sm leading-6 text-slate-600">This sends a restart request to the cluster and may interrupt active users or services. Proceed only if you are authorised and have confirmed an appropriate maintenance window.</p>
+            <div className="mt-6 flex justify-end gap-2">
+              <button type="button" onClick={() => setConfirmRestart(false)} className="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50">Cancel</button>
+              <button type="button" onClick={() => restartMutation.mutate()} disabled={restartMutation.isPending} className="rounded-xl bg-rose-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-rose-700 disabled:opacity-60">{restartMutation.isPending ? 'Sending request…' : 'Confirm restart'}</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <footer className="flex flex-col gap-2 px-1 text-xs text-slate-400 sm:flex-row sm:items-center sm:justify-between">
+        <p className="flex items-center gap-1.5"><Clock3 size={13} /> Health endpoint polls every 60 seconds.</p>
+        <p>Version {health.version || 'unknown'} · Trend history is held in this browser session.</p>
+      </footer>
+    </main>
+  )
+}
+
+function HeroFact({ label, value, icon: Icon }: { label: string; value: string; icon: typeof Activity }) {
+  return (
+    <div className="flex items-center gap-3">
+      <span className="flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-emerald-300"><Icon size={17} /></span>
+      <div>
+        <p className="text-[11px] font-medium uppercase tracking-wider text-slate-400">{label}</p>
+        <p className="mt-0.5 text-sm font-semibold text-white">{value}</p>
       </div>
     </div>
   )
 }
-
