@@ -943,41 +943,58 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
     [cart],
   );
 
-  // Show the floating header when scrolling upward; hide it while scrolling down.
-  // A ref keeps the previous position stable across renders.
+  // Show floating header when scrolling upward; hide it when scrolling down.
   const [headerVisible, setHeaderVisible] = useState(true);
-  const lastScrollYRef = useRef(
-    typeof window !== "undefined" ? window.scrollY : 0,
-  );
-  const scrollDirectionRef = useRef<"up" | "down">("up");
+  const lastScrollYRef = useRef(0);
 
   useEffect(() => {
     let ticking = false;
+    const threshold = 6; // Low threshold so slight touchpad or wheel gestures trigger smoothly
+
+    const getScrollY = () =>
+      Math.max(
+        0,
+        window.scrollY ||
+          window.pageYOffset ||
+          document.documentElement.scrollTop ||
+          document.body.scrollTop ||
+          0
+      );
+
+    lastScrollYRef.current = getScrollY();
 
     const onScroll = () => {
       if (ticking) return;
       ticking = true;
 
       window.requestAnimationFrame(() => {
-        const currentY = window.scrollY;
-        const previousY = lastScrollYRef.current;
-        const difference = currentY - previousY;
+        const currentY = getScrollY();
+        const diff = currentY - lastScrollYRef.current;
 
-        if (currentY <= 12) {
+        // When near the top of the page, keep header pinned in view
+        if (currentY <= 40) {
           setHeaderVisible(true);
-        } else if (Math.abs(difference) >= 4) {
-          const direction = difference < 0 ? "up" : "down";
-          scrollDirectionRef.current = direction;
-          setHeaderVisible(direction === "up");
+          lastScrollYRef.current = currentY;
+        } else if (diff > threshold) {
+          // Scrolling down: hide header (logo & cart slide upward out of sight)
+          setHeaderVisible(false);
+          lastScrollYRef.current = currentY;
+        } else if (diff < -threshold) {
+          // Scrolling up slightly: reveal header immediately
+          setHeaderVisible(true);
+          lastScrollYRef.current = currentY;
         }
 
-        lastScrollYRef.current = currentY;
         ticking = false;
       });
     };
 
     window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+    document.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      document.removeEventListener("scroll", onScroll);
+    };
   }, []);
 
   if (loading) {
@@ -1102,16 +1119,23 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
       className="min-h-screen bg-[#f7f7f5] pb-28 text-slate-900"
       style={{ fontFamily: "'DM Sans', Inter, sans-serif" }}
     >
-      {/* Floating glass header: slides into view on upward scroll and out on downward scroll. */}
+      {/* Floating glass header: slides out on downward scroll and slides back into view on upward scroll. */}
       <motion.header
         initial={false}
-        animate={{ y: headerVisible ? 0 : "-110%" }}
-        transition={{ type: "spring", stiffness: 360, damping: 38, mass: 0.7 }}
+        animate={{
+          y: headerVisible ? 0 : "-100%",
+          opacity: headerVisible ? 1 : 0,
+        }}
+        transition={{
+          duration: 0.28,
+          ease: [0.16, 1, 0.3, 1],
+        }}
         className="sticky top-0 z-[100] border-b border-slate-200/80 bg-white/90 backdrop-blur-2xl shadow-sm will-change-transform"
         style={{
           paddingTop: "max(0.75rem, env(safe-area-inset-top, 0px))",
           paddingLeft: "max(1rem, env(safe-area-inset-left, 1rem))",
           paddingRight: "max(1rem, env(safe-area-inset-right, 1rem))",
+          pointerEvents: headerVisible ? "auto" : "none",
         }}
       >
         <div className="mx-auto flex h-[56px] max-w-[1440px] items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
