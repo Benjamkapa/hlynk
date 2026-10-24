@@ -2,6 +2,7 @@ import {
   useEffect,
   useMemo,
   useState,
+  useRef,
   type FormEvent,
   type ReactNode,
 } from "react";
@@ -942,19 +943,39 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
     [cart],
   );
 
-  // ── Sticky header show/hide on scroll ──────────────────────────────────────
+  // Show the floating header when scrolling upward; hide it while scrolling down.
+  // A ref keeps the previous position stable across renders.
   const [headerVisible, setHeaderVisible] = useState(true);
-  const lastScrollYRef =
-    typeof window !== "undefined"
-      ? { current: window.scrollY }
-      : { current: 0 };
+  const lastScrollYRef = useRef(
+    typeof window !== "undefined" ? window.scrollY : 0,
+  );
+  const scrollDirectionRef = useRef<"up" | "down">("up");
 
   useEffect(() => {
+    let ticking = false;
+
     const onScroll = () => {
-      const currentY = window.scrollY;
-      setHeaderVisible(currentY <= 10 || currentY < lastScrollYRef.current);
-      lastScrollYRef.current = currentY;
+      if (ticking) return;
+      ticking = true;
+
+      window.requestAnimationFrame(() => {
+        const currentY = window.scrollY;
+        const previousY = lastScrollYRef.current;
+        const difference = currentY - previousY;
+
+        if (currentY <= 12) {
+          setHeaderVisible(true);
+        } else if (Math.abs(difference) >= 4) {
+          const direction = difference < 0 ? "up" : "down";
+          scrollDirectionRef.current = direction;
+          setHeaderVisible(direction === "up");
+        }
+
+        lastScrollYRef.current = currentY;
+        ticking = false;
+      });
     };
+
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
@@ -1081,9 +1102,12 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
       className="min-h-screen bg-[#f7f7f5] pb-28 text-slate-900"
       style={{ fontFamily: "'DM Sans', Inter, sans-serif" }}
     >
-      {/* HEADER — Always-visible sticky glass bar */}
-      <header
-        className="sticky top-0 z-[100] border-b border-slate-200/80 bg-white/90 backdrop-blur-2xl shadow-sm"
+      {/* Floating glass header: slides into view on upward scroll and out on downward scroll. */}
+      <motion.header
+        initial={false}
+        animate={{ y: headerVisible ? 0 : "-110%" }}
+        transition={{ type: "spring", stiffness: 360, damping: 38, mass: 0.7 }}
+        className="sticky top-0 z-[100] border-b border-slate-200/80 bg-white/90 backdrop-blur-2xl shadow-sm will-change-transform"
         style={{
           paddingTop: "max(0.75rem, env(safe-area-inset-top, 0px))",
           paddingLeft: "max(1rem, env(safe-area-inset-left, 1rem))",
@@ -1145,7 +1169,7 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
             )}
           </button>
         </div>
-      </header>
+      </motion.header>
 
       <main className="mx-auto max-w-[1440px] px-4 pb-5 sm:px-6 lg:px-8 lg:pb-7">
         {/* UNIVERSAL STOREFRONT BANNER
@@ -2277,3 +2301,2283 @@ function Field({
     </div>
   );
 }
+
+// import {
+//   useEffect,
+//   useMemo,
+//   useState,
+//   type FormEvent,
+//   type ReactNode,
+// } from "react";
+// import { useParams } from "react-router-dom";
+// import axios from "axios";
+// import {
+//   BedDouble,
+//   Check,
+//   CheckCircle2,
+//   ChevronLeft,
+//   ChevronRight,
+//   LayoutGrid,
+//   List,
+//   MapPin,
+//   MessageCircle,
+//   Minus,
+//   Package,
+//   Phone,
+//   Plus,
+//   Search,
+//   ShoppingBag,
+//   Sparkles,
+//   Star,
+//   Trash2,
+//   X,
+//   AlertTriangle,
+//   Lock,
+//   SlidersHorizontal,
+//   Truck,
+//   Smartphone,
+//   Wallet,
+//   Clock,
+// } from "lucide-react";
+// import InlineLoader, { ButtonLoader } from "../components/shared/InlineLoader";
+// import PaymentGuidanceCard, {
+//   DirectPaymentConfig,
+//   PaymentEvidence,
+// } from "../components/shared/PaymentGuidanceCard";
+// import { AnimatePresence, motion } from "framer-motion";
+// import { toast } from "sonner";
+
+// const API_URL = (import.meta.env.VITE_API_URL || "").replace(/\/+$/, "");
+
+// // Universal storefront banner. Add the image at public/store-banner.jpg.
+// const UNIVERSAL_BANNER_IMAGE = "/store-banner.jpg";
+
+// const FONT_LINK_ID = "hlynk-store-fonts";
+
+// function useStoreFonts() {
+//   useEffect(() => {
+//     if (document.getElementById(FONT_LINK_ID)) return;
+
+//     const link = document.createElement("link");
+//     link.id = FONT_LINK_ID;
+//     link.rel = "stylesheet";
+//     link.href =
+//       "https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500;1,600&display=swap";
+//     document.head.appendChild(link);
+//   }, []);
+// }
+
+// const serif = { fontFamily: "'Playfair Display', Georgia, serif" };
+
+// interface Room {
+//   id: string;
+//   title: string;
+//   type: string;
+//   code?: string;
+//   parentId?: string;
+//   basePrice: number;
+//   status: string;
+//   meta: {
+//     roomType?: string;
+//     amenities?: string[];
+//     description?: string;
+//     imageUrl?: string;
+//     images?: string[];
+//   };
+// }
+
+// interface Product {
+//   id: string;
+//   name: string;
+//   category: string;
+//   price: number;
+//   stockLevel: number;
+//   trackStock?: boolean | number;
+//   imageUrl?: string;
+//   description?: string;
+//   type?: string;
+// }
+
+// interface Property {
+//   id: string;
+//   title: string;
+//   meta: { address?: string };
+// }
+
+// interface Listing {
+//   businessName: string;
+//   category?: string;
+//   location?: string;
+//   phone?: string;
+//   slug: string;
+//   businessType?: string;
+//   logoUrl?: string | null;
+//   bannerUrl?: string;
+//   hasMpesaGateway?: boolean;
+//   directPayment?: DirectPaymentConfig;
+//   operationalSettings?: any;
+//   properties: Property[];
+//   rooms: Room[];
+//   products: Product[];
+// }
+
+// interface CartItem {
+//   id: string;
+//   name: string;
+//   price: number;
+//   quantity: number;
+//   type: "ROOM" | "PRODUCT";
+//   imageUrl?: string;
+// }
+
+// interface GalleryState {
+//   images: string[];
+//   title: string;
+//   description?: string;
+// }
+
+// type ViewMode = "grid" | "list";
+
+// function formatPrice(price: number) {
+//   return `KES ${Number(price || 0).toLocaleString()}`;
+// }
+
+// function formatWhatsAppNumber(phone?: string): string {
+//   if (!phone) return "";
+//   let cleaned = phone.replace(/[^0-9]/g, "");
+//   if (
+//     cleaned.startsWith("0") &&
+//     (cleaned.length === 10 || cleaned.length === 9)
+//   ) {
+//     cleaned = "254" + cleaned.slice(1);
+//   }
+//   return cleaned;
+// }
+
+// function getItemImages(item: Room | Product): string[] {
+//   if ("meta" in item) {
+//     if (item.meta?.images?.length) return item.meta.images.filter(Boolean);
+//     if (item.meta?.imageUrl) return [item.meta.imageUrl];
+//     return [];
+//   }
+//   return item.imageUrl ? [item.imageUrl] : [];
+// }
+
+// function GalleryModal({
+//   images,
+//   title,
+//   description,
+//   onClose,
+// }: {
+//   images: string[];
+//   title: string;
+//   description?: string;
+//   onClose: () => void;
+// }) {
+//   const [index, setIndex] = useState(0);
+
+//   useEffect(() => {
+//     setIndex(0);
+//   }, [images]);
+
+//   if (!images.length && !description) return null;
+
+//   return (
+//     <motion.div
+//       initial={{ opacity: 0 }}
+//       animate={{ opacity: 1 }}
+//       exit={{ opacity: 0 }}
+//       onClick={onClose}
+//       className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/90 p-4 backdrop-blur-md"
+//     >
+//       <div
+//         onClick={(event) => event.stopPropagation()}
+//         className="relative w-full max-w-5xl"
+//       >
+//         {images.length > 0 ? (
+//           <img
+//             src={images[index]}
+//             alt={`${title} ${index + 1}`}
+//             className="max-h-[70vh] w-full rounded-[28px] object-contain"
+//           />
+//         ) : (
+//           <div className="flex w-full h-[30vh] items-center justify-center rounded-[28px] bg-slate-900 border border-slate-800">
+//             <span className="text-slate-500">No images available</span>
+//           </div>
+//         )}
+
+//         <div className="mt-3 flex items-center justify-between px-1 text-sm text-white/70">
+//           <span className="truncate">{title}</span>
+//           {images.length > 0 && (
+//             <span>
+//               {index + 1} / {images.length}
+//             </span>
+//           )}
+//         </div>
+
+//         {description && (
+//           <div className="mt-2 px-1 pb-2 max-h-[25vh] overflow-y-auto custom-scrollbar">
+//             <p className="text-sm text-white/90 whitespace-pre-wrap break-words">
+//               {description}
+//             </p>
+//           </div>
+//         )}
+
+//         <button
+//           type="button"
+//           onClick={onClose}
+//           className="absolute -top-3 -right-2 grid h-10 w-10 place-items-center rounded-full bg-white text-slate-900 shadow-lg"
+//           aria-label="Close gallery"
+//         >
+//           <X size={18} />
+//         </button>
+
+//         {images.length > 1 && (
+//           <>
+//             <button
+//               type="button"
+//               onClick={() =>
+//                 setIndex((value) => (value - 1 + images.length) % images.length)
+//               }
+//               className="absolute left-3 top-1/2 grid h-11 w-11 -translate-y-1/2 place-items-center rounded-full bg-black/40 text-white backdrop-blur hover:bg-black/60"
+//               aria-label="Previous image"
+//             >
+//               <ChevronLeft size={22} />
+//             </button>
+
+//             <button
+//               type="button"
+//               onClick={() => setIndex((value) => (value + 1) % images.length)}
+//               className="absolute right-3 top-1/2 grid h-11 w-11 -translate-y-1/2 place-items-center rounded-full bg-black/40 text-white backdrop-blur hover:bg-black/60"
+//               aria-label="Next image"
+//             >
+//               <ChevronRight size={22} />
+//             </button>
+//           </>
+//         )}
+//       </div>
+//     </motion.div>
+//   );
+// }
+
+// function EmptyState({ query }: { query: string }) {
+//   return (
+//     <div className="rounded-[28px] border border-slate-200 bg-white px-6 py-16 text-center">
+//       <div className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-slate-100 text-slate-500">
+//         <Search size={24} />
+//       </div>
+//       <h3 className="mt-4 text-lg font-semibold text-slate-900">
+//         Nothing found
+//       </h3>
+//       <p className="mt-1 text-sm text-slate-500">
+//         {query
+//           ? `No results match "${query}". Try another search.`
+//           : "There are no items in this category yet."}
+//       </p>
+//     </div>
+//   );
+// }
+
+// function CatalogCard({
+//   item,
+//   images = [],
+//   image,
+//   imageCount,
+//   onImageClick,
+//   onAdd,
+//   ctaLabel,
+//   isList,
+// }: {
+//   item: Room | Product;
+//   images?: string[];
+//   image?: string;
+//   imageCount: number;
+//   onImageClick: () => void;
+//   onAdd: () => void;
+//   ctaLabel: string;
+//   isList: boolean;
+// }) {
+//   const [currentIndex, setCurrentIndex] = useState(0);
+//   const title = "title" in item ? item.title : item.name;
+//   const category = "title" in item ? item.type : item.category || "General";
+//   const description =
+//     "title" in item ? item.meta?.description : item.description;
+//   const price = "title" in item ? Number(item.basePrice) : Number(item.price);
+//   const fallback =
+//     "title" in item ? <BedDouble size={24} /> : <Package size={24} />;
+
+//   const allImgs = images.length > 0 ? images : image ? [image] : [];
+//   const activeImg = allImgs[currentIndex] || allImgs[0];
+
+//   // Stock awareness:
+//   // - Untracked products (trackStock: false, reseller / made-to-order) are always available.
+//   // - Tracked products (trackStock: true) whose count is 0 as a result of sales are Out of stock.
+//   const isTracked = 'trackStock' in item ? Boolean((item as any).trackStock) : false;
+//   const stockLevel = 'stockLevel' in item ? Number(item.stockLevel) : null;
+//   const isOutOfStock = isTracked && stockLevel !== null && stockLevel <= 0;
+//   const isLowStock = isTracked && stockLevel !== null && stockLevel > 0 && stockLevel <= 5;
+
+//   const prevImg = (e: React.MouseEvent) => {
+//     e.stopPropagation();
+//     e.preventDefault();
+//     setCurrentIndex((prev) => (prev === 0 ? allImgs.length - 1 : prev - 1));
+//   };
+
+//   const nextImg = (e: React.MouseEvent) => {
+//     e.stopPropagation();
+//     e.preventDefault();
+//     setCurrentIndex((prev) => (prev === allImgs.length - 1 ? 0 : prev + 1));
+//   };
+
+//   if (isList) {
+//     return (
+//       <article className="group flex min-h-[68px] w-full overflow-hidden rounded-xl border border-slate-200 bg-white transition hover:border-slate-300 hover:shadow-sm">
+//         <button
+//           type="button"
+//           disabled={!activeImg && !description}
+//           onClick={onImageClick}
+//           className="relative h-[68px] w-[68px] min-w-[68px] overflow-hidden bg-[#f3f1ec] text-left disabled:cursor-default sm:h-[76px] sm:w-[76px] sm:min-w-[76px]"
+//           aria-label={
+//             activeImg
+//               ? `View photos of ${title}`
+//               : description
+//                 ? `View details of ${title}`
+//                 : undefined
+//           }
+//         >
+//           {activeImg ? (
+//             <img
+//               src={activeImg}
+//               alt={title}
+//               className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.03]"
+//             />
+//           ) : (
+//             <div className="grid h-full place-items-center text-slate-400">
+//               {fallback}
+//             </div>
+//           )}
+//           {allImgs.length > 1 && (
+//             <span className="absolute bottom-1 right-1 rounded-full bg-slate-950/70 px-1.5 py-0.5 text-[8px] font-semibold text-white">
+//               +{allImgs.length - 1}
+//             </span>
+//           )}
+//         </button>
+
+//         <div className="flex min-w-0 flex-1 items-center gap-3 px-3 py-2 sm:px-3.5">
+//           <div className="min-w-0 flex-1">
+//             <div className="flex min-w-0 items-center gap-2">
+//               <h3 className="truncate text-[13px] font-semibold tracking-tight text-slate-950">
+//                 {title}
+//               </h3>
+//               {category && (
+//                 <span className="hidden shrink-0 rounded-full bg-slate-100 px-2 py-0.5 text-[8px] font-bold uppercase tracking-[0.08em] text-slate-500 sm:inline-flex">
+//                   {category}
+//                 </span>
+//               )}
+//             </div>
+//             {description && (
+//               <p className="mt-0.5 line-clamp-1 text-[10px] leading-4 text-slate-500">
+//                 {description}
+//               </p>
+//             )}
+//           </div>
+
+//         <div className="flex shrink-0 items-center gap-2 sm:gap-3">
+//             {isOutOfStock && (
+//               <span className="shrink-0 rounded-full bg-red-100 px-2 py-0.5 text-[8px] font-bold uppercase tracking-[0.08em] text-red-600">
+//                 Out of stock
+//               </span>
+//             )}
+//             {isLowStock && (
+//               <span className="shrink-0 rounded-full bg-amber-100 px-2 py-0.5 text-[8px] font-bold uppercase tracking-[0.08em] text-amber-700">
+//                 Only {stockLevel} left
+//               </span>
+//             )}
+//             <span className="whitespace-nowrap text-xs font-bold tracking-tight text-slate-950 sm:text-[13px]">
+//               {formatPrice(price)}
+//             </span>
+//             <button
+//               type="button"
+//               onClick={onAdd}
+//               title={isOutOfStock ? 'This item may be out of stock — you can still place an order' : undefined}
+//               className={`inline-flex h-8 items-center gap-1 rounded-full px-2.5 text-[10px] font-semibold text-white transition active:scale-95 sm:px-3 ${
+//                 isOutOfStock
+//                   ? 'bg-slate-400 hover:bg-slate-500'
+//                   : 'bg-slate-950 hover:bg-slate-800'
+//               }`}
+//             >
+//               <Plus size={12} />
+//               <span className="hidden xs:inline">{ctaLabel}</span>
+//             </button>
+//           </div>
+//         </div>
+//       </article>
+//     );
+//   }
+
+//   return (
+//     <article className="group/card flex min-w-0 flex-col overflow-hidden rounded-[16px] border border-slate-200 bg-white transition duration-300 hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-[0_14px_32px_rgba(15,23,42,0.07)]">
+//       <div
+//         className="relative aspect-[1.12/1] w-full overflow-hidden bg-[#f3f1ec] text-left group/slider cursor-pointer"
+//         onClick={onImageClick}
+//       >
+//         {activeImg ? (
+//           <img
+//             src={activeImg}
+//             alt={title}
+//             className="h-full w-full object-cover transition duration-500 group-hover/card:scale-[1.035]"
+//           />
+//         ) : (
+//           <div className="grid h-full place-items-center text-slate-400">
+//             {fallback}
+//           </div>
+//         )}
+
+//         <span className="absolute left-2 top-2 max-w-[calc(100%-16px)] truncate rounded-full bg-white/95 px-2 py-1 text-[8px] font-bold uppercase tracking-[0.08em] text-slate-600 shadow-sm backdrop-blur z-10">
+//           {category}
+//         </span>
+
+//         {allImgs.length > 1 && (
+//           <>
+//             {/* Arrows */}
+//             <button
+//               type="button"
+//               onClick={prevImg}
+//               className="absolute left-1.5 top-1/2 -translate-y-1/2 h-7 w-7 rounded-full bg-slate-950/70 hover:bg-slate-950 text-white flex items-center justify-center backdrop-blur opacity-0 group-hover/slider:opacity-100 transition-opacity z-20 shadow"
+//               title="Previous photo"
+//             >
+//               <ChevronLeft size={14} />
+//             </button>
+//             <button
+//               type="button"
+//               onClick={nextImg}
+//               className="absolute right-1.5 top-1/2 -translate-y-1/2 h-7 w-7 rounded-full bg-slate-950/70 hover:bg-slate-950 text-white flex items-center justify-center backdrop-blur opacity-0 group-hover/slider:opacity-100 transition-opacity z-20 shadow"
+//               title="Next photo"
+//             >
+//               <ChevronRight size={14} />
+//             </button>
+
+//             {/* Slide Dots */}
+//             <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex items-center gap-1 z-20 bg-slate-950/50 px-1.5 py-0.5 rounded-full backdrop-blur">
+//               {allImgs.map((_, idx) => (
+//                 <button
+//                   key={idx}
+//                   type="button"
+//                   onClick={(e) => {
+//                     e.stopPropagation();
+//                     e.preventDefault();
+//                     setCurrentIndex(idx);
+//                   }}
+//                   className={`h-1.5 rounded-full transition-all ${
+//                     idx === currentIndex
+//                       ? "w-3 bg-white"
+//                       : "w-1.5 bg-white/50 hover:bg-white/80"
+//                   }`}
+//                   title={`Photo ${idx + 1}`}
+//                 />
+//               ))}
+//             </div>
+//           </>
+//         )}
+
+//         {allImgs.length > 0 && (
+//           <span className="absolute bottom-2 right-2 rounded-full bg-slate-950/65 px-2 py-0.5 text-[8px] font-medium text-white backdrop-blur z-10">
+//             {allImgs.length > 1
+//               ? `${currentIndex + 1}/${allImgs.length}`
+//               : "1 photo"}
+//           </span>
+//         )}
+
+//         {/* Out-of-stock / low-stock overlay badge */}
+//         {isOutOfStock && (
+//           <span className="absolute top-2 right-2 z-10 rounded-full bg-red-600 px-2 py-0.5 text-[8px] font-bold uppercase tracking-[0.08em] text-white shadow">
+//             Out of stock
+//           </span>
+//         )}
+//         {isLowStock && !isOutOfStock && (
+//           <span className="absolute top-2 right-2 z-10 rounded-full bg-amber-500 px-2 py-0.5 text-[8px] font-bold uppercase tracking-[0.08em] text-white shadow">
+//             Only {stockLevel} left
+//           </span>
+//         )}
+//       </div>
+
+//       <div className="flex min-h-[108px] flex-1 flex-col p-2.5 sm:p-3">
+//         <div className="min-w-0">
+//           <h3 className="truncate text-[13px] font-semibold tracking-tight text-slate-950">
+//             {title}
+//           </h3>
+//           {description && (
+//             <p className="mt-0.5 line-clamp-1 text-[10px] leading-4 text-slate-500">
+//               {description}
+//             </p>
+//           )}
+//         </div>
+
+//         <div className="mt-auto flex items-end justify-between gap-2 pt-2.5">
+//           <div className="min-w-0">
+//             <p className="text-[8px] font-bold uppercase tracking-[0.12em] text-slate-400">
+//               {ctaLabel === "Book" ? "From" : "Price"}
+//             </p>
+//             <p className="mt-0.5 truncate text-xs font-bold tracking-tight text-slate-950 sm:text-[13px]">
+//               {formatPrice(price)}
+//             </p>
+//           </div>
+
+//           <button
+//             type="button"
+//             onClick={onAdd}
+//             title={isOutOfStock ? 'This item may be out of stock — you can still place an order' : undefined}
+//             className={`inline-flex h-8 shrink-0 items-center gap-1 rounded-full px-2.5 text-[10px] font-semibold text-white transition active:scale-95 ${
+//               isOutOfStock
+//                 ? 'bg-slate-400 hover:bg-slate-500'
+//                 : 'bg-slate-950 hover:bg-slate-800'
+//             }`}
+//           >
+//             <Plus size={12} />
+//             {isOutOfStock ? 'Order anyway' : ctaLabel}
+//           </button>
+//         </div>
+//       </div>
+//     </article>
+//   );
+// }
+
+// export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
+//   useStoreFonts();
+
+//   const { slug } = useParams<{ slug: string }>();
+//   const isShopPath =
+//     isShopMode ||
+//     (typeof window !== "undefined" &&
+//       (window.location.pathname.startsWith("/shop") ||
+//         window.location.pathname.startsWith("/store")));
+
+//   const [listing, setListing] = useState<Listing | null>(null);
+//   const [loading, setLoading] = useState(true);
+//   const [error, setError] = useState<string | null>(null);
+
+//   const [activeTab, setActiveTab] = useState<"rooms" | "products">(
+//     isShopPath ? "products" : "rooms",
+//   );
+//   const [filter, setFilter] = useState("all");
+//   const [categoryFilter, setCategoryFilter] = useState("all");
+//   const [searchQuery, setSearchQuery] = useState("");
+//   const [viewMode, setViewMode] = useState<ViewMode>("grid");
+
+//   const [cart, setCart] = useState<CartItem[]>([]);
+//   const [isCartOpen, setIsCartOpen] = useState(false);
+//   const [isOrdering, setIsOrdering] = useState(false);
+//   const [orderSuccess, setOrderSuccess] = useState<any>(null);
+
+//   const [gallery, setGallery] = useState<GalleryState | null>(null);
+
+//   const [customerName, setCustomerName] = useState("");
+//   const [customerPhone, setCustomerPhone] = useState("");
+//   const [deliveryAddress, setDeliveryAddress] = useState("");
+//   const [notes, setNotes] = useState("");
+//   const [submittingOrder, setSubmittingOrder] = useState(false);
+
+//   const [paymentOption, setPaymentOption] = useState<
+//     "DIRECT_PAYMENT" | "PAY_UPFRONT" | "PAY_ON_DELIVERY"
+//   >("DIRECT_PAYMENT");
+//   const [paymentEvidence, setPaymentEvidence] = useState<PaymentEvidence>({
+//     transactionCode: "",
+//   });
+//   const [uploadingReceipt, setUploadingReceipt] = useState(false);
+//   const [mpesaPhone, setMpesaPhone] = useState("");
+//   const [stkStatus, setStkStatus] = useState<
+//     "IDLE" | "SENDING" | "SENT" | "FAILED"
+//   >("IDLE");
+//   const [checkoutRequestId, setCheckoutRequestId] = useState<string | null>(
+//     null,
+//   );
+//   const checkoutRef = useMemo(
+//     () => `ORD-${Math.floor(1000 + Math.random() * 9000)}`,
+//     [],
+//   );
+
+//   const hasDirectPayment = Boolean(
+//     listing?.directPayment &&
+//     listing.directPayment.enabled !== false &&
+//     listing.directPayment.businessNumber &&
+//     listing.directPayment.businessNumber.trim().length > 0,
+//   );
+
+//   const effectiveDirectPayment: DirectPaymentConfig | null = useMemo(() => {
+//     if (hasDirectPayment && listing?.directPayment) {
+//       return listing.directPayment;
+//     }
+//     return null;
+//   }, [listing, hasDirectPayment]);
+
+//   useEffect(() => {
+//     if (listing) {
+//       if (hasDirectPayment) {
+//         setPaymentOption("DIRECT_PAYMENT");
+//       } else if (listing.hasMpesaGateway) {
+//         setPaymentOption("PAY_UPFRONT");
+//       } else {
+//         setPaymentOption("PAY_ON_DELIVERY");
+//       }
+//     }
+//   }, [listing, hasDirectPayment]);
+
+//   const handleUploadReceipt = async (file: File): Promise<string | null> => {
+//     setUploadingReceipt(true);
+//     try {
+//       const formData = new FormData();
+//       formData.append("file", file);
+//       const res = await axios.post(
+//         `${API_URL}/api/v1/public/receipt`,
+//         formData,
+//         {
+//           headers: { "Content-Type": "multipart/form-data" },
+//         },
+//       );
+//       if (res.data.success && res.data.data?.url) {
+//         toast.success("Receipt screenshot attached");
+//         return res.data.data.url;
+//       }
+//       return null;
+//     } catch (err: any) {
+//       console.warn("Receipt upload fallback to local preview");
+//       return null;
+//     } finally {
+//       setUploadingReceipt(false);
+//     }
+//   };
+
+//   const handleInitiateStkPush = async (): Promise<string | null> => {
+//     const phoneToUse = mpesaPhone.trim() || customerPhone.trim();
+//     if (!phoneToUse) {
+//       toast.error("Please enter your M-Pesa phone number");
+//       return null;
+//     }
+//     if (!totalCartAmount || totalCartAmount <= 0) {
+//       toast.error("Cart total is zero");
+//       return null;
+//     }
+
+//     setStkStatus("SENDING");
+//     try {
+//       const res = await axios.post(`${API_URL}/api/v1/public/mpesa-push`, {
+//         slug,
+//         phone: phoneToUse,
+//         amount: totalCartAmount,
+//         customerName: customerName.trim() || "Customer",
+//       });
+
+//       if (res.data.success) {
+//         const reqId = res.data.data?.CheckoutRequestID || null;
+//         setCheckoutRequestId(reqId);
+//         setStkStatus("SENT");
+//         toast.success("M-Pesa STK Push prompt sent to your phone!");
+//         return reqId;
+//       } else {
+//         setStkStatus("FAILED");
+//         toast.error(res.data.message || "Failed to send M-Pesa prompt");
+//         return null;
+//       }
+//     } catch (err: any) {
+//       setStkStatus("FAILED");
+//       toast.error(
+//         err.response?.data?.message || "Failed to send M-Pesa prompt",
+//       );
+//       return null;
+//     }
+//   };
+
+//   const handleOrderSubmit = async (event: FormEvent) => {
+//     event.preventDefault();
+
+//     if (!customerName.trim() || !customerPhone.trim()) {
+//       toast.error("Please enter your name and phone number");
+//       return;
+//     }
+
+//     if (!cart.length) {
+//       toast.error("Your cart is empty");
+//       return;
+//     }
+
+//     if (paymentOption === "PAY_UPFRONT" && listing?.hasMpesaGateway === false) {
+//       toast.error("M-Pesa payment gateway is not configured by this merchant.");
+//       return;
+//     }
+
+//     if (
+//       paymentOption === "DIRECT_PAYMENT" &&
+//       !paymentEvidence.transactionCode.trim()
+//     ) {
+//       toast.error(
+//         "Please enter your M-Pesa transaction code from the SMS receipt to confirm order.",
+//       );
+//       return;
+//     }
+
+//     setSubmittingOrder(true);
+//     let activeReqId = checkoutRequestId;
+
+//     try {
+//       if (paymentOption === "PAY_UPFRONT" && !activeReqId) {
+//         activeReqId = await handleInitiateStkPush();
+//         if (!activeReqId) {
+//           setSubmittingOrder(false);
+//           return;
+//         }
+//       }
+
+//       const backendPaymentOption =
+//         paymentOption === "DIRECT_PAYMENT" ? "PAY_DIRECT" : paymentOption;
+//       const backendPaymentEvidence =
+//         paymentOption === "DIRECT_PAYMENT"
+//           ? {
+//               ...paymentEvidence,
+//               paidAmount: totalCartAmount,
+//               methodType: effectiveDirectPayment?.methodType || "MPESA_PAYBILL",
+//             }
+//           : undefined;
+
+//       const response = await axios.post(`${API_URL}/api/v1/public/order`, {
+//         slug,
+//         customerName,
+//         customerPhone,
+//         deliveryAddress,
+//         notes,
+//         items: cart,
+//         paymentOption: backendPaymentOption,
+//         paymentEvidence: backendPaymentEvidence,
+//         checkoutRequestId: activeReqId,
+//       });
+
+//       const serverData = response.data?.data || {};
+//       const isAutoVerified =
+//         serverData.paymentStatus === "PAID" || serverData.verified === true;
+
+//       setOrderSuccess({
+//         ...serverData,
+//         orderedByName: customerName,
+//         paymentOption: backendPaymentOption,
+//         paymentEvidence: backendPaymentEvidence,
+//         transactionCode:
+//           paymentOption === "DIRECT_PAYMENT"
+//             ? paymentEvidence.transactionCode || serverData.transactionCode
+//             : null,
+//         paymentStatus:
+//           paymentOption === "DIRECT_PAYMENT"
+//             ? isAutoVerified
+//               ? "PAID"
+//               : "AWAITING_VERIFICATION"
+//             : paymentOption === "PAY_UPFRONT"
+//               ? "PENDING_STK"
+//               : "PAY_ON_DELIVERY",
+//         mpesaReceipt:
+//           paymentEvidence.transactionCode || serverData.transactionCode || null,
+//       });
+
+//       setCart([]);
+//       setCustomerName("");
+//       setCustomerPhone("");
+//       setDeliveryAddress("");
+//       setNotes("");
+//       setMpesaPhone("");
+//       setPaymentEvidence({ transactionCode: "" });
+//       setCheckoutRequestId(null);
+//       setStkStatus("IDLE");
+//       setIsOrdering(false);
+//       setIsCartOpen(false);
+
+//       // toast.success("Order submitted successfully");
+//     } catch (err: any) {
+//       toast.error(
+//         err.response?.data?.message ||
+//           "Failed to submit order. Please try again.",
+//       );
+//     } finally {
+//       setSubmittingOrder(false);
+//     }
+//   };
+
+//   useEffect(() => {
+//     if (!orderSuccess?.saleId || orderSuccess.paymentOption !== "PAY_UPFRONT")
+//       return;
+//     if (
+//       orderSuccess.paymentStatus === "PAID" ||
+//       orderSuccess.paymentStatus === "CANCELLED" ||
+//       orderSuccess.paymentStatus === "FAILED" ||
+//       orderSuccess.paymentStatus === "TIMED_OUT"
+//     )
+//       return;
+
+//     let pollAttempts = 0;
+//     const maxPolls = 12; // 12 polls * 3s = 36 seconds maximum spinning
+
+//     const interval = setInterval(async () => {
+//       pollAttempts++;
+//       try {
+//         const res = await axios.get(
+//           `${API_URL}/api/v1/public/order-status/${orderSuccess.saleId}`,
+//         );
+//         if (res.data.success && res.data.data) {
+//           const { status, statusLabel, mpesaReceipt } = res.data.data;
+//           if (status === 0 || statusLabel === "PAID") {
+//             setOrderSuccess((prev: any) =>
+//               prev ? { ...prev, paymentStatus: "PAID", mpesaReceipt } : null,
+//             );
+//             toast.success(`M-Pesa payment received! Receipt: ${mpesaReceipt}`);
+//             clearInterval(interval);
+//             return;
+//           } else if (
+//             status === 3 ||
+//             statusLabel === "CANCELLED" ||
+//             status === 4 ||
+//             statusLabel === "FAILED"
+//           ) {
+//             setOrderSuccess((prev: any) =>
+//               prev ? { ...prev, paymentStatus: "CANCELLED" } : null,
+//             );
+//             toast.error("M-Pesa payment was cancelled or failed.");
+//             clearInterval(interval);
+//             return;
+//           }
+//         }
+//       } catch (e) {
+//         // ignore polling errors silently
+//       }
+
+//       if (pollAttempts >= maxPolls) {
+//         clearInterval(interval);
+//         setOrderSuccess((prev: any) =>
+//           prev && prev.paymentStatus === "PENDING_STK"
+//             ? { ...prev, paymentStatus: "TIMED_OUT" }
+//             : prev,
+//         );
+//       }
+//     }, 3000);
+
+//     return () => clearInterval(interval);
+//   }, [
+//     orderSuccess?.saleId,
+//     orderSuccess?.paymentOption,
+//     orderSuccess?.paymentStatus,
+//   ]);
+
+//   useEffect(() => {
+//     if (!slug) return;
+
+//     setLoading(true);
+//     setError(null);
+
+//     const endpoint = isShopPath
+//       ? `${API_URL}/api/v1/public/shop/${slug}`
+//       : `${API_URL}/api/v1/public/stay/${slug}`;
+
+//     axios
+//       .get(endpoint)
+//       .then((response) => {
+//         const data = response.data.data;
+//         setListing(data);
+
+//         if (
+//           (isShopPath || !data.rooms || data.rooms.length === 0) &&
+//           data.products?.length
+//         ) {
+//           setActiveTab("products");
+//         }
+//       })
+//       .catch((err) => {
+//         setError(err.response?.data?.message || "Listing not found");
+//       })
+//       .finally(() => setLoading(false));
+//   }, [slug, isShopPath]);
+
+//   const switchTab = (tab: "rooms" | "products") => {
+//     setActiveTab(tab);
+//     setSearchQuery("");
+//     setFilter("all");
+//     setCategoryFilter("all");
+//   };
+
+//   const addToCart = (item: {
+//     id: string;
+//     name: string;
+//     price: number;
+//     type: "ROOM" | "PRODUCT";
+//     imageUrl?: string;
+//   }) => {
+//     setCart((current) => {
+//       const existing = current.find((entry) => entry.id === item.id);
+
+//       if (existing) {
+//         return current.map((entry) =>
+//           entry.id === item.id
+//             ? { ...entry, quantity: entry.quantity + 1 }
+//             : entry,
+//         );
+//       }
+
+//       return [...current, { ...item, quantity: 1 }];
+//     });
+
+//     // toast.success(`${item.name} added to cart`);
+//   };
+
+//   const updateQuantity = (id: string, delta: number) => {
+//     setCart((current) =>
+//       current
+//         .map((item) =>
+//           item.id === id ? { ...item, quantity: item.quantity + delta } : item,
+//         )
+//         .filter((item) => item.quantity > 0),
+//     );
+//   };
+
+//   const removeFromCart = (id: string) => {
+//     setCart((current) => current.filter((item) => item.id !== id));
+//   };
+
+//   const totalCartAmount = useMemo(
+//     () => cart.reduce((total, item) => total + item.price * item.quantity, 0),
+//     [cart],
+//   );
+
+//   const cartItemCount = useMemo(
+//     () => cart.reduce((total, item) => total + item.quantity, 0),
+//     [cart],
+//   );
+
+//   // ── Sticky header show/hide on scroll ──────────────────────────────────────
+//   const [headerVisible, setHeaderVisible] = useState(true);
+//   const lastScrollYRef =
+//     typeof window !== "undefined"
+//       ? { current: window.scrollY }
+//       : { current: 0 };
+
+//   useEffect(() => {
+//     const onScroll = () => {
+//       const currentY = window.scrollY;
+//       setHeaderVisible(currentY <= 10 || currentY < lastScrollYRef.current);
+//       lastScrollYRef.current = currentY;
+//     };
+//     window.addEventListener("scroll", onScroll, { passive: true });
+//     return () => window.removeEventListener("scroll", onScroll);
+//   }, []);
+
+//   if (loading) {
+//     return (
+//       <div className="grid min-h-screen place-items-center bg-[#f6f6f4]">
+//         <InlineLoader
+//           size="lg"
+//           message="Loading store..."
+//           color="text-slate-900"
+//         />
+//       </div>
+//     );
+//   }
+
+//   if (error || !listing) {
+//     const isLockedError =
+//       error?.toLowerCase().includes("business pro") ||
+//       error?.toLowerCase().includes("trial");
+
+//     return (
+//       <div className="grid min-h-screen place-items-center bg-[#f6f6f4] p-5">
+//         <div className="w-full max-w-md rounded-[28px] border border-slate-200 bg-white p-7 text-center shadow-sm">
+//           <div className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-amber-50 text-amber-600">
+//             {isLockedError ? <Lock size={25} /> : <AlertTriangle size={25} />}
+//           </div>
+
+//           <h1 className="mt-5 text-2xl text-slate-950" style={serif}>
+//             {isLockedError
+//               ? "Business Pro subscription required"
+//               : "Store unavailable"}
+//           </h1>
+
+//           <p className="mt-2 text-sm leading-6 text-slate-500">
+//             {error || "This store or listing does not exist."}
+//           </p>
+
+//           <div className="mt-6 grid gap-2">
+//             {isLockedError && (
+//               <a
+//                 href="/login"
+//                 className="rounded-full bg-slate-950 px-5 py-3 text-sm font-semibold text-white"
+//               >
+//                 Log in & upgrade
+//               </a>
+//             )}
+
+//             <a
+//               href="/"
+//               className="rounded-full border border-slate-200 px-5 py-3 text-sm font-semibold text-slate-700"
+//             >
+//               Back to hlynk
+//             </a>
+//           </div>
+//         </div>
+//       </div>
+//     );
+//   }
+
+//   const allRooms = listing.rooms || [];
+//   const allProducts = listing.products || [];
+
+//   const roomTypes = [
+//     ...new Set(allRooms.map((room) => room.type).filter(Boolean)),
+//   ];
+//   const productCategories = [
+//     ...new Set(
+//       allProducts
+//         .map((product) => product.category || "General")
+//         .filter(Boolean),
+//     ),
+//   ];
+
+//   const normalizedQuery = searchQuery.trim().toLowerCase();
+
+//   const filteredRooms = allRooms
+//     .filter((room) => filter === "all" || room.type === filter)
+//     .filter(
+//       (room) =>
+//         !normalizedQuery ||
+//         room.title.toLowerCase().includes(normalizedQuery) ||
+//         room.type.toLowerCase().includes(normalizedQuery),
+//     );
+
+//   const filteredProducts = allProducts
+//     .filter(
+//       (product) =>
+//         categoryFilter === "all" ||
+//         (product.category || "General") === categoryFilter,
+//     )
+//     .filter(
+//       (product) =>
+//         !normalizedQuery ||
+//         product.name.toLowerCase().includes(normalizedQuery) ||
+//         (product.category || "").toLowerCase().includes(normalizedQuery),
+//     );
+
+//   const activeItems =
+//     activeTab === "rooms" && allRooms.length ? allRooms : allProducts;
+
+//   const activeCategories =
+//     activeTab === "rooms" ? roomTypes : productCategories;
+
+//   const setActiveCategory = (value: string) => {
+//     if (activeTab === "rooms") setFilter(value);
+//     else setCategoryFilter(value);
+//   };
+
+//   const currentFilter = activeTab === "rooms" ? filter : categoryFilter;
+
+//   const sectionTitle =
+//     activeTab === "rooms" ? "Stay your way" : "Popular picks";
+
+//   const sectionSubtitle =
+//     activeTab === "rooms"
+//       ? "Choose the space that fits your visit."
+//       : "Explore what is available in store.";
+
+//   const activeLogo = listing.logoUrl || listing.operationalSettings?.logoUrl || "/fav.png";
+
+//   return (
+//     <div
+//       className="min-h-screen bg-[#f7f7f5] pb-28 text-slate-900"
+//       style={{ fontFamily: "'DM Sans', Inter, sans-serif", overflowY: 'auto', WebkitOverflowScrolling: 'touch' }}
+//     >
+//       {/* HEADER — Always-visible sticky glass bar */}
+//       <header
+//         className="sticky top-0 z-[100] border-b border-slate-200/80 bg-white/90 backdrop-blur-2xl shadow-sm"
+//         style={{
+//           paddingTop: "max(0.75rem, env(safe-area-inset-top, 0px))",
+//           paddingLeft: "max(1rem, env(safe-area-inset-left, 1rem))",
+//           paddingRight: "max(1rem, env(safe-area-inset-right, 1rem))",
+//         }}
+//       >
+//         <div className="mx-auto flex h-[56px] max-w-[1440px] items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
+//           <div className="flex min-w-0 items-center">
+//             {/* Logo — displays the provider's brand logo or fallback icon, matching provider portal */}
+//             <a
+//               href="/"
+//               className="shrink-0 flex items-center"
+//               aria-label={listing.businessName || "Home"}
+//             >
+//               <img
+//                 src={activeLogo}
+//                 alt={listing.businessName || "Brand Logo"}
+//                 className={`h-9 w-9 sm:h-10 sm:w-10 object-contain ${
+//                   activeLogo !== "/fav.png" ? "rounded-lg" : ""
+//                 }`}
+//                 onError={(e) => {
+//                   (e.target as HTMLImageElement).src = "/fav.png";
+//                 }}
+//               />
+//             </a>
+//           </div>
+
+//           {/* Glass nav pills */}
+//           <nav className="hidden items-center gap-1 md:flex">
+//             {[
+//               { href: "#catalog", label: "Shop" },
+//               { href: "#featured", label: "Featured" },
+//               ...(listing.phone
+//                 ? [{ href: "#contact", label: "Contact" }]
+//                 : []),
+//             ].map(({ href, label }) => (
+//               <a
+//                 key={href}
+//                 href={href}
+//                 className="rounded-full border border-white/50 bg-white/40 px-4 py-1.5 text-xs font-semibold text-slate-700 backdrop-blur-xl transition hover:bg-white/70 hover:text-slate-950"
+//               >
+//                 {label}
+//               </a>
+//             ))}
+//           </nav>
+
+//           {/* Glass cart button */}
+//           <button
+//             type="button"
+//             onClick={() => setIsCartOpen(true)}
+//             className="relative inline-flex h-10 items-center gap-2 rounded-full border border-white/30 bg-slate-950/85 px-3.5 text-xs font-semibold text-white shadow-sm backdrop-blur-xl transition hover:bg-slate-800/90 active:scale-95"
+//           >
+//             <ShoppingBag size={15} />
+//             <span className="hidden sm:inline">Cart</span>
+//             {cartItemCount > 0 && (
+//               <span className="grid h-5 min-w-5 place-items-center rounded-full bg-white px-1 text-[10px] font-bold text-slate-950">
+//                 {cartItemCount}
+//               </span>
+//             )}
+//           </button>
+//         </div>
+//       </header>
+
+//       <main className="mx-auto max-w-[1440px] px-4 pb-5 sm:px-6 lg:px-8 lg:pb-7">
+//         {/* UNIVERSAL STOREFRONT BANNER
+//             Product/service photos stay exclusively inside the catalogue. */}
+//         <section className="relative mt-1 overflow-hidden rounded-[26px] bg-slate-950">
+//           <img
+//             src={listing.bannerUrl || UNIVERSAL_BANNER_IMAGE}
+//             alt=""
+//             className="absolute inset-0 h-full w-full object-cover"
+//             onError={(event) => {
+//               event.currentTarget.style.display = "none";
+//             }}
+//           />
+//           <div className="absolute inset-0 bg-gradient-to-r from-slate-950/90 via-slate-950/65 to-slate-950/15" />
+
+//           <div className="relative flex min-h-[300px] items-end p-6 sm:min-h-[350px] sm:p-9 lg:min-h-[390px]">
+//             <div className="max-w-2xl">
+//               {/* <div className="mb-4 flex flex-wrap items-center gap-2">
+//                 <span className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.15em] text-white backdrop-blur">
+//                   <Sparkles size={12} />
+//                   {listing.category || listing.businessType || "Store"}
+//                 </span>
+
+//                 {listing.location && (
+//                   <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-black/15 px-3 py-1.5 text-[11px] text-white/75 backdrop-blur">
+//                     <MapPin size={12} />
+//                     {listing.location}
+//                   </span>
+//                 )}
+//               </div> */}
+
+//               <h1
+//                 className="text-4xl leading-[1.02] text-white sm:text-5xl lg:text-6xl"
+//                 style={serif}
+//               >
+//                 {listing.businessName}
+//               </h1>
+
+//               <p className="mt-4 max-w-xl text-sm leading-6 text-white/70 sm:text-base">
+//                 Browse what is available, choose what you need and order
+//                 directly from the business.
+//               </p>
+
+//               <div className="mt-6 flex flex-wrap gap-2.5">
+//                 <a
+//                   href="#catalog"
+//                   className="inline-flex items-center gap-2 rounded-full bg-white px-5 py-3 text-xs font-bold text-slate-950 transition hover:bg-slate-100"
+//                 >
+//                   Browse collection
+//                   <ChevronRight size={15} />
+//                 </a>
+
+//                 {listing.phone && (
+//                   <a
+//                     href={`tel:${listing.phone}`}
+//                     className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-5 py-3 text-xs font-semibold text-white backdrop-blur transition hover:bg-white/15"
+//                   >
+//                     <Phone size={14} />
+//                     Contact
+//                   </a>
+//                 )}
+//               </div>
+//             </div>
+//           </div>
+//         </section>
+
+//         {/* COMPACT STORE INFO — no repeated product/service display */}
+//         <section className="mt-4 grid overflow-hidden rounded-[20px] border border-slate-200 bg-white sm:grid-cols-2 lg:grid-cols-4">
+//           <InfoCell
+//             icon={<ShoppingBag size={16} />}
+//             label="Collection"
+//             value={`${activeItems.length} item${activeItems.length === 1 ? "" : "s"} available`}
+//           />
+//           <InfoCell
+//             icon={<CheckCircle2 size={16} />}
+//             label="Ordering"
+//             value="Direct ordering available"
+//           />
+//           <InfoCell
+//             icon={<MapPin size={16} />}
+//             label="Location"
+//             value={listing.location || "Contact business"}
+//           />
+//           <InfoCell
+//             icon={<Phone size={16} />}
+//             label="Contact"
+//             value={listing.phone || "Available through the business"}
+//           />
+//         </section>
+
+//         {/* CATALOG */}
+//         <section id="catalog" className="mt-10 scroll-mt-24">
+//           {allRooms.length > 0 && allProducts.length > 0 && (
+//             <div className="mb-7 flex items-center gap-2 overflow-x-auto border-b border-slate-200 no-scrollbar">
+//               <button
+//                 type="button"
+//                 onClick={() => switchTab("rooms")}
+//                 className={`relative px-4 py-3 text-sm font-semibold transition ${
+//                   activeTab === "rooms"
+//                     ? "text-slate-950"
+//                     : "text-slate-400 hover:text-slate-700"
+//                 }`}
+//               >
+//                 <span className="inline-flex items-center gap-2">
+//                   <BedDouble size={16} /> Hospitality
+//                 </span>
+//                 {activeTab === "rooms" && (
+//                   <span className="absolute inset-x-4 bottom-0 h-0.5 rounded-full bg-slate-950" />
+//                 )}
+//               </button>
+
+//               <button
+//                 type="button"
+//                 onClick={() => switchTab("products")}
+//                 className={`relative px-4 py-3 text-sm font-semibold transition ${
+//                   activeTab === "products"
+//                     ? "text-slate-950"
+//                     : "text-slate-400 hover:text-slate-700"
+//                 }`}
+//               >
+//                 <span className="inline-flex items-center gap-2">
+//                   <Package size={16} /> Products
+//                 </span>
+//                 {activeTab === "products" && (
+//                   <span className="absolute inset-x-4 bottom-0 h-0.5 rounded-full bg-slate-950" />
+//                 )}
+//               </button>
+//             </div>
+//           )}
+
+//           <div className="flex flex-col justify-between gap-5 lg:flex-row lg:items-end">
+//             <div>
+//               <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-400">
+//                 {activeTab === "rooms" ? "Availability" : "Shop the collection"}
+//               </p>
+//               <h2
+//                 className="mt-1 text-3xl text-slate-950 sm:text-4xl"
+//                 style={serif}
+//               >
+//                 {sectionTitle}
+//               </h2>
+//               <p className="mt-2 text-sm text-slate-500">{sectionSubtitle}</p>
+//             </div>
+
+//             <div className="flex w-full items-center gap-2 lg:max-w-[470px]">
+//               <div className="relative min-w-0 flex-1">
+//                 <Search
+//                   size={16}
+//                   className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+//                 />
+//                 <input
+//                   type="text"
+//                   value={searchQuery}
+//                   onChange={(event) => setSearchQuery(event.target.value)}
+//                   placeholder={
+//                     activeTab === "rooms"
+//                       ? "Search spaces..."
+//                       : "Search products..."
+//                   }
+//                   className="h-11 w-full rounded-full border border-slate-200 bg-white pl-10 pr-10 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-slate-400"
+//                 />
+//                 {searchQuery && (
+//                   <button
+//                     type="button"
+//                     onClick={() => setSearchQuery("")}
+//                     className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700"
+//                     aria-label="Clear search"
+//                   >
+//                     <X size={16} />
+//                   </button>
+//                 )}
+//               </div>
+
+//               {/* Glass view-mode toggle */}
+//               <div className="flex h-11 items-center rounded-full border border-white/50 bg-white/50 p-1 backdrop-blur-xl shadow-sm">
+//                 <button
+//                   type="button"
+//                   onClick={() => setViewMode("grid")}
+//                   className={`grid h-9 w-9 place-items-center rounded-full transition active:scale-95 ${
+//                     viewMode === "grid"
+//                       ? "bg-slate-950 text-white shadow-sm"
+//                       : "text-slate-400 hover:bg-white/80 hover:text-slate-700"
+//                   }`}
+//                   aria-label="Grid view"
+//                 >
+//                   <LayoutGrid size={16} />
+//                 </button>
+//                 <button
+//                   type="button"
+//                   onClick={() => setViewMode("list")}
+//                   className={`grid h-9 w-9 place-items-center rounded-full transition active:scale-95 ${
+//                     viewMode === "list"
+//                       ? "bg-slate-950 text-white shadow-sm"
+//                       : "text-slate-400 hover:bg-white/80 hover:text-slate-700"
+//                   }`}
+//                   aria-label="List view"
+//                 >
+//                   <List size={16} />
+//                 </button>
+//               </div>
+//             </div>
+//           </div>
+
+//           {/* CATEGORY CHIPS */}
+//           {activeCategories.length > 1 && (
+//             <div className="mt-6 flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
+//               <div className="inline-flex items-center gap-1.5 pr-1 text-xs font-semibold text-slate-400">
+//                 <SlidersHorizontal size={14} />
+//                 Filter
+//               </div>
+
+//               {/* Glass filter chips */}
+//               <button
+//                 type="button"
+//                 onClick={() => setActiveCategory("all")}
+//                 className={`whitespace-nowrap rounded-full border px-4 py-2 text-xs font-semibold backdrop-blur-xl transition active:scale-95 ${
+//                   currentFilter === "all"
+//                     ? "border-slate-950/80 bg-slate-950/85 text-white shadow-sm"
+//                     : "border-white/60 bg-white/55 text-slate-600 hover:bg-white/80"
+//                 }`}
+//               >
+//                 All
+//               </button>
+
+//               {activeCategories.map((category) => (
+//                 <button
+//                   key={category}
+//                   type="button"
+//                   onClick={() => setActiveCategory(category)}
+//                   className={`whitespace-nowrap rounded-full border px-4 py-2 text-xs font-semibold backdrop-blur-xl transition active:scale-95 ${
+//                     currentFilter === category
+//                       ? "border-slate-950/80 bg-slate-950/85 text-white shadow-sm"
+//                       : "border-white/60 bg-white/55 text-slate-600 hover:bg-white/80"
+//                   }`}
+//                 >
+//                   {category}
+//                 </button>
+//               ))}
+//             </div>
+//           )}
+
+//           <div className="mt-4">
+//             {activeTab === "rooms" &&
+//               allRooms.length > 0 &&
+//               (filteredRooms.length ? (
+//                 <div
+//                   className={
+//                     viewMode === "grid"
+//                       ? "grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5"
+//                       : "grid gap-2"
+//                   }
+//                 >
+//                   {filteredRooms.map((room) => {
+//                     const images = getItemImages(room);
+//                     return (
+//                       <CatalogCard
+//                         key={room.id}
+//                         item={room}
+//                         images={images}
+//                         image={images[0]}
+//                         imageCount={images.length}
+//                         onImageClick={() =>
+//                           (images.length || room.meta?.description) &&
+//                           setGallery({
+//                             images,
+//                             title: room.title,
+//                             description: room.meta?.description,
+//                           })
+//                         }
+//                         onAdd={() =>
+//                           addToCart({
+//                             id: room.id,
+//                             name: room.title,
+//                             price: Number(room.basePrice),
+//                             type: "ROOM",
+//                             imageUrl: images[0],
+//                           })
+//                         }
+//                         ctaLabel="Book"
+//                         isList={viewMode === "list"}
+//                       />
+//                     );
+//                   })}
+//                 </div>
+//               ) : (
+//                 <EmptyState query={searchQuery} />
+//               ))}
+
+//             {(activeTab === "products" || allRooms.length === 0) &&
+//               allProducts.length > 0 &&
+//               (filteredProducts.length ? (
+//                 <div
+//                   className={
+//                     viewMode === "grid"
+//                       ? "grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5"
+//                       : "grid gap-2"
+//                   }
+//                 >
+//                   {filteredProducts.map((product) => {
+//                     const images = getItemImages(product);
+//                     return (
+//                       <CatalogCard
+//                         key={product.id}
+//                         item={product}
+//                         images={images}
+//                         image={images[0]}
+//                         imageCount={images.length}
+//                         onImageClick={() =>
+//                           (images.length || product.description) &&
+//                           setGallery({
+//                             images,
+//                             title: product.name,
+//                             description: product.description,
+//                           })
+//                         }
+//                         onAdd={() =>
+//                           addToCart({
+//                             id: product.id,
+//                             name: product.name,
+//                             price: Number(product.price),
+//                             type: "PRODUCT",
+//                             imageUrl: images[0],
+//                           })
+//                         }
+//                         ctaLabel="Add"
+//                         isList={viewMode === "list"}
+//                       />
+//                     );
+//                   })}
+//                 </div>
+//               ) : (
+//                 <EmptyState query={searchQuery} />
+//               ))}
+
+//             {!allRooms.length && !allProducts.length && <EmptyState query="" />}
+//           </div>
+//         </section>
+
+//         {/* BRAND / CONTACT FOOTER */}
+//         <section
+//           id="contact"
+//           className="mt-14 grid overflow-hidden rounded-[30px] bg-slate-950 text-white lg:grid-cols-[1.25fr_0.75fr]"
+//         >
+//           <div className="p-7 sm:p-10">
+//             <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-white/45">
+//               Directly connected
+//             </p>
+//             <h2
+//               className="mt-3 max-w-2xl text-3xl leading-tight sm:text-5xl"
+//               style={serif}
+//             >
+//               Questions before you order?
+//               <span className="block italic text-white/65">
+//                 Talk to {listing.businessName}.
+//               </span>
+//             </h2>
+
+//             <div className="mt-7 flex flex-wrap gap-3">
+//               {listing.phone && (
+//                 <>
+//                   <a
+//                     href={`tel:${listing.phone.replace(/[^0-9+\-()\s]/g, "")}`}
+//                     className="inline-flex items-center gap-2 rounded-full bg-white px-5 py-3 text-xs font-bold text-slate-950 transition hover:bg-slate-100"
+//                   >
+//                     <Phone size={15} />
+//                     Call business
+//                   </a>
+
+//                   <a
+//                     href={`https://wa.me/${formatWhatsAppNumber(listing.phone)}`}
+//                     target="_blank"
+//                     rel="noopener noreferrer"
+//                     className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-5 py-3 text-xs font-bold text-white transition hover:bg-white/15"
+//                   >
+//                     <MessageCircle size={15} />
+//                     WhatsApp
+//                   </a>
+//                 </>
+//               )}
+//             </div>
+//           </div>
+                                                                                                      
+//           <div className="flex items-end border-t border-white/10 bg-white/[0.035] p-7 sm:p-10 lg:border-l lg:border-t-0">
+//             <div>
+//               <div className="flex items-center gap-1 text-amber-300">
+//                 <Star size={15} fill="currentColor" />
+//                 <Star size={15} fill="currentColor" />
+//                 <Star size={15} fill="currentColor" />
+//                 <Star size={15} fill="currentColor" />
+//                 <Star size={15} fill="currentColor" />
+//               </div>
+//               <p className="mt-4 text-sm leading-7 text-white/70">
+//                 Browse, select and send your order directly. The business will
+//                 follow up using the contact details you provide.
+//               </p>
+//               <p className="mt-5 text-xs font-semibold text-white">
+//                 Powered by <a href="https://hlynk.co.ke" className="hover:underline text-emerald-600 ">hlynk</a>
+//               </p>
+//             </div>
+//           </div>
+//         </section>
+//       </main>
+
+//       {/* MOBILE / GLOBAL CART BAR — glass pill */}
+//       <AnimatePresence>
+//         {cart.length > 0 && !isCartOpen && (
+//           <motion.div
+//             initial={{ y: 80, opacity: 0 }}
+//             animate={{ y: 0, opacity: 1 }}
+//             exit={{ y: 80, opacity: 0 }}
+//             className="fixed bottom-4 left-4 right-4 z-50 mx-auto max-w-xl"
+//           >
+//             <button
+//               type="button"
+//               onClick={() => {
+//                 setIsCartOpen(true);
+//                 setIsOrdering(true);
+//               }}
+//               className="flex w-full items-center justify-between rounded-full border border-white/20 bg-slate-950/80 p-3 pl-4 text-left text-white shadow-[0_20px_55px_rgba(15,23,42,0.35)] backdrop-blur-2xl active:scale-[0.98] transition"
+//             >
+//               <span className="flex min-w-0 items-center gap-3">
+//                 <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-white text-sm font-bold text-slate-950">
+//                   {cartItemCount}
+//                 </span>
+//                 <span className="min-w-0">
+//                   <span className="block text-[10px] font-bold uppercase tracking-[0.13em] text-white/45">
+//                     Your cart
+//                   </span>
+//                   <span className="block truncate text-sm font-bold">
+//                     {formatPrice(totalCartAmount)}
+//                   </span>
+//                 </span>
+//               </span>
+
+//               <span className="rounded-full bg-white px-4 py-3 text-xs font-bold text-slate-950">
+//                 Checkout
+//               </span>
+//             </button>
+//           </motion.div>
+//         )}
+//       </AnimatePresence>
+
+//       {/* CART DRAWER */}
+//       <AnimatePresence>
+//         {isCartOpen && (
+//           <motion.div
+//             initial={{ opacity: 0 }}
+//             animate={{ opacity: 1 }}
+//             exit={{ opacity: 0 }}
+//             onClick={() => setIsCartOpen(false)}
+//             className="fixed inset-0 z-[80] bg-slate-950/40 backdrop-blur-sm"
+//           >
+//             <motion.aside
+//               initial={{ x: 500 }}
+//               animate={{ x: 0 }}
+//               exit={{ x: 500 }}
+//               transition={{ type: "spring", damping: 28, stiffness: 280 }}
+//               onClick={(event) => event.stopPropagation()}
+//               className="ml-auto flex h-full w-full max-w-[520px] flex-col bg-white/80 backdrop-blur-2xl shadow-2xl"
+//             >
+//               {/* Glass drawer header */}
+//               <div
+//                 className="flex items-center justify-between border-b border-white/50 bg-white/60 px-5 pb-5 backdrop-blur-xl sm:px-7"
+//                 style={{
+//                   paddingTop:
+//                     "max(1.75rem, calc(env(safe-area-inset-top, 0px) + 1.25rem))",
+//                 }}
+//               >
+//                 <div>
+//                   <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-slate-400">
+//                     {isOrdering ? "Checkout" : "Your selection"}
+//                   </p>
+//                   <h2 className="mt-1 text-2xl text-slate-950" style={serif}>
+//                     Your cart
+//                   </h2>
+//                 </div>
+
+//                 {/* Glass close button */}
+//                 <button
+//                   type="button"
+//                   onClick={() => setIsCartOpen(false)}
+//                   className="grid h-10 w-10 place-items-center rounded-full border border-white/60 bg-white/50 text-slate-600 backdrop-blur-xl transition hover:bg-white/80 active:scale-95"
+//                   aria-label="Close cart"
+//                 >
+//                   <X size={18} />
+//                 </button>
+//               </div>
+
+//               <div className="flex-1 overflow-y-auto px-5 py-5 sm:px-7">
+//                 {!cart.length ? (
+//                   <div className="grid min-h-[50vh] place-items-center text-center">
+//                     <div>
+//                       <div className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-slate-100 text-slate-400">
+//                         <ShoppingBag size={24} />
+//                       </div>
+//                       <h3 className="mt-4 text-lg font-semibold text-slate-950">
+//                         Your cart is empty
+//                       </h3>
+//                       <p className="mt-1 text-sm text-slate-500">
+//                         Add something from the collection to continue.
+//                       </p>
+//                     </div>
+//                   </div>
+//                 ) : (
+//                   <>
+//                     <div className="space-y-3">
+//                       {cart.map((item) => (
+//                         <div
+//                           key={item.id}
+//                           className="flex gap-3 rounded-[20px] border border-slate-200 bg-white p-3"
+//                         >
+//                           <div className="h-20 w-20 shrink-0 overflow-hidden rounded-xl bg-slate-100">
+//                             {item.imageUrl ? (
+//                               <img
+//                                 src={item.imageUrl}
+//                                 alt={item.name}
+//                                 className="h-full w-full object-cover"
+//                               />
+//                             ) : (
+//                               <div className="grid h-full place-items-center text-slate-400">
+//                                 <Package size={20} />
+//                               </div>
+//                             )}
+//                           </div>
+
+//                           <div className="min-w-0 flex flex-1 flex-col">
+//                             <div className="flex items-start justify-between gap-2">
+//                               <div className="min-w-0">
+//                                 <p className="truncate text-sm font-semibold text-slate-950">
+//                                   {item.name}
+//                                 </p>
+//                                 <p className="mt-1 text-xs font-medium text-slate-500">
+//                                   {formatPrice(item.price)}
+//                                 </p>
+//                               </div>
+
+//                               <button
+//                                 type="button"
+//                                 onClick={() => removeFromCart(item.id)}
+//                                 className="p-1 text-slate-400 transition hover:text-rose-600"
+//                                 aria-label={`Remove ${item.name}`}
+//                               >
+//                                 <Trash2 size={16} />
+//                               </button>
+//                             </div>
+
+//                             <div className="mt-auto flex items-center justify-between">
+//                               <div className="flex items-center rounded-full border border-slate-200 p-1">
+//                                 <button
+//                                   type="button"
+//                                   onClick={() => updateQuantity(item.id, -1)}
+//                                   className="grid h-7 w-7 place-items-center rounded-full text-slate-600 hover:bg-slate-100"
+//                                   aria-label="Decrease quantity"
+//                                 >
+//                                   <Minus size={13} />
+//                                 </button>
+//                                 <span className="w-7 text-center text-xs font-bold">
+//                                   {item.quantity}
+//                                 </span>
+//                                 <button
+//                                   type="button"
+//                                   onClick={() => updateQuantity(item.id, 1)}
+//                                   className="grid h-7 w-7 place-items-center rounded-full text-slate-600 hover:bg-slate-100"
+//                                   aria-label="Increase quantity"
+//                                 >
+//                                   <Plus size={13} />
+//                                 </button>
+//                               </div>
+
+//                               <span className="text-sm font-bold text-slate-950">
+//                                 {formatPrice(item.price * item.quantity)}
+//                               </span>
+//                             </div>
+//                           </div>
+//                         </div>
+//                       ))}
+//                     </div>
+
+//                     <div className="mt-6 border-t border-slate-200 pt-6">
+//                       {!isOrdering ? (
+//                         <button
+//                           type="button"
+//                           onClick={() => setIsOrdering(true)}
+//                           className="w-full rounded-full bg-slate-950 px-5 py-3.5 text-sm font-bold text-white transition hover:bg-slate-800"
+//                         >
+//                           Continue to checkout
+//                         </button>
+//                       ) : (
+//                         <form
+//                           onSubmit={handleOrderSubmit}
+//                           className="space-y-4"
+//                         >
+//                           <div className="grid gap-4">
+//                             <Field
+//                               label="Your full name *"
+//                               value={customerName}
+//                               onChange={setCustomerName}
+//                               placeholder="e.g. John Doe"
+//                               required
+//                             />
+
+//                             <Field
+//                               label="Phone number *"
+//                               value={customerPhone}
+//                               onChange={setCustomerPhone}
+//                               placeholder="e.g. 0712345678"
+//                               type="tel"
+//                               required
+//                             />
+
+//                             <Field
+//                               label="Delivery address / location"
+//                               value={deliveryAddress}
+//                               onChange={setDeliveryAddress}
+//                               placeholder="e.g. Westlands, Nairobi"
+//                             />
+
+//                             <div>
+//                               <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-[0.12em] text-slate-400">
+//                                 Special instructions
+//                               </label>
+//                               <textarea
+//                                 rows={2}
+//                                 value={notes}
+//                                 onChange={(event) =>
+//                                   setNotes(event.target.value)
+//                                 }
+//                                 placeholder="Any specific requests?"
+//                                 className="w-full resize-none rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition placeholder:text-slate-400 focus:border-slate-400"
+//                               />
+//                             </div>
+
+//                             {/* PAYMENT METHOD SELECTION */}
+//                             <div>
+//                               <label className="mb-2 block text-[11px] font-bold uppercase tracking-[0.12em] text-slate-400">
+//                                 Payment Method
+//                               </label>
+//                               {(() => {
+//                                 const count =
+//                                   (hasDirectPayment ? 1 : 0) +
+//                                   1 +
+//                                   (listing?.hasMpesaGateway ? 1 : 0);
+//                                 const gridCols =
+//                                   count === 3
+//                                     ? "grid-cols-3"
+//                                     : count === 2
+//                                       ? "grid-cols-2"
+//                                       : "grid-cols-1";
+//                                 return (
+//                                   <div className={`grid gap-2 ${gridCols}`}>
+//                                     {hasDirectPayment &&
+//                                       effectiveDirectPayment && (
+//                                         <button
+//                                           type="button"
+//                                           onClick={() => {
+//                                             setPaymentOption("DIRECT_PAYMENT");
+//                                             setStkStatus("IDLE");
+//                                             setCheckoutRequestId(null);
+//                                           }}
+//                                           className={`flex flex-col justify-between rounded-2xl border p-3 sm:p-3.5 text-left transition ${
+//                                             paymentOption === "DIRECT_PAYMENT"
+//                                               ? "border-slate-950 bg-slate-950 text-white shadow-sm"
+//                                               : "border-slate-200 bg-white text-slate-700 hover:border-slate-300"
+//                                           }`}
+//                                         >
+//                                           <div className="flex items-center gap-2">
+//                                             <Wallet
+//                                               size={15}
+//                                               className={
+//                                                 paymentOption ===
+//                                                 "DIRECT_PAYMENT"
+//                                                   ? "text-white"
+//                                                   : "text-slate-500"
+//                                               }
+//                                             />
+//                                             <span className="text-xs font-bold leading-tight">
+//                                               Pay Directly
+//                                             </span>
+//                                           </div>
+//                                           <span
+//                                             className={`mt-2 text-[10px] sm:text-[11px] leading-tight ${paymentOption === "DIRECT_PAYMENT" ? "text-slate-300" : "text-slate-500"}`}
+//                                           >
+//                                             Guided M-Pesa payment
+//                                           </span>
+//                                         </button>
+//                                       )}
+
+//                                     <button
+//                                       type="button"
+//                                       onClick={() => {
+//                                         setPaymentOption("PAY_ON_DELIVERY");
+//                                         setStkStatus("IDLE");
+//                                         setCheckoutRequestId(null);
+//                                       }}
+//                                       className={`flex flex-col justify-between rounded-2xl border p-3 sm:p-3.5 text-left transition ${
+//                                         paymentOption === "PAY_ON_DELIVERY"
+//                                           ? "border-slate-950 bg-slate-950 text-white shadow-sm"
+//                                           : "border-slate-200 bg-white text-slate-700 hover:border-slate-300"
+//                                       }`}
+//                                     >
+//                                       <div className="flex items-center gap-2">
+//                                         <Truck
+//                                           size={15}
+//                                           className={
+//                                             paymentOption === "PAY_ON_DELIVERY"
+//                                               ? "text-white"
+//                                               : "text-slate-500"
+//                                           }
+//                                         />
+//                                         <span className="text-xs font-bold leading-tight">
+//                                           Pay on Delivery
+//                                         </span>
+//                                       </div>
+//                                       <span
+//                                         className={`mt-2 text-[10px] sm:text-[11px] leading-tight ${paymentOption === "PAY_ON_DELIVERY" ? "text-slate-300" : "text-slate-500"}`}
+//                                       >
+//                                         Pay upon collection
+//                                       </span>
+//                                     </button>
+
+//                                     {listing?.hasMpesaGateway && (
+//                                       <button
+//                                         type="button"
+//                                         onClick={() =>
+//                                           setPaymentOption("PAY_UPFRONT")
+//                                         }
+//                                         className={`flex flex-col justify-between rounded-2xl border p-3 sm:p-3.5 text-left transition ${
+//                                           paymentOption === "PAY_UPFRONT"
+//                                             ? "border-slate-950 bg-slate-950 text-white shadow-sm"
+//                                             : "border-slate-200 bg-white text-slate-700 hover:border-slate-300"
+//                                         }`}
+//                                       >
+//                                         <div className="flex items-center gap-2">
+//                                           <Smartphone
+//                                             size={15}
+//                                             className={
+//                                               paymentOption === "PAY_UPFRONT"
+//                                                 ? "text-white"
+//                                                 : "text-slate-400"
+//                                             }
+//                                           />
+//                                           <span className="text-xs font-bold leading-tight">
+//                                             STK Push
+//                                           </span>
+//                                         </div>
+//                                         <span
+//                                           className={`mt-2 text-[10px] sm:text-[11px] leading-tight ${paymentOption === "PAY_UPFRONT" ? "text-slate-300" : "text-slate-500"}`}
+//                                         >
+//                                           Instant PIN prompt
+//                                         </span>
+//                                       </button>
+//                                     )}
+//                                   </div>
+//                                 );
+//                               })()}
+//                             </div>
+
+//                             {/* DIRECT PAYMENT GUIDANCE CARD (MATCHING USER SCREENSHOT) */}
+//                             {paymentOption === "DIRECT_PAYMENT" &&
+//                               effectiveDirectPayment && (
+//                                 <div className="pt-1">
+//                                   <PaymentGuidanceCard
+//                                     directPayment={effectiveDirectPayment}
+//                                     amount={totalCartAmount}
+//                                     orderReference={checkoutRef}
+//                                     businessName={listing?.businessName}
+//                                     isInteractive={true}
+//                                     evidence={paymentEvidence}
+//                                     onEvidenceChange={setPaymentEvidence}
+//                                     onUploadReceipt={handleUploadReceipt}
+//                                     uploadingReceipt={uploadingReceipt}
+//                                   />
+//                                 </div>
+//                               )}
+
+//                             {/* MPESA STK PUSH DETAILS (UPFRONT PAYMENT) */}
+//                             {paymentOption === "PAY_UPFRONT" && (
+//                               <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-3.5 space-y-3">
+//                                 <Field
+//                                   label="M-Pesa Phone Number"
+//                                   value={mpesaPhone || customerPhone}
+//                                   onChange={setMpesaPhone}
+//                                   placeholder="e.g. 0712345678"
+//                                   type="tel"
+//                                 />
+
+//                                 {stkStatus === "SENT" ? (
+//                                   <div className="rounded-xl border border-emerald-200 bg-emerald-50/80 p-3 flex items-start gap-2.5 text-emerald-900">
+//                                     <CheckCircle2
+//                                       size={16}
+//                                       className="mt-0.5 shrink-0 text-emerald-600"
+//                                     />
+//                                     <p className="text-xs font-medium leading-relaxed">
+//                                       STK push prompt sent to{" "}
+//                                       <span className="font-bold">
+//                                         {mpesaPhone || customerPhone}
+//                                       </span>
+//                                       . Enter your M-Pesa PIN on your phone to
+//                                       complete payment.
+//                                     </p>
+//                                   </div>
+//                                 ) : (
+//                                   <div className="rounded-xl border border-slate-200 bg-white p-3 flex items-start gap-2 text-slate-600">
+//                                     <Smartphone
+//                                       size={15}
+//                                       className="mt-0.5 shrink-0 text-slate-500"
+//                                     />
+//                                     <p className="text-xs leading-relaxed">
+//                                       An M-Pesa PIN prompt will be sent to{" "}
+//                                       <span className="font-semibold text-slate-900">
+//                                         {mpesaPhone ||
+//                                           customerPhone ||
+//                                           "your phone"}
+//                                       </span>{" "}
+//                                       when you click submit below.
+//                                     </p>
+//                                   </div>
+//                                 )}
+//                               </div>
+//                             )}
+//                           </div>
+
+//                           <div className="rounded-[20px] bg-slate-950 p-5 text-white">
+//                             <div className="flex items-center justify-between">
+//                               <span className="text-xs font-medium text-white/55">
+//                                 Total due
+//                               </span>
+//                               <span className="text-xl font-bold">
+//                                 {formatPrice(totalCartAmount)}
+//                               </span>
+//                             </div>
+
+//                             <button
+//                               type="submit"
+//                               disabled={submittingOrder}
+//                               className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-white px-5 py-3.5 text-sm font-bold text-slate-950 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60"
+//                             >
+//                               {submittingOrder ? (
+//                                 <>
+//                                   <ButtonLoader size={16} />
+//                                   {paymentOption === "PAY_UPFRONT"
+//                                     ? "Initiating STK Push..."
+//                                     : "Submitting Order..."}
+//                                 </>
+//                               ) : paymentOption === "DIRECT_PAYMENT" ? (
+//                                 "Confirm & Complete Order"
+//                               ) : paymentOption === "PAY_UPFRONT" ? (
+//                                 stkStatus === "SENT" ? (
+//                                   "Confirm & Complete Order"
+//                                 ) : (
+//                                   "Pay with M-Pesa & Submit Order"
+//                                 )
+//                               ) : (
+//                                 "Confirm Order (Pay on Delivery)"
+//                               )}
+//                               {!submittingOrder && <Check size={16} />}
+//                             </button>
+//                           </div>
+//                         </form>
+//                       )}
+//                     </div>
+//                   </>
+//                 )}
+//               </div>
+//             </motion.aside>
+//           </motion.div>
+//         )}
+//       </AnimatePresence>
+
+//       {/* ORDER SUCCESS */}
+//       <AnimatePresence>
+//         {orderSuccess && (
+//           <motion.div
+//             initial={{ opacity: 0 }}
+//             animate={{ opacity: 1 }}
+//             exit={{ opacity: 0 }}
+//             className="fixed inset-0 z-[90] grid place-items-center bg-slate-950/55 p-4 backdrop-blur-sm"
+//           >
+//             <motion.div
+//               initial={{ y: 18, scale: 0.98 }}
+//               animate={{ y: 0, scale: 1 }}
+//               exit={{ y: 18, scale: 0.98 }}
+//               className="w-full max-w-md rounded-[30px] bg-white p-7 text-center shadow-2xl"
+//             >
+//               <div className="mx-auto grid h-16 w-16 place-items-center rounded-full bg-emerald-50 text-emerald-600">
+//                 <CheckCircle2 size={31} />
+//               </div>
+
+//               <h2 className="mt-5 text-3xl text-slate-950" style={serif}>
+//                 Order received
+//               </h2>
+
+//               <p className="mt-3 text-sm leading-6 text-slate-500">
+//                 Thank you,{" "}
+//                 <span className="font-semibold text-slate-800">
+//                   {orderSuccess.orderedByName}
+//                 </span>
+//                 . Your order has been sent to{" "}
+//                 {listing?.businessName || "the business owner"}.
+//               </p>
+
+//               {orderSuccess.paymentOption === "PAY_DIRECT" ? (
+//                 orderSuccess.paymentStatus === "PAID" ? (
+//                   <div className="mt-4 rounded-2xl border border-emerald-200 bg-emerald-50/80 p-4 text-left text-xs leading-relaxed transition-all">
+//                     <div className="flex items-center gap-1.5 font-bold text-emerald-900 mb-1.5">
+//                       <CheckCircle2
+//                         size={16}
+//                         className="text-emerald-600 shrink-0"
+//                       />
+//                       <span>M-Pesa Payment Verified via Logs! 🎉</span>
+//                     </div>
+//                     {orderSuccess.transactionCode && (
+//                       <p className="text-emerald-800 font-medium">
+//                         Transaction Code:{" "}
+//                         <span className="font-mono font-bold text-slate-950 px-1.5 py-0.5 bg-white rounded border border-emerald-300">
+//                           {orderSuccess.transactionCode}
+//                         </span>
+//                       </p>
+//                     )}
+//                     <p className="mt-2 text-[11px] text-emerald-700">
+//                       Your transaction code was verified in incoming payment
+//                       logs with matching order total.
+//                     </p>
+//                   </div>
+//                 ) : (
+//                   <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50/90 p-4 text-left text-xs leading-relaxed transition-all">
+//                     <div className="flex items-center gap-1.5 font-bold text-amber-900 mb-1.5">
+//                       <Clock size={16} className="text-amber-600 shrink-0" />
+//                       <span>Order Placed — Payment Awaiting Verification</span>
+//                     </div>
+//                     {orderSuccess.transactionCode && (
+//                       <p className="text-amber-900 font-medium">
+//                         Submitted Code:{" "}
+//                         <span className="font-mono font-bold text-slate-950 px-1.5 py-0.5 bg-white rounded border border-amber-300">
+//                           {orderSuccess.transactionCode}
+//                         </span>
+//                       </p>
+//                     )}
+//                     {orderSuccess.paymentEvidence?.receiptUrl && (
+//                       <div className="mt-2.5">
+//                         <p className="text-[10px] text-amber-700 font-semibold mb-1">
+//                           Receipt Evidence Attached:
+//                         </p>
+//                         <img
+//                           src={orderSuccess.paymentEvidence.receiptUrl}
+//                           alt="Receipt"
+//                           className="h-16 w-16 object-cover rounded-xl border border-amber-200 shadow-2xs"
+//                         />
+//                       </div>
+//                     )}
+//                     <div className="mt-2.5 rounded-xl border border-amber-200/60 bg-amber-100/70 p-2.5 text-[11px] text-amber-800 font-medium leading-normal">
+//                       Notice: Your payment reference is recorded. The merchant
+//                       will cross-check and verify receipt of funds on their
+//                       official M-Pesa terminal before completing or dispatching
+//                       your order.
+//                     </div>
+//                   </div>
+//                 )
+//               ) : orderSuccess.paymentOption === "PAY_UPFRONT" ? (
+//                 <div className="mt-4 rounded-2xl border p-4 text-left text-xs leading-relaxed transition-all duration-300">
+//                   {orderSuccess.paymentStatus === "PAID" ? (
+//                     <div className="border-emerald-200 bg-emerald-50 text-emerald-950 p-3 rounded-xl space-y-1">
+//                       <div className="flex items-center gap-1.5 font-bold text-emerald-800">
+//                         <CheckCircle2 size={16} className="text-emerald-600" />
+//                         <span>M-Pesa Payment Verified! 🎉</span>
+//                       </div>
+//                       <p className="text-[11px] text-emerald-700">
+//                         Receipt No:{" "}
+//                         <span className="font-mono font-bold text-slate-900">
+//                           {orderSuccess.mpesaReceipt}
+//                         </span>
+//                       </p>
+//                     </div>
+//                   ) : orderSuccess.paymentStatus === "CANCELLED" ||
+//                     orderSuccess.paymentStatus === "FAILED" ||
+//                     orderSuccess.paymentStatus === "TIMED_OUT" ? (
+//                     <div className="border-red-200 bg-red-50 text-red-950 p-3 rounded-xl space-y-2">
+//                       <div className="flex items-center gap-1.5 font-bold text-red-800">
+//                         <AlertTriangle size={16} className="text-red-600" />
+//                         <span>Payment Cancelled or Timed Out</span>
+//                       </div>
+//                       <p className="text-[11px] text-red-700">
+//                         {orderSuccess.paymentStatus === "TIMED_OUT"
+//                           ? "We didn't receive payment confirmation yet. You can complete payment with the business owner upon delivery or arrival."
+//                           : "The M-Pesa prompt was cancelled on your phone. You can complete payment with the business owner upon delivery or arrival."}
+//                       </p>
+//                       <button
+//                         type="button"
+//                         onClick={() =>
+//                           setOrderSuccess((prev: any) =>
+//                             prev
+//                               ? {
+//                                   ...prev,
+//                                   paymentOption: "PAY_ON_DELIVERY",
+//                                   paymentStatus: "PAY_ON_DELIVERY",
+//                                 }
+//                               : null,
+//                           )
+//                         }
+//                         className="w-full py-2 bg-white border border-red-200 text-red-900 font-semibold text-xs rounded-xl hover:bg-red-50 transition-colors flex items-center justify-center gap-1.5"
+//                       >
+//                         <Truck size={14} className="text-red-700" />
+//                         Switch to Pay on Delivery
+//                       </button>
+//                     </div>
+//                   ) : (
+//                     <div className="border-amber-200 bg-amber-50/80 text-amber-950 p-3 rounded-xl space-y-2">
+//                       <div className="flex items-center gap-2 font-bold text-amber-900">
+//                         <ButtonLoader size={15} className="text-amber-600" />
+//                         <span>Awaiting M-Pesa PIN entry...</span>
+//                       </div>
+//                       <p className="text-[11px] text-amber-800 leading-snug">
+//                         An M-Pesa prompt was sent to your phone. Enter your PIN
+//                         to complete instant payment.
+//                       </p>
+//                     </div>
+//                   )}
+//                 </div>
+//               ) : (
+//                 <div className="mt-4 rounded-2xl border border-slate-100 bg-slate-50/80 p-4 text-left text-xs leading-relaxed text-slate-700">
+//                   <p className="font-bold text-slate-900 mb-1 flex items-center gap-1.5">
+//                     <Truck size={15} className="text-slate-600" /> Pay on
+//                     Delivery Selected
+//                   </p>
+//                   You can pay cash or make a mobile transfer directly to the
+//                   business owner upon delivery or arrival.
+//                 </div>
+//               )}
+
+//               <div className="mt-6 grid gap-2">
+//                 {listing?.phone && (
+//                   <a
+//                     href={`https://wa.me/${formatWhatsAppNumber(listing.phone)}?text=${encodeURIComponent(
+//                       orderSuccess.paymentOption === "PAY_DIRECT"
+//                         ? `Hi ${listing.businessName}, I just placed an order and paid directly. Name: ${orderSuccess.orderedByName}${orderSuccess.transactionCode ? `, M-Pesa Code: ${orderSuccess.transactionCode}` : ""}. Total: KES ${Number(orderSuccess.totalAmount || 0).toLocaleString()}.`
+//                         : orderSuccess.paymentOption === "PAY_UPFRONT"
+//                           ? `Hi ${listing.businessName}, I just placed an order (${orderSuccess.paymentStatus === "PAID" ? `Paid Upfront M-Pesa Receipt: ${orderSuccess.mpesaReceipt}` : "M-Pesa STK Prompt Sent"}). My name is ${orderSuccess.orderedByName}.`
+//                           : `Hi ${listing.businessName}, I just placed an order (Pay on Delivery). My name is ${orderSuccess.orderedByName}.`,
+//                     )}`}
+//                     target="_blank"
+//                     rel="noopener noreferrer"
+//                     className="flex items-center justify-center gap-2 rounded-full bg-slate-950 px-5 py-3.5 text-sm font-bold text-white transition hover:bg-slate-800"
+//                   >
+//                     <MessageCircle size={17} />
+//                     Chat on WhatsApp
+//                   </a>
+//                 )}
+
+//                 <button
+//                   type="button"
+//                   onClick={() => setOrderSuccess(null)}
+//                   className="rounded-full border border-slate-200 px-5 py-3 text-sm font-semibold text-slate-600 transition hover:bg-slate-50"
+//                 >
+//                   Done
+//                 </button>
+//               </div>
+//             </motion.div>
+//           </motion.div>
+//         )}
+//       </AnimatePresence>
+
+//       {/* GALLERY */}
+//       <AnimatePresence>
+//         {gallery && (
+//           <GalleryModal
+//             images={gallery.images}
+//             title={gallery.title}
+//             description={gallery.description}
+//             onClose={() => setGallery(null)}
+//           />
+//         )}
+//       </AnimatePresence>
+//     </div>
+//   );
+// }
+
+// function InfoCell({
+//   icon,
+//   label,
+//   value,
+// }: {
+//   icon: ReactNode;
+//   label: string;
+//   value: string;
+// }) {
+//   return (
+//     <div className="flex min-w-0 items-start gap-3 border-b border-slate-200 p-4 last:border-b-0 sm:border-r sm:border-b-0 sm:last:border-r-0">
+//       <div className="mt-0.5 text-slate-500">{icon}</div>
+//       <div className="min-w-0">
+//         <p className="text-[10px] font-bold uppercase tracking-[0.13em] text-slate-400">
+//           {label}
+//         </p>
+//         <p className="mt-1 truncate text-xs font-semibold text-slate-700">
+//           {value}
+//         </p>
+//       </div>
+//     </div>
+//   );
+// }
+
+// function Field({
+//   label,
+//   value,
+//   onChange,
+//   placeholder,
+//   type = "text",
+//   required = false,
+// }: {
+//   label: string;
+//   value: string;
+//   onChange: (value: string) => void;
+//   placeholder: string;
+//   type?: string;
+//   required?: boolean;
+// }) {
+//   return (
+//     <div>
+//       <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-[0.12em] text-slate-400">
+//         {label}
+//       </label>
+//       <input
+//         type={type}
+//         required={required}
+//         value={value}
+//         onChange={(event) => onChange(event.target.value)}
+//         placeholder={placeholder}
+//         className="h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm outline-none transition placeholder:text-slate-400 focus:border-slate-400"
+//       />
+//     </div>
+//   );
+// }

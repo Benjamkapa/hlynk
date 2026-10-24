@@ -68,7 +68,6 @@
     scroll-behavior: smooth; 
     -webkit-tap-highlight-color: transparent; 
     overflow-x: hidden;
-    overscroll-behavior-y: contain;
   }
   body {
     overscroll-behavior-y: contain;
