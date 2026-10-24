@@ -730,7 +730,7 @@ export default function LoginPage() {
                         </Field>
 
                         <div className="flex flex-col gap-1.5">
-                          <Field label="M-Pesa Number (Required)" icon={Phone}>
+                          <Field label="Phone Number (Required)" icon={Phone}>
                             <input
                               type="tel"
                               inputMode="tel"
@@ -756,7 +756,8 @@ export default function LoginPage() {
                             <div className="flex items-center gap-1.5 px-1 text-[11px] transition-all">
                               {validateKenyanPhone(formData.phone).isValid ? (
                                 <span className="text-emerald-400 flex items-center gap-1 font-medium">
-                                  <Check size={12} className="stroke-[3]" /> Valid M-Pesa number ({validateKenyanPhone(formData.phone).normalized})
+                                  <Check size={12} className="stroke-[3]" /> Valid phone number
+                                  {/* <Check size={12} className="stroke-[3]" /> Valid phone number ({validateKenyanPhone(formData.phone).normalized}) */}
                                 </span>
                               ) : (
                                 <span className="text-amber-400 flex items-center gap-1">
@@ -927,11 +928,13 @@ export default function LoginPage() {
                             <div className="flex items-center gap-1.5 px-1 text-[11px] transition-all">
                               {validateKenyanPhone(formData.phone).isValid ? (
                                 <span className="text-emerald-600 flex items-center gap-1 font-medium">
-                                  <Check size={12} className="stroke-[3]" /> Valid M-Pesa number ({validateKenyanPhone(formData.phone).normalized})
+                                  <Check size={12} className="stroke-[3]" /> Valid phone number
+                                  {/* <Check size={12} className="stroke-[3]" /> Valid M-Pesa number ({validateKenyanPhone(formData.phone).normalized}) */}
                                 </span>
                               ) : (
                                 <span className="text-amber-600 flex items-center gap-1">
-                                  <AlertCircle size={12} /> {validateKenyanPhone(formData.phone).error}
+                                  <AlertCircle size={12} /> 
+                                  {/* <AlertCircle size={12} /> {validateKenyanPhone(formData.phone).error} */}
                                 </span>
                               )}
                             </div>

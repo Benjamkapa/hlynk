@@ -7,18 +7,19 @@ import { toast } from 'sonner'
 import { ButtonLoader } from './InlineLoader'
 
 export default function CompletePhoneModal() {
-  const { user, refreshUser, patchUser } = useAuth()
+  const { user, refreshUser, patchUser, isLoading } = useAuth()
   const [phone, setPhone] = useState('')
   const [name, setName] = useState(user?.name || '')
   const [businessName, setBusinessName] = useState(user?.businessName || '')
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  // Only providers need to complete their shop phone profile
-  if (!user || user.role === 'SUPER_ADMIN') {
+  // Wait for auth to fully resolve — avoids false positives from stale localStorage cache
+  // showing the modal to users who already have a complete profile
+  if (!user || isLoading || user.role === 'SUPER_ADMIN') {
     return null
   }
 
-  // Check if current phone is valid
+  // Check if current phone is valid — only show for users genuinely missing data
   const currentPhoneCheck = validateKenyanPhone(user.phone || '')
   if (currentPhoneCheck.isValid && user.name?.trim()) {
     return null
@@ -72,15 +73,15 @@ export default function CompletePhoneModal() {
             <Phone size={24} />
           </div>
           <div>
-            <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-emerald-600">
+            {/* <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-emerald-600">
               <Sparkles size={13} /> Complete Info
-            </div>
-            <h2 className="text-xl font-bold text-slate-900 leading-tight">M-Pesa Number Required</h2>
+            </div> */}
+            <h2 className="text-xl font-bold text-slate-900 leading-tight">Phone Number Required</h2>
           </div>
         </div>
 
         <p className="text-xs sm:text-sm text-slate-500 leading-relaxed font-light">
-          To get started and operate your shop on hlynk, a valid 10-digit Kenyan M-Pesa phone number is required for transaction prompts, automated receipts, and instant payout settlements.
+          To get started and operate your shop on hlynk, a valid phone number is required for transaction prompts, automated receipts, and instant payout settlements.
         </p>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
@@ -119,7 +120,7 @@ export default function CompletePhoneModal() {
           )}
 
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-semibold text-slate-600 ml-1">M-Pesa Phone Number</label>
+            <label className="text-xs font-semibold text-slate-600 ml-1">Phone Number</label>
             <div className="relative">
               <Phone size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
               <input
@@ -148,11 +149,13 @@ export default function CompletePhoneModal() {
               <div className="flex items-center gap-1.5 px-1 text-[11px] transition-all">
                 {phoneCheck.isValid ? (
                   <span className="text-emerald-600 flex items-center gap-1 font-medium">
-                    <Check size={12} className="stroke-[3]" /> Valid M-Pesa number ({phoneCheck.normalized})
+                    <Check size={12} className="stroke-[3]" /> Valid phone number
+                    {/* <Check size={12} className="stroke-[3]" /> Valid phone number ({phoneCheck.normalized}) */}
                   </span>
                 ) : (
                   <span className="text-amber-600 flex items-center gap-1">
-                    <AlertCircle size={12} /> {phoneCheck.error}
+                    <AlertCircle size={12} /> 
+                    {/* <AlertCircle size={12} /> {phoneCheck.error} */}
                   </span>
                 )}
               </div>

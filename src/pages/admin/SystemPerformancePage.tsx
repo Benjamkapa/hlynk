@@ -411,20 +411,13 @@ export default function SystemPerformancePage() {
   }
 
   return (
-    <main className="min-h-full space-y-6 bg-slate-50/60 pb-8 pt-4 text-slate-900">
+    <div className="min-h-full space-y-6 bg-slate-50/60 pb-8 pt-4 text-slate-900">
       {/* Hero / command header */}
       <header className="relative overflow-hidden rounded-3xl bg-slate-950 px-5 py-6 text-white shadow-xl sm:px-7 sm:py-8">
         <div className="pointer-events-none absolute -right-16 -top-28 h-72 w-72 rounded-full bg-emerald-400/20 blur-3xl" />
         <div className="pointer-events-none absolute -bottom-32 right-1/3 h-64 w-64 rounded-full bg-cyan-400/10 blur-3xl" />
         <div className="relative flex flex-col justify-between gap-6 xl:flex-row xl:items-end">
           <div>
-            <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-emerald-400/30 bg-emerald-400/10 px-3 py-1.5 text-xs font-semibold text-emerald-300">
-              <span className="relative flex h-2 w-2">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60" />
-                <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-400" />
-              </span>
-              SYSTEM TELEMETRY · LIVE
-            </div>
             <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">Performance command center</h1>
             <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-300">
               Monitor application responsiveness, infrastructure capacity, payment connectivity and cluster availability from one operational view.
@@ -648,7 +641,7 @@ export default function SystemPerformancePage() {
         <p className="flex items-center gap-1.5"><Clock3 size={13} /> Health endpoint polls every 60 seconds.</p>
         <p>Version {health.version || 'unknown'} · Trend history is held in this browser session.</p>
       </footer>
-    </main>
+    </div>
   )
 }
 
