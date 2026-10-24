@@ -37,7 +37,7 @@ export default function ExpensesPage() {
         sortOrder,
       }),
     placeholderData: keepPreviousData,
-    refetchInterval: 15_000
+    refetchInterval: 60_000
   })
 
   useEffect(() => {

@@ -37,12 +37,13 @@ export default function DashboardPage() {
   const { data: stats, isLoading: statsLoading, error: statsError } = useQuery<ProviderStats>({
     queryKey: ['provider-stats'],
     queryFn: providersApi.getStats,
-    refetchInterval: 15_000
+    refetchInterval: 60_000
   })
 
   const { data: profile } = useQuery({
     queryKey: ['my-profile'],
     queryFn: providersApi.getMyProfile,
+    staleTime: 1000 * 60 * 30
   })
 
   const threshold = profile?.data?.operationalSettings?.lowStockThreshold || 5;
@@ -50,7 +51,7 @@ export default function DashboardPage() {
   const { data: salesResponse, isLoading: salesLoading, error: salesError } = useQuery<PaginatedResponse<any>>({
     queryKey: ['recent-sales'],
     queryFn: () => salesApi.list({ limit: 5 }),
-    refetchInterval: 15_000
+    refetchInterval: 60_000
   })
 
   const recentSales = salesResponse?.items || []

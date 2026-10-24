@@ -46,18 +46,18 @@ export default function UserOperationsPage() {
     queryFn: () => adminApi.getUsers({ search, role, page, limit: 5 })
   })
 
-  // Live real-time active sessions (synced every 5 seconds)
+  // Live real-time active sessions (synced every 20 seconds)
   const { data: sessionsResponse } = useQuery<{ success: boolean; data: any[] }>({
     queryKey: ['admin-sessions'],
     queryFn: adminApi.getSessions,
-    refetchInterval: 5000
+    refetchInterval: 20000
   })
 
-  // Real-time activity stream of user operations (synced every 5 seconds)
+  // Real-time activity stream of user operations (synced every 20 seconds)
   const { data: liveActivityRes } = useQuery<{ success: boolean; data: any }>({
     queryKey: ['admin-live-activity-stream'],
     queryFn: () => adminApi.getActivityLogs({ page: 1, limit: 8 }),
-    refetchInterval: 5000
+    refetchInterval: 20000
   })
 
   const { data: userActivityResponse } = useQuery<{ success: boolean; data: any[] }>({

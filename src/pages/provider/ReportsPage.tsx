@@ -13,13 +13,14 @@ import FeatureGate from '../../components/shared/FeatureGate'
 export default function ReportsPage() {
   const { data: profile } = useQuery({
     queryKey: ['my-profile'],
-    queryFn: providersApi.getMyProfile
+    queryFn: providersApi.getMyProfile,
+    staleTime: 1000 * 60 * 30
   })
 
   const { data: stats, isLoading: statsLoading, error: statsError } = useQuery<ProviderStats & { aiReportData?: any }>({
     queryKey: ['provider-reports'],
     queryFn: providersApi.getStats,
-    refetchInterval: 15_000
+    refetchInterval: 60_000
   })
 
   const { data: logsData, isLoading: logsLoading } = useQuery({

@@ -42,7 +42,7 @@ export default function AdminDashboardPage() {
   const { data: healthData } = useQuery({
     queryKey: ['system-health'],
     queryFn: () => adminApi.getHealth(),
-    refetchInterval: 10000 // Refetch every 10s
+    refetchInterval: 30000 // Refetch every 30s
   })
   
   const stats = rawStats?.data || rawStats;

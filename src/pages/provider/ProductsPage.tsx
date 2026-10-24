@@ -77,12 +77,13 @@ export default function ProductsPage() {
       return inventoryApi.list({ search, page, limit: 10, sortBy, sortOrder, category: category || undefined, includeStats: true })
     },
     placeholderData: keepPreviousData,
-    refetchInterval: navigator.onLine ? 15_000 : false
+    refetchInterval: navigator.onLine ? 45_000 : false
   })
 
   const { data: profile } = useQuery({
     queryKey: ['my-profile'],
-    queryFn: providersApi.getMyProfile
+    queryFn: providersApi.getMyProfile,
+    staleTime: 1000 * 60 * 30
   })
 
   const threshold = profile?.data?.operationalSettings?.lowStockThreshold || 10;
@@ -103,7 +104,7 @@ export default function ProductsPage() {
   const { data: requestsData, refetch: refetchRequests } = useQuery({
     queryKey: ['requests'],
     queryFn: () => requestsApi.list(),
-    refetchInterval: 10_000
+    refetchInterval: 30_000
   })
 
   const incomingOrders = requestsData?.requests || []

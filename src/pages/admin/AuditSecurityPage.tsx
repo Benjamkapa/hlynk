@@ -102,7 +102,7 @@ export default function AuditSecurityPage() {
   const { data: healthRes } = useQuery<any>({
     queryKey: ['admin-health'],
     queryFn: () => adminApi.getSystemHealth(),
-    refetchInterval: isLiveFeed ? 5000 : false
+    refetchInterval: isLiveFeed ? 15000 : false
   })
 
   const stats: AdminStats = rawStats?.data || rawStats
@@ -111,7 +111,7 @@ export default function AuditSecurityPage() {
   const { data: logsRes, isLoading: logsLoading, refetch: refetchLogs } = useQuery<any>({
     queryKey: ['admin-activity-logs', logPage, logLimit, search, category],
     queryFn: () => adminApi.getActivityLogs({ page: logPage, limit: logLimit, search, category }),
-    refetchInterval: isLiveFeed ? 3000 : false
+    refetchInterval: isLiveFeed ? 10000 : false
   })
 
   const logsData = logsRes?.data
