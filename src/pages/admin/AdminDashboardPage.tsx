@@ -55,13 +55,13 @@ export default function AdminDashboardPage() {
   // Use API data or fallback to empty state for chart
   const revenueData = stats?.trends?.revenueTrend || []
   const recentEvents = stats?.recentActivity?.map((a: any) => ({
-    id: `LOG-${a.id.substring(0,6)}`,
-    event: a.event,
-    entity: a.entity,
-    user: a.user,
-    time: new Date(a.time).toLocaleTimeString(),
-    date: new Date(a.time).toLocaleDateString(),
-    severity: a.event.toLowerCase().includes('delete') || a.event.toLowerCase().includes('error') ? 'High' : 'Medium'
+    id: a?.id ? `LOG-${String(a.id).substring(0,6)}` : 'LOG-GEN',
+    event: a?.event || 'Activity',
+    entity: a?.entity || 'System',
+    user: a?.user || 'System',
+    time: a?.time ? new Date(a.time).toLocaleTimeString() : '',
+    date: a?.time ? new Date(a.time).toLocaleDateString() : '',
+    severity: a?.event && (a.event.toLowerCase().includes('delete') || a.event.toLowerCase().includes('error')) ? 'High' : 'Medium'
   })) || []
 
   if (isLoading) return (

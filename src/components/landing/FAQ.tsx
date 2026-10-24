@@ -49,6 +49,11 @@ const faqs = [
       "hlynk is a business management system designed to help Kenyan business owners manage sales, stock, expenses, customers, and business performance in one place.",
   },
   {
+    question: "Do I need to book a demo before I can use hlynk?",
+    answer:
+      "No demo needed! Instead of waiting for a sales call or watching mock dummy data, you can jump straight into the live production environment. Sign up with your own credentials in 60 seconds, enter your actual products, services, or rooms, test M-Pesa STK checkout, and experience the real system free for 14 straight days — no credit card required.",
+  },
+  {
     question: "Who is hlynk designed for?",
     answer:
       "hlynk is built for small and growing businesses, including retail shops, minimarts, boutiques, BnBs, guest houses, and service-based businesses.",

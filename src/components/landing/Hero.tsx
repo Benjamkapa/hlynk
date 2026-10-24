@@ -113,7 +113,16 @@ export default function Hero() {
 
           {/* Left Column */}
           <div className="lg:col-span-7 space-y-7 py-5">
-            <h1 className="text-4xl sm:text-5xl lg:text-[3.4rem] font-black pt-5 font-ubuntu tracking-tight leading-[1.06]">
+            {/* Live Trial / No Demo Badge */}
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#064E3B]/20 border border-[#064E3B]/40 text-[#7FB89C] text-xs font-semibold backdrop-blur">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#7FB89C] opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-[#7FB89C]"></span>
+              </span>
+              No Demo Needed — Test Live with Your Own Credentials Free for 14 Straight Days
+            </div>
+
+            <h1 className="text-4xl sm:text-5xl lg:text-[3.4rem] font-black font-ubuntu tracking-tight leading-[1.06]">
               Duka, lodge, fleet, or workshop —
               <br className="hidden sm:block" />
               <span className="text-[#064E3B]"> run it all</span> from one board.
@@ -124,7 +133,7 @@ export default function Hero() {
                 href="/register"
                 className="px-7 py-3.5 rounded-full bg-[#064E3B] hover:opacity-85 text-[#14181A] font-bold text-sm transition-all flex items-center gap-2.5 active:scale-95"
               >
-                Start free trial <ArrowRight size={16} />
+                Start 14-day free trial <ArrowRight size={16} />
               </a>
 
               <a
@@ -135,7 +144,16 @@ export default function Hero() {
               </a>
             </div>
 
-            <div className="flex flex-wrap items-center gap-2 pt-3">
+            <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-3.5 backdrop-blur-sm space-y-1">
+              <p className="text-xs font-bold text-white flex items-center gap-1.5">
+                <span className="text-emerald-400">✓</span> No staged demo needed — test in the real environment
+              </p>
+              <p className="text-[11px] text-white/60 leading-relaxed">
+                Why look at a recorded demo or fake dummy data? Sign up in 60s using your own credentials, configure your actual inventory or stays, and experience the real system live for 14 straight days completely free. No credit card required.
+              </p>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2 pt-1">
               <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 text-[11px] font-semibold text-white/50">
                 <ShieldCheck size={13} className="text-[#7FB89C]" /> Google login
               </span>
@@ -143,7 +161,7 @@ export default function Hero() {
                 <Zap size={13} className="text-[#7FB89C]" /> M-Pesa & KCB sync
               </span>
               <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 text-[11px] font-semibold text-white/50">
-                <Building2 size={13} className="text-[#7FB89C]" /> Switch trades anytime
+                <Building2 size={13} className="text-[#7FB89C]" /> 14 Days Live Production Access
               </span>
             </div>
           </div>

@@ -47,9 +47,21 @@ export default function Pricing() {
             <h2 className="text-4xl md:text-5xl font-black text-white tracking-tight mb-4 font-ubuntu">
               Simple, Honest Pricing
             </h2>
-            <p className="text-white/50 font-medium text-lg max-w-xl mx-auto mb-10">
+            <p className="text-white/50 font-medium text-lg max-w-xl mx-auto mb-6">
               The tools you need to succeed, without hidden fees.
             </p>
+
+            <div className="mx-auto max-w-xl mb-8 p-3.5 rounded-2xl bg-white/[0.04] border border-white/10 backdrop-blur text-center space-y-1">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 text-[11px] font-bold">
+                100% Real Live Environment
+              </span>
+              <p className="text-xs text-white/90 font-semibold">
+                No mock demo needed. Test in production with your own credentials free for 14 straight days.
+              </p>
+              <p className="text-[11px] text-white/50">
+                Full features unlocked immediately. No credit card required.
+              </p>
+            </div>
 
             <div className="flex items-center justify-center gap-2 mb-4">
                {[
@@ -143,9 +155,22 @@ export default function Pricing() {
           })}
         </div>
 
-        <p className="text-center text-white/30 text-xs font-medium mt-10">
-          Free 14-day trial, no card required. <Link to="/register?trial=true" className="text-white/60 hover:text-white underline underline-offset-2">Try hlynk free →</Link>
-        </p>
+        <div className="text-center mt-12 space-y-2">
+          <p className="text-white/80 text-sm font-bold">
+            No dummy data, no sales calls. You get 14 straight days in the actual environment.
+          </p>
+          <p className="text-white/40 text-xs">
+            Sign up with your real business details, test M-Pesa STK push, and feel the real performance.
+          </p>
+          <div className="pt-2">
+            <Link
+              to="/register?trial=true"
+              className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition-all"
+            >
+              Start Free 14-Day Live Trial →
+            </Link>
+          </div>
+        </div>
       </div>
     </section>
   )

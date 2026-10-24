@@ -5,6 +5,7 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { BrowserRouter } from 'react-router-dom'
 import { Toaster, toast } from 'sonner'
 import App from './App'
+import ErrorBoundary from './components/shared/ErrorBoundary'
 import { AuthProvider } from './lib/auth/AuthContext'
 import { MobileViewportProvider } from './lib/MobileViewportContext'
 import { queryClient } from './lib/query/queryClient'
@@ -49,7 +50,9 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
       <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <AuthProvider>
           <MobileViewportProvider>
-            <App />
+            <ErrorBoundary>
+              <App />
+            </ErrorBoundary>
           </MobileViewportProvider>
           <Toaster
             position="top-center"

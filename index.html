@@ -110,12 +110,50 @@
       />
     </noscript>
     <script>
-      window.addEventListener('error', function(e) {
-        if (e.message && e.message.includes('Failed to fetch dynamically imported module')) {
-          console.warn('Chunk load error detected. Attempting fresh reload...');
-          window.location.reload();
+      (function() {
+        function recoverFromChunkError() {
+          try {
+            var key = '__hlynk_last_chunk_reload__';
+            var last = sessionStorage.getItem(key);
+            var now = Date.now();
+            if (!last || (now - parseInt(last, 10)) > 15000) {
+              sessionStorage.setItem(key, String(now));
+              console.warn('[hlynk] Stale bundle chunk detected. Auto-refreshing app...');
+              window.location.reload();
+            }
+          } catch (_) {
+            window.location.reload();
+          }
         }
-      }, true);
+
+        // Vite specific preload event
+        window.addEventListener('vite:preloadError', function(event) {
+          event.preventDefault();
+          recoverFromChunkError();
+        });
+
+        // Global promise rejection for dynamic import()
+        window.addEventListener('unhandledrejection', function(event) {
+          var msg = event.reason && (event.reason.message || String(event.reason));
+          if (msg && (
+            msg.indexOf('dynamically imported module') !== -1 ||
+            msg.indexOf('Failed to fetch') !== -1 ||
+            msg.indexOf('loading chunk') !== -1
+          )) {
+            recoverFromChunkError();
+          }
+        });
+
+        // Synchronous runtime error
+        window.addEventListener('error', function(e) {
+          if (e.message && (
+            e.message.indexOf('Failed to fetch dynamically imported module') !== -1 ||
+            e.message.indexOf('Loading chunk') !== -1
+          )) {
+            recoverFromChunkError();
+          }
+        }, true);
+      })();
     </script>
     <title>hlynk | Smartest Way to Grow Your Biashara</title>
   </head>
