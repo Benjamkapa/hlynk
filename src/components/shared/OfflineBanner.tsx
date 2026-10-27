@@ -16,7 +16,7 @@ export default function OfflineBanner() {
         {!isOnline ? (
           <>
             <CloudOff size={14} className="animate-pulse" />
-            <span className="text-[9px] font-black uppercase tracking-widest leading-none">Offline</span>
+            <span className="text-[9px] font-black font-normal tracking-widest leading-none">Offline</span>
           </>
         ) : (
           <>
