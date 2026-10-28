@@ -1392,7 +1392,7 @@ function MoreSheet({
         onDragStart={() => (didDrag.current = true)}
         onDragEnd={handleDragEnd}
       >
-        <div className="bg-white rounded-t-[2rem] flex flex-col flex-1 min-h-0 overflow-hidden shadow-[0_-4px_24px_rgba(0,0,0,0.12)]">
+        <div className="bg-white rounded-t-[3rem] flex flex-col flex-1 min-h-0 overflow-hidden shadow-[0_-4px_24px_rgba(0,0,0,0.12)]">
           {/* Header (always a drag zone) */}
           <div
             ref={headerRef}
