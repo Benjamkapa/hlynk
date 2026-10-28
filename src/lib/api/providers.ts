@@ -127,7 +127,7 @@ export const adminApi = {
   getStats: (timeframe?: string) => api.get('/admin/stats', { params: { timeframe } }).then(r => r.data),
   getHealth: () => api.get('/admin/health').then(r => r.data),
   getSystemHealth: () => api.get('/admin/health').then(r => r.data),
-  getTenants: (params?: { page?: number; search?: string; status?: string; planName?: string; limit?: number }) =>
+  getTenants: (params?: { page?: number; search?: string; status?: string; planName?: string; limit?: number; all?: boolean }) =>
     api.get('/admin/tenants', { params }).then(r => r.data),
   suspendTenant: (id: string) => api.put(`/admin/tenants/${id}/suspend`).then(r => r.data),
   activateTenant: (id: string) => api.put(`/admin/tenants/${id}/activate`).then(r => r.data),

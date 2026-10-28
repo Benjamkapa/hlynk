@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Plus, Search, Eye, ShieldAlert, UserCheck, TrendingUp, Bell, Users, Landmark, ArrowUpRight, Package, TrendingDown, DollarSign, Loader2 } from 'lucide-react'
+import { Plus, Search, Eye, Trash2, ShieldAlert, UserCheck, TrendingUp, Bell, Users, Landmark, ArrowUpRight, Package, TrendingDown, DollarSign, Loader2 } from 'lucide-react'
 import Pagination from '../../components/shared/Pagination'
 import { SlideOver } from '../../components/shared/SlideOver'
 import { ConfirmModal } from '../../components/shared/ConfirmModal'
@@ -13,10 +13,10 @@ import { validateKenyanPhone } from '../../lib/validation/phone'
 export default function ProvidersPage() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   const [selectedProvider, setSelectedProvider] = useState<any>(null)
+  const [providerToDelete, setProviderToDelete] = useState<any>(null)
   const [search, setSearch] = useState('')
   const [status, setStatus] = useState('')
   const [planName, setPlanName] = useState('')
-  const [page, setPage] = useState(1)
   const queryClient = useQueryClient()
 
   const { data: statsData } = useQuery({
@@ -24,20 +24,34 @@ export default function ProvidersPage() {
     queryFn: () => adminApi.getStats()
   })
 
+  // Fetch all providers without pagination limits
   const { data: tenantsRes, isLoading } = useQuery<any>({
-    queryKey: ['admin-tenants', search, status, planName, page],
-    queryFn: () => adminApi.getTenants({ search, status, planName, page, limit: 5 }),
+    queryKey: ['admin-tenants', search, status, planName],
+    queryFn: () => adminApi.getTenants({ search, status, planName, all: true, limit: 1000 }),
     placeholderData: keepPreviousData
   })
 
   const stats = statsData?.data || statsData;
   const providers = tenantsRes?.data?.tenants || []
-  const pagination = tenantsRes?.data || { total: 0, pages: 1 }
   const weeklyGrowth = stats?.trends?.weeklyGrowth || []
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => adminApi.deleteTenant(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-tenants'] })
+      queryClient.invalidateQueries({ queryKey: ['admin-stats'] })
+      queryClient.invalidateQueries({ queryKey: ['admin-subscriptions'] })
+      queryClient.invalidateQueries({ queryKey: ['admin-users'] })
+      toast.success('Business and all associated data permanently deleted')
+      setProviderToDelete(null)
+    },
+    onError: (err: any) => {
+      toast.error(err.response?.data?.message || 'Failed to delete business')
+    }
+  })
 
   const handleFilterChange = (setter: any, val: string) => {
     setter(val)
-    setPage(1)
   }
 
   return (
@@ -205,9 +219,22 @@ export default function ProvidersPage() {
                     </span>
                   </td>
                   <td className="px-8 py-5 text-right">
-                    <button onClick={() => setSelectedProvider(p)} className="p-2 hover:bg-emerald-50 rounded-md transition-all">
-                      <Eye size={16} className="text-gray-400 group-hover:text-emerald-600" />
-                    </button>
+                    <div className="flex items-center justify-end gap-1.5">
+                      <button 
+                        onClick={() => setSelectedProvider(p)} 
+                        title="View details" 
+                        className="p-2 hover:bg-emerald-50 rounded-md transition-all text-gray-400 hover:text-emerald-600"
+                      >
+                        <Eye size={16} />
+                      </button>
+                      <button 
+                        onClick={() => setProviderToDelete(p)} 
+                        title="Delete business completely" 
+                        className="p-2 hover:bg-rose-50 rounded-md transition-all text-gray-400 hover:text-rose-600"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               )) : (
@@ -219,16 +246,31 @@ export default function ProvidersPage() {
           </table>
         </div>
 
-        {/* <div className="border-t border-slate-50 p-6">
-          <Pagination
-            page={page}
-            pages={pagination.pages}
-            total={pagination.total}
-            onPageChange={setPage}
-            label="Provider"
-          />
-        </div> */}
+        <div className="border-t border-slate-50 px-8 py-4 bg-slate-50/30 flex items-center justify-between text-xs text-gray-500">
+          <span className="font-medium">
+            Showing all <strong className="text-gray-900 font-mono font-bold">{providers.length}</strong> businesses
+          </span>
+          {(search || status || planName) && (
+            <button 
+              onClick={() => { setSearch(''); setStatus(''); setPlanName(''); }} 
+              className="text-emerald-600 hover:text-emerald-700 font-bold transition-colors"
+            >
+              Reset filters
+            </button>
+          )}
+        </div>
       </div>
+
+      <ConfirmModal
+        isOpen={!!providerToDelete}
+        onClose={() => setProviderToDelete(null)}
+        onConfirm={() => providerToDelete && deleteMutation.mutate(providerToDelete.id)}
+        title={`Delete "${providerToDelete?.businessName}" Permanently?`}
+        message="This will completely and permanently erase this business from the entire platform, including all associated accounts, users, sales, products, and subscriptions. This action cannot be undone."
+        confirmText="Delete Business Completely"
+        isDestructive={true}
+        isLoading={deleteMutation.isPending}
+      />
 
       <SlideOver isOpen={!!selectedProvider} onClose={() => setSelectedProvider(null)} title="Business Details">
         {selectedProvider && (
@@ -272,6 +314,9 @@ function ProviderDetailsPanel({ provider, onClose }: { provider: any, onClose: (
     mutationFn: () => adminApi.deleteTenant(provider.id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-tenants'] })
+      queryClient.invalidateQueries({ queryKey: ['admin-stats'] })
+      queryClient.invalidateQueries({ queryKey: ['admin-subscriptions'] })
+      queryClient.invalidateQueries({ queryKey: ['admin-users'] })
       toast.success('Account permanently deleted')
       onClose()
     },
