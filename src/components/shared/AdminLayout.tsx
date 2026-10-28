@@ -24,6 +24,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Shield,
+  AppWindowMac,
   MoreHorizontal,
   X,
   Home,
@@ -96,11 +97,7 @@ export default function AdminLayout() {
         <div className="h-16 lg:h-20 flex items-center justify-between px-4 border-b border-slate-100 flex-shrink-0 pt-[max(1.5rem,calc(env(safe-area-inset-top,0px)+0.75rem))] lg:pt-0 min-h-[calc(4.5rem+env(safe-area-inset-top,0px))] lg:min-h-[5rem]">
           <div className="flex items-center gap-3 overflow-hidden">
             <div className="">
-              <img
-                src="/hlynk.png"
-                className="h-[40px]"
-                alt="hlynk Logo"
-              />
+              <img src="/hlynk.png" className="h-[40px]" alt="hlynk Logo" />
             </div>
             {!isCollapsed && (
               <div className="flex flex-col min-w-0">
@@ -157,7 +154,7 @@ export default function AdminLayout() {
                 to="/dashboard"
                 className="text-[10px] font-bold text-emerald-700 hover:underline flex-shrink-0"
               >
-                Provider UI
+                <AppWindowMac />
               </Link>
             </div>
           )}
@@ -262,7 +259,7 @@ function AdminMobileBottomNav({
       </AnimatePresence>
 
       {/* "More Options" Sheet */}
-      <AnimatePresence>
+      {/* <AnimatePresence>
         {showMoreSheet && (
           <motion.div
             key="admin-more-sheet"
@@ -278,7 +275,7 @@ function AdminMobileBottomNav({
             }}
           >
             <div className="bg-white rounded-t-[3rem] flex flex-col overflow-hidden shadow-[0_-4px_24px_rgba(0,0,0,0.1)]">
-              {/* Drag handle */}
+             
               <div className="flex justify-center pt-2.5 pb-0.5 flex-shrink-0">
                 <div className="w-8 h-[3px] rounded-full bg-slate-200" />
               </div>
@@ -320,10 +317,11 @@ function AdminMobileBottomNav({
               <div className="p-2 border-t border-slate-100 flex gap-2 pt-2">
                 <Link
                   to="/dashboard"
+                  title="Provider UI"
                   onClick={() => setShowMoreSheet(false)}
                   className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-lg text-slate-700 bg-slate-100 hover:bg-slate-200 transition-colors"
                 >
-                  Provider UI
+                  <AppWindowMac />
                 </Link>
                 <button
                   onClick={() => {
@@ -333,6 +331,112 @@ function AdminMobileBottomNav({
                   className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-xs font-bold text-red-600 bg-red-50 hover:bg-red-100 transition-colors"
                 >
                   <LogOut size={15} /> Log Out
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence> */}
+
+      {/* "More Options" Sheet */}
+      <AnimatePresence>
+        {showMoreSheet && (
+          <motion.div
+            key="admin-more-sheet"
+            initial={{ y: "100%" }}
+            animate={{ y: 0 }}
+            exit={{ y: "100%" }}
+            transition={{ duration: 0.28, ease: [0.32, 0.72, 0, 1] }}
+            className="fixed inset-x-0 bottom-0 z-[94] pointer-events-auto max-h-[90vh] flex flex-col"
+            drag="y"
+            dragConstraints={{ top: 0, bottom: 0 }}
+            dragElastic={{ top: 0, bottom: 0.4 }}
+            onDragEnd={(e, info) => {
+              if (info.offset.y > 120) setShowMoreSheet(false);
+            }}
+          >
+            <div className="bg-white rounded-t-[3rem] flex flex-col overflow-hidden shadow-[0_-4px_24px_rgba(0,0,0,0.12)]">
+              {/* Header */}
+              <div className="bg-slate-50 flex-shrink-0">
+                <div className="flex justify-center pt-2.5">
+                  <div className="w-10 h-[4px] rounded-full bg-slate-300" />
+                </div>
+                <div className="relative flex items-center justify-center px-5 py-4">
+                  <p className="text-lg font-medium text-slate-900">
+                    Quick Actions
+                  </p>
+                  <button
+                    onClick={() => setShowMoreSheet(false)}
+                    className="absolute right-5 text-[15px] active:opacity-50 transition-opacity"
+                  >
+                    <X size={18} />
+                  </button>
+                </div>
+              </div>
+
+              {/* Grid */}
+              <div className="grid grid-cols-4 gap-y-6 gap-x-1 px-3 pt-6 pb-[max(2rem,env(safe-area-inset-bottom,2rem))] overflow-y-auto max-h-[65vh] custom-scrollbar">
+                {overflowTabs.map((item) => (
+                  <NavLink
+                    key={item.label}
+                    to={item.to}
+                    onClick={() => setShowMoreSheet(false)}
+                    className="flex flex-col items-center gap-2 no-tap-highlight group"
+                  >
+                    {({ isActive }) => (
+                      <>
+                        <div
+                          className={`w-[60px] h-[60px] rounded-full border-2 flex items-center justify-center bg-white transition-colors group-active:bg-slate-100 ${
+                            isActive ? "border-emerald-500" : "border-slate-200"
+                          }`}
+                        >
+                          <item.icon
+                            className={`w-6 h-6 ${isActive ? "text-emerald-700" : "text-slate-900"}`}
+                            strokeWidth={1.75}
+                          />
+                        </div>
+                        <span className="text-[12px] leading-tight text-center text-slate-800 px-0.5">
+                          {item.label}
+                        </span>
+                      </>
+                    )}
+                  </NavLink>
+                ))}
+
+                {/* Provider UI */}
+                <Link
+                  to="/dashboard"
+                  onClick={() => setShowMoreSheet(false)}
+                  className="flex flex-col items-center gap-2 no-tap-highlight group"
+                >
+                  <div className="w-[60px] h-[60px] rounded-full border-2 border-slate-200 flex items-center justify-center bg-white transition-colors group-active:bg-slate-100">
+                    <AppWindowMac
+                      className="w-6 h-6 text-slate-900"
+                      strokeWidth={1.75}
+                    />
+                  </div>
+                  <span className="text-[12px] leading-tight text-center text-slate-800">
+                    Provider UI
+                  </span>
+                </Link>
+
+                {/* Log out */}
+                <button
+                  onClick={() => {
+                    setShowMoreSheet(false);
+                    onLogout();
+                  }}
+                  className="flex flex-col items-center gap-2 no-tap-highlight group"
+                >
+                  <div className="w-[60px] h-[60px] rounded-full border-2 border-slate-200 flex items-center justify-center bg-white transition-colors group-active:bg-red-50">
+                    <LogOut
+                      className="w-6 h-6 text-slate-900"
+                      strokeWidth={1.75}
+                    />
+                  </div>
+                  <span className="text-[12px] leading-tight text-center text-slate-800">
+                    Log out
+                  </span>
                 </button>
               </div>
             </div>

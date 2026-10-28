@@ -173,7 +173,7 @@ export default function AuditSecurityPage() {
 
         <div className="flex flex-wrap items-center gap-3">
           {/* Live Feed Toggle Button */}
-          <button
+          {/* <button
             onClick={() => {
               setIsLiveFeed(!isLiveFeed)
               toast.info(isLiveFeed ? 'Live feed paused' : 'Live feed activated (3s auto-polling)')
@@ -186,9 +186,9 @@ export default function AuditSecurityPage() {
           >
             <Radio size={14} className={isLiveFeed ? 'animate-spin' : ''} />
             {isLiveFeed ? 'Real-Time Streaming' : 'Paused'}
-          </button>
+          </button> */}
 
-          <button 
+          {/* <button 
             onClick={handleBackupDownload}
             disabled={isBackingUp}
             className="relative overflow-hidden bg-slate-800 text-white h-10 px-4 rounded-md font-bold text-xs hover:bg-slate-900 transition-all flex items-center gap-2 disabled:opacity-90 shadow-sm"
@@ -212,9 +212,9 @@ export default function AuditSecurityPage() {
                 </>
               )}
             </div>
-          </button>
+          </button> */}
 
-          <div className="relative">
+          {/* <div className="relative">
             <input 
               type="file" 
               accept=".sql" 
@@ -229,7 +229,7 @@ export default function AuditSecurityPage() {
               {isRestoring ? <ButtonLoader size={14} className="text-slate-700" /> : <RefreshCcw size={14} />}
               Restore SQL
             </button>
-          </div>
+          </div> */}
 
           <button 
             onClick={handleIncidentReport}
