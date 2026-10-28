@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { Settings, Shield, Bell, Globe, Database, Cpu, Lock, Save, Key, UserCheck, ShieldAlert, ShieldCheck, User, Camera, Smartphone, CheckCircle2, AlertTriangle } from 'lucide-react'
+import { Bolt, Shield, Bell, Globe, Database, Cpu, Lock, Save, Key, UserCheck, ShieldAlert, ShieldCheck, User, Camera, Smartphone, CheckCircle2, AlertTriangle } from 'lucide-react'
 import { ButtonLoader } from '../../components/shared/InlineLoader'
 import { toast } from 'sonner'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
@@ -84,7 +84,7 @@ export default function SettingsPage() {
 
   const tabs = [
     { name: 'Profile', icon: User, desc: 'Personal info & avatar' },
-    { name: 'General', icon: Settings, desc: 'Global platform configs' },
+    { name: 'General', icon: Bolt, desc: 'Global platform configs' },
     { name: 'Security', icon: Shield, desc: 'Auth & Access control' },
     { name: 'Notifications', icon: Bell, desc: 'Email & SMS alerts' },
     { name: 'Regional', icon: Globe, desc: 'Taxes & Currencies' },
@@ -222,7 +222,7 @@ export default function SettingsPage() {
                 <>
                   <section className="space-y-6">
                     <div className="flex items-center gap-2 text-slate-400 mb-2">
-                      <Settings size={14} strokeWidth={1}/>
+                      <Bolt size={14} strokeWidth={1}/>
                       <span className="text-[10px] font-black uppercase tracking-widest">Primary Details</span>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -252,7 +252,7 @@ export default function SettingsPage() {
                         desc="Temporary block all provider access for maintenance" 
                         active={!!formState['maintenanceMode']} 
                         onChange={(v: boolean) => setField('maintenanceMode', v)}
-                        icon={Settings}
+                        icon={Bolt}
                       />
                       <SecuritySwitch 
                         title="Allow Registration" 
@@ -392,7 +392,7 @@ export default function SettingsPage() {
             </div>
           </div>
           
-          <div className="bg-slate-50 border border-dashed border-slate-200 p-6 rounded-[.5rem] flex items-center justify-between">
+          {/* <div className="bg-slate-50 border border-dashed border-slate-200 p-6 rounded-[.5rem] flex items-center justify-between">
              <div className="flex items-center gap-4">
                 <div className="h-10 w-10 rounded-md bg-white border border-slate-200 flex items-center justify-center text-slate-400">
                    <Lock size={16} />
@@ -403,7 +403,7 @@ export default function SettingsPage() {
                 </div>
              </div>
              <button className="px-4 py-2 bg-white border border-slate-200 rounded-md text-xs font-black hover:bg-slate-100 transition-all">Export JSON</button>
-          </div>
+          </div> */}
         </div>
       </div>
     </div>

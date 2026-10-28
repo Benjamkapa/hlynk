@@ -1187,7 +1187,7 @@ function MobileBottomNav({
         )}
       </AnimatePresence>
 
-      <div className="w-full pointer-events-auto glass-dock rounded-t-[2rem] pt-2 pb-[max(0.6rem,env(safe-area-inset-bottom,0.6rem))]">
+      <div className="w-full pointer-events-auto glass-dock rounded-t-[3rem] pt-2 pb-[max(0.6rem,env(safe-area-inset-bottom,0.6rem))]">
         <div className="flex items-end justify-evenly w-full px-4">
           {renderNavItem(homeItem)}
           {renderNavItem(primaryLeftItem)}

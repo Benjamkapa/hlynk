@@ -18,7 +18,7 @@ import {
   Star,
   BarChart3,
   Bell,
-  Settings,
+  Bolt,
   HelpCircle,
   LogOut,
   ChevronLeft,
@@ -53,7 +53,7 @@ const adminNavItems: AdminNavItem[] = [
   { to: "/admin/community-reviews", label: "Reviews", icon: Star },
   { to: "/admin/reports", label: "Reports", icon: BarChart3 },
   { to: "/admin/notifications", label: "Notifications", icon: Bell },
-  { to: "/admin/settings", label: "System Settings", icon: Settings },
+  { to: "/admin/settings", label: "System Settings", icon: Bolt },
   { to: "/admin/help", label: "Admin Help", icon: HelpCircle },
 ];
 
@@ -445,7 +445,7 @@ function AdminMobileBottomNav({
       </AnimatePresence>
 
       {/* Bottom Nav Glass Dock — Edge-to-edge frosted glass anchored to absolute bottom */}
-      <div className="w-full pointer-events-auto bg-white rounded-t-[1.5rem] pt-2 pb-[max(0.6rem,env(safe-area-inset-bottom,0.6rem))] border-t border-slate-100 shadow-[0_-10px_35px_rgba(0,0,0,0.06)]">
+      <div className="w-full pointer-events-auto bg-white rounded-t-[3rem] pt-2 pb-[max(0.6rem,env(safe-area-inset-bottom,0.6rem))] border-t border-slate-100 shadow-[0_-10px_35px_rgba(0,0,0,0.06)]">
         <div className="flex items-end justify-evenly w-full px-4 relative">
           {leftTabs.map((tab) => (
             <NavLink
