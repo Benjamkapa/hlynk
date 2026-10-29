@@ -646,9 +646,9 @@ export default function LoginPage() {
                         />
                         <span className="text-[11px] px-1 py-1.5 font-light text-white/90 leading-relaxed">
                           I agree to the{' '}
-                          <a href="/terms-conditions" className="text-white hover:text-[#E3A23C] font-medium underline transition-colors">Terms of Service</a>
+                          <a href="/terms-conditions" className="text-white hover:text-[#E3A23C] font-medium transition-colors">Terms of Service</a>
                           ,{' and '}
-                          <a href="/privacy-policy" className="text-white hover:text-[#E3A23C] font-medium underline transition-colors">Privacy Policy</a>
+                          <a href="/privacy-policy" className="text-white hover:text-[#E3A23C] font-medium transition-colors">Privacy Policy</a>
                         </span>
                       </label>
                     </div>

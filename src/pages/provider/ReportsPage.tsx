@@ -93,7 +93,7 @@ export default function ReportsPage() {
                   <span className="text-xs text-gray-400">Gross sales</span>
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <div className="w-2 h-2 rounded-full bg-blue-500" />
+                  <div className="w-2 h-2 rounded-full bg-[#fbb905ff]" />
                   <span className="text-xs text-gray-400">Net profit</span>
                 </div>
               </div>
@@ -107,8 +107,8 @@ export default function ReportsPage() {
                       <stop offset="95%" stopColor="#0D4A3E" stopOpacity={0}/>
                     </linearGradient>
                     <linearGradient id="colorProfit" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.06}/>
-                      <stop offset="95%" stopColor="#3B82F6" stopOpacity={0}/>
+                      <stop offset="5%" stopColor="#fbb905ff" stopOpacity={0.06}/>
+                      <stop offset="95%" stopColor="#fbb905ff" stopOpacity={0}/>
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="0" vertical={false} stroke="#F9FAFB" />
@@ -119,7 +119,7 @@ export default function ReportsPage() {
                     contentStyle={{ borderRadius: '.5rem', border: '1px solid #f3f4f6', boxShadow: '0 4px 12px rgba(0,0,0,0.04)', padding: '10px 14px', fontSize: 12 }}
                   />
                   <Area type="monotone" dataKey="sales" stroke="#0D4A3E" strokeWidth={1.5} fillOpacity={1} fill="url(#colorSales)" dot={false} activeDot={{ r: 4, fill: '#0D4A3E', strokeWidth: 2, stroke: '#fff' }} />
-                  <Area type="monotone" dataKey="profit" stroke="#3B82F6" strokeWidth={1.5} fillOpacity={1} fill="url(#colorProfit)" dot={false} activeDot={{ r: 4, fill: '#3B82F6', strokeWidth: 2, stroke: '#fff' }} />
+                  <Area type="monotone" dataKey="profit" stroke="#fbb905ff" strokeWidth={1.5} fillOpacity={1} fill="url(#colorProfit)" dot={false} activeDot={{ r: 4, fill: '##fbb905ff', strokeWidth: 2, stroke: '#fff' }} />
                 </AreaChart>
               </ResponsiveContainer>
             </div>
