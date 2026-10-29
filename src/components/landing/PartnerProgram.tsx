@@ -8,8 +8,8 @@ export default function PartnerProgram() {
   const [maxCount, setMaxCount] = useState<number>(3)
 
   // Earnings configuration
-  const STARTER_COMMISSION = 1200
-  const MAX_COMMISSION = 2300
+  const STARTER_COMMISSION = 1000
+  const MAX_COMMISSION = 2000
 
   const monthlyTotal = (starterCount * STARTER_COMMISSION) + (maxCount * MAX_COMMISSION)
   const annualTotal = monthlyTotal * 12
@@ -19,16 +19,16 @@ export default function PartnerProgram() {
     if (monthlyTotal === 0) {
       return "Slide the controls to simulate your monthly earnings!"
     }
-    if (monthlyTotal < 10000) {
-      return "💡 Tip: Onboarding 5 shops on Business Pro earns you KES 11,500!"
+    if (monthlyTotal < 1000) {
+      return "💡 Tip: Onboarding 5 shops on Business Pro earns you KES 10,000 every month!"
     }
-    if (monthlyTotal >= 10000 && monthlyTotal < 35000) {
-      return "🌟 Steady Side Earn: That covers rent, data, and daily transport comfortably!"
+    if (monthlyTotal >= 1000 && monthlyTotal < 5000) {
+      return "🌟 Steady Side Earn: Covers daily transport and data comfortably!"
     }
-    if (monthlyTotal >= 35000 && monthlyTotal < 100000) {
-      return "🚀 Pro Ambassador: You are now earning more than the average graduate salary!"
+    if (monthlyTotal >= 5000 && monthlyTotal < 15000) {
+      return "🚀 Pro Ambassador: A solid passive income stream recurring every single month!"
     }
-    return "👑 Elite Partner: You have built a recurring sales agency. Serious wealth creation!"
+    return "👑 Elite Partner: Serious recurring affiliate earnings!"
   }
 
   return (
@@ -75,8 +75,8 @@ export default function PartnerProgram() {
                 },
                 {
                   icon: <Percent className="text-purple-600" size={24} />,
-                  title: "Up to 29% Commission Payout",
-                  desc: "We give back about 30% of each plan price to our partners who help shop owners start using hlynk."
+                  title: "Direct Cash Commissions",
+                  desc: "Earn KES 100 on Starter and KES 200 on Business Pro for every subscription payment your referred shops make."
                 },
                 {
                   icon: <Users className="text-blue-600" size={24} />,
@@ -139,7 +139,7 @@ export default function PartnerProgram() {
                     />
                     <div className="flex justify-between text-[10px] font-bold text-slate-400 hl-mono">
                       <span>0</span>
-                      <span>Comm: KES 1,200 (27%) per shop</span>
+                      <span>Comm: KES 1,000 per shop</span>
                       <span>50</span>
                     </div>
                   </div>
@@ -163,7 +163,7 @@ export default function PartnerProgram() {
                     />
                     <div className="flex justify-between text-[10px] font-bold text-slate-400 hl-mono">
                       <span>0</span>
-                      <span>Comm: KES 2,300 (28%) per shop</span>
+                      <span>Comm: KES 2,000 per shop</span>
                       <span>50</span>
                     </div>
                   </div>

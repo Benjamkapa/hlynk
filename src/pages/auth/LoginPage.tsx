@@ -267,11 +267,16 @@ export default function LoginPage() {
   const requestedPlan = (urlParams.get('plan') as 'LITE' | 'PLUS' | 'MAX') || 'LITE'
   const requestedDays = urlParams.get('days') || (isTrialRequest ? '14' : '28')
   const urlReferralCode = urlParams.get('ref')?.trim().toUpperCase() || ''
+  if (urlReferralCode) {
+    try { localStorage.setItem('hlynk_referral_code', urlReferralCode) } catch (e) {}
+  }
+  const savedRefCode = typeof window !== 'undefined' ? (localStorage.getItem('hlynk_referral_code') || '') : ''
+  const effectiveRefCode = urlReferralCode || savedRefCode
 
   const [formData, setFormData] = useState<RegisterFormState & { isTrial?: boolean; daysReward?: number }>({
     businessName: '', ownerName: '', phone: '', category: '', county: '',
-    location: '', planName: requestedPlan, referralCode: urlReferralCode,
-    isTrial: isTrialRequest || !!urlReferralCode,
+    location: '', planName: requestedPlan, referralCode: effectiveRefCode,
+    isTrial: isTrialRequest || !!effectiveRefCode,
     daysReward: parseInt(requestedDays)
   })
 
@@ -294,7 +299,8 @@ export default function LoginPage() {
           location: res.data.existingDetails?.location || f.location || '',
           category: res.data.existingDetails?.category || f.category || '',
           phone: res.data.existingDetails?.phone || f.phone || '',
-          isTrial: isTrialRequest || !!urlReferralCode
+          referralCode: f.referralCode || effectiveRefCode,
+          isTrial: isTrialRequest || !!effectiveRefCode
         }))
         setRequiresRegistration(true)
         if (res.data.message) {
@@ -696,6 +702,11 @@ export default function LoginPage() {
 
                     <form onSubmit={handleRegistrationSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 0, backgroundColor: 'transparent' }} className="innerSection">
                       <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginBottom: 28 }}>
+                        {formData.referralCode && (
+                          <div style={{ background: '#ecfdf5', border: '1px solid #a7f3d0', color: '#065f46', fontSize: 11, padding: '8px 12px', borderRadius: 8 }}>
+                            🎁 Referral Active: <strong>{formData.referralCode}</strong>
+                          </div>
+                        )}
                         <Field label="Biashara Name" icon={Building2}>
                           <input type="text" value={formData.businessName} onChange={e => setFormData({ ...formData, businessName: e.target.value })} className={inputCls} placeholder="e.g. John's Shop" required />
                         </Field>
@@ -868,6 +879,12 @@ export default function LoginPage() {
                         <p className="text-gray-400 font-light text-sm">Tell us about your biashara to get started.</p>
                       </div>
                       <div className="flex flex-col gap-3.5 mb-6">
+                        {formData.referralCode && (
+                          <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs px-3 py-2 rounded-lg flex items-center justify-between">
+                            <span>🎁 Referral Active: <strong>{formData.referralCode}</strong></span>
+                            <span className="text-[10px] text-emerald-600 bg-white px-2 py-0.5 rounded border border-emerald-100 font-medium">Applied</span>
+                          </div>
+                        )}
                         <Field label="Biashara Name" icon={Building2}>
                           <input type="text" value={formData.businessName} onChange={e => setFormData({ ...formData, businessName: e.target.value })} className={inputCls} placeholder="e.g. Mama Mboga Pro" required />
                         </Field>
