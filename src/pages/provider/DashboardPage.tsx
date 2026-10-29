@@ -115,7 +115,7 @@ export default function DashboardPage() {
             </div>
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-1.5">
-                <div className="w-2 h-2 rounded-full bg-gray-900" />
+                <div className="w-2 h-2 rounded-full bg-[#fbb905ff]" />
                 <span className="text-xs text-gray-400">Sales</span>
               </div>
               <div className="flex items-center gap-1.5">
@@ -148,12 +148,12 @@ export default function DashboardPage() {
                 <Area
                   type="monotone"
                   dataKey="sales"
-                  stroke="#111827"
+                  stroke="#fbb905ff"
                   strokeWidth={1.5}
                   fillOpacity={1}
                   fill="url(#colorSales)"
                   dot={false}
-                  activeDot={{ r: 4, fill: '#111827', strokeWidth: 2, stroke: '#fff' }}
+                  activeDot={{ r: 4, fill: '#fbb905ff', strokeWidth: 2, stroke: '#fff' }}
                 />
                 <Area
                   type="monotone"

@@ -16,6 +16,7 @@ import {
   User,
   CircleEllipsis,
   Lock,
+  Bolt,
   Shield,
   X,
   Terminal,
@@ -1097,93 +1098,117 @@ function MobileBottomNav({
 
       <AnimatePresence>
         {showProfileSheet && (
-          <motion.div
-            key="profile-sheet"
-            initial={{ y: "100%" }}
-            animate={{ y: 0 }}
-            exit={{ y: "100%" }}
-            transition={{ duration: 0.32, ease: [0.32, 0.72, 0, 1] }}
-            className="fixed inset-x-0 bottom-0 z-[97] pointer-events-auto"
-          >
-            <div className="bg-white rounded-t-[1.5rem] overflow-hidden shadow-[0_-8px_40px_rgba(0,0,0,0.12)] pb-[max(1rem,env(safe-area-inset-bottom,1rem))]">
-              {/* Drag handle */}
-              <div className="flex justify-center pt-3 pb-1">
-                <div className="w-9 h-1 rounded-full bg-slate-300" />
-              </div>
-              <div className="flex items-center justify-between px-5 py-3 border-b border-slate-100/60">
-                <div className="flex items-center gap-3 min-w-0">
+          <>
+            {/* Backdrop */}
+            <motion.div
+              key="profile-sheet-backdrop"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="fixed inset-0 z-[96] bg-black/30"
+              onClick={() => setShowProfileSheet(false)}
+            />
+            <motion.div
+              key="profile-sheet"
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{ duration: 0.32, ease: [0.32, 0.72, 0, 1] }}
+              className="fixed inset-x-0 bottom-0 z-[97] pointer-events-auto"
+            >
+              <div className="bg-white rounded-t-[3rem] overflow-hidden shadow-[0_-4px_24px_rgba(0,0,0,0.12)]">
+                {/* Header — same as MoreSheet */}
+                <div className="bg-slate-50 flex-shrink-0 select-none">
+                  {/* Drag pill */}
+                  <div className="flex justify-center pt-2.5 pb-1">
+                    <div className="h-[4px] w-10 rounded-full bg-slate-300" />
+                  </div>
+                  {/* Title row */}
+                  <div className="relative flex items-center justify-center px-5 py-2.5">
+                    <p className="text-lg font-medium text-slate-900">My Account</p>
+                    <button
+                      onClick={() => setShowProfileSheet(false)}
+                      className="absolute right-5 p-1 active:opacity-50 transition-opacity"
+                      aria-label="Close"
+                    >
+                      <X size={20} strokeWidth={2} />
+                    </button>
+                  </div>
+                </div>
+
+                {/* User identity card */}
+                <div className="flex items-center gap-3 px-5 py-4 border-b border-slate-100">
                   <img
                     src={
                       user?.photoUrl ||
                       `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || "")}&background=0D4A3E&color=fff`
                     }
                     alt="Profile"
-                    className="w-10 h-10 rounded-full object-cover border border-emerald-600/20 flex-shrink-0"
+                    className="w-12 h-12 rounded-full object-cover border border-emerald-600/20 flex-shrink-0"
                   />
                   <div className="min-w-0">
                     <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">
                       Signed in as
                     </p>
-                    <p className="text-xs font-bold text-slate-900 truncate">
+                    <p className="text-sm font-bold text-slate-900 truncate">
                       {user?.name || user?.businessName}
                     </p>
-                    <p className="text-[10px] text-slate-500 truncate">
+                    <p className="text-xs text-slate-500 truncate">
                       {user?.email}
                     </p>
                   </div>
                 </div>
-                <button
-                  onClick={() => setShowProfileSheet(false)}
-                  className="text-emerald-700 text-sm font-semibold active:opacity-60 transition-opacity flex-shrink-0"
-                >
-                  Cancel
-                </button>
-              </div>
 
-              <div className="p-4 space-y-2">
-                <Link
-                  to={
-                    user?.role === "SUPER_ADMIN"
-                      ? "/admin/settings"
-                      : "/dashboard/settings"
-                  }
-                  onClick={() => setShowProfileSheet(false)}
-                  className="flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-semibold text-slate-700 bg-slate-50 hover:bg-emerald-50 hover:text-emerald-700 transition-colors"
-                >
-                  <User size={16} className="text-emerald-600" /> My Profile &
-                  Settings
-                </Link>
-
-                {!navigator.onLine && hasOfflinePin() && (
-                  <button
-                    onClick={() => {
-                      setShowProfileSheet(false);
-                      lock();
-                    }}
-                    className="w-full flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-semibold text-slate-700 bg-slate-50 hover:bg-slate-100 transition-colors"
+                {/* Icon grid — matching MoreSheet grid */}
+                <div className="grid grid-cols-4 gap-y-5 gap-x-1 px-3 pt-5 pb-[max(1.5rem,calc(env(safe-area-inset-bottom,0px)+1rem))]">
+                  {/* Profile & Settings */}
+                  <Link
+                    to={user?.role === "SUPER_ADMIN" ? "/admin/settings" : "/dashboard/settings"}
+                    onClick={() => setShowProfileSheet(false)}
+                    className="flex flex-col items-center gap-2 no-tap-highlight group active:scale-95 transition-transform"
                   >
-                    <Lock size={16} className="text-slate-500" /> Lock Screen
-                    (PIN)
-                  </button>
-                )}
+                    <div className="w-[60px] h-[60px] rounded-full border-2 border-slate-200 flex items-center justify-center bg-white transition-colors group-active:bg-slate-100">
+                      <Bolt className="w-6 h-6 text-slate-900" strokeWidth={1.75} />
+                    </div>
+                    <span className="text-[12px] leading-tight text-center px-0.5 text-slate-800">Settings</span>
+                  </Link>
 
-                <button
-                  onClick={async () => {
-                    setShowProfileSheet(false);
-                    await logout();
-                    if (navigator.onLine) {
-                      navigate("/login");
-                    } else {
-                      toast.info("Session locked. Enter your PIN to continue.");
-                    }
-                  }}
-                  className="w-full flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-semibold text-red-600 bg-red-50 hover:bg-red-100 transition-colors"
-                >
-                  <LogOut size={16} /> Log Out
-                </button>
+                  {/* Lock Screen — offline only */}
+                  {!navigator.onLine && hasOfflinePin() && (
+                    <button
+                      onClick={() => { setShowProfileSheet(false); lock(); }}
+                      className="flex flex-col items-center gap-2 no-tap-highlight group active:scale-95 transition-transform"
+                    >
+                      <div className="w-[60px] h-[60px] rounded-full border-2 border-slate-200 flex items-center justify-center bg-white transition-colors group-active:bg-slate-100">
+                        <Lock className="w-6 h-6 text-slate-900" strokeWidth={1.75} />
+                      </div>
+                      <span className="text-[12px] leading-tight text-center px-0.5 text-slate-800">Lock Screen</span>
+                    </button>
+                  )}
+
+                  {/* Log Out */}
+                  <button
+                    onClick={async () => {
+                      setShowProfileSheet(false);
+                      await logout();
+                      if (navigator.onLine) {
+                        navigate("/login");
+                      } else {
+                        toast.info("Session locked. Enter your PIN to continue.");
+                      }
+                    }}
+                    className="flex flex-col items-center gap-2 no-tap-highlight group active:scale-95 transition-transform"
+                  >
+                    <div className="w-[60px] h-[60px] rounded-full border-2 border-red-200 flex items-center justify-center bg-white transition-colors group-active:bg-red-50">
+                      <LogOut className="w-6 h-6 text-red-500" strokeWidth={1.75} />
+                    </div>
+                    <span className="text-[12px] leading-tight text-center px-0.5 text-red-500">Log Out</span>
+                  </button>
+                </div>
               </div>
-            </div>
-          </motion.div>
+            </motion.div>
+          </>
         )}
       </AnimatePresence>
 
