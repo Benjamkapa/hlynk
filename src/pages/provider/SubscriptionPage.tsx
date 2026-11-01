@@ -475,7 +475,7 @@ function ReferralsTab() {
       </div>
 
       {/* Season rule info */}
-      <div className="bg-gray-50 p-5 rounded-[.5rem] border border-gray-100">
+      {/* <div className="bg-gray-50 p-5 rounded-[.5rem] border border-gray-100">
         <div className="flex items-center gap-2 mb-3">
           <Info size={15} className="text-gray-400" />
           <h4 className="text-sm font-medium text-gray-700">
@@ -500,7 +500,7 @@ function ReferralsTab() {
             </li>
           </ul>
         </div>
-      </div>
+      </div> */}
 
       {/* Referral tracking table */}
       <div className="bg-white rounded-[.5rem] border border-gray-100">

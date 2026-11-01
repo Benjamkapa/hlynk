@@ -425,7 +425,7 @@ export default function LoginPage() {
         }
         .lp-btn-submit {
           width: 100%; height: 56px; background: #000; color: #fff;
-          border-radius: 14px; font-weight: 600; font-size: 15px;
+          border-radius: 50px; font-weight: 600; font-size: 15px;
           display: flex; align-items: center; justify-content: center; gap: 8px;
           transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
           box-shadow: 0 10px 30px rgba(0,0,0,0.1);
@@ -531,8 +531,11 @@ export default function LoginPage() {
 
           /* Mobile-only button treatment — desktop keeps the original black box above */
           .lp-btn-submit {
-            background: #E3A23C; color: #14181A; border-radius: 9999px;
-            box-shadow: 0 10px 30px rgba(227,162,60,0.15);
+            width: 100%; height: 56px; background: #000; color: #fff;
+          border-radius: 50px; font-weight: 600; font-size: 15px;
+          display: flex; align-items: center; justify-content: center; gap: 8px;
+          transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+          box-shadow: 0 10px 30px rgba(0,0,0,0.1);
           }
           .lp-btn-submit:hover:not(:disabled) { box-shadow: 0 15px 40px rgba(227,162,60,0.25); opacity: 0.92; }
 
