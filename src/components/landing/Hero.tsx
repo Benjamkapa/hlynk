@@ -114,11 +114,11 @@ export default function Hero() {
           {/* Left Column */}
           <div className="lg:col-span-7 space-y-7 py-5">
             {/* Live Trial / No Demo Badge */}
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#064E3B]/20 border border-[#064E3B]/40 text-[#7FB89C] text-xs font-semibold backdrop-blur">
-              <span className="relative flex h-2 w-2">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5  text-[#7FB89C] text-xs font-semibold backdrop-blur">
+              {/* <span className="relative flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#7FB89C] opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-[#7FB89C]"></span>
-              </span>
+              </span> */}
               No Demo Needed — Test Live with Your Own Credentials Free for 14 Straight Days
             </div>
 
@@ -144,7 +144,7 @@ export default function Hero() {
               </a>
             </div>
 
-            <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-3.5 backdrop-blur-sm space-y-1">
+            <div className="rounded-sm border border-white/10 shadow-lg p-3.5 backdrop-blur-sm space-y-1">
               <p className="text-xs font-bold text-white flex items-center gap-1.5">
                 <span className="text-emerald-400">✓</span> No staged demo needed — test in the real environment
               </p>
@@ -168,7 +168,7 @@ export default function Hero() {
 
           {/* Right Column: Trade Board */}
           <div className="lg:col-span-5">
-            <div className="relative bg-[#1B212B] border border-white/5 rounded-[28px] overflow-hidden">
+            <div className="relative border border-white/5 rounded-sm overflow-hidden">
 
               {/* Trade tabs, pill style matching the billing toggle */}
               <div className="flex flex-wrap gap-1.5 p-4 pt-7">
@@ -179,7 +179,7 @@ export default function Hero() {
                     <button
                       key={t.id}
                       onClick={() => setActiveId(t.id)}
-                      className={`flex items-center gap-1.5 px-3 py-2 rounded-full text-[11px] font-bold transition-all ${
+                      className={`flex items-center gap-1.5 px-3 py-2 rounded-sm text-[11px] font-bold transition-all ${
                         isActive ? 'text-[#14181A]' : 'bg-white/5 text-white/40 hover:bg-white/10'
                       }`}
                       style={isActive ? { backgroundColor: t.swatch } : undefined}
@@ -195,7 +195,7 @@ export default function Hero() {
               <div className="px-4 pb-4">
                 <div
                   style={{ backgroundColor: active.swatch }}
-                  className="rounded-3xl p-5 flex flex-col gap-4"
+                  className="rounded-sm p-5 flex flex-col gap-4"
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
@@ -225,7 +225,7 @@ export default function Hero() {
 
               <div className="px-6 pb-5 flex items-center justify-between text-[11px] text-white/40">
                 <span className="font-medium">5 trades · more in settings</span>
-                <span className="px-2.5 py-1 rounded-full bg-white/5 text-[#064E3B] font-bold">Included free</span>
+                <span className="px-2.5 py-1 rounded-sm bg-white/5 text-[#064E3B] font-bold">Included free</span>
               </div>
             </div>
           </div>

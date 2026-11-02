@@ -80,6 +80,14 @@
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/manifest.webmanifest" />
 
+    <!-- PWA Install Prompt Early Capture -->
+    <script>
+      window.addEventListener("beforeinstallprompt", function(e) {
+        e.preventDefault();
+        window.__deferredPrompt = e;
+      });
+    </script>
+
     <!-- Mobile PWA Tags -->
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />

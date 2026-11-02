@@ -12,6 +12,7 @@ import AdminLayout from './components/shared/AdminLayout'
 import SubscriptionGuard from './components/shared/SubscriptionGuard'
 import OfflineBanner from './components/shared/OfflineBanner'
 import ReloadPrompt from './components/shared/ReloadPrompt'
+import PwaInstallPrompt from './components/shared/PwaInstallPrompt'
 import { toast } from 'sonner'
 import { initAudioUnlock, playNotificationSound } from './lib/notifications/sound'
 
@@ -135,6 +136,7 @@ export default function App() {
   return (
     <Suspense fallback={<LoadingScreen />}>
       <ReloadPrompt />
+      <PwaInstallPrompt />
       <OfflineBanner />
 
       {/* Offline lock screen — shown ONLY in offline mode with an existing profile, never when online */}

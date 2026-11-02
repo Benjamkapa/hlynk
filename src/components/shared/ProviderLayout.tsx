@@ -57,6 +57,7 @@ import { MobileGestures } from "./MobileGestures";
 import { hasOfflinePin } from "../../lib/offline/offlinePin";
 import { Modal } from "./Modal";
 import { canUseCustomSidebarLogo } from "./FeatureGate";
+import { PwaInstallButton } from "./PwaInstallPrompt";
 
 const EtimsIcon = ({
   className,
@@ -659,6 +660,8 @@ export default function ProviderLayout() {
                           <User size={16} className="text-emerald-600" /> View
                           Profile & Business Info
                         </button>
+
+                        <PwaInstallButton className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold text-emerald-800 bg-emerald-50/70 hover:bg-emerald-100 transition-colors border border-emerald-100" label="Install hlynk App" />
 
                         {!navigator.onLine && hasOfflinePin() && (
                           <button
