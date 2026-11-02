@@ -6,6 +6,7 @@ import { Clock, XCircle, Save, CreditCard, ArrowUpRight, Search, Filter, Landmar
 import { AdminStats } from '../../lib/types/api'
 import Pagination from '../../components/shared/Pagination'
 import InlineLoader, { ButtonLoader } from '../../components/shared/InlineLoader'
+import PayoutsManager from '../../components/admin/PayoutsManager'
 
 type SortField = 'id' | 'createdAt' | 'businessName' | 'amount' | 'type' | 'status'
 type SortDirection = 'asc' | 'desc'
@@ -257,124 +258,7 @@ export default function PaymentsPage() {
           )}
         </div>
       ) : (
-        <div className="space-y-6">
-           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <div className="lg:col-span-2 space-y-6">
-                 <div className="bg-white rounded-[.5rem] border border-gray-100 overflow-hidden">
-                    <table className="w-full text-left">
-                       <thead className="bg-gray-50/50 border-b border-gray-50 text-slate-900">
-                          <tr>
-                             <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest">Vendor & Transfer Details</th>
-                             <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Settlement Amount</th>
-                             <th className="px-8 py-5 text-right"></th>
-                          </tr>
-                       </thead>
-                       <tbody className="divide-y divide-gray-50">
-                          {payoutsLoading ? (
-                             <tr><td colSpan={3} className="py-20 text-center animate-pulse text-gray-400 font-black text-xs uppercase tracking-widest">Scanning Treasury...</td></tr>
-                          ) : paginatedPayouts.length === 0 ? (
-                             <tr><td colSpan={3} className="py-20 text-center text-gray-300 font-black text-xs uppercase tracking-widest italic">No pending settlements found. All vendors are cleared.</td></tr>
-                          ) : paginatedPayouts.map((p: any) => (
-                             <tr key={p.tenantId} className="hover:bg-amber-50/20 transition-all group">
-                                <td className="px-8 py-6">
-                                   <div className="flex items-center gap-4">
-                                      <div className="h-10 w-10 rounded-md bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
-                                         <Clock size={18} />
-                                      </div>
-                                      <div>
-                                         <p className="font-black text-slate-900 text-sm mb-0.5">{p.businessName}</p>
-                                         <div className="flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                                            <span className="flex items-center gap-1"><Landmark size={11} /> {p.transactionCount} TXNs Bundled</span>
-                                            <span className="h-1 w-1 rounded-full bg-slate-200"></span>
-                                            <span className="italic">Updated {formatDate(p.latestTransaction)}</span>
-                                         </div>
-                                      </div>
-                                   </div>
-                                </td>
-                                <td className="px-8 py-6 text-right">
-                                   <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest mb-1 line-through">Gross KES {(p.totalGross || 0).toLocaleString()}</p>
-                                   <p className="text-xl font-semibold text-emerald-900 hl-mono tracking-tight">KES {(p.netSettlement || 0).toLocaleString()}</p>
-                                </td>
-                                <td className="px-8 py-6 text-right">
-                                   <button 
-                                     onClick={() => markPaidMutation.mutate(p.tenantId)}
-                                     disabled={markPaidMutation.isPending}
-                                     className="bg-emerald-600 text-white h-10 px-4 rounded-md font-bold text-xs hover:bg-emerald-700 transition-all flex items-center gap-2 ml-auto"
-                                   >
-                                      {markPaidMutation.isPending ? <ButtonLoader size={16} /> : <CheckCircle2 size={16} />}
-                                      Mark as Settled
-                                   </button>
-                                </td>
-                             </tr>
-                          ))}
-                       </tbody>
-                    </table>
-
-                    {totalPayoutPages > 1 && (
-                      <div className="p-6 border-t border-gray-50">
-                        <Pagination
-                          page={payoutsPage}
-                          pages={totalPayoutPages}
-                          total={payouts.length}
-                          onPageChange={setPayoutsPage}
-                          label="Payout"
-                        />
-                      </div>
-                    )}
-                 </div>
-              </div>
-
-              <div className="space-y-6">
-                 <div className="bg-emerald-900 p-6 rounded-[.5rem] text-white relative overflow-hidden">
-                    <div className="relative z-10">
-                       <h3 className="text-xs font-black mb-2 uppercase tracking-widest opacity-60">Revenue Retention</h3>
-                       <p className="text-2xl font-semibold hl-mono mb-8">KES {Number(stats?.totalPlatformShare || 0).toLocaleString()}</p>
-                       <div className="space-y-4 pt-6 border-t border-white/10">
-                          <div className="flex justify-between items-center text-sm">
-                             <span className="opacity-60 font-bold">Total Gross Collections</span>
-                             <span className="font-black hl-mono">KES {Number(stats?.totalGross || 0).toLocaleString()}</span>
-                          </div>
-                          <div className="flex justify-between items-center text-sm">
-                             <span className="opacity-60 font-bold">Vendor Reimbursements</span>
-                             <span className="font-black hl-mono text-red-300">- KES {Number(stats?.totalNetSettlement || 0).toLocaleString()}</span>
-                          </div>
-                       </div>
-                    </div>
-                    <Landmark size={180} className="absolute -bottom-10 -right-10 opacity-10 rotate-12" />
-                 </div>
-
-                 <div className="bg-white p-6 rounded-[.5rem] border border-gray-100">
-                    <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-6">Settlement Checklist</h3>
-                    <ul className="space-y-4">
-                       <li className="flex gap-4 items-start">
-                          <div className="mt-1 h-5 w-5 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
-                             <CheckCircle2 size={12} strokeWidth={3} />
-                          </div>
-                          <p className="text-xs text-slate-600 font-medium leading-relaxed">
-                             Verify valid M-Pesa receipt numbers matches vendor records before payout.
-                          </p>
-                       </li>
-                       <li className="flex gap-4 items-start">
-                          <div className="mt-1 h-5 w-5 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
-                             <CheckCircle2 size={12} strokeWidth={3} />
-                          </div>
-                          <p className="text-xs text-slate-600 font-medium leading-relaxed">
-                             Transfer Net Settlement amount via B2C or manually to vendor's phone.
-                          </p>
-                       </li>
-                       <li className="flex gap-4 items-start">
-                          <div className="mt-1 h-5 w-5 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
-                             <CheckCircle2 size={12} strokeWidth={3} />
-                          </div>
-                          <p className="text-xs text-slate-600 font-medium leading-relaxed">
-                             Mark as "Settled" to clear transactions from pending treasury view.
-                          </p>
-                       </li>
-                    </ul>
-                 </div>
-              </div>
-           </div>
-        </div>
+        <PayoutsManager />
       )}
     </div>
   )

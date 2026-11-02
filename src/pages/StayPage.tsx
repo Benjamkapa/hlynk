@@ -1116,7 +1116,7 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
 
   return (
     <div
-      className="min-h-screen bg-[#f7f7f5] pb-28 text-slate-900"
+      className="min-h-screen bg-[#f7f7f5] pb-28 text-slate-900 overflow-x-clip"
       style={{ fontFamily: "'DM Sans', Inter, sans-serif" }}
     >
       {/* Floating glass header: slides out on downward scroll and slides back into view on upward scroll. */}

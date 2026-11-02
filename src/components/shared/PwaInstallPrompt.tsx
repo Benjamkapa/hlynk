@@ -1,8 +1,12 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useLocation } from 'react-router-dom';
+import { useAuth } from '../../lib/auth/AuthContext';
 import { usePwaInstall } from '../../lib/pwa-install';
 
 export default function PwaInstallPrompt() {
+  const { user } = useAuth();
+  const location = useLocation();
   const { canInstall, isInstalled, isStandalone, isIOS, promptInstall } = usePwaInstall();
   const [isDismissed, setIsDismissed] = useState<boolean>(() => {
     if (typeof window === 'undefined') return true;
@@ -19,6 +23,28 @@ export default function PwaInstallPrompt() {
       setIsDismissed(true);
     }
   }, [isInstalled]);
+
+  // Restrict prompt: ONLY show after user is signed in AND inside the portal (/dashboard or /admin).
+  // Strictly excluded: landing page (/), auth pages (/login, /register, etc.), and stay/storefront pages (/stay, /shop).
+  const isPortalRoute = location.pathname.startsWith('/dashboard') || location.pathname.startsWith('/admin');
+  const isExcludedRoute =
+    location.pathname === '/' ||
+    location.pathname.startsWith('/login') ||
+    location.pathname.startsWith('/register') ||
+    location.pathname.startsWith('/verify') ||
+    location.pathname.startsWith('/forgot-password') ||
+    location.pathname.startsWith('/reset-password') ||
+    location.pathname.startsWith('/stay') ||
+    location.pathname.startsWith('/shop') ||
+    location.pathname.startsWith('/store') ||
+    location.pathname.startsWith('/privacy-policy') ||
+    location.pathname.startsWith('/terms-conditions') ||
+    location.pathname.startsWith('/google') ||
+    location.pathname.startsWith('/partners');
+
+  if (!user || !isPortalRoute || isExcludedRoute) {
+    return null;
+  }
 
   // If running standalone, already installed, dismissed, or browser can't install, render nothing
   if (isStandalone || isInstalled || isDismissed || (!canInstall && !isIOS)) {

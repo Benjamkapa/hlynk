@@ -19,7 +19,7 @@ export default function LandingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 selection:bg-emerald-500 selection:text-white overflow-x-hidden">
+    <div className="min-h-screen bg-slate-950 text-slate-100 selection:bg-emerald-500 selection:text-white overflow-x-clip">
       <Navbar />
 
       <main className="space-y-0 py-0.5">

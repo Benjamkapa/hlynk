@@ -67,10 +67,9 @@
   html { 
     scroll-behavior: smooth; 
     -webkit-tap-highlight-color: transparent; 
-    overflow-x: hidden;
   }
   body {
-    overscroll-behavior-y: contain;
+    overflow-x: clip;
   }
 
   /* Prevent swipe/overscroll inside modals from triggering parent/browser refreshes */
@@ -109,7 +108,7 @@
     /* Prevent horizontal viewport breakout on mobile pages */
     main {
       max-width: 100vw !important;
-      overflow-x: hidden !important;
+      overflow-x: clip !important;
       box-sizing: border-box !important;
     }
 
@@ -181,7 +180,7 @@
   body {
     @apply bg-background text-foreground antialiased;
     line-height: 1.5;
-    overflow-x: hidden;
+    overflow-x: clip;
     /* Use device's native font immediately; Nunito loads async and takes over only if preferred */
     font-family: var(--font-system);
     /* Smooth font rendering identical to native iOS/macOS apps */
