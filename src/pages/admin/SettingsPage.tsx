@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef } from 'react'
-import { Bolt, Shield, Bell, Globe, Database, Cpu, Lock, Save, Key, UserCheck, ShieldAlert, ShieldCheck, User, Camera, Smartphone, CheckCircle2, AlertTriangle } from 'lucide-react'
 import { ButtonLoader } from '../../components/shared/InlineLoader'
 import { toast } from 'sonner'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
@@ -9,6 +8,24 @@ import { subscribeToPushNotifications, unsubscribeFromPush, getPushSubscriptionS
 import { useAuth } from '../../lib/auth/AuthContext'
 import { getErrorMessage } from '../../lib/utils/error'
 
+const inputCls =
+  'w-full rounded border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none transition-colors placeholder:text-slate-400 focus:border-[#0D4A3E]'
+
+const outlineBtn =
+  'inline-flex h-9 items-center gap-2 rounded border border-slate-300 bg-white px-3 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 disabled:opacity-50'
+
+const TABS = [
+  { name: 'Profile', desc: 'Your details and photo' },
+  { name: 'General', desc: 'Platform-wide options' },
+  { name: 'Security', desc: 'Sign-in and access' },
+  { name: 'Notifications', desc: 'Push alerts' },
+  { name: 'Regional', desc: 'Currency and timezone' },
+  { name: 'Infrastructure', desc: 'Payments diagnostics' },
+]
+
+// Tabs where there is nothing to save
+const NO_SAVE_TABS = ['Notifications', 'Infrastructure']
+
 export default function SettingsPage() {
   const queryClient = useQueryClient()
   const { user, refreshUser } = useAuth()
@@ -16,16 +33,20 @@ export default function SettingsPage() {
   const [formState, setFormState] = useState<Record<string, string>>({})
   const [profileForm, setProfileForm] = useState({ name: '', email: '', phone: '' })
   const [uploading, setUploading] = useState(false)
+  const [b2cPhone, setB2cPhone] = useState('')
+  const [b2cAmount, setB2cAmount] = useState('')
+  const [b2cPending, setB2cPending] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
-  
+
   useEffect(() => {
     if (user) {
       setProfileForm({ name: user.name || '', email: user.email || '', phone: user.phone || '' })
     }
   }, [user])
+
   const { data: res, error } = useQuery<any>({
     queryKey: ['admin-settings'],
-    queryFn: adminApi.getSettings
+    queryFn: adminApi.getSettings,
   })
 
   useEffect(() => {
@@ -36,26 +57,25 @@ export default function SettingsPage() {
   }, [res, error])
 
   const setField = (key: string, value: any) => {
-    setFormState(prev => ({ ...prev, [key]: value }))
+    setFormState((prev) => ({ ...prev, [key]: value }))
   }
 
   const updateMutation = useMutation({
     mutationFn: () => adminApi.updateSettings(formState),
-
     onSuccess: () => {
-      toast.success('System configurations synchronized')
+      toast.success('Settings saved')
       queryClient.invalidateQueries({ queryKey: ['admin-settings'] })
     },
-    onError: () => toast.error('Failed to update settings')
+    onError: () => toast.error('Failed to save settings'),
   })
 
   const profileMutation = useMutation({
     mutationFn: () => adminApi.updateProfile(profileForm),
     onSuccess: () => {
-      toast.success('Profile updated successfully')
+      toast.success('Profile saved')
       refreshUser()
     },
-    onError: (err) => toast.error(getErrorMessage(err))
+    onError: (err) => toast.error(getErrorMessage(err)),
   })
 
   const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -82,383 +102,294 @@ export default function SettingsPage() {
     }
   }
 
-  const tabs = [
-    { name: 'Profile', icon: User, desc: 'Personal info & avatar' },
-    { name: 'General', icon: Bolt, desc: 'Global platform configs' },
-    { name: 'Security', icon: Shield, desc: 'Auth & Access control' },
-    { name: 'Notifications', icon: Bell, desc: 'Email & SMS alerts' },
-    { name: 'Regional', icon: Globe, desc: 'Taxes & Currencies' },
-    { name: 'Infrastructure', icon: Cpu, desc: 'API & Performance' },
-  ]
+  const runB2cTest = async () => {
+    if (!b2cPhone || !b2cAmount) return toast.error('Phone and amount are required')
+    setB2cPending(true)
+    const t = toast.loading('Sending test disbursement...')
+    try {
+      const r = await adminApi.testB2C({ phone: b2cPhone, amount: Number(b2cAmount) })
+      toast.success(r.message, { id: t })
+    } catch (err) {
+      toast.error(getErrorMessage(err), { id: t })
+    } finally {
+      setB2cPending(false)
+    }
+  }
+
+  const saving = updateMutation.isPending || profileMutation.isPending
+  const current = TABS.find((t) => t.name === activeTab)
 
   return (
-    <div className="space-y-8 pt-4 animate-in fade-in duration-700">
-      
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+    <div className="mx-auto max-w-[1400px] space-y-8 pt-2 animate-in fade-in duration-500">
+      {/* Header */}
+      <header className="flex flex-col gap-4 border-b border-slate-200 pb-6 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="text-xl font-semibold text-gray-900">Settings</h1>
-          <p className="text-gray-400 text-sm mt-0.5">System-wide configuration and administrative controls</p>
+          <p className="text-xs text-slate-500">Platform and administrator controls</p>
+          <h1 className="mt-1 font-serif text-3xl tracking-tight text-slate-900">Settings</h1>
         </div>
-        <button 
-          onClick={handleSave}
-          disabled={updateMutation.isPending || profileMutation.isPending}
-          className="inline-flex items-center gap-2 bg-emerald-600 text-white h-10 px-4 rounded-md font-bold text-xs hover:bg-emerald-700 transition-all disabled:opacity-60"
-        >
-          <Save size={14} /> {updateMutation.isPending || profileMutation.isPending ? 'Syncing...' : 'Deploy Changes'}
-        </button>
-      </div>
+        {!NO_SAVE_TABS.includes(activeTab) && (
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            className="inline-flex h-10 items-center gap-2 rounded bg-[#0D4A3E] px-4 text-sm font-medium text-white transition-colors hover:bg-[#0A3D33] disabled:opacity-60"
+          >
+            {saving ? 'Saving…' : 'Save changes'}
+          </button>
+        )}
+      </header>
 
-      <div className="flex flex-col lg:flex-row gap-6">
-        {/* Navigation Sidebar */}
-        <div className="lg:w-[280px] space-y-6">
-          <div className="bg-white p-3 rounded-[.5rem] border border-slate-100">
-            {tabs.map((tab) => (
+      <div className="flex flex-col gap-8 lg:flex-row">
+        {/* Section navigation */}
+        <nav aria-label="Settings sections" className="flex gap-1 overflow-x-auto lg:w-60 lg:shrink-0 lg:flex-col lg:overflow-visible">
+          {TABS.map((tab) => {
+            const active = activeTab === tab.name
+            return (
               <button
                 key={tab.name}
                 onClick={() => setActiveTab(tab.name)}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-md transition-all group ${
-                  activeTab === tab.name 
-                  ? 'bg-slate-900 text-white' 
-                  : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
+                aria-current={active ? 'page' : undefined}
+                className={`shrink-0 border-b-2 px-3 py-2.5 text-left transition-colors lg:border-b-0 lg:border-l-2 ${
+                  active
+                    ? 'border-[#0D4A3E] text-slate-900'
+                    : 'border-transparent text-slate-500 hover:text-slate-900'
                 }`}
               >
-                <div className={`h-9 w-9 rounded-md flex items-center justify-center transition-colors shrink-0 ${
-                  activeTab === tab.name ? 'bg-slate-800 text-emerald-400' : 'bg-slate-100 text-slate-400 group-hover:bg-white'
-                }`}>
-                  <tab.icon size={16} />
-                </div>
-                <div className="text-left">
-                  <p className="text-xs font-black">{tab.name}</p>
-                  <p className={`text-[10px] font-bold uppercase tracking-widest ${activeTab === tab.name ? 'text-slate-400' : 'text-slate-400'}`}>{tab.desc}</p>
-                </div>
+                <span className={`block text-sm ${active ? 'font-semibold' : 'font-medium'}`}>{tab.name}</span>
+                <span className="mt-0.5 hidden text-xs text-slate-400 lg:block">{tab.desc}</span>
               </button>
-            ))}
+            )
+          })}
+        </nav>
+
+        {/* Content */}
+        <section className="min-w-0 flex-1 overflow-hidden rounded-md border border-slate-200 bg-white">
+          <div className="border-b border-slate-200 px-6 py-4">
+            <h2 className="text-sm font-semibold text-slate-900">{activeTab}</h2>
+            <p className="mt-0.5 text-xs text-slate-500">{current?.desc}</p>
           </div>
 
-          <div className="bg-emerald-900 rounded-[.5rem] p-6 text-white relative overflow-hidden">
-             <div className="relative z-10">
-               <ShieldCheck size={32} className="text-emerald-400 mb-4" />
-               <h4 className="text-sm font-semibold mb-2">Audit Complete</h4>
-               <p className="text-xs text-emerald-200/80 font-medium leading-relaxed">Your last security audit was 2 days ago. No vulnerabilities found.</p>
-             </div>
-             <div className="absolute -right-6 -bottom-6 h-32 w-32 bg-emerald-800 rounded-full blur-2xl opacity-50" />
-          </div>
-        </div>
-
-        {/* Content Area */}
-        <div className="flex-1 space-y-6">
-          <div className="bg-white rounded-[.5rem] border border-slate-100 overflow-hidden">
-            <div className="p-6 border-b border-slate-50 flex justify-between items-center bg-slate-50/30">
-               <div>
-                 <h3 className="text-sm font-medium text-slate-900">{activeTab} configuration</h3>
-                 <p className="text-xs text-slate-400 mt-0.5">Modified by Admin @ 10:42 AM</p>
-               </div>
-               <div className="flex gap-2">
-                  <div className="h-9 w-9 rounded-md bg-white border border-slate-100 flex items-center justify-center text-slate-400">
-                     <Database size={16} />
-                  </div>
-               </div>
-            </div>
-            
-            <div className="p-6 space-y-10">
-              {activeTab === 'Profile' && (
-                <div className="space-y-8">
-                  <div className="flex items-center gap-6">
-                    <div className="relative group">
-                      <div className="h-20 w-20 rounded-full bg-slate-100 flex items-center justify-center overflow-hidden">
-                        {user?.photoUrl || user?.avatar ? (
-                          <img src={user.photoUrl || user.avatar} className="h-full w-full object-cover" alt="" />
-                        ) : (
-                          <User size={32} className="text-slate-300" />
-                        )}
-                        {uploading && (
-                          <div className="absolute inset-0 bg-black/20 flex items-center justify-center backdrop-blur-[2px]">
-                            <ButtonLoader size={20} className="text-white" />
-                          </div>
-                        )}
+          <div className="space-y-10 p-6">
+            {activeTab === 'Profile' && (
+              <div className="space-y-8">
+                <div className="flex items-center gap-5">
+                  <div className="relative flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded bg-slate-100 text-2xl font-semibold text-slate-400">
+                    {user?.photoUrl || user?.avatar ? (
+                      <img src={user.photoUrl || user.avatar} className="h-full w-full object-cover" alt="" />
+                    ) : (
+                      (profileForm.name || user?.name || '?').charAt(0).toUpperCase()
+                    )}
+                    {uploading && (
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/30">
+                        <ButtonLoader size={20} className="text-white" />
                       </div>
-                      <input
-                        type="file"
-                        ref={fileInputRef}
-                        onChange={handlePhotoUpload}
-                        className="hidden"
-                        accept="image/*"
-                      />
-                      <button
-                        onClick={() => fileInputRef.current?.click()}
-                        disabled={uploading}
-                        className="absolute -bottom-1 -right-1 bg-emerald-600 text-white p-1.5 rounded-full hover:bg-emerald-700 transition-all disabled:opacity-50"
-                      >
-                        <Camera size={14} />
-                      </button>
-                    </div>
-                    <div>
-                      <h4 className="font-black text-slate-900 text-sm">Administrator Profile</h4>
-                      <p className="text-xs text-slate-500 font-medium">PNG, JPG or GIF. Max 5MB.</p>
-                    </div>
+                    )}
                   </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <InputGroup
-                      label="Full Name"
-                      value={profileForm.name}
-                      onChange={(v: string) => setProfileForm({ ...profileForm, name: v })}
-                    />
-                    <InputGroup
-                      label="Email Address"
-                      value={profileForm.email}
-                      onChange={(v: string) => setProfileForm({ ...profileForm, email: v })}
-                    />
-                    <InputGroup
-                      label="Phone Number"
-                      value={profileForm.phone}
-                      onChange={(v: string) => setProfileForm({ ...profileForm, phone: v })}
-                    />
+                  <input type="file" ref={fileInputRef} onChange={handlePhotoUpload} className="hidden" accept="image/*" />
+                  <div>
+                    <button
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={uploading}
+                      className={outlineBtn}
+                    >
+                      Change photo
+                    </button>
+                    <p className="mt-2 text-xs text-slate-500">PNG, JPG or GIF, up to 5 MB.</p>
                   </div>
                 </div>
-              )}
 
-              {activeTab === 'General' && (
-                <>
-                  <section className="space-y-6">
-                    <div className="flex items-center gap-2 text-slate-400 mb-2">
-                      <Bolt size={14} strokeWidth={1}/>
-                      <span className="text-[10px] font-black uppercase tracking-widest">Primary Details</span>
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                       <InputGroup 
-                        label="Support Email" 
-                        value={formState['supportEmail'] || ''} 
-                        onChange={(v: string) => setField('supportEmail', v)} 
-                        placeholder="support@hlynk.com" 
-                      />
-                      <InputGroup 
-                        label="Platform Fee (%)" 
-                        value={formState['platformFeePercentage'] || '5.00'} 
-                        onChange={(v: string) => setField('platformFeePercentage', v)} 
-                        placeholder="5.00" 
-                      />
-                    </div>
-                  </section>
-                  
-                  <section className="space-y-6">
-                    <div className="flex items-center gap-2 text-slate-400 mb-2">
-                      <Globe size={14} />
-                      <span className="text-[10px] font-black uppercase tracking-widest">Maintenance</span>
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <SecuritySwitch 
-                        title="Maintenance Mode" 
-                        desc="Temporary block all provider access for maintenance" 
-                        active={!!formState['maintenanceMode']} 
-                        onChange={(v: boolean) => setField('maintenanceMode', v)}
-                        icon={Bolt}
-                      />
-                      <SecuritySwitch 
-                        title="Allow Registration" 
-                        desc="Enable new provider signups" 
-                        active={!!formState['allowNewProviders']} 
-                        onChange={(v: boolean) => setField('allowNewProviders', v)}
-                        icon={Globe}
-                      />
-                    </div>
-                  </section>
-                </>
-              )}
-
-              {activeTab === 'Infrastructure' && (
-                <div className="space-y-10">
-                   <section className="space-y-6">
-                    <div className="flex items-center gap-2 text-slate-400 mb-2">
-                      <Smartphone size={14} />
-                      <span className="text-[10px] font-black uppercase tracking-widest">M-Pesa B2C Diagnostic</span>
-                    </div>
-                    
-                    <div className="bg-slate-50 p-6 rounded-[.5rem] border border-slate-100 space-y-6">
-                       <p className="text-xs text-slate-500 font-medium leading-relaxed">
-                         Perform a live B2C disbursement test. This will attempt to send real or sandbox funds from your system paybill to the specified number. 
-                         <span className="block mt-2 text-amber-600 font-bold">Use with caution: This action is logged for forensic audit.</span>
-                       </p>
-                       
-                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                          <div className="space-y-2">
-                             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Target Phone</label>
-                             <input 
-                               type="text" 
-                               id="test-b2c-phone"
-                               placeholder="2547XXXXXXXX" 
-                               className="hl-input w-full rounded-md"
-                             />
-                          </div>
-                          <div className="space-y-2">
-                             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Amount (KES)</label>
-                             <input 
-                               type="number" 
-                               id="test-b2c-amount"
-                               placeholder="10" 
-                               className="hl-input w-full rounded-md"
-                             />
-                          </div>
-                          <div className="md:col-span-2">
-                             <button 
-                               onClick={async () => {
-                                 const phone = (document.getElementById('test-b2c-phone') as HTMLInputElement).value;
-                                 const amount = (document.getElementById('test-b2c-amount') as HTMLInputElement).value;
-                                 if (!phone || !amount) return toast.error('Phone and amount required');
-                                 
-                                 const t = toast.loading('Initiating B2C Handshake...');
-                                 try {
-                                   const res = await adminApi.testB2C({ phone, amount: Number(amount) });
-                                   toast.success(res.message, { id: t });
-                                 } catch (err) {
-                                   toast.error(getErrorMessage(err), { id: t });
-                                 }
-                               }}
-                               className="w-full py-3 bg-slate-900 text-white rounded-md text-[10px] font-black uppercase tracking-widest hover:bg-black transition-all flex items-center justify-center gap-2"
-                             >
-                               <Smartphone size={13} /> Execute Disburse Handshake
-                             </button>
-                          </div>
-                       </div>
-                    </div>
-                   </section>
-
-                   <section className="space-y-6 opacity-50 pointer-events-none">
-                    <div className="flex items-center gap-2 text-slate-400 mb-2">
-                      <Cpu size={14} />
-                      <span className="text-[10px] font-black uppercase tracking-widest">Node Distribution</span>
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                       <div className="h-20 bg-slate-50 border border-slate-100 rounded-[.5rem] animate-pulse" />
-                       <div className="h-20 bg-slate-50 border border-slate-100 rounded-[.5rem] animate-pulse" />
-                       <div className="h-20 bg-slate-50 border border-slate-100 rounded-[.5rem] animate-pulse" />
-                    </div>
-                   </section>
+                <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+                  <InputGroup label="Full name" value={profileForm.name} onChange={(v: string) => setProfileForm({ ...profileForm, name: v })} />
+                  <InputGroup label="Email" value={profileForm.email} onChange={(v: string) => setProfileForm({ ...profileForm, email: v })} />
+                  <InputGroup label="Phone number" value={profileForm.phone} onChange={(v: string) => setProfileForm({ ...profileForm, phone: v })} />
                 </div>
-              )}
+              </div>
+            )}
 
-              {activeTab === 'Notifications' && (
-                <AdminNotificationsPanel />
-              )}
-
-              {activeTab === 'Regional' && (
-                <section className="space-y-6">
-                  <div className="flex items-center gap-2 text-slate-400 mb-2">
-                    <Globe size={14} />
-                    <span className="text-[10px] font-black uppercase tracking-widest">Localization & Currencies</span>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <SelectGroup
-                      label="Primary Operating Currency"
-                      options={['KES - Kenya Shilling', 'USD - US Dollar', 'EUR - Euro', 'GBP - British Pound']}
-                      value={formState['DEFAULT_CURRENCY'] || 'KES - Kenya Shilling'}
-                      onChange={(v: string) => setField('DEFAULT_CURRENCY', v)}
+            {activeTab === 'General' && (
+              <>
+                <Group title="Primary details">
+                  <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+                    <InputGroup
+                      label="Support email"
+                      value={formState['supportEmail'] || ''}
+                      onChange={(v: string) => setField('supportEmail', v)}
+                      placeholder="support@hlynk.com"
                     />
-                    <SelectGroup
-                      label="System Timezone"
-                      options={['Africa/Nairobi (UTC+3)', 'UTC', 'Europe/London (UTC+1)', 'America/New_York (UTC-5)']}
-                      value={formState['TIMEZONE'] || 'Africa/Nairobi (UTC+3)'}
-                      onChange={(v: string) => setField('TIMEZONE', v)}
+                    <InputGroup
+                      label="Platform fee (%)"
+                      value={formState['platformFeePercentage'] || '5.00'}
+                      onChange={(v: string) => setField('platformFeePercentage', v)}
+                      placeholder="5.00"
                     />
                   </div>
-                </section>
-              )}
+                </Group>
 
-              {activeTab === 'Security' && (
-                <section className="space-y-4">
-                  <SecuritySwitch 
-                    title="Enforce Admin 2FA" 
-                    desc="Mandatory hardware or app-based 2FA for all SuperAdmins" 
-                    icon={Key} 
-                    active={formState['ENFORCE_2FA'] === 'true'} 
-                    onChange={(v: boolean) => setField('ENFORCE_2FA', String(v))}
-                  />
-                  <SecuritySwitch 
-                    title="Intrusion Detection" 
-                    desc="Automatically block IPs with more than 5 failed attempts in 1 min" 
-                    icon={ShieldAlert} 
-                    active={formState['INTRUSION_DETECT'] === 'true'} 
-                    onChange={(v: boolean) => setField('INTRUSION_DETECT', String(v))}
-                  />
-                  <SecuritySwitch 
-                    title="Session Persistence" 
-                    desc="Keep administrative sessions alive for 24 hours" 
-                    icon={UserCheck} 
-                    active={formState['SESSION_PERSISTENCE'] === 'true'} 
-                    onChange={(v: boolean) => setField('SESSION_PERSISTENCE', String(v))}
-                  />
-                </section>
-              )}
-            </div>
+                <Group title="Access">
+                  <div className="divide-y divide-slate-100 border-y border-slate-200">
+                    <ToggleRow
+                      title="Maintenance mode"
+                      desc="Block all business access while you carry out maintenance."
+                      active={!!formState['maintenanceMode']}
+                      onChange={(v: boolean) => setField('maintenanceMode', v)}
+                    />
+                    <ToggleRow
+                      title="Allow registration"
+                      desc="Let new businesses sign up."
+                      active={!!formState['allowNewProviders']}
+                      onChange={(v: boolean) => setField('allowNewProviders', v)}
+                    />
+                  </div>
+                </Group>
+              </>
+            )}
+
+            {activeTab === 'Security' && (
+              <div className="divide-y divide-slate-100 border-y border-slate-200">
+                <ToggleRow
+                  title="Require admin two-factor authentication"
+                  desc="Every super admin must verify with an app or hardware key."
+                  active={formState['ENFORCE_2FA'] === 'true'}
+                  onChange={(v: boolean) => setField('ENFORCE_2FA', String(v))}
+                />
+                <ToggleRow
+                  title="Block repeated failed sign-ins"
+                  desc="Automatically block IPs with more than 5 failed attempts in a minute."
+                  active={formState['INTRUSION_DETECT'] === 'true'}
+                  onChange={(v: boolean) => setField('INTRUSION_DETECT', String(v))}
+                />
+                <ToggleRow
+                  title="Keep admin sessions for 24 hours"
+                  desc="Stay signed in between visits for a full day."
+                  active={formState['SESSION_PERSISTENCE'] === 'true'}
+                  onChange={(v: boolean) => setField('SESSION_PERSISTENCE', String(v))}
+                />
+              </div>
+            )}
+
+            {activeTab === 'Notifications' && <AdminNotificationsPanel />}
+
+            {activeTab === 'Regional' && (
+              <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+                <SelectGroup
+                  label="Operating currency"
+                  options={['KES - Kenya Shilling', 'USD - US Dollar', 'EUR - Euro', 'GBP - British Pound']}
+                  value={formState['DEFAULT_CURRENCY'] || 'KES - Kenya Shilling'}
+                  onChange={(v: string) => setField('DEFAULT_CURRENCY', v)}
+                />
+                <SelectGroup
+                  label="System timezone"
+                  options={['Africa/Nairobi (UTC+3)', 'UTC', 'Europe/London (UTC+1)', 'America/New_York (UTC-5)']}
+                  value={formState['TIMEZONE'] || 'Africa/Nairobi (UTC+3)'}
+                  onChange={(v: string) => setField('TIMEZONE', v)}
+                />
+              </div>
+            )}
+
+            {activeTab === 'Infrastructure' && (
+              <Group title="M-Pesa B2C test">
+                <p className="max-w-2xl text-sm leading-relaxed text-slate-500">
+                  Send a real or sandbox payment from your paybill to the number below to check that disbursements work.
+                  Every test is recorded in the audit log.
+                </p>
+                <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+                  <InputGroup label="Recipient phone" value={b2cPhone} onChange={setB2cPhone} placeholder="2547XXXXXXXX" mono />
+                  <InputGroup label="Amount (KES)" value={b2cAmount} onChange={setB2cAmount} placeholder="10" mono />
+                </div>
+                <button
+                  onClick={runB2cTest}
+                  disabled={b2cPending}
+                  className="inline-flex h-10 items-center gap-2 rounded bg-[#0D4A3E] px-4 text-sm font-medium text-white transition-colors hover:bg-[#0A3D33] disabled:opacity-60"
+                >
+                  {b2cPending && <ButtonLoader size={14} />}
+                  Send test payment
+                </button>
+              </Group>
+            )}
           </div>
-          
-          {/* <div className="bg-slate-50 border border-dashed border-slate-200 p-6 rounded-[.5rem] flex items-center justify-between">
-             <div className="flex items-center gap-4">
-                <div className="h-10 w-10 rounded-md bg-white border border-slate-200 flex items-center justify-center text-slate-400">
-                   <Lock size={16} />
-                </div>
-                <div>
-                   <p className="text-sm font-black text-slate-900">Advanced Audit Logs</p>
-                   <p className="text-xs text-slate-400 font-medium">Download the full history of configuration changes.</p>
-                </div>
-             </div>
-             <button className="px-4 py-2 bg-white border border-slate-200 rounded-md text-xs font-black hover:bg-slate-100 transition-all">Export JSON</button>
-          </div> */}
-        </div>
+        </section>
       </div>
     </div>
   )
 }
 
-function InputGroup({ label, value, onChange, placeholder }: any) {
+function Group({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="space-y-2">
-      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">{label}</label>
-      <input 
-        type="text" 
+    <section className="space-y-4">
+      <h3 className="text-sm font-semibold text-slate-900">{title}</h3>
+      {children}
+    </section>
+  )
+}
+
+function InputGroup({ label, value, onChange, placeholder, mono = false }: any) {
+  return (
+    <label className="block space-y-1.5">
+      <span className="text-xs font-medium text-slate-500">{label}</span>
+      <input
+        type="text"
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="hl-input w-full rounded-md" 
+        className={`${inputCls} ${mono ? 'hl-mono' : ''}`}
       />
-    </div>
+    </label>
   )
 }
 
 function SelectGroup({ label, options, value, onChange }: any) {
   return (
-    <div className="space-y-2">
-      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">{label}</label>
-      <div className="relative">
-        <select value={value} onChange={e => onChange(e.target.value)} className="hl-input w-full appearance-none rounded-md">
-          {options.map((opt: any) => <option key={opt} value={opt}>{opt}</option>)}
-        </select>
-        <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 font-black">↓</div>
+    <label className="block space-y-1.5">
+      <span className="text-xs font-medium text-slate-500">{label}</span>
+      <select value={value} onChange={(e) => onChange(e.target.value)} className={inputCls}>
+        {options.map((opt: any) => (
+          <option key={opt} value={opt}>
+            {opt}
+          </option>
+        ))}
+      </select>
+    </label>
+  )
+}
+
+function Switch({ active, onChange, label }: { active: boolean; onChange: (v: boolean) => void; label: string }) {
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={active}
+      aria-label={label}
+      onClick={() => onChange(!active)}
+      className={`relative h-6 w-11 shrink-0 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0D4A3E] ${
+        active ? 'bg-[#0D4A3E]' : 'bg-slate-300'
+      }`}
+    >
+      <span
+        className={`absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow-sm transition-transform ${
+          active ? 'translate-x-5' : 'translate-x-0'
+        }`}
+      />
+    </button>
+  )
+}
+
+function ToggleRow({ title, desc, active, onChange }: { title: string; desc: string; active: boolean; onChange: (v: boolean) => void }) {
+  return (
+    <div className="flex items-center justify-between gap-6 py-4">
+      <div>
+        <p className="text-sm font-medium text-slate-900">{title}</p>
+        <p className="mt-0.5 text-sm text-slate-500">{desc}</p>
       </div>
+      <Switch active={active} onChange={onChange} label={title} />
     </div>
   )
 }
 
-function SecuritySwitch({ title, desc, icon: Icon, active, onChange }: any) {
-  return (
-    <div onClick={() => onChange(!active)} className="flex items-center justify-between p-5 rounded-[.5rem] bg-slate-50/50 border border-slate-100 hover:bg-white hover:border-slate-200 transition-all group cursor-pointer">
-      <div className="flex items-center gap-4">
-        <div className={`h-10 w-10 rounded-md flex items-center justify-center transition-colors ${
-          active ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-200 text-slate-400'
-        }`}>
-          <Icon size={18} />
-        </div>
-        <div>
-          <p className="text-sm font-black text-slate-900">{title}</p>
-          <p className="text-xs text-slate-400 font-medium mt-0.5">{desc}</p>
-        </div>
-      </div>
-      <div className={`w-12 h-7 rounded-full p-1 transition-all ${active ? 'bg-emerald-500' : 'bg-slate-300'}`}>
-        <div className={`w-5 h-5 bg-white rounded-full shadow-sm transition-all ${active ? 'translate-x-5' : 'translate-x-0'}`} />
-      </div>
-    </div>
-  )
-}
+const ALERT_STREAMS = [
+  { title: 'Signups and onboarding', desc: 'A new business signs up or finishes onboarding.' },
+  { title: 'M-Pesa and payments', desc: 'Subscription payments, B2C disbursements and payment problems.' },
+  { title: 'Security', desc: 'IP lockouts, brute-force attempts and role changes.' },
+  { title: 'Subscriptions and expiries', desc: 'Plans about to expire, grace periods and renewals.' },
+]
 
 function AdminNotificationsPanel() {
   const [pushState, setPushState] = useState<'subscribed' | 'denied' | 'prompt' | 'unsupported' | 'ios_browser'>('prompt')
@@ -476,10 +407,10 @@ function AdminNotificationsPanel() {
     try {
       if (active) {
         await subscribeToPushNotifications()
-        toast.success('Native administrator push notifications enabled!')
+        toast.success('Push alerts enabled')
       } else {
         await unsubscribeFromPush()
-        toast.success('Administrator push notifications disabled.')
+        toast.success('Push alerts disabled')
       }
       const newState = await getPushSubscriptionState()
       setPushState(newState as any)
@@ -494,158 +425,81 @@ function AdminNotificationsPanel() {
     setSendingTest(true)
     try {
       await api.post('/notifications/test')
-      toast.success('Test notification dispatched to your device!')
+      toast.success('Test alert sent to this device')
     } catch (err: any) {
-      toast.error(err.response?.data?.message || 'Failed to send test push notification')
+      toast.error(err.response?.data?.message || 'Failed to send test alert')
     } finally {
       setSendingTest(false)
     }
   }
 
+  const status =
+    pushState === 'subscribed'
+      ? { label: 'On', dot: 'bg-emerald-500', text: 'text-emerald-700', body: 'This device is registered and receives live alerts.' }
+      : pushState === 'denied'
+        ? { label: 'Blocked', dot: 'bg-amber-500', text: 'text-amber-700', body: 'Notifications are blocked in this browser. Allow them from the site settings in your address bar, then reload.' }
+        : pushState === 'unsupported'
+          ? { label: 'Not supported', dot: 'bg-slate-400', text: 'text-slate-600', body: 'This browser cannot receive push notifications.' }
+          : pushState === 'ios_browser'
+            ? { label: 'Needs setup', dot: 'bg-amber-500', text: 'text-amber-700', body: 'On iPhone, tap Share, then Add to Home Screen, to turn on push alerts.' }
+            : { label: 'Off', dot: 'bg-slate-400', text: 'text-slate-600', body: 'Turn on to get critical alerts on this browser, even when the portal is closed.' }
+
   return (
-    <div className="space-y-8 animate-in fade-in duration-500">
-      {/* Informational banner */}
-      <div className="bg-emerald-50/80 p-5 rounded-[.5rem] border border-emerald-100 flex items-start gap-4">
-        <div className="h-10 w-10 rounded-md bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
-          <Bell size={20} />
-        </div>
-        <div>
-          <h4 className="text-xs font-black text-emerald-950 uppercase tracking-widest mb-1">
-            Real-Time Administrative Dispatch
-          </h4>
-          <p className="text-xs text-emerald-800 leading-relaxed font-medium">
-            Enable native push notifications to receive instant OS-level alerts for provider onboarding, M-Pesa payments & payouts, subscription milestones, and platform security alerts even when the browser is closed or running in the background.
-          </p>
-        </div>
-      </div>
-
-      {/* Push Notification Toggle Card */}
-      <div className="bg-slate-50/50 p-6 rounded-[.5rem] border border-slate-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2.5">
-            <p className="text-sm font-black text-slate-900">Web Push Notifications</p>
-            <span
-              className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider ${
-                pushState === 'subscribed'
-                  ? 'bg-emerald-100 text-emerald-700 border border-emerald-200'
-                  : pushState === 'denied'
-                  ? 'bg-amber-100 text-amber-700 border border-amber-200'
-                  : pushState === 'unsupported'
-                  ? 'bg-red-100 text-red-700 border border-red-200'
-                  : 'bg-slate-200 text-slate-600'
-              }`}
-            >
-              {pushState === 'subscribed'
-                ? 'Active'
-                : pushState === 'denied'
-                ? 'Permission Denied'
-                : pushState === 'unsupported'
-                ? 'Unsupported'
-                : pushState === 'ios_browser'
-                ? 'Action Required (iOS)'
-                : 'Disabled'}
-            </span>
+    <div className="space-y-10">
+      <Group title="Push alerts">
+        <div className="flex flex-col gap-4 border-y border-slate-200 py-5 sm:flex-row sm:items-center sm:justify-between">
+          <div className="max-w-xl">
+            <p className="flex items-center gap-2 text-sm font-medium text-slate-900">
+              Web push notifications
+              <span className={`inline-flex items-center gap-1.5 text-xs font-medium ${status.text}`}>
+                <span className={`h-1.5 w-1.5 rounded-full ${status.dot}`} />
+                {status.label}
+              </span>
+            </p>
+            <p className="mt-1 text-sm text-slate-500">{status.body}</p>
           </div>
-          <p className="text-xs text-slate-400 font-medium">
-            {pushState === 'subscribed'
-              ? 'This device is registered and actively receiving live administrative push alerts.'
-              : pushState === 'denied'
-              ? 'Notifications are blocked in your browser. Click the lock/site settings in your address bar to reset permissions.'
-              : pushState === 'ios_browser'
-              ? 'On iOS Safari, tap Share → "Add to Home Screen" to enable native Web Push in standalone mode.'
-              : 'Turn on to subscribe this browser to critical administrative push alerts.'}
-          </p>
-        </div>
 
-        <div className="flex items-center gap-3 shrink-0 self-end sm:self-center">
-          {loading ? (
-            <ButtonLoader size={20} className="text-emerald-600" />
-          ) : pushState === 'unsupported' ? (
-            <span className="text-[10px] font-black text-red-500 uppercase tracking-widest">Unsupported Browser</span>
-          ) : pushState === 'ios_browser' ? (
-            <button
-              onClick={() =>
-                toast.info('To enable notifications on iPhone: Tap "Share" and select "Add to Home Screen". Push only works in standalone mode!')
-              }
-              className="px-3 py-2 bg-amber-100 text-amber-800 rounded-md text-[10px] font-black uppercase tracking-widest hover:bg-amber-200 transition-all"
-            >
-              Setup on iPhone
-            </button>
-          ) : pushState === 'denied' ? (
-            <button
-              onClick={() =>
-                toast.info('Please click the site settings icon in your browser address bar to allow notifications, then refresh this page.')
-              }
-              className="px-3 py-2 bg-amber-100 text-amber-800 rounded-md text-[10px] font-black uppercase tracking-widest hover:bg-amber-200 transition-all"
-            >
-              Reset Permission
-            </button>
-          ) : (
-            <>
-              {pushState === 'subscribed' && (
-                <button
-                  onClick={handleSendTest}
-                  disabled={sendingTest}
-                  className="px-3 py-2 border border-slate-200 bg-white text-slate-700 rounded-md text-[10px] font-black uppercase tracking-widest hover:bg-slate-50 transition-all flex items-center gap-1.5 disabled:opacity-50"
-                >
-                  {sendingTest ? <ButtonLoader size={12} /> : <Bell size={12} />}
-                  Send Test Alert
-                </button>
-              )}
-              <div
-                onClick={() => handlePushToggle(pushState !== 'subscribed')}
-                className={`w-12 h-7 rounded-full p-1 transition-all cursor-pointer ${
-                  pushState === 'subscribed' ? 'bg-emerald-500' : 'bg-slate-300'
-                }`}
+          <div className="flex items-center gap-3 sm:self-center">
+            {loading ? (
+              <ButtonLoader size={20} className="text-[#0D4A3E]" />
+            ) : pushState === 'unsupported' ? null : pushState === 'ios_browser' || pushState === 'denied' ? (
+              <button
+                onClick={() =>
+                  toast.info(
+                    pushState === 'ios_browser'
+                      ? 'On iPhone, tap Share, then Add to Home Screen. Push only works from the Home Screen app.'
+                      : 'Allow notifications from the site settings in your address bar, then reload this page.'
+                  )
+                }
+                className={outlineBtn}
               >
-                <div
-                  className={`w-5 h-5 bg-white rounded-full shadow-sm transition-all ${
-                    pushState === 'subscribed' ? 'translate-x-5' : 'translate-x-0'
-                  }`}
-                />
-              </div>
-            </>
-          )}
+                How to fix this
+              </button>
+            ) : (
+              <>
+                {pushState === 'subscribed' && (
+                  <button onClick={handleSendTest} disabled={sendingTest} className={outlineBtn}>
+                    {sendingTest && <ButtonLoader size={12} />}
+                    Send test alert
+                  </button>
+                )}
+                <Switch active={pushState === 'subscribed'} onChange={(v) => handlePushToggle(v)} label="Web push notifications" />
+              </>
+            )}
+          </div>
         </div>
-      </div>
+      </Group>
 
-      {/* Admin Alert Streams Overview */}
-      <section className="space-y-4">
-        <div className="flex items-center gap-2 text-slate-400 mb-2">
-          <ShieldAlert size={14} />
-          <span className="text-[10px] font-black uppercase tracking-widest">Administrative Alert Streams</span>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="p-4 rounded-[.5rem] bg-white border border-slate-100 shadow-sm space-y-1.5">
-            <div className="flex items-center justify-between">
-              <p className="text-xs font-black text-slate-900">Provider Signups & Onboarding</p>
-              <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">Automated</span>
-            </div>
-            <p className="text-xs text-slate-500">Instant notification when a new business signs up or completes onboarding.</p>
-          </div>
-          <div className="p-4 rounded-[.5rem] bg-white border border-slate-100 shadow-sm space-y-1.5">
-            <div className="flex items-center justify-between">
-              <p className="text-xs font-black text-slate-900">M-Pesa & Financial Transactions</p>
-              <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">Automated</span>
-            </div>
-            <p className="text-xs text-slate-500">Live alerts for subscription payments, B2C disbursements, and payment anomalies.</p>
-          </div>
-          <div className="p-4 rounded-[.5rem] bg-white border border-slate-100 shadow-sm space-y-1.5">
-            <div className="flex items-center justify-between">
-              <p className="text-xs font-black text-slate-900">Security & Intrusion Alerts</p>
-              <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">Automated</span>
-            </div>
-            <p className="text-xs text-slate-500">High-priority alerts for IP lockouts, brute-force attempts, and role changes.</p>
-          </div>
-          <div className="p-4 rounded-[.5rem] bg-white border border-slate-100 shadow-sm space-y-1.5">
-            <div className="flex items-center justify-between">
-              <p className="text-xs font-black text-slate-900">Subscriptions & Expirations</p>
-              <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">Automated</span>
-            </div>
-            <p className="text-xs text-slate-500">System daemon alerts for expiring tiers, grace periods, and renewal status.</p>
-          </div>
-        </div>
-      </section>
+      <Group title="What you are alerted about">
+        <ul className="divide-y divide-slate-100 border-y border-slate-200">
+          {ALERT_STREAMS.map((s) => (
+            <li key={s.title} className="py-3.5">
+              <p className="text-sm font-medium text-slate-900">{s.title}</p>
+              <p className="mt-0.5 text-sm text-slate-500">{s.desc}</p>
+            </li>
+          ))}
+        </ul>
+      </Group>
     </div>
   )
 }

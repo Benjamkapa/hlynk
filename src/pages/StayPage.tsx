@@ -1261,7 +1261,7 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
         </section>
 
         {/* COMPACT STORE INFO â€” no repeated product/service display */}
-        <section className="mt-4 grid overflow-hidden rounded-[20px] border border-slate-200 bg-white sm:grid-cols-2 lg:grid-cols-4">
+        <section className="mt-4 grid overflow-hidden rounded-[20px] border border-slate-200 bg-white grid-cols-2 sm:grid-cols-4 lg:grid-cols-4">
           <InfoCell
             icon={<ShoppingBag size={16} />}
             label="Collection"
@@ -1636,7 +1636,7 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
         )}
       </AnimatePresence>
 
-      {/* CART DRAWER */}
+      {/* CART DRAWER / MOBILE BOTTOM SHEET */}
       <AnimatePresence>
         {isCartOpen && (
           <motion.div
@@ -1644,15 +1644,19 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => setIsCartOpen(false)}
-            className="fixed inset-0 z-[80] bg-slate-950/40 backdrop-blur-sm"
+            className="fixed inset-0 z-[80] flex items-end justify-center bg-slate-950/40 p-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] backdrop-blur-sm sm:items-stretch sm:justify-end sm:p-0"
+            role="presentation"
           >
             <motion.aside
-              initial={{ x: 500 }}
-              animate={{ x: 0 }}
-              exit={{ x: 500 }}
+              initial={{ opacity: 0, y: 28 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 28 }}
               transition={{ type: "spring", damping: 28, stiffness: 280 }}
               onClick={(event) => event.stopPropagation()}
-              className="ml-auto flex h-full w-full max-w-[520px] flex-col bg-white/80 backdrop-blur-2xl shadow-2xl"
+              role="dialog"
+              aria-modal="true"
+              aria-label="Your cart"
+              className="flex h-[88dvh] max-h-[88dvh] w-full max-w-[520px] flex-col overflow-hidden rounded-[24px] border border-white/60 bg-white/95 shadow-2xl backdrop-blur-2xl sm:h-full sm:max-h-full sm:rounded-none sm:border-0"
             >
               {/* Glass drawer header */}
               <div

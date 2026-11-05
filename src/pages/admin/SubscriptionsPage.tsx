@@ -1,29 +1,52 @@
-  import { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { adminApi } from '../../lib/api/providers'
 import { toast } from 'sonner'
-import { Search, CreditCard, CheckCircle2, Clock, Wallet } from 'lucide-react'
+import { Search } from 'lucide-react'
 import Pagination from '../../components/shared/Pagination'
 import InlineLoader from '../../components/shared/InlineLoader'
 import { ConfirmModal } from '../../components/shared/ConfirmModal'
 import { AdminStats } from '../../lib/types/api'
+
+const planLabel = (plan?: string) =>
+  plan === 'MAX' ? 'Business Pro' : plan === 'PLUS' ? 'Growth' : 'Starter'
+
+const STATUS_STYLE: Record<string, { label: string; text: string; dot: string }> = {
+  ACTIVE: { label: 'Active', text: 'text-emerald-700', dot: 'bg-emerald-500' },
+  TRIAL: { label: 'Trial', text: 'text-blue-700', dot: 'bg-blue-500' },
+  EXPIRED: { label: 'Expired', text: 'text-red-600', dot: 'bg-red-500' },
+  SUSPENDED: { label: 'Suspended', text: 'text-amber-700', dot: 'bg-amber-500' },
+}
+
+const statusStyle = (status: string) =>
+  STATUS_STYLE[status] || { label: status || 'Unknown', text: 'text-slate-600', dot: 'bg-slate-400' }
+
+const expiry = (s: any) =>
+  s.status === 'TRIAL'
+    ? new Date(s.trialEndDate).toLocaleDateString()
+    : s.endDate
+      ? new Date(s.endDate).toLocaleDateString()
+      : 'Lifetime'
+
+const selectCls =
+  'rounded border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 outline-none focus:border-[#0D4A3E]'
 
 export default function SubscriptionsPage() {
   const [search, setSearch] = useState('')
   const [status, setStatus] = useState('')
   const [planName, setPlanName] = useState('')
   const [page, setPage] = useState(1)
-  const [confirmUpgradePayload, setConfirmUpgradePayload] = useState<{id: string, plan: string} | null>(null)
+  const [confirmUpgradePayload, setConfirmUpgradePayload] = useState<{ id: string; plan: string } | null>(null)
   const queryClient = useQueryClient()
 
   const { data: rawStats, error: statsError } = useQuery<any>({
     queryKey: ['admin-stats'],
-    queryFn: () => adminApi.getStats()
+    queryFn: () => adminApi.getStats(),
   })
 
   const { data: subsRes, isLoading, error: subsError } = useQuery<any>({
     queryKey: ['admin-subscriptions', search, status, planName, page],
-    queryFn: () => adminApi.getSubscriptions({ search, status, planName, page, limit: 5 })
+    queryFn: () => adminApi.getSubscriptions({ search, status, planName, page, limit: 5 }),
   })
 
   useEffect(() => {
@@ -35,7 +58,7 @@ export default function SubscriptionsPage() {
   const pagination = subsRes?.data?.pagination || { total: 0, pages: 1 }
 
   const upgradeMutation = useMutation({
-    mutationFn: ({ id, plan }: { id: string, plan: string }) => adminApi.upgradePlan(id, plan),
+    mutationFn: ({ id, plan }: { id: string; plan: string }) => adminApi.upgradePlan(id, plan),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-subscriptions'] })
       queryClient.invalidateQueries({ queryKey: ['admin-stats'] })
@@ -45,7 +68,7 @@ export default function SubscriptionsPage() {
     onError: () => {
       toast.error('Failed to update subscription')
       setConfirmUpgradePayload(null)
-    }
+    },
   })
 
   const handleFilterChange = (setter: any, val: string) => {
@@ -53,165 +76,186 @@ export default function SubscriptionsPage() {
     setPage(1)
   }
 
+  const isFiltered = !!(search || status || planName)
+  const o: any = stats?.overview
+
   return (
-    <div className="space-y-8 animate-in fade-in duration-500 pt-4">
+    <div className="mx-auto max-w-[1400px] space-y-8 pt-2 animate-in fade-in duration-500">
+      {/* Header */}
+      <header className="border-b border-slate-200 pb-6">
+        <p className="text-xs text-slate-500">{o?.payingProviders || 0} paying businesses</p>
+        <h1 className="mt-1 font-serif text-3xl tracking-tight text-slate-900">Subscriptions</h1>
+      </header>
 
-      <div>
-        <h1 className="text-xl font-semibold text-gray-900">Subscriptions</h1>
-        <p className="text-gray-400 text-sm mt-0.5">Manage platform revenue plans and business tiers</p>
-      </div>
+      {/* Figures */}
+      <dl className="grid grid-cols-3 divide-y divide-slate-200 overflow-hidden rounded-md border border-slate-200 bg-white md:divide-x md:divide-y-0">
+        <div className="p-6 sm:p-8">
+          <dt className="text-sm text-slate-500">Active subscriptions</dt>
+          <dd className="mt-2 font-serif text-3xl tabular-nums tracking-tight text-slate-900">
+            {o?.payingProviders || 0}
+          </dd>
+        </div>
+        <div className="p-6 sm:p-8">
+          <dt className="text-sm text-slate-500">Monthly revenue</dt>
+          <dd className="mt-2 font-serif text-3xl tabular-nums tracking-tight text-slate-900">
+            KES {Number(o?.revenueThisMonth || 0).toLocaleString()}
+          </dd>
+        </div>
+        <div className="p-6 sm:p-8">
+          <dt className="text-sm text-slate-500">Expiring in the next 14 days</dt>
+          <dd className="mt-2 font-serif text-3xl tabular-nums tracking-tight text-slate-900">
+            {o?.expiringSoon || 0}
+          </dd>
+        </div>
+      </dl>
 
-      {/* Summary Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-3 gap-px bg-gray-100 rounded-[.5rem] overflow-hidden border border-gray-100">
-        <StatCell icon={CheckCircle2} label="Active subs" value={String(stats?.overview?.payingProviders || 0)} sub="Businesses" />
-        <StatCell icon={CreditCard} label="MRR" value={`KES ${(stats?.overview?.revenueThisMonth || 0).toLocaleString()}`} sub="Monthly revenue" />
-        <StatCell icon={Clock} label="Expiring soon" value={String(stats?.overview?.expiringSoon || 0)} sub="Next 14 days" />
-      </div>
-
-      <div className="bg-white rounded-[.5rem] border border-gray-100 overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-50 flex flex-wrap items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="h-8 w-8 rounded-md bg-slate-50 flex items-center justify-center text-purple-600">
-              <Wallet size={15} />
-            </div>
-            <div>
-              <h3 className="text-sm font-medium text-gray-900">Revenue ledger</h3>
-              <p className="text-xs text-gray-400 mt-0.5">Active billing cycles</p>
-            </div>
-          </div>
-          <div className="flex flex-wrap gap-3">
-            <div className="relative w-full md:w-72">
-              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-300" size={16} />
+      {/* Registry */}
+      <section className="overflow-hidden rounded-md border border-slate-200 bg-white">
+        <div className="flex flex-col gap-3 border-b border-slate-200 px-6 py-4 lg:flex-row lg:items-center lg:justify-between">
+          <h2 className="text-sm font-semibold text-slate-900">All subscriptions</h2>
+          <div className="flex flex-wrap gap-2">
+            <label className="relative block w-full sm:w-64">
+              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
               <input
                 type="text"
-                placeholder="Search by business name..."
+                placeholder="Search by business name"
                 value={search}
                 onChange={(e) => handleFilterChange(setSearch, e.target.value)}
-                className="w-full bg-slate-50 border-none rounded-md py-2.5 pl-10 pr-4 outline-none focus:ring-2 focus:ring-emerald-500/10 transition-all text-sm"
+                className="w-full rounded border border-slate-300 bg-white py-2 pl-8 pr-3 text-sm outline-none placeholder:text-slate-400 focus:border-[#0D4A3E]"
               />
-            </div>
-            <select
-              value={status}
-              onChange={(e) => handleFilterChange(setStatus, e.target.value)}
-              className="bg-slate-50 border-none rounded-md px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-emerald-500/10 min-w-[130px] transition-all"
-            >
+            </label>
+            <select value={status} onChange={(e) => handleFilterChange(setStatus, e.target.value)} className={selectCls}>
               <option value="">All statuses</option>
               <option value="ACTIVE">Active</option>
               <option value="TRIAL">Trial</option>
               <option value="EXPIRED">Expired</option>
               <option value="SUSPENDED">Suspended</option>
             </select>
-            <select
-              value={planName}
-              onChange={(e) => handleFilterChange(setPlanName, e.target.value)}
-              className="bg-slate-50 border-none rounded-md px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-emerald-500/10 min-w-[130px] transition-all"
-            >
+            <select value={planName} onChange={(e) => handleFilterChange(setPlanName, e.target.value)} className={selectCls}>
               <option value="">All plans</option>
-              <option value="PLUS">Starter</option>
+              <option value="PLUS">Growth</option>
               <option value="MAX">Business Pro</option>
             </select>
           </div>
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full text-left">
+          <table className="w-full min-w-[820px] text-left">
             <thead>
-              <tr className="bg-slate-50/50">
-                <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest">Subscription ID</th>
-                <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest">Business</th>
-                <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest">Plan</th>
-                <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Status</th>
-                <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Expiration</th>
-                <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Action</th>
+              <tr className="border-b border-slate-200 text-xs text-slate-500">
+                <th className="px-6 py-3 font-medium">Business</th>
+                <th className="px-6 py-3 font-medium">Reference</th>
+                <th className="px-6 py-3 font-medium">Plan</th>
+                <th className="px-6 py-3 font-medium">Status</th>
+                <th className="px-6 py-3 font-medium">Expires</th>
+                <th className="px-6 py-3 text-right font-medium">Change plan</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-50">
+            <tbody className="divide-y divide-slate-100">
               {isLoading ? (
                 <tr>
-                  <td colSpan={6} className="py-20 text-center">
+                  <td colSpan={6} className="py-16 text-center">
                     <InlineLoader message="Loading subscriptions..." />
                   </td>
                 </tr>
-              ) : subscriptions.length > 0 ? subscriptions.map((s: any) => (
-                <tr key={s.id} className="hover:bg-slate-50/30 transition-all">
-                  <td className="px-8 py-5 text-sm font-medium text-gray-900 hl-mono">{s.id.slice(-8).toUpperCase()}</td>
-                  <td className="px-8 py-5 text-sm text-gray-700">
-                    {s.tenant?.businessName}
-                    <div className="text-[10px] text-gray-400 hl-mono">/{s.tenant?.slug}</div>
-                  </td>
-                  <td className="px-8 py-5">
-                    <span className={`text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-md ${s.planName === 'MAX' ? 'bg-purple-50 text-purple-600' : s.planName === 'PLUS' ? 'bg-blue-50 text-blue-600' : 'bg-gray-100 text-gray-600'}`}>
-                      {s.planName === 'MAX' ? 'Business Pro' : s.planName === 'PLUS' ? 'Growth' : 'Starter'}
-                    </span>
-                  </td>
-                  <td className="px-8 py-5 text-center">
-                    <span className={`px-2 py-1 rounded-md text-[10px] font-black uppercase tracking-wider ${
-                      s.status === 'ACTIVE' ? 'bg-emerald-100 text-emerald-700' : s.status === 'TRIAL' ? 'bg-blue-100 text-blue-700' : 'bg-red-100 text-red-700'
-                    }`}>
-                      {s.status}
-                    </span>
-                  </td>
-                  <td className="px-8 py-5 text-right text-sm text-gray-400 hl-mono">
-                    {s.status === 'TRIAL' ? new Date(s.trialEndDate).toLocaleDateString() : (s.endDate ? new Date(s.endDate).toLocaleDateString() : 'Lifetime')}
-                  </td>
-                  <td className="px-8 py-5 text-right">
-                    <div className="flex justify-end gap-2">
-                       {['PLUS', 'MAX'].filter(p => p !== s.planName).map(p => (
-                         <button
-                           key={p}
-                           disabled={upgradeMutation.isPending}
-                           onClick={() => setConfirmUpgradePayload({ id: s.tenantId, plan: p }) }
-                           className="text-[9px] font-black uppercase tracking-widest hover:bg-slate-50 px-2 py-1.5 rounded-md border border-slate-100 transition-all"
-                         >
-                           {p === 'MAX' ? 'Business Pro' : 'Starter'}
-                         </button>
-                       ))}
-                    </div>
-                  </td>
-                </tr>
-              )) : (
+              ) : subscriptions.length > 0 ? (
+                subscriptions.map((s: any) => {
+                  const st = statusStyle(s.status)
+                  const name = s.tenant?.businessName || 'Unknown business'
+                  return (
+                    <tr key={s.id} className="transition-colors hover:bg-slate-50">
+                      <td className="px-6 py-3.5">
+                        <div className="flex items-center gap-3">
+                          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded bg-slate-100 text-sm font-semibold text-slate-600">
+                            {name.charAt(0).toUpperCase()}
+                          </span>
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-medium text-slate-900">{name}</p>
+                            {s.tenant?.slug && <p className="text-xs text-slate-400 hl-mono">/{s.tenant.slug}</p>}
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-3.5 text-xs text-slate-400 hl-mono">{s.id.slice(-8).toUpperCase()}</td>
+                      <td className="px-6 py-3.5 text-sm text-slate-700">{planLabel(s.planName)}</td>
+                      <td className="px-6 py-3.5">
+                        <span className={`inline-flex items-center gap-2 text-sm ${st.text}`}>
+                          <span className={`h-2 w-2 rounded-full ${st.dot}`} />
+                          {st.label}
+                        </span>
+                      </td>
+                      <td className="px-6 py-3.5 text-sm tabular-nums text-slate-700">{expiry(s)}</td>
+                      <td className="px-6 py-3.5">
+                        <div className="flex items-center justify-end gap-4">
+                          {['PLUS', 'MAX']
+                            .filter((p) => p !== s.planName)
+                            .map((p) => (
+                              <button
+                                key={p}
+                                disabled={upgradeMutation.isPending}
+                                onClick={() => setConfirmUpgradePayload({ id: s.tenantId, plan: p })}
+                                className="text-sm font-medium text-[#0D4A3E] hover:underline disabled:opacity-50"
+                              >
+                                Switch to {planLabel(p)}
+                              </button>
+                            ))}
+                        </div>
+                      </td>
+                    </tr>
+                  )
+                })
+              ) : (
                 <tr>
-                  <td colSpan={6} className="py-20 text-center text-gray-400 font-bold text-xs uppercase tracking-widest">No subscriptions found</td>
+                  <td colSpan={6} className="py-16 text-center text-sm text-slate-400">
+                    {isFiltered ? 'No subscriptions match these filters.' : 'No subscriptions yet.'}
+                  </td>
                 </tr>
               )}
             </tbody>
           </table>
         </div>
 
-        <div className="border-t border-slate-50 p-6">
-          <Pagination
-            page={page}
-            pages={pagination.pages}
-            total={pagination.total}
-            onPageChange={setPage}
-            label="Subscription"
-          />
+        <div className="flex items-center justify-between border-t border-slate-200 px-6 py-3 text-xs text-slate-500">
+          <span>
+            {pagination.total} {pagination.total === 1 ? 'subscription' : 'subscriptions'}
+          </span>
+          {isFiltered && (
+            <button
+              onClick={() => {
+                setSearch('')
+                setStatus('')
+                setPlanName('')
+                setPage(1)
+              }}
+              className="font-medium text-[#0D4A3E] hover:underline"
+            >
+              Reset filters
+            </button>
+          )}
         </div>
-      </div>
+
+        {pagination.pages > 1 && (
+          <div className="border-t border-slate-200 px-6 py-4">
+            <Pagination
+              page={page}
+              pages={pagination.pages}
+              total={pagination.total}
+              onPageChange={setPage}
+              label="Subscription"
+            />
+          </div>
+        )}
+      </section>
 
       <ConfirmModal
         isOpen={!!confirmUpgradePayload}
         onClose={() => setConfirmUpgradePayload(null)}
         onConfirm={() => confirmUpgradePayload && upgradeMutation.mutate(confirmUpgradePayload)}
-        title="Upgrade Business Plan"
-        message={`Are you sure you want to force-switch this business to the ${confirmUpgradePayload?.plan} tier? This will immediately override their current billing logic.`}
-        confirmText={`Switch to ${confirmUpgradePayload?.plan}`}
+        title="Change business plan"
+        message={`Switch this business to the ${planLabel(confirmUpgradePayload?.plan)} plan? This overrides their current billing immediately.`}
+        confirmText={`Switch to ${planLabel(confirmUpgradePayload?.plan)}`}
         isDestructive={false}
         isLoading={upgradeMutation.isPending}
       />
-    </div>
-  )
-}
-
-function StatCell({ icon: Icon, label, value, sub }: { icon: any, label: string, value: string, sub: string }) {
-  return (
-    <div className="bg-white p-5 sm:p-6">
-      <div className="flex items-center gap-2 mb-2">
-        <Icon size={13} className="text-gray-300" />
-        <p className="text-xs text-gray-400">{label}</p>
-      </div>
-      <p className="text-xl sm:text-2xl font-semibold hl-mono tracking-tight text-gray-900">{value}</p>
-      <p className="text-xs text-gray-400 mt-1">{sub}</p>
     </div>
   )
 }

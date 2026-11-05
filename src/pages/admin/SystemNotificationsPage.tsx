@@ -1,21 +1,14 @@
 import { useMemo, useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import {
-  Bell,
   Search,
   Trash2,
-  Clock3,
   CheckCircle2,
   AlertCircle,
   Info,
   X,
   ChevronLeft,
   ChevronRight,
-  Store,
-  User,
-  Tag,
-  Inbox,
-  ShieldAlert,
 } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -31,45 +24,18 @@ import InlineLoader, {
 } from "../../components/shared/InlineLoader";
 
 type NotificationType = "success" | "warning" | "danger" | string;
+type PushState = "subscribed" | "denied" | "prompt" | "unsupported" | "ios_browser";
 
 function typeConfig(type: NotificationType) {
   switch (type) {
     case "success":
-      return {
-        Icon: CheckCircle2,
-        label: "Success",
-        icon: "text-emerald-600",
-        iconBg: "bg-emerald-50",
-        badge: "bg-emerald-50 text-emerald-700 border-emerald-100",
-        accent: "border-l-emerald-500",
-      };
+      return { Icon: CheckCircle2, label: "Success", text: "text-emerald-700", tile: "bg-emerald-50 text-emerald-700" };
     case "warning":
-      return {
-        Icon: AlertCircle,
-        label: "Warning",
-        icon: "text-amber-600",
-        iconBg: "bg-amber-50",
-        badge: "bg-amber-50 text-amber-700 border-amber-100",
-        accent: "border-l-amber-500",
-      };
+      return { Icon: AlertCircle, label: "Warning", text: "text-amber-700", tile: "bg-amber-50 text-amber-700" };
     case "danger":
-      return {
-        Icon: AlertCircle,
-        label: "Danger",
-        icon: "text-red-600",
-        iconBg: "bg-red-50",
-        badge: "bg-red-50 text-red-700 border-red-100",
-        accent: "border-l-red-500",
-      };
+      return { Icon: AlertCircle, label: "Critical", text: "text-red-600", tile: "bg-red-50 text-red-600" };
     default:
-      return {
-        Icon: Info,
-        label: type || "System",
-        icon: "text-blue-600",
-        iconBg: "bg-blue-50",
-        badge: "bg-blue-50 text-blue-700 border-blue-100",
-        accent: "border-l-blue-500",
-      };
+      return { Icon: Info, label: type || "System", text: "text-blue-700", tile: "bg-blue-50 text-blue-700" };
   }
 }
 
@@ -90,23 +56,13 @@ function formatDate(value: unknown, detailed = false) {
   return date.toLocaleString(
     [],
     detailed
-      ? {
-          weekday: "short",
-          day: "2-digit",
-          month: "short",
-          year: "numeric",
-          hour: "2-digit",
-          minute: "2-digit",
-        }
-      : {
-          day: "2-digit",
-          month: "short",
-          year: "numeric",
-          hour: "2-digit",
-          minute: "2-digit",
-        },
+      ? { weekday: "short", day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }
+      : { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" },
   );
 }
+
+const outlineBtn =
+  "inline-flex h-9 items-center gap-2 rounded border border-slate-300 bg-white px-3 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 disabled:opacity-50";
 
 export default function SystemNotificationsPage() {
   const queryClient = useQueryClient();
@@ -137,15 +93,8 @@ export default function SystemNotificationsPage() {
   const total = Number(data?.pagination?.total ?? 0);
   const pages = Number(data?.pagination?.pages ?? 1);
 
-  const unreadCount = useMemo(
-    () => items.filter((item: any) => !item.isRead).length,
-    [items],
-  );
-
-  const dangerCount = useMemo(
-    () => items.filter((item: any) => item.type === "danger").length,
-    [items],
-  );
+  const unreadCount = useMemo(() => items.filter((item: any) => !item.isRead).length, [items]);
+  const dangerCount = useMemo(() => items.filter((item: any) => item.type === "danger").length, [items]);
 
   const handleDelete = (id: string) => {
     if (window.confirm("Delete this notification permanently?")) {
@@ -153,9 +102,7 @@ export default function SystemNotificationsPage() {
     }
   };
 
-  const [pushState, setPushState] = useState<
-    "subscribed" | "denied" | "prompt" | "unsupported" | "ios_browser"
-  >("prompt");
+  const [pushState, setPushState] = useState<PushState>("prompt");
   const [pushLoading, setPushLoading] = useState(false);
   const [testSending, setTestSending] = useState(false);
 
@@ -169,7 +116,7 @@ export default function SystemNotificationsPage() {
     setPushLoading(true);
     try {
       await subscribeToPushNotifications();
-      toast.success("Native administrator push notifications enabled!");
+      toast.success("Push alerts enabled");
       const newState = await getPushSubscriptionState();
       setPushState(newState as any);
     } catch (err: any) {
@@ -184,9 +131,9 @@ export default function SystemNotificationsPage() {
     try {
       testNotificationSound();
       await api.post("/notifications/test");
-      toast.success("Test notification sent with alert tone!");
+      toast.success("Test alert sent");
     } catch (err: any) {
-      toast.error(err.response?.data?.message || "Failed to send test");
+      toast.error(err.response?.data?.message || "Failed to send test alert");
     } finally {
       setTestSending(false);
     }
@@ -207,536 +154,204 @@ export default function SystemNotificationsPage() {
     setSelected(null);
   };
 
+  const pushCopy =
+    pushState === "subscribed"
+      ? { dot: "bg-emerald-500", title: "Push alerts are on", body: "You get alerts for payments, signups and system problems, even when this portal is closed." }
+      : pushState === "denied"
+        ? { dot: "bg-amber-500", title: "Notifications are blocked in this browser", body: "Allow notifications from the site settings in your address bar, then reload." }
+        : pushState === "unsupported"
+          ? { dot: "bg-slate-400", title: "Push alerts aren't supported here", body: "This browser can't receive push notifications." }
+          : pushState === "ios_browser"
+            ? { dot: "bg-amber-500", title: "Add this site to your Home Screen", body: "On iPhone, push alerts only work once the portal is added to the Home Screen." }
+            : { dot: "bg-slate-400", title: "Push alerts are off", body: "Turn them on to get instant alerts, even when this portal is closed." };
+
   return (
-    <div className="w-full max-w-[1500px] mx-auto px-1 sm:px-2 pb-6">
-      {/* Page header */}
-      <div className="mb-5">
-        <div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
-          <div className="relative px-5 py-5 sm:px-6">
-            <div className="absolute inset-y-0 right-0 w-1/3 bg-gradient-to-l from-emerald-50/70 to-transparent pointer-events-none" />
+    <div className="mx-auto max-w-[1400px] space-y-8 pt-2 animate-in fade-in duration-500">
+      {/* Header */}
+      <header className="border-b border-slate-200 pb-6">
+        <p className="text-xs text-slate-500">
+          {total} {total === 1 ? "notification" : "notifications"}
+        </p>
+        <h1 className="mt-1 font-serif text-3xl tracking-tight text-slate-900">System notifications</h1>
+      </header>
 
-            <div className="relative flex flex-col xl:flex-row xl:items-center xl:justify-between gap-5">
-              <div className="flex items-start gap-3.5">
-                <div className="w-11 h-11 rounded-xl bg-slate-900 flex items-center justify-center shadow-sm flex-shrink-0">
-                  <Bell className="w-5 h-5 text-white" />
-                </div>
+      {/* Figures */}
+      <dl className="grid grid-cols-3 divide-x divide-slate-200 overflow-hidden rounded-md border border-slate-200 bg-white">
+        <div className="p-5 sm:p-6">
+          <dt className="text-sm text-slate-500">On this page</dt>
+          <dd className="mt-1 font-serif text-2xl tabular-nums text-slate-900 sm:text-3xl">{items.length}</dd>
+        </div>
+        <div className="p-5 sm:p-6">
+          <dt className="text-sm text-slate-500">Unread</dt>
+          <dd className="mt-1 font-serif text-2xl tabular-nums text-slate-900 sm:text-3xl">{unreadCount}</dd>
+        </div>
+        <div className="p-5 sm:p-6">
+          <dt className="text-sm text-slate-500">Critical</dt>
+          <dd className={`mt-1 font-serif text-2xl tabular-nums sm:text-3xl ${dangerCount > 0 ? "text-red-600" : "text-slate-900"}`}>
+            {dangerCount}
+          </dd>
+        </div>
+      </dl>
 
-                <div>
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <h1 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900">
-                      System Notifications
-                    </h1>
-                    {total > 0 && (
-                      <span className="px-2 py-0.5 rounded-full bg-emerald-50 border border-emerald-100 text-emerald-700 text-[10px] font-black">
-                        {total} total
-                      </span>
-                    )}
-                  </div>
-                  <p className="mt-1 text-xs sm:text-sm text-slate-500 font-medium">
-                    Monitor platform alerts, business activity and
-                    administrative events.
-                  </p>
-                </div>
-              </div>
+      {/* Push alerts */}
+      <section className="flex flex-col gap-4 rounded-md border border-slate-200 bg-white px-6 py-5 lg:flex-row lg:items-center lg:justify-between">
+        <div className="flex items-start gap-3">
+          <span className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${pushCopy.dot}`} />
+          <div>
+            <h2 className="text-sm font-semibold text-slate-900">{pushCopy.title}</h2>
+            <p className="mt-0.5 max-w-xl text-sm text-slate-500">{pushCopy.body}</p>
+          </div>
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <button type="button" onClick={handleTestTone} className={outlineBtn}>
+            Play tone
+          </button>
+          {pushState === "subscribed" ? (
+            <button onClick={handleSendTestPush} disabled={testSending} className={outlineBtn}>
+              {testSending && <ButtonLoader size={12} />}
+              Send test alert
+            </button>
+          ) : (
+            <button
+              onClick={handleEnablePush}
+              disabled={pushLoading || pushState === "unsupported"}
+              className="inline-flex h-9 items-center gap-2 rounded bg-[#0D4A3E] px-3 text-sm font-medium text-white transition-colors hover:bg-[#0A3D33] disabled:opacity-50"
+            >
+              {pushLoading && <ButtonLoader size={12} />}
+              Enable push alerts
+            </button>
+          )}
+          <Link to="/admin/settings" className="px-2 text-sm font-medium text-[#0D4A3E] hover:underline">
+            Settings
+          </Link>
+        </div>
+      </section>
 
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 xl:min-w-[360px]">
-                <div className="rounded-xl border border-slate-100 bg-slate-50/70 px-3 py-2.5">
-                  <p className="text-[9px] font-black uppercase tracking-widest text-slate-400">
-                    Page
-                  </p>
-                  <p className="mt-0.5 text-sm font-black text-slate-800">
-                    {items.length}{" "}
-                    <span className="text-[10px] font-semibold text-slate-400">
-                      alerts
-                    </span>
-                  </p>
-                </div>
-                <div className="rounded-xl border border-amber-100 bg-amber-50/50 px-3 py-2.5">
-                  <p className="text-[9px] font-black uppercase tracking-widest text-amber-500">
-                    Unread
-                  </p>
-                  <p className="mt-0.5 text-sm font-black text-amber-700">
-                    {unreadCount}
-                  </p>
-                </div>
-                <div className="hidden sm:block rounded-xl border border-red-100 bg-red-50/50 px-3 py-2.5">
-                  <p className="text-[9px] font-black uppercase tracking-widest text-red-400">
-                    Critical
-                  </p>
-                  <p className="mt-0.5 text-sm font-black text-red-600">
-                    {dangerCount}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Push Notification Quick Activation Strip */}
-            <div className="mt-4 p-3.5 rounded-xl border border-slate-100 bg-slate-50/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <div className="flex items-center gap-2.5">
-                <div
-                  className={`w-2 h-2 rounded-full shrink-0 ${pushState === "subscribed" ? "bg-emerald-500 animate-pulse" : "bg-amber-400"}`}
-                />
-                <p className="text-xs font-semibold text-slate-700">
-                  {pushState === "subscribed" ? (
-                    <span>
-                      <strong className="text-slate-900">
-                        Web Push Active:
-                      </strong>{" "}
-                      You receive real-time OS alerts for payments, signups &
-                      system anomalies.
-                    </span>
-                  ) : pushState === "denied" ? (
-                    <span>
-                      <strong className="text-amber-700">
-                        Browser Blocked:
-                      </strong>{" "}
-                      Notification permissions are blocked. Click the
-                      lock/settings icon in your address bar to allow.
-                    </span>
-                  ) : pushState === "unsupported" ? (
-                    <span className="text-slate-500">
-                      Push notifications are not supported in this browser.
-                    </span>
-                  ) : (
-                    <span>
-                      <strong className="text-slate-900">
-                        Enable Desktop & Mobile Push:
-                      </strong>{" "}
-                      Receive instant alerts even when the admin portal is
-                      closed.
-                    </span>
-                  )}
-                </p>
-              </div>
-
-              <div className="flex items-center gap-2 shrink-0">
-                <button
-                  type="button"
-                  onClick={handleTestTone}
-                  className="px-2.5 py-1 text-[11px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg hover:bg-emerald-100 transition-all flex items-center gap-1.5 shadow-xs cursor-pointer active:scale-95"
-                >
-                  ▶ Test Tone
-                </button>
-                {pushState === "subscribed" ? (
-                  <button
-                    onClick={handleSendTestPush}
-                    disabled={testSending}
-                    className="px-2.5 py-1 text-[11px] font-bold text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-all flex items-center gap-1.5 disabled:opacity-50 shadow-xs cursor-pointer"
-                  >
-                    {testSending ? (
-                      <ButtonLoader size={12} />
-                    ) : (
-                      <Bell size={12} />
-                    )}
-                    Test Push Alert
-                  </button>
-                ) : (
-                  <button
-                    onClick={handleEnablePush}
-                    disabled={pushLoading || pushState === "unsupported"}
-                    className="px-3 py-1.5 text-[11px] font-bold text-white bg-slate-900 hover:bg-black rounded-lg transition-all flex items-center gap-1.5 disabled:opacity-50 shadow-sm cursor-pointer"
-                  >
-                    {pushLoading ? (
-                      <ButtonLoader size={12} />
-                    ) : (
-                      <Bell size={12} />
-                    )}
-                    Enable Push Alerts
-                  </button>
-                )}
-                <Link
-                  to="/admin/settings"
-                  className="px-2 py-1 text-[11px] font-bold text-slate-500 hover:text-slate-800 transition-colors"
-                >
-                  Configure →
-                </Link>
-              </div>
-            </div>
-
-            <div className="relative mt-4 flex flex-col sm:flex-row gap-2.5">
-              <div className="relative flex-1">
-                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+      {/* Feed + detail */}
+      <div className={`grid gap-6 ${selected ? "xl:grid-cols-[minmax(0,1fr)_380px]" : "grid-cols-1"}`}>
+        <section className="min-w-0 overflow-hidden rounded-md border border-slate-200 bg-white">
+          <div className="flex flex-col gap-3 border-b border-slate-200 px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
+            <h2 className="text-sm font-semibold text-slate-900">Activity</h2>
+            <div className="flex items-center gap-3">
+              {isFetching && !isLoading && (
+                <span className="flex items-center gap-2 text-xs text-slate-400">
+                  <ButtonLoader size={12} /> Updating
+                </span>
+              )}
+              <label className="relative block w-full sm:w-72">
+                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                 <input
                   value={search}
                   onChange={(e) => handleSearch(e.target.value)}
-                  placeholder="Search notifications, shops, owners..."
-                  className="w-full h-10 rounded-xl border border-slate-200 bg-slate-50/60 pl-10 pr-10 text-xs font-semibold text-slate-700 placeholder:text-slate-400 outline-none transition-all focus:bg-white focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10"
+                  placeholder="Search notifications, shops or owners"
+                  className="w-full rounded border border-slate-300 bg-white py-2 pl-8 pr-8 text-sm outline-none placeholder:text-slate-400 focus:border-[#0D4A3E]"
                 />
                 {search && (
                   <button
                     onClick={() => handleSearch("")}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700"
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700"
                     aria-label="Clear search"
                   >
-                    <X className="w-4 h-4" />
+                    <X size={14} />
                   </button>
                 )}
-              </div>
-
-              {isFetching && !isLoading && (
-                <div className="h-10 px-3 rounded-xl border border-slate-200 bg-white flex items-center gap-2 text-[10px] font-bold text-slate-400">
-                  <ButtonLoader size={14} />
-                  Updating
-                </div>
-              )}
+              </label>
             </div>
           </div>
-        </div>
-      </div>
 
-      {/* Content */}
-      <div
-        className={`grid gap-4 ${selected ? "xl:grid-cols-[minmax(0,1fr)_380px]" : "grid-cols-1"}`}
-      >
-        {/* ── Mobile bottom-sheet modal (hidden on xl+) ── */}
-        {selected &&
-          (() => {
-            const cfgM = typeConfig(selected.type);
-            const IconM = cfgM.Icon;
-            const payloadM = parseData(selected.data);
-            const payloadEntriesM = payloadM
-              ? Object.entries(payloadM).filter(([key]) => key !== "url")
-              : [];
-
-            return (
-              <div className="xl:hidden">
-                {/* Backdrop */}
-                <div
-                  className="fixed inset-0 z-40 bg-black/40 backdrop-blur-[2px]   animate-fadeIn"
-                  onClick={() => setSelected(null)}
-                />
-
-                {/* Sheet */}
-                <div
-                  className="fixed inset-x-0 bottom-0 z-50 flex flex-col rounded-t-2xl border-t border-slate-200 bg-white shadow-2xl max-h-[85dvh] animate-slideUp"
-                  style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
-                >
-                  {/* Drag handle */}
-                  <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
-                    <div className="w-10 h-1 rounded-full bg-slate-200" />
-                  </div>
-
-                  {/* Sheet header */}
-                  <div className="h-12 px-4 border-b border-slate-100 bg-slate-50/70 flex items-center justify-between flex-shrink-0">
-                    <div className="flex items-center gap-2">
-                      <ShieldAlert className="w-4 h-4 text-slate-500" />
-                      <span className="text-[10px] font-black uppercase tracking-widest text-slate-600">
-                        Notification Detail
-                      </span>
-                    </div>
-                    <button
-                      onClick={() => setSelected(null)}
-                      className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:bg-slate-200 hover:text-slate-700"
-                      aria-label="Close details"
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
-                  </div>
-
-                  {/* Scrollable body */}
-                  <div className="overflow-y-auto flex-1">
-                    <div className="p-5">
-                      <div className="flex items-start gap-3">
-                        <div
-                          className={`w-11 h-11 rounded-xl ${cfgM.iconBg} flex items-center justify-center flex-shrink-0`}
-                        >
-                          <IconM className={`w-5 h-5 ${cfgM.icon}`} />
-                        </div>
-                        <div className="min-w-0">
-                          <span
-                            className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-md border text-[9px] font-black uppercase tracking-wider ${cfgM.badge}`}
-                          >
-                            <Tag className="w-2.5 h-2.5" />
-                            {cfgM.label}
-                          </span>
-                          <h2 className="mt-2 text-sm font-black leading-snug text-slate-900">
-                            {selected.title}
-                          </h2>
-                        </div>
-                      </div>
-
-                      <div className="mt-5">
-                        <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-2">
-                          Message
-                        </p>
-                        <div className="rounded-xl border border-slate-100 bg-slate-50 p-3.5">
-                          <p className="text-xs font-medium leading-relaxed text-slate-700">
-                            {selected.message}
-                          </p>
-                        </div>
-                      </div>
-
-                      {(selected.shopName || selected.shopOwnerName) && (
-                        <div className="mt-5">
-                          <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-2">
-                            Related Business
-                          </p>
-                          <div className="rounded-xl border border-slate-100 overflow-hidden">
-                            {selected.shopName && (
-                              <div className="px-3 py-2.5 flex items-center gap-2.5">
-                                <div className="w-7 h-7 rounded-lg bg-emerald-50 flex items-center justify-center">
-                                  <Store className="w-3.5 h-3.5 text-emerald-600" />
-                                </div>
-                                <span className="text-xs font-bold text-slate-700 truncate">
-                                  {selected.shopName}
-                                </span>
-                              </div>
-                            )}
-                            {selected.shopOwnerName && (
-                              <div className="px-3 py-2.5 border-t border-slate-100 flex items-center gap-2.5">
-                                <div className="w-7 h-7 rounded-lg bg-slate-100 flex items-center justify-center">
-                                  <User className="w-3.5 h-3.5 text-slate-500" />
-                                </div>
-                                <span className="text-xs font-semibold text-slate-500 truncate">
-                                  {selected.shopOwnerName}
-                                </span>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      )}
-
-                      <div className="mt-5">
-                        <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-2">
-                          Created
-                        </p>
-                        <div className="flex items-center gap-2 text-xs font-semibold text-slate-600">
-                          <Clock3 className="w-3.5 h-3.5 text-slate-400" />
-                          {formatDate(selected.createdAt, true)}
-                        </div>
-                      </div>
-
-                      <div className="mt-5">
-                        <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-2">
-                          Read Status
-                        </p>
-                        <span
-                          className={`inline-flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[10px] font-black ${
-                            selected.isRead
-                              ? "bg-slate-100 text-slate-500"
-                              : "bg-amber-50 text-amber-700"
-                          }`}
-                        >
-                          <span
-                            className={`w-1.5 h-1.5 rounded-full ${selected.isRead ? "bg-slate-400" : "bg-amber-500"}`}
-                          />
-                          {selected.isRead ? "Read" : "Unread"}
-                        </span>
-                      </div>
-
-                      {payloadM && Object.keys(payloadM).length > 0 && (
-                        <div className="mt-5">
-                          <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-2">
-                            Additional Data
-                          </p>
-                          <div className="space-y-1.5">
-                            {payloadM.url != null && (
-                              <div className="rounded-lg border border-blue-100 bg-blue-50 px-3 py-2">
-                                <p className="text-[9px] font-black uppercase tracking-wider text-blue-400">
-                                  URL
-                                </p>
-                                <p className="mt-0.5 text-[10px] font-semibold text-blue-700 break-all">
-                                  {String(payloadM.url)}
-                                </p>
-                              </div>
-                            )}
-                            {payloadEntriesM.map(([key, value]) => (
-                              <div
-                                key={key}
-                                className="rounded-lg border border-slate-100 bg-slate-50 px-3 py-2"
-                              >
-                                <p className="text-[9px] font-black uppercase tracking-wider text-slate-400">
-                                  {key}
-                                </p>
-                                <p className="mt-0.5 text-[10px] font-semibold text-slate-700 break-all">
-                                  {value === null
-                                    ? "null"
-                                    : typeof value === "object"
-                                      ? (JSON.stringify(value) ?? "")
-                                      : String(value)}
-                                </p>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Delete footer */}
-                  <div className="px-5 py-4 border-t border-slate-100 bg-slate-50/60 flex-shrink-0">
-                    <button
-                      onClick={() => handleDelete(selected.id)}
-                      disabled={deleteMutation.isPending}
-                      className="w-full h-9 rounded-lg border border-red-200 bg-white text-red-600 hover:bg-red-50 text-[11px] font-black flex items-center justify-center gap-2 transition-colors disabled:opacity-50"
-                    >
-                      {deleteMutation.isPending ? (
-                        <ButtonLoader size={14} />
-                      ) : (
-                        <Trash2 className="w-3.5 h-3.5" />
-                      )}
-                      Delete Notification
-                    </button>
-                  </div>
-                </div>
-              </div>
-            );
-          })()}
-        {/* Notification list */}
-        <section className="min-w-0 rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
-          <div className="h-12 px-4 sm:px-5 border-b border-slate-100 bg-slate-50/70 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Inbox className="w-4 h-4 text-slate-500" />
-              <span className="text-xs font-black uppercase tracking-widest text-slate-600">
-                Activity Feed
-              </span>
-            </div>
-            {search && (
-              <span className="text-[10px] font-bold text-slate-400">
-                Filtered by “{search}”
-              </span>
-            )}
-          </div>
-
-          <div className="min-h-[420px]">
+          <div className="min-h-[360px]">
             {isLoading ? (
-              <div className="min-h-[420px] flex flex-col items-center justify-center">
+              <div className="flex min-h-[360px] items-center justify-center">
                 <InlineLoader size="lg" message="Loading activity..." />
-                <p className="text-[11px] text-slate-400 mt-2">
-                  Fetching the latest notifications
-                </p>
               </div>
             ) : items.length === 0 ? (
-              <div className="min-h-[420px] flex flex-col items-center justify-center px-6 text-center">
-                <div className="w-14 h-14 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center mb-4">
-                  <Bell className="w-6 h-6 text-slate-300" />
-                </div>
-                <h3 className="text-sm font-black text-slate-700">
+              <div className="flex min-h-[360px] flex-col items-center justify-center px-6 text-center">
+                <p className="text-sm font-medium text-slate-700">
+                  {search ? "No notifications match your search" : "No notifications yet"}
+                </p>
+                <p className="mt-1 max-w-sm text-sm text-slate-400">
                   {search
-                    ? "No matching notifications"
-                    : "No notifications yet"}
-                </h3>
-                <p className="max-w-sm mt-1.5 text-xs font-medium leading-relaxed text-slate-400">
-                  {search
-                    ? "Try a different search term or clear the current filter."
-                    : "System and business alerts will appear here when activity is recorded."}
+                    ? "Try a different search term."
+                    : "System and business alerts will appear here as activity is recorded."}
                 </p>
                 {search && (
-                  <button
-                    onClick={() => handleSearch("")}
-                    className="mt-4 px-3.5 py-2 rounded-lg bg-slate-900 text-white text-[11px] font-bold hover:bg-slate-800"
-                  >
+                  <button onClick={() => handleSearch("")} className="mt-3 text-sm font-medium text-[#0D4A3E] hover:underline">
                     Clear search
                   </button>
                 )}
               </div>
             ) : (
-              <div className="divide-y divide-slate-100">
+              <ul className="divide-y divide-slate-100">
                 {items.map((item: any) => {
                   const cfg = typeConfig(item.type);
                   const Icon = cfg.Icon;
                   const active = selected?.id === item.id;
 
                   return (
-                    <button
-                      key={item.id}
-                      type="button"
-                      onClick={() => setSelected(active ? null : item)}
-                      className={`w-full text-left px-4 sm:px-5 py-3.5 border-l-2 transition-all group ${
-                        active
-                          ? `${cfg.accent} bg-emerald-50/40`
-                          : "border-l-transparent hover:border-l-slate-300 hover:bg-slate-50/70"
-                      }`}
-                    >
-                      <div className="flex items-start gap-3">
-                        <div
-                          className={`w-9 h-9 rounded-xl ${cfg.iconBg} flex items-center justify-center flex-shrink-0`}
-                        >
-                          <Icon className={`w-[17px] h-[17px] ${cfg.icon}`} />
-                        </div>
+                    <li key={item.id}>
+                      <button
+                        type="button"
+                        onClick={() => setSelected(active ? null : item)}
+                        className={`group flex w-full items-start gap-3 border-l-2 px-6 py-4 text-left transition-colors ${
+                          active
+                            ? "border-l-[#0D4A3E] bg-slate-50"
+                            : "border-l-transparent hover:bg-slate-50"
+                        }`}
+                      >
+                        <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded ${cfg.tile}`}>
+                          <Icon size={16} />
+                        </span>
 
-                        <div className="min-w-0 flex-1">
-                          <div className="flex flex-wrap items-center gap-1.5">
-                            <p
-                              className={`text-xs font-black truncate ${active ? "text-emerald-700" : "text-slate-800"}`}
-                            >
+                        <span className="min-w-0 flex-1">
+                          <span className="flex items-center gap-2">
+                            <span className={`truncate text-sm text-slate-900 ${item.isRead ? "font-medium" : "font-semibold"}`}>
                               {item.title}
-                            </p>
+                            </span>
                             {!item.isRead && (
-                              <span
-                                className="w-1.5 h-1.5 rounded-full bg-amber-500 flex-shrink-0"
-                                title="Unread"
-                              />
+                              <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-amber-500" title="Unread" />
                             )}
-                          </div>
-
-                          <p className="mt-1 text-[11px] leading-relaxed text-slate-500 font-medium line-clamp-2">
-                            {item.message}
-                          </p>
-
-                          <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1">
-                            <span
-                              className={`inline-flex items-center px-1.5 py-0.5 rounded border text-[9px] font-black uppercase tracking-wider ${cfg.badge}`}
-                            >
-                              {cfg.label}
-                            </span>
-
-                            {item.shopName && (
-                              <span className="inline-flex items-center gap-1 text-[10px] font-bold text-slate-500">
-                                <Store className="w-3 h-3" />
-                                {item.shopName}
-                              </span>
-                            )}
-
-                            <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-slate-400">
-                              <Clock3 className="w-3 h-3" />
-                              {formatDate(item.createdAt)}
-                            </span>
-                          </div>
-                        </div>
+                          </span>
+                          <span className="mt-0.5 line-clamp-2 block text-sm text-slate-500">{item.message}</span>
+                          <span className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-400">
+                            <span className={`font-medium ${cfg.text}`}>{cfg.label}</span>
+                            {item.shopName && <span>{item.shopName}</span>}
+                            <span className="tabular-nums">{formatDate(item.createdAt)}</span>
+                          </span>
+                        </span>
 
                         <ChevronRight
-                          className={`w-4 h-4 mt-2 flex-shrink-0 transition-transform ${
-                            active
-                              ? "rotate-90 text-emerald-600"
-                              : "text-slate-300 group-hover:text-slate-500"
+                          size={16}
+                          className={`mt-2 shrink-0 transition-transform ${
+                            active ? "rotate-90 text-[#0D4A3E]" : "text-slate-300 group-hover:text-slate-500"
                           }`}
                         />
-                      </div>
-                    </button>
+                      </button>
+                    </li>
                   );
                 })}
-              </div>
+              </ul>
             )}
           </div>
 
           {pages > 1 && (
-            <div className="h-14 px-4 sm:px-5 border-t border-slate-100 bg-slate-50/60 flex items-center justify-between gap-3">
-              <p className="text-[10px] sm:text-[11px] font-semibold text-slate-400">
-                <span className="text-slate-700 font-black">
-                  {Math.min((page - 1) * limit + 1, total)}
-                </span>{" "}
-                –{" "}
-                <span className="text-slate-700 font-black">
-                  {Math.min(page * limit, total)}
-                </span>{" "}
-                of <span className="text-slate-700 font-black">{total}</span>
-              </p>
-
-              <div className="flex items-center gap-1">
+            <div className="flex items-center justify-between border-t border-slate-200 px-6 py-3 text-xs text-slate-500">
+              <span className="tabular-nums">
+                {Math.min((page - 1) * limit + 1, total)}–{Math.min(page * limit, total)} of {total}
+              </span>
+              <div className="flex items-center gap-2">
                 <button
                   disabled={page <= 1 || isFetching}
                   onClick={() => {
                     setPage((p) => p - 1);
                     setSelected(null);
                   }}
-                  className="w-8 h-8 rounded-lg border border-slate-200 bg-white flex items-center justify-center text-slate-500 hover:text-slate-900 hover:bg-slate-50 disabled:opacity-40 disabled:pointer-events-none"
+                  className="flex h-8 w-8 items-center justify-center rounded border border-slate-300 bg-white text-slate-600 hover:bg-slate-50 disabled:pointer-events-none disabled:opacity-40"
                   aria-label="Previous page"
                 >
-                  <ChevronLeft className="w-4 h-4" />
+                  <ChevronLeft size={16} />
                 </button>
-                <span className="min-w-8 text-center text-[10px] font-black text-slate-500">
-                  {page}/{pages}
+                <span className="min-w-10 text-center tabular-nums">
+                  {page} / {pages}
                 </span>
                 <button
                   disabled={page >= pages || isFetching}
@@ -744,193 +359,139 @@ export default function SystemNotificationsPage() {
                     setPage((p) => p + 1);
                     setSelected(null);
                   }}
-                  className="w-8 h-8 rounded-lg border border-slate-200 bg-white flex items-center justify-center text-slate-500 hover:text-slate-900 hover:bg-slate-50 disabled:opacity-40 disabled:pointer-events-none"
+                  className="flex h-8 w-8 items-center justify-center rounded border border-slate-300 bg-white text-slate-600 hover:bg-slate-50 disabled:pointer-events-none disabled:opacity-40"
                   aria-label="Next page"
                 >
-                  <ChevronRight className="w-4 h-4" />
+                  <ChevronRight size={16} />
                 </button>
               </div>
             </div>
           )}
         </section>
 
-        {/* Detail panel */}
-        {selected &&
-          (() => {
-            const cfg = typeConfig(selected.type);
-            const Icon = cfg.Icon;
-            const payload = parseData(selected.data);
-            const payloadEntries = payload
-              ? Object.entries(payload).filter(([key]) => key !== "url")
-              : [];
-
-            return (
-              <aside className="hidden xl:block rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden h-fit xl:sticky xl:top-4">
-                <div className="h-12 px-4 border-b border-slate-100 bg-slate-50/70 flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <ShieldAlert className="w-4 h-4 text-slate-500" />
-                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-600">
-                      Notification Detail
-                    </span>
-                  </div>
-                  <button
-                    onClick={() => setSelected(null)}
-                    className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:bg-slate-200 hover:text-slate-700"
-                    aria-label="Close details"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-                </div>
-
-                <div className="p-5">
-                  <div className="flex items-start gap-3">
-                    <div
-                      className={`w-11 h-11 rounded-xl ${cfg.iconBg} flex items-center justify-center flex-shrink-0`}
-                    >
-                      <Icon className={`w-5 h-5 ${cfg.icon}`} />
-                    </div>
-                    <div className="min-w-0">
-                      <span
-                        className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-md border text-[9px] font-black uppercase tracking-wider ${cfg.badge}`}
-                      >
-                        <Tag className="w-2.5 h-2.5" />
-                        {cfg.label}
-                      </span>
-                      <h2 className="mt-2 text-sm font-black leading-snug text-slate-900">
-                        {selected.title}
-                      </h2>
-                    </div>
-                  </div>
-
-                  <div className="mt-5">
-                    <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-2">
-                      Message
-                    </p>
-                    <div className="rounded-xl border border-slate-100 bg-slate-50 p-3.5">
-                      <p className="text-xs font-medium leading-relaxed text-slate-700">
-                        {selected.message}
-                      </p>
-                    </div>
-                  </div>
-
-                  {(selected.shopName || selected.shopOwnerName) && (
-                    <div className="mt-5">
-                      <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-2">
-                        Related Business
-                      </p>
-                      <div className="rounded-xl border border-slate-100 overflow-hidden">
-                        {selected.shopName && (
-                          <div className="px-3 py-2.5 flex items-center gap-2.5">
-                            <div className="w-7 h-7 rounded-lg bg-emerald-50 flex items-center justify-center">
-                              <Store className="w-3.5 h-3.5 text-emerald-600" />
-                            </div>
-                            <span className="text-xs font-bold text-slate-700 truncate">
-                              {selected.shopName}
-                            </span>
-                          </div>
-                        )}
-                        {selected.shopOwnerName && (
-                          <div className="px-3 py-2.5 border-t border-slate-100 flex items-center gap-2.5">
-                            <div className="w-7 h-7 rounded-lg bg-slate-100 flex items-center justify-center">
-                              <User className="w-3.5 h-3.5 text-slate-500" />
-                            </div>
-                            <span className="text-xs font-semibold text-slate-500 truncate">
-                              {selected.shopOwnerName}
-                            </span>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  )}
-
-                  <div className="mt-5">
-                    <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-2">
-                      Created
-                    </p>
-                    <div className="flex items-center gap-2 text-xs font-semibold text-slate-600">
-                      <Clock3 className="w-3.5 h-3.5 text-slate-400" />
-                      {formatDate(selected.createdAt, true)}
-                    </div>
-                  </div>
-
-                  <div className="mt-5">
-                    <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-2">
-                      Read Status
-                    </p>
-                    <span
-                      className={`inline-flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[10px] font-black ${
-                        selected.isRead
-                          ? "bg-slate-100 text-slate-500"
-                          : "bg-amber-50 text-amber-700"
-                      }`}
-                    >
-                      <span
-                        className={`w-1.5 h-1.5 rounded-full ${
-                          selected.isRead ? "bg-slate-400" : "bg-amber-500"
-                        }`}
-                      />
-                      {selected.isRead ? "Read" : "Unread"}
-                    </span>
-                  </div>
-
-                  {payload && Object.keys(payload).length > 0 && (
-                    <div className="mt-5">
-                      <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-2">
-                        Additional Data
-                      </p>
-
-                      <div className="space-y-1.5">
-                        {payload.url != null && (
-                          <div className="rounded-lg border border-blue-100 bg-blue-50 px-3 py-2">
-                            <p className="text-[9px] font-black uppercase tracking-wider text-blue-400">
-                              URL
-                            </p>
-                            <p className="mt-0.5 text-[10px] font-semibold text-blue-700 break-all">
-                              {String(payload.url)}
-                            </p>
-                          </div>
-                        )}
-
-                        {payloadEntries.map(([key, value]) => (
-                          <div
-                            key={key}
-                            className="rounded-lg border border-slate-100 bg-slate-50 px-3 py-2"
-                          >
-                            <p className="text-[9px] font-black uppercase tracking-wider text-slate-400">
-                              {key}
-                            </p>
-                            <p className="mt-0.5 text-[10px] font-semibold text-slate-700 break-all">
-                              {value === null
-                                ? "null"
-                                : typeof value === "object"
-                                  ? (JSON.stringify(value) ?? "")
-                                  : String(value)}
-                            </p>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                <div className="px-5 py-4 border-t border-slate-100 bg-slate-50/60">
-                  <button
-                    onClick={() => handleDelete(selected.id)}
-                    disabled={deleteMutation.isPending}
-                    className="w-full h-9 rounded-lg border border-red-200 bg-white text-red-600 hover:bg-red-50 text-[11px] font-black flex items-center justify-center gap-2 transition-colors disabled:opacity-50"
-                  >
-                    {deleteMutation.isPending ? (
-                      <ButtonLoader size={14} />
-                    ) : (
-                      <Trash2 className="w-3.5 h-3.5" />
-                    )}
-                    Delete Notification
-                  </button>
-                </div>
-              </aside>
-            );
-          })()}
+        {/* Desktop detail panel */}
+        {selected && (
+          <aside className="hidden h-fit overflow-hidden rounded-md border border-slate-200 bg-white xl:sticky xl:top-4 xl:block">
+            <div className="flex items-center justify-between border-b border-slate-200 px-5 py-3">
+              <h2 className="text-sm font-semibold text-slate-900">Details</h2>
+              <button
+                onClick={() => setSelected(null)}
+                className="rounded p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-700"
+                aria-label="Close details"
+              >
+                <X size={16} />
+              </button>
+            </div>
+            <NotificationDetail item={selected} onDelete={handleDelete} deleting={deleteMutation.isPending} />
+          </aside>
+        )}
       </div>
+
+      {/* Mobile bottom sheet */}
+      {selected && (
+        <div className="xl:hidden">
+          <div className="fixed inset-0 z-40 bg-black/40 animate-fadeIn" onClick={() => setSelected(null)} />
+          <div
+            className="fixed inset-x-0 bottom-0 z-50 flex max-h-[85dvh] flex-col rounded-t-xl border-t border-slate-200 bg-white shadow-2xl animate-slideUp"
+            style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
+          >
+            <div className="flex items-center justify-between border-b border-slate-200 px-5 py-3">
+              <h2 className="text-sm font-semibold text-slate-900">Details</h2>
+              <button
+                onClick={() => setSelected(null)}
+                className="rounded p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-700"
+                aria-label="Close details"
+              >
+                <X size={16} />
+              </button>
+            </div>
+            <div className="overflow-y-auto">
+              <NotificationDetail item={selected} onDelete={handleDelete} deleting={deleteMutation.isPending} />
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function NotificationDetail({
+  item,
+  onDelete,
+  deleting,
+}: {
+  item: any;
+  onDelete: (id: string) => void;
+  deleting: boolean;
+}) {
+  const cfg = typeConfig(item.type);
+  const Icon = cfg.Icon;
+  const payload = parseData(item.data);
+  const entries = payload ? Object.entries(payload).filter(([key]) => key !== "url") : [];
+  const url = payload?.url;
+
+  return (
+    <div className="space-y-6 p-5">
+      <div className="flex items-start gap-3">
+        <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded ${cfg.tile}`}>
+          <Icon size={18} />
+        </span>
+        <div className="min-w-0">
+          <p className={`text-xs font-medium ${cfg.text}`}>{cfg.label}</p>
+          <h3 className="mt-0.5 font-serif text-lg leading-snug text-slate-900">{item.title}</h3>
+        </div>
+      </div>
+
+      <p className="text-sm leading-relaxed text-slate-700">{item.message}</p>
+
+      <dl className="divide-y divide-slate-100 border-y border-slate-200 text-sm">
+        {item.shopName && (
+          <div className="flex justify-between gap-4 py-3">
+            <dt className="text-slate-500">Business</dt>
+            <dd className="text-right font-medium text-slate-900">{item.shopName}</dd>
+          </div>
+        )}
+        {item.shopOwnerName && (
+          <div className="flex justify-between gap-4 py-3">
+            <dt className="text-slate-500">Owner</dt>
+            <dd className="text-right text-slate-900">{item.shopOwnerName}</dd>
+          </div>
+        )}
+        <div className="flex justify-between gap-4 py-3">
+          <dt className="text-slate-500">Received</dt>
+          <dd className="text-right tabular-nums text-slate-900">{formatDate(item.createdAt, true)}</dd>
+        </div>
+        <div className="flex justify-between gap-4 py-3">
+          <dt className="text-slate-500">Status</dt>
+          <dd className="inline-flex items-center gap-2 text-slate-900">
+            <span className={`h-2 w-2 rounded-full ${item.isRead ? "bg-slate-400" : "bg-amber-500"}`} />
+            {item.isRead ? "Read" : "Unread"}
+          </dd>
+        </div>
+        {url != null && (
+          <div className="flex justify-between gap-4 py-3">
+            <dt className="text-slate-500">Link</dt>
+            <dd className="break-all text-right text-blue-700">{String(url)}</dd>
+          </div>
+        )}
+        {entries.map(([key, value]) => (
+          <div key={key} className="flex justify-between gap-4 py-3">
+            <dt className="text-slate-500">{key}</dt>
+            <dd className="break-all text-right text-slate-900">
+              {value === null ? "null" : typeof value === "object" ? (JSON.stringify(value) ?? "") : String(value)}
+            </dd>
+          </div>
+        ))}
+      </dl>
+
+      <button
+        onClick={() => onDelete(item.id)}
+        disabled={deleting}
+        className="flex h-10 w-full items-center justify-center gap-2 rounded border border-red-200 bg-white text-sm font-medium text-red-600 transition-colors hover:bg-red-50 disabled:opacity-50"
+      >
+        {deleting ? <ButtonLoader size={14} /> : <Trash2 size={14} />}
+        Delete notification
+      </button>
     </div>
   );
 }

@@ -99,9 +99,9 @@ export function SubscriptionExpiredBanner({ expired }: { expired?: boolean }) {
         <h3 className="text-lg font-black text-red-900 leading-none mb-1">Access Restricted: Subscription Expired</h3>
         <p className="text-sm text-red-700 font-medium opacity-80">Your plan has expired. Please choose a package below to restore full access to your business portal.</p>
       </div>
-      <div className="hidden md:flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg text-[10px] font-black uppercase tracking-widest">
+      {/* <div className="hidden md:flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg text-[10px] font-black uppercase tracking-widest">
         <CreditCard size={14} /> Action Required
-      </div>
+      </div> */}
     </div>
   )
 }

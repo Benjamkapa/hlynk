@@ -1,138 +1,241 @@
 import { useState } from 'react'
-import { Search, BookOpen, MessageCircle, FileText, ChevronRight, HelpCircle, X } from 'lucide-react'
+import { Search, X } from 'lucide-react'
+
+type Section = { heading: string; body: React.ReactNode }
+type Guide = { id: string; title: string; desc: string; heading: string; keywords: string; sections: Section[] }
+
+const code = (t: string) => <code className="rounded bg-slate-100 px-1.5 py-0.5 text-[0.85em] text-slate-800">{t}</code>
+
+const GUIDES: Guide[] = [
+  {
+    id: 'onboarding',
+    title: 'User onboarding',
+    desc: 'How new businesses are registered and verified.',
+    heading: 'How onboarding works',
+    keywords: 'tenant creation google account identity verification oauth trial subscription plan assignment register provider',
+    sections: [
+      {
+        heading: 'Tenant creation',
+        body: (
+          <p>
+            A new business is tied to the Google account of its main administrator. You don't enter a KRA PIN: the
+            system creates the tenant from that Google sign-in.
+          </p>
+        ),
+      },
+      {
+        heading: 'Identity verification',
+        body: (
+          <p>
+            Google's sign-in flow verifies the business's email address and identity, so there are no SMS codes or
+            confirmation links to manage.
+          </p>
+        ),
+      },
+      {
+        heading: 'Subscription assignment',
+        body: (
+          <p>
+            New businesses start on a 14-day <strong>Trial</strong>. For a key partner, open <strong>Subscriptions</strong>{' '}
+            and use <strong>Change plan</strong> to put them on Growth or Business Pro straight away.
+          </p>
+        ),
+      },
+    ],
+  },
+  {
+    id: 'risk',
+    title: 'Risk management',
+    desc: 'Risk scores and fraud detection.',
+    heading: 'Risk and fraud detection',
+    keywords: 'duplicate receipts mpesa forensic alert intrusion detection ip block failed login risk scoring suspend tenant business',
+    sections: [
+      {
+        heading: 'Duplicate receipts',
+        body: (
+          <p>
+            The payment parser matches M-Pesa receipt IDs exactly. If the same 10-character code is recorded by
+            different businesses, the platform raises a {code('Forensic Alert')} and suspends that transaction entry.
+          </p>
+        ),
+      },
+      {
+        heading: 'Blocking repeated failed sign-ins',
+        body: (
+          <p>
+            More than 5 failed sign-ins from one IP address block that IP for 30 minutes. Turn this on under{' '}
+            <strong>Settings &gt; Security</strong> with <strong>Block repeated failed sign-ins</strong>.
+          </p>
+        ),
+      },
+      {
+        heading: 'Risk scoring',
+        body: (
+          <p>
+            A business that records large volumes of entries without matching payment confirmations gets a higher risk
+            score. If one goes past the safe limit, open it from <strong>Businesses</strong> and choose{' '}
+            <strong>Suspend business</strong> to lock its access.
+          </p>
+        ),
+      },
+    ],
+  },
+  {
+    id: 'payouts',
+    title: 'Payout systems',
+    desc: 'Automated and manual settlements.',
+    heading: 'Settlements and payouts',
+    keywords: 'b2c safaricom handshake manual paybill settlement balance mark as paid reference platform fee withholding',
+    sections: [
+      {
+        heading: 'Automatic payouts (B2C)',
+        body: (
+          <p>
+            Fully verified businesses with API permission are paid directly through Safaricom B2C. Funds are reserved
+            and sent when the settlement window opens. To check that this works, run a test from{' '}
+            <strong>Settings &gt; Infrastructure</strong>.
+          </p>
+        ),
+      },
+      {
+        heading: 'Manual paybill settlement',
+        body: (
+          <>
+            <p>Businesses using the shared paybill build up a {code('Settlement Balance')}. To clear it:</p>
+            <ol className="mt-3 list-decimal space-y-2 pl-5">
+              <li>Transfer the accumulated KES from the bank or paybill to the business's number.</li>
+              <li>Copy the reference code from the business.</li>
+              <li>
+                Open <strong>Treasury &gt; Payouts</strong> and select the pending settlement.
+              </li>
+              <li>
+                Choose <strong>Mark as Paid</strong> and enter the reference code to clear it from the ledger.
+              </li>
+            </ol>
+          </>
+        ),
+      },
+      {
+        heading: 'Platform fee',
+        body: (
+          <p>
+            The platform fee (for example 5.0%) is withheld before net profit is calculated. Changing it under{' '}
+            <strong>Settings &gt; General</strong> applies to <em>future</em> transactions only. Past data stays as it was.
+          </p>
+        ),
+      },
+    ],
+  },
+]
 
 export default function HelpPage() {
-  const [activeGuide, setActiveGuide] = useState<string | null>(null)
+  const [query, setQuery] = useState('')
+  const [activeId, setActiveId] = useState(GUIDES[0].id)
 
-  const resources = [
-    { title: 'User Onboarding', desc: 'Guide on how to register and verify new providers.', icon: BookOpen },
-    { title: 'Risk Management', desc: 'Understanding risk scores and fraud detection.', icon: FileText },
-    { title: 'Payout Systems', desc: 'Configuration of automated vs manual settlements.', icon: MessageCircle },
-  ]
+  const q = query.trim().toLowerCase()
+  const visible = q
+    ? GUIDES.filter((g) =>
+        [g.title, g.desc, g.heading, g.keywords].some((s) => s.toLowerCase().includes(q))
+      )
+    : GUIDES
+  const active = visible.find((g) => g.id === activeId) ?? visible[0]
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500 pt-6 relative">
-      
-      <div className="text-center space-y-4 py-8">
-        <h1 className="text-4xl font-black text-gray-900 tracking-tight">How can we help, Admin?</h1>
-        <p className="text-gray-500 font-medium max-w-xl mx-auto text-lg">Search our internal documentation for platform management, business control, and financial operations.</p>
-        
-        <div className="relative max-w-2xl mx-auto pt-6">
-          <Search className="absolute left-6 top-[70%] -translate-y-1/2 text-gray-400" size={24} />
-          <input 
-            type="text" 
-            placeholder="Search platform guides, API docs, or policy..." 
-            className="w-full bg-white border border-gray-100 shadow-xl shadow-emerald-900/5 rounded-[14px] py-6 pl-16 pr-6 outline-none focus:ring-4 focus:ring-emerald-500/5 transition-all text-lg font-bold" 
-          />
+    <div className="mx-auto max-w-[1400px] space-y-8 pt-2 animate-in fade-in duration-500">
+      {/* Header */}
+      <header className="flex flex-col gap-4 border-b border-slate-200 pb-6 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <p className="text-xs text-slate-500">Internal documentation for administrators</p>
+          <h1 className="mt-1 font-serif text-3xl tracking-tight text-slate-900">Help</h1>
         </div>
-      </div>
+        <label className="relative block w-full sm:w-80">
+          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+          <input
+            type="text"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search guides"
+            aria-label="Search guides"
+            className="w-full rounded border border-slate-300 bg-white py-2.5 pl-8 pr-8 text-sm outline-none placeholder:text-slate-400 focus:border-[#0D4A3E]"
+          />
+          {query && (
+            <button
+              onClick={() => setQuery('')}
+              aria-label="Clear search"
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700"
+            >
+              <X size={14} />
+            </button>
+          )}
+        </label>
+      </header>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 pt-8">
-        {resources.map((res, i) => (
-          <div 
-            key={i} 
-            onClick={() => setActiveGuide(activeGuide === res.title ? null : res.title)}
-            className={`p-8 rounded-[14px] border shadow-sm hover:shadow-md transition-all group cursor-pointer ${activeGuide === res.title ? 'bg-emerald-50 border-emerald-200' : 'bg-white border-gray-100'}`}
-          >
-            <div className="h-14 w-14 rounded-2xl bg-emerald-100 text-emerald-600 flex items-center justify-center mb-6 transition-transform group-hover:scale-110">
-              <res.icon size={28} />
-            </div>
-            <h3 className="text-xl font-black text-gray-900 mb-2">{res.title}</h3>
-            <p className="text-gray-500 font-medium leading-relaxed text-sm">{res.desc}</p>
-            <div className="mt-6 flex items-center gap-2 text-emerald-600 font-black text-xs uppercase tracking-widest">
-              {activeGuide === res.title ? 'Close Guide' : 'Read Guide'} <ChevronRight size={14} className={activeGuide === res.title ? 'rotate-90 transition-transform' : 'transition-transform'} />
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {activeGuide && (
-        <div className="bg-white p-10 rounded-[14px] border border-emerald-100 shadow-xl shadow-emerald-900/5 animate-in slide-in-from-top-4 relative">
-          <button onClick={() => setActiveGuide(null)} className="absolute top-6 right-6 text-gray-400 hover:text-gray-900">
-            <X size={24} />
+      {visible.length === 0 ? (
+        <section className="rounded-md border border-slate-200 bg-white px-6 py-16 text-center">
+          <p className="text-sm font-medium text-slate-700">No guides match "{query}"</p>
+          <button onClick={() => setQuery('')} className="mt-2 text-sm font-medium text-[#0D4A3E] hover:underline">
+            Clear search
           </button>
-          
-          {activeGuide === 'User Onboarding' && (
-            <article className="prose prose-slate max-w-none">
-              <h2 className="text-2xl font-black text-emerald-900 mb-4">User Onboarding Process</h2>
-              <div className="space-y-6 text-gray-600">
-                <section>
-                  <h4 className="text-lg font-bold text-gray-900 mb-2">1. Tenant Creation</h4>
-                  <p>When a new provider is established on the platform, their foundational identity is tied directly to their Google Account. There is no manual entry of KRA PINs required here; the system natively creates the tenant based on the primary administrator's secure Google login credentials.</p>
-                </section>
-                <section>
-                  <h4 className="text-lg font-bold text-gray-900 mb-2">2. Identity Verification</h4>
-                  <p>Verification is handled seamlessly by Google Authentication. By utilizing Google's secure OAuth flow, hlynk instantly verifies the provider's email address and identity without the need for manual SMS OTPs or confirmation links.</p>
-                </section>
-                <section>
-                  <h4 className="text-lg font-bold text-gray-900 mb-2">3. Subscription Assignment</h4>
-                  <p>By default, newly onboarded tenants are assigned a 14-day <strong>TRIAL</strong> plan. If they represent a key enterprise partner, you may navigate to <strong>Subscriptions &gt; Upgrade Plan</strong> to manually provision a Growth or Premium plan instantly.</p>
-                </section>
-              </div>
-            </article>
-          )}
+        </section>
+      ) : (
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-[260px_minmax(0,1fr)]">
+          {/* Guide list */}
+          <nav aria-label="Guides" className="flex flex-col gap-1">
+            {visible.map((g) => {
+              const on = g.id === active?.id
+              return (
+                <button
+                  key={g.id}
+                  onClick={() => setActiveId(g.id)}
+                  aria-current={on ? 'page' : undefined}
+                  className={`border-l-2 px-3 py-2.5 text-left transition-colors ${
+                    on ? 'border-[#0D4A3E] text-slate-900' : 'border-transparent text-slate-500 hover:text-slate-900'
+                  }`}
+                >
+                  <span className={`block text-sm ${on ? 'font-semibold' : 'font-medium'}`}>{g.title}</span>
+                  <span className="mt-0.5 block text-xs text-slate-400">{g.desc}</span>
+                </button>
+              )
+            })}
+          </nav>
 
-          {activeGuide === 'Risk Management' && (
-            <article className="prose prose-slate max-w-none">
-              <h2 className="text-2xl font-black text-emerald-900 mb-4">Risk Models & Fraud Detection</h2>
-              <div className="space-y-6 text-gray-600">
-                <section>
-                  <h4 className="text-lg font-bold text-gray-900 mb-2">Duplicate Receipts</h4>
-                  <p>To thwart payment fraud, the hlynk payment parser utilizes exact M-Pesa receipt IDs payload matching. Attempting to record identical 10-character M-Pesa codes across independent tenants will trigger a <code>Forensic Alert</code> and suspend the transaction entry.</p>
-                </section>
-                <section>
-                  <h4 className="text-lg font-bold text-gray-900 mb-2">Intrusion Detection</h4>
-                  <p>Hlynk’s active security envelope tracks IP anomalies. Over 5 repeated failed login attempts from a unique origin trigger an immediate 30-minute block constraint on that IP. Ensure <strong>Intrusion Detection</strong> is activated in your <strong>Settings</strong> module.</p>
-                </section>
-                <section>
-                  <h4 className="text-lg font-bold text-gray-900 mb-2">Risk Scoring</h4>
-                  <p>Providers generating mass high volume entries without accompanying financial payload verifications receive elevated risk metrics. If a specific tenant surpasses the safe ceiling, you can immediately utilize the <strong>Suspend Tenant</strong> feature on the tenant oversight screen to lock access.</p>
-                </section>
+          {/* Article */}
+          {active && (
+            <article className="overflow-hidden rounded-md border border-slate-200 bg-white">
+              <div className="border-b border-slate-200 px-6 py-6 sm:px-8">
+                <p className="text-xs text-slate-500">{active.title}</p>
+                <h2 className="mt-1 font-serif text-2xl tracking-tight text-slate-900">{active.heading}</h2>
               </div>
-            </article>
-          )}
-
-          {activeGuide === 'Payout Systems' && (
-            <article className="prose prose-slate max-w-none">
-              <h2 className="text-2xl font-black text-emerald-900 mb-4">Settlement Configuration</h2>
-              <div className="space-y-6 text-gray-600">
-                <section>
-                  <h4 className="text-lg font-bold text-gray-900 mb-2">Automated (B2C) Handshake</h4>
-                  <p>For fully verified providers with API integration permission, payouts route directly via Safaricom B2C. The vault reserves funds and pushes immediately upon settlement windows. You can run diagnostic Handshakes from your <strong>Settings &gt; Infrastructure</strong> tab.</p>
-                </section>
-                <section>
-                  <h4 className="text-lg font-bold text-gray-900 mb-2">Manual Paybill Settlement</h4>
-                  <p>Providers utilizing the global rented Paybill will accumulate <code>Settlement Balances</code>. To complete manual clearing: </p>
-                  <ol className="list-decimal pl-5 space-y-2 mt-2 font-medium">
-                    <li>Execute a physical transfer of the accumulated KES from Bank/Paybill straight to the Provider's Number.</li>
-                    <li>Copy the reference code from your provider.</li>
-                    <li>Navigate to <strong>Admin &gt; Financials</strong> and select the Pending Settlement record.</li>
-                    <li>Click <strong>Mark as Paid</strong> and input the reference code to officially clear the ledger.</li>
-                  </ol>
-                </section>
-                <section>
-                  <h4 className="text-lg font-bold text-gray-900 mb-2">Platform Fee Withholding</h4>
-                  <p>Remember that the base platform fee (e.g., 5.0%) automatically gets withheld before net profit calculation. Modifying the global platform fee on the Settings page applies to all <em>future</em> transactions; it does not change historical data.</p>
-                </section>
+              <div className="divide-y divide-slate-100">
+                {active.sections.map((s) => (
+                  <section key={s.heading} className="grid gap-2 px-6 py-6 sm:px-8 md:grid-cols-[200px_minmax(0,1fr)] md:gap-8">
+                    <h3 className="text-sm font-semibold text-slate-900">{s.heading}</h3>
+                    <div className="max-w-2xl text-sm leading-relaxed text-slate-600 [&_strong]:font-semibold [&_strong]:text-slate-900">
+                      {s.body}
+                    </div>
+                  </section>
+                ))}
               </div>
             </article>
           )}
         </div>
       )}
 
-      <div className="bg-emerald-900 rounded-[14px] p-12 text-white relative overflow-hidden">
-        <div className="relative z-10">
-          <h2 className="text-3xl font-black mb-4">Direct Support Link</h2>
-          <p className="text-emerald-200 font-medium max-w-md text-lg leading-relaxed">Need urgent assistance with platform infrastructure or security incidents? Contact the engineering team directly.</p>
-          <button 
-            onClick={() => window.location.href = 'mailto:devops@hlynk.co.ke?subject=URGENT: Platform Infrastructure Support Request'}
-            className="mt-8 bg-emerald-400 text-emerald-900 px-8 py-4 rounded-xl font-black text-sm hover:bg-emerald-300 transition-all"
-          >
-            Contact DevOps
-          </button>
+      {/* Contact */}
+      <section className="flex flex-col gap-4 rounded-md bg-[#0D4A3E] p-6 text-white sm:flex-row sm:items-center sm:justify-between sm:p-8">
+        <div className="max-w-xl">
+          <h2 className="font-serif text-2xl tracking-tight">Something urgent?</h2>
+          <p className="mt-1 text-sm leading-relaxed text-emerald-100/80">
+            For platform infrastructure problems or security incidents, email the engineering team directly.
+          </p>
         </div>
-        <HelpCircle size={240} className="absolute -right-20 -bottom-20 text-emerald-800 opacity-20 rotate-12" />
-      </div>
+        <a
+          href="mailto:devops@hlynk.co.ke?subject=URGENT: Platform Infrastructure Support Request"
+          className="inline-flex h-10 shrink-0 items-center rounded bg-white px-4 text-sm font-medium text-[#0D4A3E] transition-colors hover:bg-emerald-50"
+        >
+          Email DevOps
+        </a>
+      </section>
     </div>
   )
 }
