@@ -33,7 +33,7 @@ type ClusterNode = {
 }
 
 const MAX_POINTS = 120
-const POLL_MS = 5_000
+const POLL_MS = 1_000
 
 const METRICS: Record<MetricKey, { label: string; unit: string }> = {
   api: { label: 'API', unit: ' ms' },
@@ -173,7 +173,7 @@ export default function SystemPerformancePage() {
     queryKey: ['system-health'],
     queryFn: adminApi.getSystemHealth,
 
-    // Poll the existing health endpoint every 5 seconds.
+    // Poll the existing health endpoint every 1 seconds.
     // If a request is still running, wait for it instead of starting another.
     refetchInterval: (query) =>
       query.state.fetchStatus === 'fetching' ? false : POLL_MS,
