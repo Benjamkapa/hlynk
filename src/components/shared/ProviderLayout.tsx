@@ -35,6 +35,7 @@ import {
   Wallet,
   Grid,
   MoreHorizontal,
+  Bell,
 } from "lucide-react";
 import {
   useLocation,
@@ -296,6 +297,12 @@ export default function ProviderLayout() {
     {
       label: "Account",
       items: [
+        {
+          to: "/dashboard/notifications",
+          label: "Notifications",
+          icon: Bell,
+          permission: "overview",
+        },
         {
           to: "/dashboard/logs",
           label: "Audit Log",
@@ -1458,7 +1465,7 @@ function MoreSheet({
           >
             <div
               ref={gridRef}
-              className="grid grid-cols-4 gap-y-5 gap-x-1 px-3 pt-5 pb-[max(1.25rem,calc(env(safe-area-inset-bottom,0px)+0.75rem))]"
+              className="grid grid-cols-3 gap-y-5 gap-x-1 px-3 pt-5 pb-[max(1.25rem,calc(env(safe-area-inset-bottom,0px)+0.75rem))]"
             >
               {items.map((item, i) => (
                 <motion.div

@@ -61,6 +61,7 @@ const SubscriptionPage = lazy(() => import('./pages/provider/SubscriptionPage'))
 const StaffManagementPage = lazy(() => import('./pages/provider/StaffManagementPage'))
 const SupportPageProvider = lazy(() => import('./pages/provider/SupportPage'))
 const HelpPageProvider = lazy(() => import('./pages/provider/HelpPage'))
+const NotificationsPageProvider = lazy(() => import('./pages/provider/NotificationsPage'))
 const DeveloperPage = lazy(() => import('./pages/provider/DeveloperPage'))
 const LogsPage = lazy(() => import('./pages/provider/MpesaLogsPage'))
 const EtimsPage = lazy(() => import('./pages/provider/EtimsPage'))
@@ -183,6 +184,7 @@ export default function App() {
           <Route path="hospitality/bookings" element={<BookingsPage />} />
           <Route path="hospitality/operations" element={<OperationsPage />} />
           <Route path="help" element={<HelpPageProvider />} />
+          <Route path="notifications" element={<NotificationsPageProvider />} />
         </Route>
 
         {/* Admin Portal */}
@@ -208,3 +210,4 @@ export default function App() {
     </Suspense>
   )
 }
+

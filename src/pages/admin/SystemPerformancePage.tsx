@@ -494,7 +494,7 @@ export default function SystemPerformancePage() {
             <div className="border-b border-slate-200 px-6 py-4">
               <h2 className="text-sm font-semibold">Capacity</h2>
             </div>
-            <div className="divide-y divide-slate-100 px-6">
+            <div className="divide-y divide-slate-100 px-6 grid grid-cols-3">
               <Bar label="Processor" percent={cpuLoad} detail="CPU utilisation" />
               <Bar
                 label="Memory"

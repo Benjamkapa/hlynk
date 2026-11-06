@@ -32,6 +32,7 @@ const routeTitles: Record<string, string> = {
   '/dashboard/hospitality/operations': 'Housekeeping & Tasks',
   '/dashboard/settings': 'Business Settings',
   '/dashboard/help': 'Help & Support',
+  '/dashboard/notifications': 'Notifications',
   '/admin': 'System Overview',
   '/admin/system-performance': 'System Performance',
   '/admin/financials': 'Financial Intelligence',

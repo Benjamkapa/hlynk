@@ -1,93 +1,114 @@
-import { useState, useEffect } from 'react'
-import { FileSpreadsheet, ArrowUpRight } from 'lucide-react'
-import InlineLoader, { ButtonLoader } from '../../components/shared/InlineLoader'
+import { useState, useEffect } from "react";
+import { FileSpreadsheet, ArrowUpRight } from "lucide-react";
+import InlineLoader, {
+  ButtonLoader,
+} from "../../components/shared/InlineLoader";
 import {
-  ResponsiveContainer, Tooltip, AreaChart, Area,
-  XAxis, YAxis, CartesianGrid
-} from 'recharts'
-import { useQuery } from '@tanstack/react-query'
-import { adminApi } from '../../lib/api/providers'
-import { toast } from 'sonner'
-import { Link } from 'react-router-dom'
-import Pagination from '../../components/shared/Pagination'
+  ResponsiveContainer,
+  Tooltip,
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+} from "recharts";
+import { useQuery } from "@tanstack/react-query";
+import { adminApi } from "../../lib/api/providers";
+import { toast } from "sonner";
+import { Link } from "react-router-dom";
+import Pagination from "../../components/shared/Pagination";
 
 // Flip to true to show the Excel export button in the header
-const SHOW_EXPORT = false
+const SHOW_EXPORT = false;
 
-const compact = new Intl.NumberFormat('en', { notation: 'compact', maximumFractionDigits: 1 })
-const kes = (n: any) => Number(n || 0).toLocaleString()
+const compact = new Intl.NumberFormat("en", {
+  notation: "compact",
+  maximumFractionDigits: 1,
+});
+const kes = (n: any) => Number(n || 0).toLocaleString();
 const clock = (t: any) =>
-  t ? new Date(t).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''
+  t
+    ? new Date(t).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+    : "";
 
 export default function AdminDashboardPage() {
-  const [timeframe, setTimeframe] = useState<'HOURLY' | 'DAILY'>('HOURLY')
-  const [page, setPage] = useState(1)
-  const [isExporting, setIsExporting] = useState(false)
+  const [timeframe, setTimeframe] = useState<"HOURLY" | "DAILY">("HOURLY");
+  const [page, setPage] = useState(1);
+  const [isExporting, setIsExporting] = useState(false);
 
   const handleExportDossier = async () => {
-    setIsExporting(true)
-    const toastId = toast.loading('Compiling multi-sheet intelligence report...')
+    setIsExporting(true);
+    const toastId = toast.loading(
+      "Compiling multi-sheet intelligence report...",
+    );
     try {
-      await adminApi.downloadPlatformReport()
-      toast.success('Platform intelligence report downloaded (.xlsx)', { id: toastId })
+      await adminApi.downloadPlatformReport();
+      toast.success("Platform intelligence report downloaded (.xlsx)", {
+        id: toastId,
+      });
     } catch (err: any) {
-      console.error(err)
-      toast.error('Failed to export platform report', { id: toastId })
+      console.error(err);
+      toast.error("Failed to export platform report", { id: toastId });
     } finally {
-      setIsExporting(false)
+      setIsExporting(false);
     }
-  }
+  };
 
-  const { data: rawStats, isLoading, error } = useQuery<any>({
-    queryKey: ['admin-stats-', timeframe],
+  const {
+    data: rawStats,
+    isLoading,
+    error,
+  } = useQuery<any>({
+    queryKey: ["admin-stats-", timeframe],
     queryFn: () => adminApi.getStats(timeframe),
-  })
+  });
 
   const { data: healthData } = useQuery({
-    queryKey: ['system-health'],
+    queryKey: ["system-health"],
     queryFn: () => adminApi.getHealth(),
     refetchInterval: 30000,
-  })
+  });
 
-  const stats = rawStats?.data || rawStats
-  const health = healthData?.data || healthData
+  const stats = rawStats?.data || rawStats;
+  const health = healthData?.data || healthData;
 
   useEffect(() => {
-    if (error) toast.error('Failed to load system stats')
-  }, [error])
+    if (error) toast.error("Failed to load system stats");
+  }, [error]);
 
-  const revenueData = stats?.trends?.revenueTrend || []
+  const revenueData = stats?.trends?.revenueTrend || [];
   const recentEvents =
     stats?.recentActivity?.map((a: any) => ({
-      event: a?.event || 'Activity',
-      entity: a?.entity || 'System',
-      user: a?.user || 'System',
+      event: a?.event || "Activity",
+      entity: a?.entity || "System",
+      user: a?.user || "System",
       time: a?.time,
       severity:
         a?.event &&
-        (a.event.toLowerCase().includes('delete') || a.event.toLowerCase().includes('error'))
-          ? 'High'
-          : 'Normal',
-    })) || []
+        (a.event.toLowerCase().includes("delete") ||
+          a.event.toLowerCase().includes("error"))
+          ? "High"
+          : "Normal",
+    })) || [];
 
-  const transactions: any[] = stats?.recentTransactions || []
-  const dbUp = health?.database === 'up'
-  const activeAvatars: any[] = stats?.overview?.activeAvatars || []
-  const activeToday = stats?.overview?.activeToday || 0
+  const transactions: any[] = stats?.recentTransactions || [];
+  const dbUp = health?.database === "up";
+  const activeAvatars: any[] = stats?.overview?.activeAvatars || [];
+  const activeToday = stats?.overview?.activeToday || 0;
 
   if (isLoading)
     return (
       <div className="flex h-96 items-center justify-center">
         <InlineLoader size="lg" message="Loading dashboard overview..." />
       </div>
-    )
+    );
 
-  const today = new Date().toLocaleDateString('en-GB', {
-    weekday: 'long',
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-  })
+  const today = new Date().toLocaleDateString("en-GB", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
 
   return (
     <div className="mx-auto max-w-[1400px] space-y-8 pt-2 animate-in fade-in duration-500">
@@ -116,16 +137,19 @@ export default function AdminDashboardPage() {
                 ))}
               </div>
               <span className="text-xs text-slate-600">
-                <span className="font-semibold text-slate-900">{activeToday}</span> active today
+                <span className="font-semibold text-slate-900">
+                  {activeToday}
+                </span>{" "}
+                active today
               </span>
             </div>
           ) : null}
 
           <div className="flex items-center gap-2 text-xs text-slate-600">
             <span
-              className={`h-2 w-2 rounded-full ${dbUp ? 'bg-emerald-500' : 'bg-red-500'}`}
+              className={`h-2 w-2 rounded-full ${dbUp ? "bg-emerald-500" : "bg-red-500"}`}
             />
-            {dbUp ? 'All systems operational' : 'Degraded performance'}
+            {dbUp ? "All systems operational" : "Degraded performance"}
           </div>
 
           {SHOW_EXPORT && (
@@ -134,20 +158,25 @@ export default function AdminDashboardPage() {
               disabled={isExporting}
               className="flex items-center gap-2 rounded border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 transition-colors hover:bg-slate-50 disabled:opacity-50"
             >
-              {isExporting ? <ButtonLoader size="sm" /> : <FileSpreadsheet size={14} />}
-              {isExporting ? 'Exporting...' : 'Export report'}
+              {isExporting ? (
+                <ButtonLoader size="sm" />
+              ) : (
+                <FileSpreadsheet size={14} />
+              )}
+              {isExporting ? "Exporting..." : "Export report"}
             </button>
           )}
         </div>
       </header>
 
-      {/* ── Revenue panel + key figures ────────────────────────── */}
-      <section className="grid grid-cols-1 overflow-hidden rounded-md border border-slate-200 bg-white xl:grid-cols-12">
+      <section className="grid grid-cols-3 overflow-hidden rounded-md border border-slate-200 bg-white xl:grid-cols-12">
         {/* Revenue */}
-        <div className="bg-[#0D4A3E] p-6 text-white sm:p-8 xl:col-span-8">
+        <div className="col-span-3 bg-[#0D4A3E] p-6 text-white sm:p-8 xl:col-span-8">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
-              <p className="text-sm text-emerald-100/70">Subscription revenue</p>
+              <p className="text-sm text-emerald-100/70">
+                Subscription revenue
+              </p>
               <p className="mt-2 font-serif text-4xl tabular-nums tracking-tight sm:text-5xl">
                 <span className="mr-2 text-xl text-emerald-100/60">KES</span>
                 {kes(stats?.revenue?.total)}
@@ -155,50 +184,69 @@ export default function AdminDashboardPage() {
             </div>
 
             <div className="flex gap-5 text-sm">
-              {(['HOURLY', 'DAILY'] as const).map((tf) => (
+              {(["HOURLY", "DAILY"] as const).map((tf) => (
                 <button
                   key={tf}
                   onClick={() => setTimeframe(tf)}
                   className={`border-b pb-1 transition-colors ${
                     timeframe === tf
-                      ? 'border-emerald-300 text-white'
-                      : 'border-transparent text-emerald-100/50 hover:text-emerald-100'
+                      ? "border-emerald-300 text-white"
+                      : "border-transparent text-emerald-100/50 hover:text-emerald-100"
                   }`}
                 >
-                  {tf === 'HOURLY' ? 'Hourly' : 'Daily'}
+                  {tf === "HOURLY" ? "Hourly" : "Daily"}
                 </button>
               ))}
             </div>
           </div>
 
           <div className="mt-8 h-[280px] w-full">
-            <ResponsiveContainer width="100%" height="100%" minWidth={0} debounce={100}>
-              <AreaChart data={revenueData} margin={{ top: 8, right: 4, left: -12, bottom: 0 }}>
+            <ResponsiveContainer
+              width="100%"
+              height="100%"
+              minWidth={0}
+              debounce={100}
+            >
+              <AreaChart
+                data={revenueData}
+                margin={{ top: 8, right: 4, left: -12, bottom: 0 }}
+              >
                 <defs>
                   <linearGradient id="revFill" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="0%" stopColor="#6EE7B7" stopOpacity={0.25} />
                     <stop offset="100%" stopColor="#6EE7B7" stopOpacity={0} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid vertical={false} stroke="rgba(255,255,255,0.08)" />
+
+                <CartesianGrid
+                  vertical={false}
+                  stroke="rgba(255,255,255,0.08)"
+                />
+
                 <XAxis
                   dataKey="name"
                   axisLine={false}
                   tickLine={false}
-                  tick={{ fontSize: 11, fill: 'rgba(209,250,229,0.55)' }}
+                  tick={{ fontSize: 11, fill: "rgba(209,250,229,0.55)" }}
                   dy={10}
                 />
+
                 <YAxis
                   axisLine={false}
                   tickLine={false}
-                  tick={{ fontSize: 11, fill: 'rgba(209,250,229,0.55)' }}
+                  tick={{ fontSize: 11, fill: "rgba(209,250,229,0.55)" }}
                   tickFormatter={(v) => compact.format(v)}
                   width={48}
                 />
+
                 <Tooltip
-                  cursor={{ stroke: 'rgba(255,255,255,0.25)', strokeWidth: 1 }}
+                  cursor={{
+                    stroke: "rgba(255,255,255,0.25)",
+                    strokeWidth: 1,
+                  }}
                   content={<ChartTooltip />}
                 />
+
                 <Area
                   type="monotone"
                   dataKey="value"
@@ -206,7 +254,12 @@ export default function AdminDashboardPage() {
                   strokeWidth={1.75}
                   fill="url(#revFill)"
                   dot={false}
-                  activeDot={{ r: 4, fill: '#0D4A3E', stroke: '#6EE7B7', strokeWidth: 2 }}
+                  activeDot={{
+                    r: 4,
+                    fill: "#0D4A3E",
+                    stroke: "#6EE7B7",
+                    strokeWidth: 2,
+                  }}
                 />
               </AreaChart>
             </ResponsiveContainer>
@@ -214,17 +267,19 @@ export default function AdminDashboardPage() {
         </div>
 
         {/* Key figures */}
-        <dl className="divide-y divide-slate-200 xl:col-span-4">
+        <dl className="col-span-3 grid grid-cols-3 divide-x divide-slate-200 xl:col-span-4 xl:grid-cols-1 xl:divide-x-0 xl:divide-y">
           <Figure
             label="Gross merchandise volume"
             value={`KES ${kes(stats?.revenue?.platformVolume)}`}
             note="Total sales processed on the platform"
           />
+
           <Figure
             label="Paybill collections"
             value={`KES ${kes(stats?.revenue?.mpesaCollections)}`}
             note="M-Pesa inflow through the system paybill"
           />
+
           <Figure
             label="Businesses"
             value={String(stats?.overview?.totalProviders || 0)}
@@ -239,8 +294,12 @@ export default function AdminDashboardPage() {
         <section className="overflow-hidden rounded-md border border-slate-200 bg-white xl:col-span-2">
           <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4">
             <div>
-              <h2 className="text-sm font-semibold text-slate-900">Recent transactions</h2>
-              <p className="mt-0.5 text-xs text-slate-500">Platform-wide, most recent first</p>
+              <h2 className="text-sm font-semibold text-slate-900">
+                Recent transactions
+              </h2>
+              <p className="mt-0.5 text-xs text-slate-500">
+                Platform-wide, most recent first
+              </p>
             </div>
             <Link
               to="/admin/forensic-audit"
@@ -262,41 +321,63 @@ export default function AdminDashboardPage() {
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {transactions.length > 0 ? (
-                  transactions.slice((page - 1) * 5, page * 5).map((tx: any, i: number) => (
-                    <tr key={i} className="transition-colors hover:bg-slate-50">
-                      <td className="px-6 py-4 text-xs text-slate-600 hl-mono">{tx.id}</td>
-                      <td className="px-6 py-4">
-                        <p className="text-sm font-medium text-slate-900">{tx.entity}</p>
-                        <p className="mt-0.5 text-xs text-slate-500">
-                          {tx.user}
-                          {tx.status ? <span className="text-slate-300"> · </span> : null}
-                          {tx.status}
-                        </p>
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className="inline-flex items-center gap-2 text-xs text-slate-700">
-                          <span
-                            className={`h-1.5 w-1.5 rounded-sm ${
-                              tx.type === 'SALE' ? 'bg-emerald-500' : 'bg-sky-500'
-                            }`}
-                          />
-                          {tx.type === 'SALE'
-                            ? 'Sale'
-                            : String(tx.type || '').charAt(0) +
-                              String(tx.type || '').slice(1).toLowerCase()}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 text-right">
-                        <p className="text-sm font-medium tabular-nums text-slate-900">
-                          {tx.amount > 0 ? `KES ${tx.amount.toLocaleString()}` : '—'}
-                        </p>
-                        <p className="mt-0.5 text-xs text-slate-400">{clock(tx.time)}</p>
-                      </td>
-                    </tr>
-                  ))
+                  transactions
+                    .slice((page - 1) * 5, page * 5)
+                    .map((tx: any, i: number) => (
+                      <tr
+                        key={i}
+                        className="transition-colors hover:bg-slate-50"
+                      >
+                        <td className="px-6 py-4 text-xs text-slate-600 hl-mono">
+                          {tx.id}
+                        </td>
+                        <td className="px-6 py-4">
+                          <p className="text-sm font-medium text-slate-900">
+                            {tx.entity}
+                          </p>
+                          <p className="mt-0.5 text-xs text-slate-500">
+                            {tx.user}
+                            {tx.status ? (
+                              <span className="text-slate-300"> · </span>
+                            ) : null}
+                            {tx.status}
+                          </p>
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className="inline-flex items-center gap-2 text-xs text-slate-700">
+                            <span
+                              className={`h-1.5 w-1.5 rounded-sm ${
+                                tx.type === "SALE"
+                                  ? "bg-emerald-500"
+                                  : "bg-sky-500"
+                              }`}
+                            />
+                            {tx.type === "SALE"
+                              ? "Sale"
+                              : String(tx.type || "").charAt(0) +
+                                String(tx.type || "")
+                                  .slice(1)
+                                  .toLowerCase()}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 text-right">
+                          <p className="text-sm font-medium tabular-nums text-slate-900">
+                            {tx.amount > 0
+                              ? `KES ${tx.amount.toLocaleString()}`
+                              : "—"}
+                          </p>
+                          <p className="mt-0.5 text-xs text-slate-400">
+                            {clock(tx.time)}
+                          </p>
+                        </td>
+                      </tr>
+                    ))
                 ) : (
                   <tr>
-                    <td colSpan={4} className="px-6 py-16 text-center text-sm text-slate-400">
+                    <td
+                      colSpan={4}
+                      className="px-6 py-16 text-center text-sm text-slate-400"
+                    >
                       No transactions in the current window.
                     </td>
                   </tr>
@@ -323,21 +404,33 @@ export default function AdminDashboardPage() {
           {/* System status */}
           <section className="rounded-md border border-slate-200 bg-white">
             <div className="border-b border-slate-200 px-6 py-4">
-              <h2 className="text-sm font-semibold text-slate-900">System status</h2>
-              <p className="mt-0.5 text-xs text-slate-500">Refreshes every 30 seconds</p>
+              <h2 className="text-sm font-semibold text-slate-900">
+                System status
+              </h2>
+              <p className="mt-0.5 text-xs text-slate-500">
+                Refreshes every 30 seconds
+              </p>
             </div>
             <dl className="divide-y divide-slate-100 px-6">
               <StatusRow
                 label="Database"
-                value={dbUp ? 'Online' : 'Degraded'}
-                tone={dbUp ? 'ok' : 'bad'}
+                value={dbUp ? "Online" : "Degraded"}
+                tone={dbUp ? "ok" : "bad"}
               />
-              <StatusRow label="Latency" value={health?.dbLatency || '—'} mono />
-              <StatusRow label="Memory" value={health?.memoryUsage || '—'} mono />
+              <StatusRow
+                label="Latency"
+                value={health?.dbLatency || "—"}
+                mono
+              />
+              <StatusRow
+                label="Memory"
+                value={health?.memoryUsage || "—"}
+                mono
+              />
               <StatusRow
                 label="Errors, last 24h"
                 value={String(health?.errorsLast24h || 0)}
-                tone={health?.errorsLast24h > 0 ? 'warn' : undefined}
+                tone={health?.errorsLast24h > 0 ? "warn" : undefined}
                 mono
               />
             </dl>
@@ -346,7 +439,9 @@ export default function AdminDashboardPage() {
           {/* Activity */}
           <section className="rounded-md border border-slate-200 bg-white">
             <div className="border-b border-slate-200 px-6 py-4">
-              <h2 className="text-sm font-semibold text-slate-900">Recent activity</h2>
+              <h2 className="text-sm font-semibold text-slate-900">
+                Recent activity
+              </h2>
             </div>
             {recentEvents.length > 0 ? (
               <ol className="relative px-6 py-5">
@@ -355,15 +450,19 @@ export default function AdminDashboardPage() {
                   <li key={i} className="relative flex gap-4 pb-5 last:pb-0">
                     <span
                       className={`relative z-10 mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full border-2 border-white ring-1 ${
-                        ev.severity === 'High'
-                          ? 'bg-red-500 ring-red-200'
-                          : 'bg-slate-400 ring-slate-200'
+                        ev.severity === "High"
+                          ? "bg-red-500 ring-red-200"
+                          : "bg-slate-400 ring-slate-200"
                       }`}
                     />
                     <div className="min-w-0 flex-1">
                       <div className="flex items-baseline justify-between gap-3">
-                        <p className="truncate text-sm font-medium text-slate-900">{ev.event}</p>
-                        <span className="shrink-0 text-xs text-slate-400">{clock(ev.time)}</span>
+                        <p className="truncate text-sm font-medium text-slate-900">
+                          {ev.event}
+                        </p>
+                        <span className="shrink-0 text-xs text-slate-400">
+                          {clock(ev.time)}
+                        </span>
                       </div>
                       <p className="mt-0.5 truncate text-xs text-slate-500">
                         {ev.entity} · {ev.user}
@@ -373,16 +472,26 @@ export default function AdminDashboardPage() {
                 ))}
               </ol>
             ) : (
-              <p className="px-6 py-10 text-center text-sm text-slate-400">No recent activity.</p>
+              <p className="px-6 py-10 text-center text-sm text-slate-400">
+                No recent activity.
+              </p>
             )}
           </section>
         </div>
       </div>
     </div>
-  )
+  );
 }
 
-function Figure({ label, value, note }: { label: string; value: string; note: string }) {
+function Figure({
+  label,
+  value,
+  note,
+}: {
+  label: string;
+  value: string;
+  note: string;
+}) {
   return (
     <div className="p-6 sm:p-8">
       <dt className="text-sm text-slate-500">{label}</dt>
@@ -391,7 +500,7 @@ function Figure({ label, value, note }: { label: string; value: string; note: st
       </dd>
       <p className="mt-1.5 text-xs text-slate-500">{note}</p>
     </div>
-  )
+  );
 }
 
 function StatusRow({
@@ -400,29 +509,31 @@ function StatusRow({
   tone,
   mono,
 }: {
-  label: string
-  value: string
-  tone?: 'ok' | 'warn' | 'bad'
-  mono?: boolean
+  label: string;
+  value: string;
+  tone?: "ok" | "warn" | "bad";
+  mono?: boolean;
 }) {
   const color =
-    tone === 'ok'
-      ? 'text-emerald-700'
-      : tone === 'warn'
-        ? 'text-amber-600'
-        : tone === 'bad'
-          ? 'text-red-600'
-          : 'text-slate-900'
+    tone === "ok"
+      ? "text-emerald-700"
+      : tone === "warn"
+        ? "text-amber-600"
+        : tone === "bad"
+          ? "text-red-600"
+          : "text-slate-900";
   return (
     <div className="flex items-center justify-between py-3.5">
       <dt className="text-sm text-slate-500">{label}</dt>
-      <dd className={`text-sm font-medium ${color} ${mono ? 'hl-mono' : ''}`}>{value}</dd>
+      <dd className={`text-sm font-medium ${color} ${mono ? "hl-mono" : ""}`}>
+        {value}
+      </dd>
     </div>
-  )
+  );
 }
 
 function ChartTooltip({ active, payload, label }: any) {
-  if (!active || !payload?.length) return null
+  if (!active || !payload?.length) return null;
   return (
     <div className="rounded bg-white px-3 py-2 text-xs shadow-lg">
       <p className="text-slate-500">{label}</p>
@@ -430,5 +541,5 @@ function ChartTooltip({ active, payload, label }: any) {
         KES {Number(payload[0].value).toLocaleString()}
       </p>
     </div>
-  )
+  );
 }
