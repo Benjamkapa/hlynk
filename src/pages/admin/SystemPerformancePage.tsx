@@ -33,7 +33,7 @@ type ClusterNode = {
 }
 
 const MAX_POINTS = 120
-const POLL_MS = 60_000
+const POLL_MS = 5_000
 
 const METRICS: Record<MetricKey, { label: string; unit: string }> = {
   api: { label: 'API', unit: ' ms' },
@@ -172,7 +172,18 @@ export default function SystemPerformancePage() {
   } = useQuery({
     queryKey: ['system-health'],
     queryFn: adminApi.getSystemHealth,
-    refetchInterval: POLL_MS,
+
+    // Poll the existing health endpoint every 5 seconds.
+    // If a request is still running, wait for it instead of starting another.
+    refetchInterval: (query) =>
+      query.state.fetchStatus === 'fetching' ? false : POLL_MS,
+
+    // Do not keep polling while the dashboard is in a background tab.
+    refetchIntervalInBackground: false,
+
+    // Returning to the tab does not trigger an extra focus-based request.
+    refetchOnWindowFocus: false,
+
     retry: 1,
   })
 
@@ -611,7 +622,7 @@ export default function SystemPerformancePage() {
       </section>
 
       <footer className="text-xs text-slate-400">
-        Version {health.version || 'unknown'} · refreshes every 60 seconds · trend history clears on reload
+        Version {health.version || 'unknown'} · refreshes every 5 seconds · trend history clears on reload
       </footer>
 
       {/* Restart confirmation */}
