@@ -33,7 +33,7 @@ type ClusterNode = {
 }
 
 const MAX_POINTS = 120
-const POLL_MS = 1_000
+const POLL_MS = 5_00
 
 const METRICS: Record<MetricKey, { label: string; unit: string }> = {
   api: { label: 'API', unit: ' ms' },
