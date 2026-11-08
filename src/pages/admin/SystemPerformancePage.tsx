@@ -302,16 +302,6 @@ export default function SystemPerformancePage() {
             <Dot status={serviceStatus} />
             {STATUS_TEXT[serviceStatus]}
           </span>
-          {/* <button
-            type="button"
-            onClick={() => refetch()}
-            disabled={isFetching}
-            title="Refresh"
-            className="inline-flex items-center gap-2 rounded border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-60"
-          >
-            <RefreshCw size={13} className={isFetching ? 'animate-spin' : ''} />
-            Refresh
-          </button> */}
           <button
             type="button"
             onClick={exportSnapshot}

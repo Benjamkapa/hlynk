@@ -22,6 +22,7 @@ import { testNotificationSound } from "../../lib/notifications/sound";
 import InlineLoader, {
   ButtonLoader,
 } from "../../components/shared/InlineLoader";
+import { DraggableBottomSheet } from "../../components/shared/DraggableBottomSheet";
 
 type NotificationType = "success" | "warning" | "danger" | string;
 type PushState = "subscribed" | "denied" | "prompt" | "unsupported" | "ios_browser";
@@ -336,7 +337,7 @@ export default function SystemNotificationsPage() {
           {pages > 1 && (
             <div className="flex items-center justify-between border-t border-slate-200 px-6 py-3 text-xs text-slate-500">
               <span className="tabular-nums">
-                {Math.min((page - 1) * limit + 1, total)}–{Math.min(page * limit, total)} of {total}
+                {Math.min((page - 1) * limit + 1, total)}Ã¢â‚¬â€œ{Math.min(page * limit, total)} of {total}
               </span>
               <div className="flex items-center gap-2">
                 <button
@@ -388,29 +389,28 @@ export default function SystemNotificationsPage() {
       </div>
 
       {/* Mobile bottom sheet */}
-      {selected && (
-        <div className="xl:hidden">
-          <div className="fixed inset-0 z-40 bg-black/40 animate-fadeIn" onClick={() => setSelected(null)} />
-          <div
-            className="fixed inset-x-0 bottom-0 z-50 flex max-h-[85dvh] flex-col rounded-t-xl border-t border-slate-200 bg-white shadow-2xl animate-slideUp"
-            style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
-          >
-            <div className="flex items-center justify-between border-b border-slate-200 px-5 py-3">
-              <h2 className="text-sm font-semibold text-slate-900">Details</h2>
-              <button
-                onClick={() => setSelected(null)}
-                className="rounded p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-700"
-                aria-label="Close details"
-              >
-                <X size={16} />
-              </button>
+      <div className="xl:hidden">
+        <DraggableBottomSheet
+          open={!!selected}
+          onClose={() => setSelected(null)}
+          title="Notification Details"
+          zIndexBackdrop="z-[100]"
+          zIndexSheet="z-[101]"
+        >
+          {selected && (
+            <div className="pb-[max(2rem,calc(env(safe-area-inset-bottom,0px)+1.5rem))]">
+              <NotificationDetail
+                item={selected}
+                onDelete={(id) => {
+                  handleDelete(id);
+                  setSelected(null);
+                }}
+                deleting={deleteMutation.isPending}
+              />
             </div>
-            <div className="overflow-y-auto">
-              <NotificationDetail item={selected} onDelete={handleDelete} deleting={deleteMutation.isPending} />
-            </div>
-          </div>
-        </div>
-      )}
+          )}
+        </DraggableBottomSheet>
+      </div>
     </div>
   );
 }
@@ -487,7 +487,7 @@ function NotificationDetail({
       <button
         onClick={() => onDelete(item.id)}
         disabled={deleting}
-        className="flex h-10 w-full items-center justify-center gap-2 rounded border border-red-200 bg-white text-sm font-medium text-red-600 transition-colors hover:bg-red-50 disabled:opacity-50"
+        className="flex h-10 w-full items-center justify-center gap-2 rounded-full border border-red-200 bg-white text-sm font-medium text-red-600 transition-colors hover:bg-red-50 disabled:opacity-50"
       >
         {deleting ? <ButtonLoader size={14} /> : <Trash2 size={14} />}
         Delete notification

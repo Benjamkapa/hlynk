@@ -31,6 +31,7 @@ import {
 } from "framer-motion";
 import { useAuth } from "../../lib/auth/AuthContext";
 import TopNav from "./TopNav";
+import { DraggableBottomSheet } from "./DraggableBottomSheet";
 
 interface AdminNavItem {
   to: string;
@@ -188,9 +189,9 @@ const avatarFor = (user: any) =>
   user?.photoUrl ||
   `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || "")}&background=0D4A3E&color=fff`;
 
-// ─── Admin Mobile Bottom Navigation Bar ───────────────────────────────────────
+// â”€â”€â”€ Admin Mobile Bottom Navigation Bar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Same structure and styling as the provider portal's MobileBottomNav:
-// Home · primary tab · centre CTA · More (draggable sheet) · You (account sheet)
+// Home Â· primary tab Â· centre CTA Â· More (draggable sheet) Â· You (account sheet)
 function AdminMobileBottomNav({
   user,
   onLogout,
@@ -257,111 +258,78 @@ function AdminMobileBottomNav({
         items={overflowItems}
       />
 
-      {/* "You" account sheet */}
-      <AnimatePresence>
-        {showProfileSheet && (
-          <>
-            <motion.div
-              key="profile-sheet-backdrop"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              className="fixed inset-0 z-[96] bg-slate-900/40 pointer-events-auto"
-              onClick={() => setShowProfileSheet(false)}
+      {/* "You" account sheet — draggable up and down */}
+      <DraggableBottomSheet
+        open={showProfileSheet}
+        onClose={() => setShowProfileSheet(false)}
+        title="My Account"
+        zIndexBackdrop="z-[96]"
+        zIndexSheet="z-[97]"
+      >
+        <div>
+          {/* User identity card */}
+          <div className="flex items-center gap-3 px-5 py-4 border-b border-slate-100">
+            <img
+              src={avatarFor(user)}
+              alt="Profile"
+              className="w-12 h-12 rounded-full object-cover border border-emerald-600/20 flex-shrink-0"
             />
-            <motion.div
-              key="profile-sheet"
-              initial={{ y: "100%" }}
-              animate={{ y: 0 }}
-              exit={{ y: "100%" }}
-              transition={{ duration: 0.32, ease: [0.32, 0.72, 0, 1] }}
-              className="fixed inset-x-0 bottom-0 z-[97] pointer-events-auto"
+            <div className="min-w-0">
+              <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">
+                Signed in as
+              </p>
+              <p className="text-sm font-bold text-slate-900 truncate">
+                {user?.name || "Administrator"}
+              </p>
+              <p className="text-xs text-slate-500 truncate">{user?.email}</p>
+            </div>
+          </div>
+
+          {/* Icon grid */}
+          <div className="grid grid-cols-3 gap-y-5 gap-x-1 px-3 pt-5 pb-[max(1.5rem,calc(env(safe-area-inset-bottom,0px)+1rem))]">
+            <Link
+              to="/admin/settings"
+              onClick={() => setShowProfileSheet(false)}
+              className="flex flex-col items-center gap-2 no-tap-highlight group active:scale-95 transition-transform"
             >
-              <div className="bg-white rounded-t-[3rem] overflow-hidden shadow-[0_-4px_24px_rgba(0,0,0,0.12)]">
-                {/* Header */}
-                <div className="bg-slate-50 flex-shrink-0 select-none">
-                  <div className="flex justify-center pt-2.5 pb-1">
-                    <div className="h-[4px] w-10 rounded-full bg-slate-300" />
-                  </div>
-                  <div className="relative flex items-center justify-center px-5 py-2.5">
-                    <p className="text-lg font-medium text-slate-900">My Account</p>
-                    <button
-                      onClick={() => setShowProfileSheet(false)}
-                      className="absolute right-5 p-1 active:opacity-50 transition-opacity"
-                      aria-label="Close"
-                    >
-                      <X size={20} strokeWidth={2} />
-                    </button>
-                  </div>
-                </div>
-
-                {/* User identity card */}
-                <div className="flex items-center gap-3 px-5 py-4 border-b border-slate-100">
-                  <img
-                    src={avatarFor(user)}
-                    alt="Profile"
-                    className="w-12 h-12 rounded-full object-cover border border-emerald-600/20 flex-shrink-0"
-                  />
-                  <div className="min-w-0">
-                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">
-                      Signed in as
-                    </p>
-                    <p className="text-sm font-bold text-slate-900 truncate">
-                      {user?.name || "Administrator"}
-                    </p>
-                    <p className="text-xs text-slate-500 truncate">{user?.email}</p>
-                  </div>
-                </div>
-
-                {/* Icon grid */}
-                <div className="grid grid-cols-3 gap-y-5 gap-x-1 px-3 pt-5 pb-[max(1.5rem,calc(env(safe-area-inset-bottom,0px)+1rem))]">
-                  <Link
-                    to="/admin/settings"
-                    onClick={() => setShowProfileSheet(false)}
-                    className="flex flex-col items-center gap-2 no-tap-highlight group active:scale-95 transition-transform"
-                  >
-                    <div className="w-[60px] h-[60px] rounded-full border-2 border-slate-200 flex items-center justify-center bg-white transition-colors group-active:bg-slate-100">
-                      <Bolt className="w-6 h-6 text-slate-900" strokeWidth={1.75} />
-                    </div>
-                    <span className="text-[12px] leading-tight text-center px-0.5 text-slate-800">
-                      Settings
-                    </span>
-                  </Link>
-
-                  <Link
-                    to="/dashboard"
-                    onClick={() => setShowProfileSheet(false)}
-                    className="flex flex-col items-center gap-2 no-tap-highlight group active:scale-95 transition-transform"
-                  >
-                    <div className="w-[60px] h-[60px] rounded-full border-2 border-slate-200 flex items-center justify-center bg-white transition-colors group-active:bg-slate-100">
-                      <AppWindowMac className="w-6 h-6 text-slate-900" strokeWidth={1.75} />
-                    </div>
-                    <span className="text-[12px] leading-tight text-center px-0.5 text-slate-800">
-                      Provider UI
-                    </span>
-                  </Link>
-
-                  <button
-                    onClick={() => {
-                      setShowProfileSheet(false);
-                      onLogout();
-                    }}
-                    className="flex flex-col items-center gap-2 no-tap-highlight group active:scale-95 transition-transform"
-                  >
-                    <div className="w-[60px] h-[60px] rounded-full border-2 border-red-200 flex items-center justify-center bg-white transition-colors group-active:bg-red-50">
-                      <LogOut className="w-6 h-6 text-red-500" strokeWidth={1.75} />
-                    </div>
-                    <span className="text-[12px] leading-tight text-center px-0.5 text-red-500">
-                      Log Out
-                    </span>
-                  </button>
-                </div>
+              <div className="w-[60px] h-[60px] rounded-full border-2 border-slate-200 flex items-center justify-center bg-white transition-colors group-active:bg-slate-100">
+                <Bolt className="w-6 h-6 text-slate-900" strokeWidth={1.75} />
               </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
+              <span className="text-[12px] leading-tight text-center px-0.5 text-slate-800">
+                Settings
+              </span>
+            </Link>
+
+            <Link
+              to="/dashboard"
+              onClick={() => setShowProfileSheet(false)}
+              className="flex flex-col items-center gap-2 no-tap-highlight group active:scale-95 transition-transform"
+            >
+              <div className="w-[60px] h-[60px] rounded-full border-2 border-slate-200 flex items-center justify-center bg-white transition-colors group-active:bg-slate-100">
+                <AppWindowMac className="w-6 h-6 text-slate-900" strokeWidth={1.75} />
+              </div>
+              <span className="text-[12px] leading-tight text-center px-0.5 text-slate-800">
+                Provider UI
+              </span>
+            </Link>
+
+            <button
+              onClick={() => {
+                setShowProfileSheet(false);
+                onLogout();
+              }}
+              className="flex flex-col items-center gap-2 no-tap-highlight group active:scale-95 transition-transform"
+            >
+              <div className="w-[60px] h-[60px] rounded-full border-2 border-red-200 flex items-center justify-center bg-white transition-colors group-active:bg-red-50">
+                <LogOut className="w-6 h-6 text-red-500" strokeWidth={1.75} />
+              </div>
+              <span className="text-[12px] leading-tight text-center px-0.5 text-red-500">
+                Log Out
+              </span>
+            </button>
+          </div>
+        </div>
+      </DraggableBottomSheet>
 
       {/* Dock */}
       <div className="w-full pointer-events-auto glass-dock rounded-t-[3rem] pt-2 pb-[max(0.6rem,env(safe-area-inset-bottom,0.6rem))]">
@@ -443,7 +411,7 @@ function AdminMobileBottomNav({
   );
 }
 
-// ─── Draggable "More" bottom sheet ────────────────────────────────────────────
+// â”€â”€â”€ Draggable "More" bottom sheet â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Height hugs its content (no empty gap top or bottom), up to 90% of the screen.
 // Drag it freely: it stays wherever you let go between "peek" and "fully open",
 // and closes on a pull-down or a fast flick.
@@ -587,14 +555,6 @@ function MoreSheet({
 
             <div className="relative flex items-center justify-center px-5 py-2.5">
               <p className="text-lg font-medium text-slate-900">Quick Actions</p>
-              <button
-                onPointerDown={(e) => e.stopPropagation()}
-                onClick={onClose}
-                className="absolute right-5 p-1 active:opacity-50 transition-opacity"
-                aria-label="Close"
-              >
-                <X size={20} strokeWidth={2} />
-              </button>
             </div>
           </div>
 
