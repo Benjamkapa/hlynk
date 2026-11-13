@@ -196,6 +196,7 @@ export default function App() {
           <Route path="user-operations" element={<UserOperationsPage />} />
           <Route path="subscriptions" element={<SubscriptionsPageAdmin />} />
           <Route path="payments" element={<PaymentsPageAdmin />} />
+          <Route path="storage" element={<CloudStoragePage />} />
           <Route path="forensic-audit" element={<AuditSecurityPage />} />
           <Route path="community-reviews" element={<ReviewsPageAdmin />} />
           <Route path="reports" element={<ReportsPageAdmin />} />

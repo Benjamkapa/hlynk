@@ -74,16 +74,6 @@ const faqs = [
       "hlynk is designed to support M-Pesa and other configured payment methods, helping you organize business transactions and track recorded payments. Available payment options depend on your account setup.",
   },
   {
-    question: "Can I manage my BnB or guest house with hlynk?",
-    answer:
-      "hlynk's hospitality offering is designed to help accommodation businesses organize operations such as rooms, bookings, guest records, payments, and business reporting, depending on the features enabled in your account.",
-  },
-  {
-    question: "How much does hlynk cost?",
-    answer:
-      "hlynk offers subscription plans designed for different business needs. Visit the pricing section at hlynk.co.ke to explore available plans, prices, and included features.",
-  },
-  {
     question: "Can I monitor my business when I am away?",
     answer:
       "Yes. hlynk helps you access recorded business information, including sales, expenses, stock, and performance reports, so you can stay informed without being physically present at your business.",
@@ -92,11 +82,6 @@ const faqs = [
     question: "Can I track my business expenses and profits?",
     answer:
       "hlynk helps you record expenses and review sales and profit reports, giving you a clearer picture of your business performance. The accuracy of these reports depends on keeping your records complete and up to date.",
-  },
-  {
-    question: "How do I get started with hlynk?",
-    answer:
-      "Visit hlynk.co.ke, create your business account through the available registration process, and follow the setup steps for your business type.",
   },
   {
     question: "Can I manage products and services in one system?",
@@ -117,12 +102,7 @@ const faqs = [
     question: "Does hlynk have a mobile app?",
     answer:
       "Yes. hlynk is a Progressive Web App (PWA) that can be installed on your iPhone or Android device. Simply tap the 'Add to Home Screen' option in your browser to install Hlynk as an app on your device.",
-  },
-  {
-    question: "How to install PWA in both android phone using chrome browser and safaris in iPhone?",
-    answer:
-      "In Android phone open chrome browser, type hlynk.co.ke, click on the three dots in the top right corner, click on 'Add to Home Screen'. In iOS phone open Safari browser, type hlynk.co.ke, click on the share button in the bottom, click on 'Add to Home Screen'.",
-  },
+  }
 ];
 
 export default function FAQ() {

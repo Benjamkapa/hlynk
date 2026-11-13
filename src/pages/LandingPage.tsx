@@ -25,7 +25,7 @@ export default function LandingPage() {
       <main className="space-y-0 py-0.5">
         <Hero />
         <WhoUses onSelectCategory={handleSelectCategory} />
-        <Features />
+        {/* <Features /> */}
         <Pricing />
         <FAQ />
         <Contact />

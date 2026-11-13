@@ -337,7 +337,7 @@ export default function SystemNotificationsPage() {
           {pages > 1 && (
             <div className="flex items-center justify-between border-t border-slate-200 px-6 py-3 text-xs text-slate-500">
               <span className="tabular-nums">
-                {Math.min((page - 1) * limit + 1, total)}Ã¢â‚¬â€œ{Math.min(page * limit, total)} of {total}
+                {Math.min((page - 1) * limit + 1, total)} / {Math.min(page * limit, total)} of {total}
               </span>
               <div className="flex items-center gap-2">
                 <button

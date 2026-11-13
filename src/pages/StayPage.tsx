@@ -35,7 +35,10 @@ import {
   Smartphone,
   Wallet,
   Clock,
+  Clipboard,
+  Tag,
 } from "lucide-react";
+import { generatePickupCode } from "../lib/utils/pickupCode";
 import InlineLoader, { ButtonLoader } from "../components/shared/InlineLoader";
 import PaymentGuidanceCard, {
   DirectPaymentConfig,
@@ -396,7 +399,7 @@ function CatalogCard({
             <button
               type="button"
               onClick={onAdd}
-              title={isOutOfStock ? 'This item may be out of stock â€” you can still place an order' : undefined}
+              title={isOutOfStock ? 'This item may be out of stock ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â you can still place an order' : undefined}
               className={`inline-flex h-8 items-center gap-1 rounded-full px-2.5 text-[10px] font-semibold text-white transition active:scale-95 sm:px-3 ${
                 isOutOfStock
                   ? 'bg-slate-400 hover:bg-slate-500'
@@ -523,7 +526,7 @@ function CatalogCard({
           <button
             type="button"
             onClick={onAdd}
-            title={isOutOfStock ? 'This item may be out of stock â€” you can still place an order' : undefined}
+            title={isOutOfStock ? 'This item may be out of stock ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â you can still place an order' : undefined}
             className={`inline-flex h-8 shrink-0 items-center gap-1 rounded-full px-2.5 text-[10px] font-semibold text-white transition active:scale-95 ${
               isOutOfStock
                 ? 'bg-slate-400 hover:bg-slate-500'
@@ -565,6 +568,19 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isOrdering, setIsOrdering] = useState(false);
   const [orderSuccess, setOrderSuccess] = useState<any>(null);
+  const [savedOrderPass, setSavedOrderPass] = useState<any>(() => {
+    try {
+      const stored = localStorage.getItem(`hlynk_order_pass_${slug}`);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        // keep for 24 hours
+        if (Date.now() - (parsed.savedAt || 0) < 24 * 60 * 60 * 1000) {
+          return parsed;
+        }
+      }
+    } catch (_) {}
+    return null;
+  });
 
   const [gallery, setGallery] = useState<GalleryState | null>(null);
 
@@ -751,8 +767,10 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
       const isAutoVerified =
         serverData.paymentStatus === "PAID" || serverData.verified === true;
 
-      setOrderSuccess({
+      const assignedPickupCode = serverData.pickupCode || generatePickupCode(serverData.orderId || serverData.saleId);
+      const fullOrderData = {
         ...serverData,
+        pickupCode: assignedPickupCode,
         orderedByName: customerName,
         paymentOption: backendPaymentOption,
         paymentEvidence: backendPaymentEvidence,
@@ -770,7 +788,18 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
               : "PAY_ON_DELIVERY",
         mpesaReceipt:
           paymentEvidence.transactionCode || serverData.transactionCode || null,
-      });
+      };
+
+      setOrderSuccess(fullOrderData);
+      try {
+        const passToSave = {
+          ...fullOrderData,
+          savedAt: Date.now(),
+          businessName: listing?.businessName,
+        };
+        localStorage.setItem(`hlynk_order_pass_${slug}`, JSON.stringify(passToSave));
+        setSavedOrderPass(passToSave);
+      } catch (_) {}
 
       setCart([]);
       setCustomerName("");
@@ -1140,7 +1169,7 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
       >
         <div className="mx-auto flex h-[56px] max-w-[1440px] items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
           <div className="flex min-w-0 items-center">
-            {/* Logo â€” displays the provider's brand logo or fallback icon, matching provider portal */}
+            {/* Logo ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â displays the provider's brand logo or fallback icon, matching provider portal */}
             <a
               href="/"
               className="shrink-0 flex items-center"
@@ -1260,8 +1289,8 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
           </div>
         </section>
 
-        {/* COMPACT STORE INFO â€” no repeated product/service display */}
-        <section className="mt-4 grid overflow-hidden rounded-[20px] border border-slate-200 bg-white grid-cols-2 sm:grid-cols-4 lg:grid-cols-4">
+        {/* COMPACT STORE INFO ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â no repeated product/service display */}
+        <section className="mt-4 grid overflow-hidden rounded-[20px] shadow-sm bg-white grid-cols-2 sm:grid-cols-4 lg:grid-cols-4">
           <InfoCell
             icon={<ShoppingBag size={16} />}
             label="Collection"
@@ -1597,7 +1626,7 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
         </section>
       </main>
 
-      {/* MOBILE / GLOBAL CART BAR â€” glass pill */}
+      {/* MOBILE / GLOBAL CART BAR ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â glass pill */}
       <AnimatePresence>
         {cart.length > 0 && !isCartOpen && (
           <motion.div
@@ -2086,17 +2115,48 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
                 <CheckCircle2 size={31} />
               </div>
 
-              <h2 className="mt-5 text-3xl text-slate-950" style={serif}>
-                Order received
+              <h2 className="mt-4 text-2xl sm:text-3xl font-extrabold text-slate-950" style={serif}>
+                Order Confirmed!
               </h2>
 
-              <p className="mt-3 text-sm leading-6 text-slate-500">
+              {/* PICKUP PASS CARD */}
+              <div className="mt-4 rounded-2xl bg-gradient-to-br from-emerald-50 via-emerald-100/50 to-teal-50 border border-emerald-300 p-4 shadow-sm text-center relative overflow-hidden">
+                <div className="absolute top-0 right-0 -mr-4 -mt-4 w-16 h-16 bg-emerald-300/30 rounded-full blur-xl pointer-events-none" />
+                <p className="text-[10px] font-black uppercase tracking-widest text-emerald-800 flex items-center justify-center gap-1.5 mb-1">
+                  <Sparkles size={13} className="text-emerald-700" />
+                  Your Pickup & Delivery Name
+                </p>
+                <div className="my-1.5 flex items-center justify-center gap-2">
+                  <span className="text-2xl sm:text-3xl font-black text-slate-950 tracking-tight font-mono select-all">
+                    {orderSuccess.pickupCode || generatePickupCode(orderSuccess.saleId)}
+                  </span>
+                </div>
+                <p className="text-xs text-emerald-900/80 leading-relaxed font-medium">
+                  Mention <strong className="text-slate-950 font-bold font-mono">"{orderSuccess.pickupCode || generatePickupCode(orderSuccess.saleId)}"</strong> at the counter or to your delivery rider.
+                </p>
+                <div className="mt-3 flex justify-center">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const code = orderSuccess.pickupCode || generatePickupCode(orderSuccess.saleId);
+                      navigator.clipboard.writeText(code);
+                      toast.success(`Copied "${code}" to clipboard!`);
+                    }}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-emerald-300 text-xs font-bold text-emerald-800 hover:bg-emerald-50 transition active:scale-95 shadow-2xs"
+                  >
+                    <Clipboard size={12} />
+                    Copy Pickup Name
+                  </button>
+                </div>
+              </div>
+
+              <p className="mt-3 text-xs leading-5 text-slate-500">
                 Thank you,{" "}
                 <span className="font-semibold text-slate-800">
                   {orderSuccess.orderedByName}
                 </span>
-                . Your order has been sent to{" "}
-                {listing?.businessName || "the business owner"}.
+                . Your package is being prepared at{" "}
+                <strong className="text-slate-800">{listing?.businessName || "the store"}</strong>.
               </p>
 
               {orderSuccess.paymentOption === "PAY_DIRECT" ? (
@@ -2107,7 +2167,7 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
                         size={16}
                         className="text-emerald-600 shrink-0"
                       />
-                      <span>M-Pesa Payment Verified via Logs! ðŸŽ‰</span>
+                      <span>M-Pesa Payment Verified via Logs! ÃƒÂ°Ã…Â¸Ã…Â½Ã¢â‚¬Â°</span>
                     </div>
                     {orderSuccess.transactionCode && (
                       <p className="text-emerald-800 font-medium">
@@ -2126,7 +2186,7 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
                   <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50/90 p-4 text-left text-xs leading-relaxed transition-all">
                     <div className="flex items-center gap-1.5 font-bold text-amber-900 mb-1.5">
                       <Clock size={16} className="text-amber-600 shrink-0" />
-                      <span>Order Placed â€” Payment Awaiting Verification</span>
+                      <span>Order Placed ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â Payment Awaiting Verification</span>
                     </div>
                     {orderSuccess.transactionCode && (
                       <p className="text-amber-900 font-medium">
@@ -2162,7 +2222,7 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
                     <div className="border-emerald-200 bg-emerald-50 text-emerald-950 p-3 rounded-xl space-y-1">
                       <div className="flex items-center gap-1.5 font-bold text-emerald-800">
                         <CheckCircle2 size={16} className="text-emerald-600" />
-                        <span>M-Pesa Payment Verified! ðŸŽ‰</span>
+                        <span>M-Pesa Payment Verified! ÃƒÂ°Ã…Â¸Ã…Â½Ã¢â‚¬Â°</span>
                       </div>
                       <p className="text-[11px] text-emerald-700">
                         Receipt No:{" "}
@@ -2228,23 +2288,26 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
               )}
 
               <div className="mt-6 grid gap-2">
-                {listing?.phone && (
-                  <a
-                    href={`https://wa.me/${formatWhatsAppNumber(listing.phone)}?text=${encodeURIComponent(
-                      orderSuccess.paymentOption === "PAY_DIRECT"
-                        ? `Hi ${listing.businessName}, I just placed an order and paid directly. Name: ${orderSuccess.orderedByName}${orderSuccess.transactionCode ? `, M-Pesa Code: ${orderSuccess.transactionCode}` : ""}. Total: KES ${Number(orderSuccess.totalAmount || 0).toLocaleString()}.`
-                        : orderSuccess.paymentOption === "PAY_UPFRONT"
-                          ? `Hi ${listing.businessName}, I just placed an order (${orderSuccess.paymentStatus === "PAID" ? `Paid Upfront M-Pesa Receipt: ${orderSuccess.mpesaReceipt}` : "M-Pesa STK Prompt Sent"}). My name is ${orderSuccess.orderedByName}.`
-                          : `Hi ${listing.businessName}, I just placed an order (Pay on Delivery). My name is ${orderSuccess.orderedByName}.`,
-                    )}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center justify-center gap-2 rounded-full bg-slate-950 px-5 py-3.5 text-sm font-bold text-white transition hover:bg-slate-800"
-                  >
-                    <MessageCircle size={17} />
-                    Chat on WhatsApp
-                  </a>
-                )}
+                {listing?.phone && (() => {
+                  const code = orderSuccess.pickupCode || generatePickupCode(orderSuccess.saleId);
+                  const waText = orderSuccess.paymentOption === "PAY_DIRECT"
+                    ? `Hi ${listing.businessName}, I just placed order "${code}" and paid directly. Name: ${orderSuccess.orderedByName}${orderSuccess.transactionCode ? `, M-Pesa Code: ${orderSuccess.transactionCode}` : ""}. Total: KES ${Number(orderSuccess.totalAmount || 0).toLocaleString()}.`
+                    : orderSuccess.paymentOption === "PAY_UPFRONT"
+                      ? `Hi ${listing.businessName}, I just placed order "${code}" (${orderSuccess.paymentStatus === "PAID" ? `Paid Upfront M-Pesa Receipt: ${orderSuccess.mpesaReceipt}` : "M-Pesa STK Prompt Sent"}). My name is ${orderSuccess.orderedByName}.`
+                      : `Hi ${listing.businessName}, I just placed order "${code}" (Pay on Delivery / Collection). My name is ${orderSuccess.orderedByName}.`;
+
+                  return (
+                    <a
+                      href={`https://wa.me/${formatWhatsAppNumber(listing.phone)}?text=${encodeURIComponent(waText)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-center gap-2 rounded-full bg-slate-950 px-5 py-3.5 text-sm font-bold text-white transition hover:bg-slate-800"
+                    >
+                      <MessageCircle size={17} />
+                      Chat on WhatsApp with "{code}"
+                    </a>
+                  );
+                })()}
 
                 <button
                   type="button"
@@ -2258,6 +2321,44 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* PERSISTENT PICKUP BADGE (Shows if user has an active order within 24h) */}
+      {!orderSuccess && savedOrderPass && (
+        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-40 max-w-sm w-[calc(100%-2rem)] animate-bounce-short">
+          <div className="bg-slate-950 text-white rounded-2xl px-4 py-2.5 shadow-2xl flex items-center justify-between gap-3 border border-slate-800">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="min-w-0">
+                <p className="text-[10px] uppercase font-bold text-emerald-400 tracking-wider">
+                  Active Pickup Name
+                </p>
+                <p className="text-xs font-mono font-bold truncate">
+                  "{savedOrderPass.pickupCode || generatePickupCode(savedOrderPass.saleId)}"
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-1.5 shrink-0">
+              <button
+                type="button"
+                onClick={() => setOrderSuccess(savedOrderPass)}
+                className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] font-bold rounded-lg transition"
+              >
+                View Ticket
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  localStorage.removeItem(`hlynk_order_pass_${slug}`);
+                  setSavedOrderPass(null);
+                }}
+                className="p-1 text-slate-400 hover:text-white transition"
+                title="Dismiss"
+              >
+                <X size={14} />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* GALLERY */}
       <AnimatePresence>

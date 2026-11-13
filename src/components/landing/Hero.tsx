@@ -1,235 +1,214 @@
-import { ArrowRight, ShoppingBag, Hotel, Car, Wrench, Droplets, ShieldCheck, Zap, Building2 } from 'lucide-react'
-import { useState, useId } from 'react'
 
-// NOTE: swap the two <a> tags below back to <Link to="..."> from 'react-router-dom'
-// when you drop this into your app — plain anchors are used here only so the
-// preview renders without a Router provider.
+import {
+  ArrowRight,
+  BarChart3,
+  Check,
+  CircleDollarSign,
+  ClipboardList,
+  ShoppingBag,
+  Hotel,
+  Car,
+  Wrench,
+  BriefcaseBusiness,
+} from 'lucide-react'
+import { Link } from 'react-router-dom'
 
-// function GoogleG() {
-//   return (
-//     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="17" height="17">
-//       <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
-//       <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
-//       <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
-//       <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
-//     </svg>
-//   )
-// }
+const BUSINESS_TYPES = [
+  { label: 'Shops & retail', icon: ShoppingBag },
+  { label: 'Hotels & BnBs', icon: Hotel },
+  { label: 'Car rentals', icon: Car },
+  { label: 'Garages', icon: Wrench },
+  { label: 'Service businesses', icon: BriefcaseBusiness },
+]
 
-const TRADES = [
-  {
-    id: 'retail',
-    label: 'Duka & Retail',
-    icon: ShoppingBag,
-    swatch: '#064E3B',
-    metricLabel: "Today's Sales",
-    metric: 'KES 48,250',
-    tag: '+18.4%',
-    rows: ['Barcode scan-out', 'Low-stock alert · Sugar 2kg'],
-  },
-  {
-    id: 'lodging',
-    label: 'BnB & Lodges',
-    icon: Hotel,
-    swatch: '#7FB89C',
-    metricLabel: 'Occupancy Tonight',
-    metric: '82%',
-    tag: '14 filled',
-    rows: ['Guest check-in · Rm 4', 'Housekeeping queue · 3 units'],
-  },
-  {
-    id: 'rentals',
-    label: 'Car Rentals',
-    icon: Car,
-    swatch: '#7C93B0',
-    metricLabel: 'Fleet Out Today',
-    metric: '9 / 12',
-    tag: '3 due 6pm',
-    rows: ['KDA 214B · due in 2h', 'Mileage log pending · 1'],
-  },
-  {
-    id: 'garage',
-    label: 'Garage & Workshop',
-    icon: Wrench,
-    swatch: '#D98B72',
-    metricLabel: 'Jobs In Bay',
-    metric: '5 active',
-    tag: '2 awaiting parts',
-    rows: ['Bay 2 · brake job, 40min left', 'Parts order · alternator'],
-  },
-  {
-    id: 'carwash',
-    label: 'Car Wash',
-    icon: Droplets,
-    swatch: '#6FADC7',
-    metricLabel: 'Vehicles Today',
-    metric: '31 washed',
-    tag: 'KES 15,500',
-    rows: ['Bay 1 · full valet, 12min', 'Loyalty punch · 4 issued'],
-  },
+const SUMMARY = [
+  { label: 'Sales today', value: 'KES 48,250', icon: BarChart3 },
+  { label: 'Expenses', value: 'KES 12,400', icon: ClipboardList },
+  { label: 'Net profit', value: 'KES 35,850', icon: CircleDollarSign },
 ]
 
 export default function Hero() {
-  const [activeId, setActiveId] = useState('retail')
-  const active = TRADES.find((t) => t.id === activeId) ?? TRADES[0]
-  const ActiveIcon = active.icon
-  const svgId = useId()
-
-  const iconMarkup = (
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" className="transition-transform">
-    <defs>
-      <linearGradient id={`gl-red-yellow-${svgId}`} x1="0%" y1="0%" x2="0%" y2="70%">
-        <stop offset="0%" stopColor="#EA4335" />
-        <stop offset="50%" stopColor="#EA4335" />
-        <stop offset="100%" stopColor="#FBBC05" />
-      </linearGradient>
-      <linearGradient id={`gl-yellow-green-${svgId}`} x1="0%" y1="0%" x2="0%" y2="70%">
-        <stop offset="0%" stopColor="#FBBC05" />
-        <stop offset="50%" stopColor="#FBBC05" />
-        <stop offset="100%" stopColor="#34A853" />
-      </linearGradient>
-      <linearGradient id={`gl-green-blue-${svgId}`} x1="0%" y1="0%" x2="70%" y2="0%">
-        <stop offset="0%" stopColor="#34A853" />
-        <stop offset="50%" stopColor="#34A853" />
-        <stop offset="100%" stopColor="#4285F4" />
-      </linearGradient>
-    </defs>
-    <path fill={`url(#gl-red-yellow-${svgId})`} d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
-    <path fill={`url(#gl-yellow-green-${svgId})`} d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
-    <path fill={`url(#gl-green-blue-${svgId})`} d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
-    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
-  </svg>
-)
-
   return (
-    <section className="relative pt-36 sm:pt-40 md:pt-44 pb-32 bg-[#14181A] text-[#F3EFE6] overflow-hidden">
-      <div
-        className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-96 blur-3xl pointer-events-none rounded-full opacity-40"
-        style={{ background: 'radial-gradient(circle, rgba(227,162,60,0.12), transparent 70%)' }}
-      />
+    <section className="relative overflow-hidden bg-[#F8FAF8] text-[#17231D]">
+      {/* Subtle background detail */}
+      <div className="pointer-events-none absolute -top-48 right-[-10%] h-[520px] w-[520px] rounded-full bg-emerald-100/60 blur-3xl" />
+      <div className="pointer-events-none absolute bottom-0 left-[-12%] h-[360px] w-[360px] rounded-full bg-emerald-50 blur-3xl" />
 
-      <div className="max-w-7xl mx-auto px-6 md:px-12 relative z-10">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
+      <div className="relative mx-auto max-w-7xl px-5 pb-20 pt-32 sm:px-8 sm:pb-28 sm:pt-36 lg:px-12">
+        <div className="grid items-center gap-14 lg:grid-cols-12 lg:gap-12">
 
-          {/* Left Column */}
-          <div className="lg:col-span-7 space-y-7 py-5">
-            {/* Live Trial / No Demo Badge */}
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5  text-[#7FB89C] text-xs font-semibold backdrop-blur">
-              {/* <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#7FB89C] opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-[#7FB89C]"></span>
-              </span> */}
-              No Demo Needed — Test Live with Your Own Credentials Free for 14 Straight Days
-            </div>
+          {/* Main message */}
+          <div className="lg:col-span-6">
 
-            <h1 className="text-4xl sm:text-5xl lg:text-[3.4rem] font-black font-ubuntu tracking-tight leading-[1.06]">
-              Duka, lodge, fleet, or workshop —
-              <br className="hidden sm:block" />
-              <span className="text-[#064E3B]"> run it all</span> from one board.
+            <h1 className="max-w-2xl text-[2.65rem] font-bold leading-[1.12] tracking-tight text-[#17231D] sm:text-5xl lg:text-[3.7rem]">
+              Know how your business is doing,
+              <span className="text-emerald-700"> without chasing the numbers.</span>
             </h1>
 
-            <div className="flex flex-wrap items-center gap-3 pt-1">
-              <a
-                href="/register"
-                className="px-7 py-3.5 rounded-full bg-[#064E3B] hover:opacity-85 text-[#14181A] font-bold text-sm transition-all flex items-center gap-2.5 active:scale-95"
-              >
-                Start 14-day free trial <ArrowRight size={16} />
-              </a>
+            <p className="mt-6 max-w-xl text-base leading-8 text-slate-600 sm:text-lg">
+              Keep track of sales, expenses, customers and profit in one place.
+              Hlynk makes it easier to understand your numbers and stay on top
+              of your day-to-day operations.
+            </p>
 
-              <a
-                href="/login"
-                className="px-6 py-3.5 rounded-full bg-white/5 hover:bg-white/10 font-bold text-sm text-white/80 transition-all flex items-center gap-2.5 active:scale-95"
-              >
-                {iconMarkup} Sign in with Google
-              </a>
-            </div>
-
-            <div className="rounded-sm border border-white/10 shadow-lg p-3.5 backdrop-blur-sm space-y-1">
-              <p className="text-xs font-bold text-white flex items-center gap-1.5">
-                <span className="text-emerald-400">✓</span> No staged demo needed — test in the real environment
-              </p>
-              <p className="text-[11px] text-white/60 leading-relaxed">
-                Why look at a recorded demo or fake dummy data? Sign up in 60s using your own credentials, configure your actual inventory or stays, and experience the real system live for 14 straight days completely free. No credit card required.
-              </p>
-            </div>
-
-            <div className="flex flex-wrap items-center gap-2 pt-1">
-              <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 text-[11px] font-semibold text-white/50">
-                <ShieldCheck size={13} className="text-[#7FB89C]" /> Google login
+            <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs font-medium text-slate-500">
+              <span className="inline-flex items-center gap-1.5">
+                <Check size={14} className="text-emerald-700" />
+                14 days free
               </span>
-              <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 text-[11px] font-semibold text-white/50">
-                <Zap size={13} className="text-[#7FB89C]" /> M-Pesa & KCB sync
+              <span className="inline-flex items-center gap-1.5">
+                <Check size={14} className="text-emerald-700" />
+                No credit card required
               </span>
-              <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 text-[11px] font-semibold text-white/50">
-                <Building2 size={13} className="text-[#7FB89C]" /> 14 Days Live Production Access
+              <span className="inline-flex items-center gap-1.5">
+                <Check size={14} className="text-emerald-700" />
+                Set up at your own pace
               </span>
             </div>
           </div>
 
-          {/* Right Column: Trade Board */}
-          <div className="lg:col-span-5">
-            <div className="relative border border-white/5 rounded-sm overflow-hidden">
+          {/* Product preview */}
+          <div className="lg:col-span-6">
+            <div className="relative mx-auto max-w-[570px]">
 
-              {/* Trade tabs, pill style matching the billing toggle */}
-              <div className="flex flex-wrap gap-1.5 p-4 pt-7">
-                {TRADES.map((t) => {
-                  const Icon = t.icon
-                  const isActive = t.id === activeId
-                  return (
-                    <button
-                      key={t.id}
-                      onClick={() => setActiveId(t.id)}
-                      className={`flex items-center gap-1.5 px-3 py-2 rounded-sm text-[11px] font-bold transition-all ${
-                        isActive ? 'text-[#14181A]' : 'bg-white/5 text-white/40 hover:bg-white/10'
-                      }`}
-                      style={isActive ? { backgroundColor: t.swatch } : undefined}
-                    >
-                      <Icon size={13} strokeWidth={2.5} />
-                      {t.label}
-                    </button>
-                  )
-                })}
-              </div>
+              {/* Decorative background panel */}
+              <div className="absolute -inset-4 rounded-3xl bg-emerald-100/60 rotate-2" />
 
-              {/* Active panel — flat solid color, same treatment as the pricing cards */}
-              <div className="px-4 pb-4">
-                <div
-                  style={{ backgroundColor: active.swatch }}
-                  className="rounded-sm p-5 flex flex-col gap-4"
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <span className="w-9 h-9 rounded-full bg-[#14181A]/12 flex items-center justify-center flex-shrink-0 text-[#14181A]">
-                        <ActiveIcon size={17} />
-                      </span>
-                      <div>
-                        <p className="text-[10px] font-bold text-[#14181A]/55 uppercase tracking-widest">{active.metricLabel}</p>
-                        <p className="text-xl font-black text-[#14181A] hl-mono">{active.metric}</p>
-                      </div>
-                    </div>
-                    <span className="px-2.5 py-1 rounded-full bg-[#14181A]/12 text-[10px] font-bold text-[#14181A] whitespace-nowrap">
-                      {active.tag}
+              <div className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl shadow-slate-900/10">
+
+                {/* Preview header */}
+                <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4 sm:px-7">
+                  <div>
+                    <p className="text-sm font-bold text-slate-800">
+                      Business overview
+                    </p>
+                    <p className="mt-1 text-xs text-slate-400">
+                      A quick look at your business
+                    </p>
+                  </div>
+
+                  <div className="rounded-lg bg-emerald-50 px-3 py-1.5 text-[11px] font-semibold text-emerald-700">
+                    Hlynk
+                  </div>
+                </div>
+
+                {/* Dashboard summary */}
+                <div className="p-5 sm:p-7">
+                  <div className="mb-5 flex items-center justify-between">
+                    <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                      Financial summary
+                    </p>
+                    <span className="text-[10px] text-slate-400">
+                      Illustrative figures
                     </span>
                   </div>
 
-                  <div className="space-y-1.5">
-                    {active.rows.map((row, i) => (
-                      <div key={i} className="flex items-center gap-2.5 px-3.5 py-2.5 bg-[#14181A]/10 rounded-xl text-[11px] font-semibold text-[#14181A]">
-                        <span className="w-1.5 h-1.5 rounded-full flex-shrink-0 bg-[#14181A]/50" />
-                        {row}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                    {SUMMARY.map((item) => {
+                      const Icon = item.icon
 
-              <div className="px-6 pb-5 flex items-center justify-between text-[11px] text-white/40">
-                <span className="font-medium">5 trades · more in settings</span>
-                <span className="px-2.5 py-1 rounded-sm bg-white/5 text-[#064E3B] font-bold">Included free</span>
+                      return (
+                        <div
+                          key={item.label}
+                          className="rounded-xl border border-slate-100 bg-[#FAFCFA] p-4"
+                        >
+                          <div className="mb-4 flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-50 text-emerald-700">
+                            <Icon size={16} />
+                          </div>
+
+                          <p className="text-[11px] font-medium text-slate-500">
+                            {item.label}
+                          </p>
+
+                          <p className="mt-1 whitespace-nowrap text-base font-bold tracking-tight text-slate-800">
+                            {item.value}
+                          </p>
+                        </div>
+                      )
+                    })}
+                  </div>
+
+                  {/* Activity panel */}
+                  <div className="mt-6 rounded-xl border border-slate-100">
+                    <div className="border-b border-slate-100 px-4 py-3">
+                      <p className="text-xs font-semibold text-slate-700">
+                        Keep your business organised
+                      </p>
+                    </div>
+
+                    <div className="divide-y divide-slate-100">
+                      {[
+                        {
+                          title: 'Record your sales',
+                          description: 'Keep every transaction accounted for.',
+                        },
+                        {
+                          title: 'Track your expenses',
+                          description: 'Know where your business money goes.',
+                        },
+                        {
+                          title: 'Understand your profit',
+                          description: 'See what remains after your expenses.',
+                        },
+                      ].map((item) => (
+                        <div
+                          key={item.title}
+                          className="flex items-start gap-3 px-4 py-3.5"
+                        >
+                          <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-emerald-50 text-emerald-700">
+                            <Check size={14} />
+                          </span>
+
+                          <div>
+                            <p className="text-xs font-semibold text-slate-800">
+                              {item.title}
+                            </p>
+                            <p className="mt-1 text-[11px] leading-relaxed text-slate-500">
+                              {item.description}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <p className="mt-4 text-center text-[10px] text-slate-400">
+                    Sample dashboard preview — actual figures depend on your business activity.
+                  </p>
+                </div>
               </div>
             </div>
           </div>
+        </div>
 
+        {/* Business types */}
+        <div className="mt-20 border-t border-slate-200 pt-8">
+          <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+            <div>
+              <p className="text-sm font-semibold text-slate-800">
+                Made for businesses like yours
+              </p>
+              <p className="mt-1 text-xs text-slate-500">
+                Whether you sell products or provide services.
+              </p>
+            </div>
+
+            <div className="flex flex-wrap gap-2">
+              {BUSINESS_TYPES.map((business) => {
+                const Icon = business.icon
+
+                return (
+                  <span
+                    key={business.label}
+                    className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3.5 py-2.5 text-xs font-medium text-slate-600 transition hover:border-emerald-300 hover:text-emerald-800"
+                  >
+                    <Icon size={14} className="text-emerald-700" />
+                    {business.label}
+                  </span>
+                )
+              })}
+            </div>
+          </div>
         </div>
       </div>
     </section>

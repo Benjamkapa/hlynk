@@ -177,6 +177,8 @@ export const adminApi = {
   clearTable: (table: string, tenantId?: string) => api.post('/admin/data/clear-table', { table, tenantId }).then(r => r.data),
   deleteRecord: (table: string, id: string) => api.post('/admin/data/delete-record', { table, id }).then(r => r.data),
   downloadDatabaseBackup: (onDownloadProgress?: (progressEvent: any) => void) => api.get('/admin/backup/db', { responseType: 'blob', onDownloadProgress }).then(r => r.data),
+  getCloudBackupStatus: () => api.get('/admin/backup/cloud-status').then(r => r.data),
+  triggerCloudBackup: () => api.post('/admin/backup/cloud-trigger').then(r => r.data),
   restoreDatabaseBackup: (file: File, passphrase: string, onUploadProgress?: (progressEvent: any) => void) => {
     const formData = new FormData()
     formData.append('sqlFile', file)

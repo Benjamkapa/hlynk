@@ -155,7 +155,6 @@ export function DraggableBottomSheet({
                 className="absolute right-5 p-1 active:opacity-50 transition-opacity text-slate-400 hover:text-slate-700"
                 aria-label="Close"
               >
-                {/* <X size={20} strokeWidth={2} /> */}
               </button>
             </div>
           </div>

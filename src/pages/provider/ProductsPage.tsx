@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
-import { Plus, Search, Filter, Edit, Trash2, Package, TrendingDown, Activity, AlertTriangle, LayoutGrid, List, Camera, FileText, Eye, Share2, ShoppingBag, Phone, MessageSquare, Check, CheckCircle2, Clock, CreditCard, Upload, Trash, CandyCaneIcon, Ban, Clipboard } from 'lucide-react'
+import { Plus, Search, Filter, Edit, Trash2, Package, TrendingDown, Activity, AlertTriangle, LayoutGrid, List, Camera, FileText, Eye, Share2, ShoppingBag, Phone, MessageSquare, Check, CheckCircle2, Clock, CreditCard, Upload, Trash, CandyCaneIcon, Ban, Clipboard, Tag, Sparkles } from 'lucide-react'
+import { generatePickupCode } from '../../lib/utils/pickupCode'
 import { CameraCapture } from '../../components/shared/CameraCapture'
 import { ConfirmModal } from '../../components/shared/ConfirmModal'
 import { SlideOver } from '../../components/shared/SlideOver'
@@ -74,7 +75,7 @@ export default function ProductsPage() {
           stats: { totalItems: filtered.length, lowStock: 0, totalValue: 0 }
         }
       }
-      return inventoryApi.list({ search, page, limit: 10, sortBy, sortOrder, category: category || undefined, includeStats: true })
+      return inventoryApi.list({ search, page, limit: 16, sortBy, sortOrder, category: category || undefined, includeStats: true })
     },
     placeholderData: keepPreviousData,
     refetchInterval: navigator.onLine ? 45_000 : false
@@ -91,6 +92,7 @@ export default function ProductsPage() {
   const publicStoreUrl = slug ? `${window.location.origin}/store/${slug}` : null;
 
   const [isOrdersOpen, setIsOrdersOpen] = useState(false)
+  const [orderSearch, setOrderSearch] = useState('')
   const [cancelConfirmId, setCancelConfirmId] = useState<string | null>(null)
   const [cancelVoidSale, setCancelVoidSale] = useState(false)
 
@@ -109,6 +111,17 @@ export default function ProductsPage() {
 
   const incomingOrders = requestsData?.requests || []
   const pendingOrdersCount = incomingOrders.filter((r: any) => r.status === 'PENDING').length
+
+  const filteredOrders = incomingOrders.filter((req: any) => {
+    if (!orderSearch.trim()) return true;
+    const q = orderSearch.toLowerCase().trim();
+    let msgData: any = null;
+    try { msgData = JSON.parse(req.message); } catch (_) {}
+    const pickup = (msgData?.pickupCode || generatePickupCode(req.id)).toLowerCase();
+    const name = (req.customerName || '').toLowerCase();
+    const phone = (req.customerPhone || '').toLowerCase();
+    return pickup.includes(q) || name.includes(q) || phone.includes(q);
+  })
 
   const handleUpdateOrderStatus = async (id: string, newStatus: string) => {
     try {
@@ -324,14 +337,32 @@ export default function ProductsPage() {
               </div>
             )}
 
-            {incomingOrders.length === 0 ? (
+            {/* Search orders by pickup name, customer name or phone */}
+            {incomingOrders.length > 0 && (
+              <div className="relative mb-3">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={15} />
+                <input
+                  type="text"
+                  placeholder="Search by pickup name (e.g. 'Bright Sun'), client or phone…"
+                  value={orderSearch}
+                  onChange={(e) => setOrderSearch(e.target.value)}
+                  className="w-full bg-white border border-gray-200 rounded-[.5rem] py-2 pl-9 pr-3 text-xs outline-none focus:ring-2 focus:ring-[#0D4A3E]/20 focus:border-[#0D4A3E] transition-all"
+                />
+              </div>
+            )}
+
+            {filteredOrders.length === 0 ? (
               <div className="text-center py-12 text-gray-400">
                 <ShoppingBag size={32} className="mx-auto text-gray-300 mb-2" />
-                <p className="font-medium text-sm">No incoming orders yet.</p>
-                <p className="text-xs text-gray-400 mt-1">Share your store link with clients to start receiving orders.</p>
+                <p className="font-medium text-sm">
+                  {orderSearch ? `No orders matching "${orderSearch}"` : "No incoming orders yet."}
+                </p>
+                <p className="text-xs text-gray-400 mt-1">
+                  {orderSearch ? "Try searching by a different name, phone, or clear search." : "Share your store link with clients to start receiving orders."}
+                </p>
               </div>
             ) : (
-              incomingOrders.map((req: any) => {
+              filteredOrders.map((req: any) => {
                 let msgData: any = null;
                 try { msgData = JSON.parse(req.message); } catch (_) { }
 
@@ -342,6 +373,39 @@ export default function ProductsPage() {
 
                 return (
                   <div key={req.id} className="bg-gray-50 border border-gray-100 rounded-[.5rem] p-4 space-y-3 relative group">
+                    {/* PICKUP / CONFIRMATION NAME BADGE */}
+                    {(() => {
+                      const pickupName = msgData?.pickupCode || generatePickupCode(req.id);
+                      return (
+                        <div className="flex items-center justify-between bg-emerald-50 border border-emerald-200/80 rounded-[.5rem] px-3 py-2 -mt-1 -mx-1">
+                          <div className="flex items-center gap-2">
+                            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-600 text-white shadow-2xs">
+                              <Sparkles size={13} />
+                            </span>
+                            <div>
+                              <p className="text-[10px] font-bold uppercase tracking-wider text-emerald-800">
+                                Pickup Tag / Confirm Name
+                              </p>
+                              <p className="font-mono font-extrabold text-slate-950 text-sm leading-tight">
+                                ✨ {pickupName}
+                              </p>
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              navigator.clipboard.writeText(pickupName);
+                              toast.success(`Copied "${pickupName}" to clipboard`);
+                            }}
+                            className="px-2 py-1 bg-white border border-emerald-300 hover:bg-emerald-100 rounded text-[10px] font-bold text-emerald-800 transition-colors flex items-center gap-1"
+                            title="Copy pickup name"
+                          >
+                            <Clipboard size={11} /> Copy
+                          </button>
+                        </div>
+                      );
+                    })()}
+
                     <div className="flex items-start justify-between">
                       <div>
                         <h4 className="font-semibold text-gray-900 text-sm">{req.customerName}</h4>
@@ -399,7 +463,7 @@ export default function ProductsPage() {
                           <div className="flex flex-col gap-2 p-3 rounded-[.5rem] bg-violet-50 border border-violet-200 text-violet-900 text-xs">
                             <span className="font-bold flex items-center gap-1.5 text-violet-800">
                               <CreditCard size={14} className="text-violet-600" />
-                              DIRECT PAYMENT — EVIDENCE PROVIDED
+                              DIRECT PAYMENT â€” EVIDENCE PROVIDED
                             </span>
                             {txCode ? (
                               <div className="flex items-center gap-2 flex-wrap">
@@ -446,7 +510,7 @@ export default function ProductsPage() {
                             <div className="flex flex-col gap-0.5 p-2.5 rounded-[.5rem] bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs">
                               <span className="font-bold flex items-center gap-1.5 text-emerald-800">
                                 <CheckCircle2 size={14} className="text-emerald-600" />
-                                PAID UPFRONT — M-PESA VERIFIED 🎉
+                                PAID UPFRONT â€” M-PESA VERIFIED ðŸŽ‰
                               </span>
                               {mpesaReceipt && (
                                 <span className="text-[10px] text-emerald-700 font-mono">
@@ -460,7 +524,7 @@ export default function ProductsPage() {
                             <div className="flex flex-col gap-0.5 p-2.5 rounded-[.5rem] bg-red-50 border border-red-200 text-red-900 text-xs">
                               <span className="font-bold flex items-center gap-1.5 text-red-800">
                                 <AlertTriangle size={14} className="text-red-600" />
-                                PAY UPFRONT — CANCELLED ON PHONE 🔴
+                                PAY UPFRONT â€” CANCELLED ON PHONE ðŸ”´
                               </span>
                               <span className="text-[10px] text-red-700">Customer cancelled the M-Pesa STK prompt.</span>
                             </div>
@@ -470,7 +534,7 @@ export default function ProductsPage() {
                             <div className="flex flex-col gap-0.5 p-2.5 rounded-[.5rem] bg-red-50 border border-red-200 text-red-900 text-xs">
                               <span className="font-bold flex items-center gap-1.5 text-red-800">
                                 <AlertTriangle size={14} className="text-red-600" />
-                                PAY UPFRONT — STK PAYMENT FAILED ⚠️
+                                PAY UPFRONT â€” STK PAYMENT FAILED âš ï¸
                               </span>
                               <span className="text-[10px] text-red-700">Payment failed or timed out.</span>
                             </div>
@@ -480,7 +544,7 @@ export default function ProductsPage() {
                             <div className="flex flex-col gap-0.5 p-2.5 rounded-[.5rem] bg-amber-50 border border-amber-200 text-amber-900 text-xs">
                               <span className="font-bold flex items-center gap-1.5 text-amber-800">
                                 <ButtonLoader size={14} className="text-amber-600" />
-                                PAY UPFRONT — STK PROMPT SENT ⏳
+                                PAY UPFRONT â€” STK PROMPT SENT â³
                               </span>
                               <span className="text-[10px] text-amber-700">Awaiting customer M-Pesa PIN entry.</span>
                             </div>
@@ -491,7 +555,7 @@ export default function ProductsPage() {
                           <div className="flex flex-col gap-0.5 p-2.5 rounded-[.5rem] bg-blue-50 border border-blue-200 text-blue-900 text-xs">
                             <span className="font-bold flex items-center gap-1.5 text-blue-800">
                               <CreditCard size={14} className="text-blue-600" />
-                              PAY ON DELIVERY / ARRIVAL 🚚
+                              Pay on Delivery
                             </span>
                             <span className="text-[10px] text-blue-700">Customer will pay cash or transfer upon receiving items.</span>
                           </div>
@@ -519,7 +583,7 @@ export default function ProductsPage() {
                                 const hasStockIssue = stockLevel !== null && stockLevel < Number(it.quantity || 1)
                                 return (
                                   <li key={idx} className="py-1 flex justify-between items-center gap-2">
-                                    <span className={hasStockIssue ? 'text-amber-700' : ''}>{it.quantity}x {it.name}{hasStockIssue && stockLevel === 0 ? ' ⚠️' : hasStockIssue ? ` (only ${stockLevel} in stock)` : ''}</span>
+                                    <span className={hasStockIssue ? 'text-amber-700' : ''}>{it.quantity}x {it.name}{hasStockIssue && stockLevel === 0 ? ' âš ï¸' : hasStockIssue ? ` (only ${stockLevel} in stock)` : ''}</span>
                                     <span className="font-medium text-gray-800">KES {(it.price * it.quantity).toLocaleString()}</span>
                                   </li>
                                 )
@@ -647,7 +711,7 @@ export default function ProductsPage() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-300" size={16} />
             <input
               type="text"
-              placeholder="Search products…"
+              placeholder="Search productsâ€¦"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="w-full bg-gray-50 border-none rounded-[.5rem] py-2.5 pl-9 pr-4 outline-none focus:ring-2 focus:ring-gray-200 transition-all text-sm"
@@ -965,7 +1029,7 @@ export default function ProductsPage() {
   )
 }
 
-// ─── Table header cell ─────────────────────────────────────────────────────
+// â”€â”€â”€ Table header cell â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function Th({ label, active, order, onClick, align = 'left' }: any) {
   return (
@@ -974,12 +1038,12 @@ function Th({ label, active, order, onClick, align = 'left' }: any) {
       className={`px-5 py-3 text-xs font-medium cursor-pointer select-none transition-colors ${align === 'right' ? 'text-right' : align === 'center' ? 'text-center' : 'text-left'
         } ${active ? 'text-gray-700' : 'text-gray-400 hover:text-gray-600'}`}
     >
-      {label}{active && (order === 'asc' ? ' ↑' : ' ↓')}
+      {label}{active && (order === 'asc' ? ' â†‘' : ' â†“')}
     </th>
   )
 }
 
-// ─── Summary cell ───────────────────────────────────────────────────────────
+// â”€â”€â”€ Summary cell â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function SummaryCell({ title, value, sub, tone }: { title: string; value: string; sub: string; tone?: 'red' | 'amber' }) {
   const toneColor = tone === 'red' ? 'text-red-600' : tone === 'amber' ? 'text-amber-600' : 'text-gray-900'
@@ -1064,7 +1128,7 @@ function ProductForm({ onClose }: { onClose: () => void }) {
 
   const mutation = useMutation({
     mutationFn: async (data: any) => {
-      // ── OFFLINE: queue product for later sync ──────────────────────────────
+      // â”€â”€ OFFLINE: queue product for later sync â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
       if (!navigator.onLine) {
         const tempId = 'pending-prod-' + crypto.randomUUID()
         const payload = { ...data }
@@ -1086,11 +1150,11 @@ function ProductForm({ onClose }: { onClose: () => void }) {
           type: data.type || 'PRODUCT',
           imageUrl: data.imageUrl,
         }])
-        toast.success('Product saved offline — will sync when back online', { duration: 4000 })
+        toast.success('Product saved offline â€” will sync when back online', { duration: 4000 })
         return { offline: true }
       }
 
-      // ── ONLINE: normal create ──────────────────────────────────────────────
+      // â”€â”€ ONLINE: normal create â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
       const payload = { ...data };
       delete payload.file;
       if (data.file) delete payload.imageUrl;
@@ -1215,7 +1279,7 @@ function ProductForm({ onClose }: { onClose: () => void }) {
               onClick={() => setShowAllPhotos(v => !v)}
               className="px-2 py-0.5 text-[10px] font-medium rounded-full border border-dashed border-gray-300 text-gray-400 hover:text-gray-600 hover:border-gray-400 transition-colors"
             >
-              {showAllPhotos ? '− Less' : `+ ${PRESET_PRODUCT_PHOTOS.length - 6} more`}
+              {showAllPhotos ? 'âˆ’ Less' : `+ ${PRESET_PRODUCT_PHOTOS.length - 6} more`}
             </button>
           </div>
         </div>
@@ -1240,7 +1304,7 @@ function ProductForm({ onClose }: { onClose: () => void }) {
           list="product-categories"
           value={form.category}
           onChange={(e) => setForm({ ...form, category: e.target.value })}
-          placeholder="e.g. Groceries, Beverages, Spares…"
+          placeholder="e.g. Groceries, Beverages, Sparesâ€¦"
           className="hl-select"
         />
         <datalist id="product-categories">
@@ -1427,8 +1491,8 @@ function ProductForm({ onClose }: { onClose: () => void }) {
         className="w-full py-3.5 mt-4 bg-[#0D4A3E] text-white rounded-full text-sm font-medium hover:bg-[#0A3D33] transition-colors flex items-center justify-center gap-2 disabled:opacity-60"
       >
         {mutation.isPending
-          ? <><ButtonLoader /> {navigator.onLine ? 'Saving…' : 'Saving offline…'}</>
-          : (navigator.onLine ? 'Save inventory item' : '📶 Save offline (will sync later)')
+          ? <><ButtonLoader /> {navigator.onLine ? 'Savingâ€¦' : 'Saving offlineâ€¦'}</>
+          : (navigator.onLine ? 'Save inventory item' : 'ðŸ“¶ Save offline (will sync later)')
         }
       </button>
     </div>
@@ -1642,7 +1706,7 @@ function EditProductForm({ product, onClose }: { product: any; onClose: () => vo
               onClick={() => setShowAllPhotos(v => !v)}
               className="px-2 py-0.5 text-[10px] font-medium rounded-full border border-dashed border-gray-300 text-gray-400 hover:text-gray-600 hover:border-gray-400 transition-colors"
             >
-              {showAllPhotos ? '− Less' : `+ ${PRESET_PRODUCT_PHOTOS.length - 6} more`}
+              {showAllPhotos ? 'âˆ’ Less' : `+ ${PRESET_PRODUCT_PHOTOS.length - 6} more`}
             </button>
           </div>
         </div>
@@ -1667,7 +1731,7 @@ function EditProductForm({ product, onClose }: { product: any; onClose: () => vo
           list="product-categories-edit"
           value={form.category}
           onChange={(e) => setForm({ ...form, category: e.target.value })}
-          placeholder="e.g. Groceries, Beverages, Spares…"
+          placeholder="e.g. Groceries, Beverages, Sparesâ€¦"
           className="hl-select"
         />
         <datalist id="product-categories-edit">
@@ -1773,7 +1837,7 @@ function EditProductForm({ product, onClose }: { product: any; onClose: () => vo
         disabled={mutation.isPending}
         className="w-full py-3.5 mt-4 bg-[#0D4A3E] text-white rounded-[.5rem] text-sm font-medium hover:bg-[#0A3D33] transition-colors"
       >
-        {mutation.isPending ? 'Updating…' : 'Update product details'}
+        {mutation.isPending ? 'Updatingâ€¦' : 'Update product details'}
       </button>
     </div>
   )
