@@ -1,4 +1,4 @@
-import {
+﻿import {
   useEffect,
   useMemo,
   useState,
@@ -1145,7 +1145,7 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
 
   return (
     <div
-      className="min-h-screen bg-[#f7f7f5] pb-28 text-slate-900 overflow-x-clip"
+      className="relative min-h-screen bg-[#0E1315] pb-28 text-slate-100 overflow-x-clip selection:bg-emerald-500 selection:text-white"
       style={{ fontFamily: "'DM Sans', Inter, sans-serif" }}
     >
       {/* Floating glass header: slides out on downward scroll and slides back into view on upward scroll. */}
@@ -1159,7 +1159,7 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
           duration: 0.28,
           ease: [0.16, 1, 0.3, 1],
         }}
-        className="sticky top-0 z-[100] border-b border-slate-200/80 bg-white/90 backdrop-blur-2xl shadow-sm will-change-transform"
+        className="sticky top-0 z-[100] border-b border-white/10 bg-[#0E1315]/80 backdrop-blur-2xl shadow-xl shadow-black/30 will-change-transform"
         style={{
           paddingTop: "max(0.75rem, env(safe-area-inset-top, 0px))",
           paddingLeft: "max(1rem, env(safe-area-inset-left, 1rem))",
@@ -1211,7 +1211,7 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
           <button
             type="button"
             onClick={() => setIsCartOpen(true)}
-            className="relative inline-flex h-10 items-center gap-2 rounded-full border border-white/30 bg-slate-950/85 px-3.5 text-xs font-semibold text-white shadow-sm backdrop-blur-xl transition hover:bg-slate-800/90 active:scale-95"
+            className="relative inline-flex h-10 items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-950/70 hover:bg-emerald-900/80 px-3.5 text-xs font-semibold text-white shadow-lg shadow-emerald-950/40 backdrop-blur-xl transition active:scale-95"
           >
             <ShoppingBag size={15} />
             <span className="hidden sm:inline">Cart</span>
@@ -1685,11 +1685,11 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
               role="dialog"
               aria-modal="true"
               aria-label="Your cart"
-              className="flex h-[88dvh] max-h-[88dvh] w-full max-w-[520px] flex-col overflow-hidden rounded-[24px] border border-white/60 bg-white/95 shadow-2xl backdrop-blur-2xl sm:h-full sm:max-h-full sm:rounded-none sm:border-0"
+              className="flex h-[88dvh] max-h-[88dvh] w-full max-w-[520px] flex-col overflow-hidden rounded-[24px] border border-white/10 bg-[#141A1E]/95 shadow-2xl shadow-black/80 backdrop-blur-2xl text-white sm:h-full sm:max-h-full sm:rounded-none sm:border-0"
             >
               {/* Glass drawer header */}
               <div
-                className="flex items-center justify-between border-b border-white/50 bg-white/60 px-5 pb-5 backdrop-blur-xl sm:px-7"
+                className="flex items-center justify-between border-b border-white/10 bg-white/[0.03] px-5 pb-5 backdrop-blur-xl sm:px-7 text-white"
                 style={{
                   paddingTop:
                     "max(1.75rem, calc(env(safe-area-inset-top, 0px) + 1.25rem))",
@@ -1699,7 +1699,7 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
                   <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-slate-400">
                     {isOrdering ? "Checkout" : "Your selection"}
                   </p>
-                  <h2 className="mt-1 text-2xl text-slate-950" style={serif}>
+                  <h2 className="mt-1 text-2xl text-white" style={serif}>
                     Your cart
                   </h2>
                 </div>
@@ -1708,7 +1708,7 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
                 <button
                   type="button"
                   onClick={() => setIsCartOpen(false)}
-                  className="grid h-10 w-10 place-items-center rounded-full border border-white/60 bg-white/50 text-slate-600 backdrop-blur-xl transition hover:bg-white/80 active:scale-95"
+                  className="grid h-10 w-10 place-items-center rounded-full border border-white/15 bg-white/10 text-white/80 backdrop-blur-xl transition hover:bg-white/20 hover:text-white active:scale-95"
                   aria-label="Close cart"
                 >
                   <X size={18} />
@@ -2186,7 +2186,7 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
                   <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50/90 p-4 text-left text-xs leading-relaxed transition-all">
                     <div className="flex items-center gap-1.5 font-bold text-amber-900 mb-1.5">
                       <Clock size={16} className="text-amber-600 shrink-0" />
-                      <span>Order Placed ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â Payment Awaiting Verification</span>
+                      <span>Order Placed Payment Awaiting Verification</span>
                     </div>
                     {orderSuccess.transactionCode && (
                       <p className="text-amber-900 font-medium">

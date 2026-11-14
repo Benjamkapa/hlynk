@@ -115,7 +115,7 @@ export default function FAQ() {
   return (
     <section
       id="faq"
-      className="py-32 bg-slate-950 text-white relative overflow-hidden border-t border-slate-800"
+      className="py-32 bg-transparent text-white relative overflow-hidden border-t border-white/5 backdrop-blur-[2px]"
     >
       <div className="max-w-4xl mx-auto px-6 md:px-12 relative z-10">
         <div className="text-center mb-20">
@@ -136,7 +136,7 @@ export default function FAQ() {
             return (
               <FadeUp key={i} delay={0.1 * (i + 1)}>
                 <div
-                  className={`bg-slate-900 border transition-all duration-300 rounded-2xl overflow-hidden cursor-pointer ${isOpen ? "border-emerald-500/40 shadow-md" : "border-slate-800 hover:border-slate-700"}`}
+                  className={`bg-[#141A1E]/80 backdrop-blur-md border transition-all duration-300 rounded-2xl overflow-hidden cursor-pointer shadow-lg ${isOpen ? "border-emerald-500/40 shadow-emerald-950/20" : "border-white/10 hover:border-white/20"}`}
                   onClick={() => toggle(i)}
                 >
                   <div className="p-6 md:p-8 flex items-center justify-between gap-6">

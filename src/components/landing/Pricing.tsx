@@ -40,7 +40,7 @@ export default function Pricing() {
   const [billingCycle, setBillingCycle] = useState<'1' | '6' | '12'>('1') // Default to Monthly
 
   return (
-    <section id="pricing" className="py-32 bg-[#14181A] relative overflow-hidden">
+    <section id="pricing" className="py-32 bg-transparent relative overflow-hidden backdrop-blur-[2px]">
       <div className="max-w-4xl mx-auto px-6 md:px-12 relative z-10">
         <div className="text-center mb-16">
           <FadeUp delay={0.1}>

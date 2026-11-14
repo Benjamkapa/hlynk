@@ -71,8 +71,8 @@ export default function Navbar() {
         .hl-nav-link:hover::after {
           width: 100%;
         }
-        .hl-nav-link.scrolled { color: #475569; }
-        .hl-nav-link.scrolled:hover { color: #059669; }
+        .hl-nav-link.scrolled { color: rgba(255,255,255,0.85); }
+        .hl-nav-link.scrolled:hover { color: #34D399; }
 
         .hl-btn-ghost {
           display: inline-flex;
@@ -158,7 +158,7 @@ export default function Navbar() {
           justify-content: center;
           line-height: 0;
         }
-        .hl-hamburger.scrolled { color: #0f172a; }
+        .hl-hamburger.scrolled { color: #fff; }
         .hl-hamburger:hover { background: rgba(0,0,0,0.06); }
 
         /* Desktop nav: visible on lg+, hidden below */
@@ -181,11 +181,11 @@ export default function Navbar() {
         zIndex: 100,
         paddingTop: 'max(12px, env(safe-area-inset-top, 12px))',
         transform: `translateY(${navVisible ? '0' : '-100%'})`,
-        background: scrolled ? 'rgba(255,255,255,0.85)' : 'transparent',
+        background: scrolled ? 'rgba(14, 19, 21, 0.82)' : 'transparent',
         backdropFilter: scrolled ? 'blur(20px) saturate(180%)' : 'none',
         WebkitBackdropFilter: scrolled ? 'blur(20px) saturate(180%)' : 'none',
-        borderBottom: 'none',
-        boxShadow: scrolled ? '0 4px 20px rgba(0,0,0,0.03)' : 'none',
+        borderBottom: scrolled ? '1px solid rgba(255, 255, 255, 0.07)' : 'none',
+        boxShadow: scrolled ? '0 10px 30px rgba(0,0,0,0.3)' : 'none',
         transition: 'background 0.3s ease, border-color 0.3s ease, transform 0.4s cubic-bezier(0.16,1,0.3,1), height 0.4s ease',
       }}>
         <div style={{
@@ -208,10 +208,10 @@ export default function Navbar() {
                 height: '40px',
                 width: 'auto',
                 transition: 'all 0.3s ease',
-                filter: scrolled ? 'none' : 'brightness(0) invert(1)',
+                filter: 'brightness(0) invert(1)',
               }}
             />
-            <span style={{ color: scrolled ? '#00694B' : '#fff', fontSize: '1.5rem', fontWeight: 'bold', margin: '4px' }}>lynk</span>
+            <span style={{ color: '#fff', fontSize: '1.5rem', fontWeight: 'bold', margin: '4px' }}>lynk</span>
           </Link>
 
           {/* Desktop nav links */}

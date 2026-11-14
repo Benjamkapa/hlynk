@@ -6,7 +6,8 @@ interface IndustryDetailsModalProps {
   isOpen: boolean
   onClose: () => void
   category: {
-    icon: React.ReactNode
+    emojiBadge?: React.ReactNode
+    icon?: React.ReactNode
     label: string
     description: string
     features: string[]
@@ -48,8 +49,8 @@ export default function IndustryDetailsModal({ isOpen, onClose, category }: Indu
               </button>
               
               <div className="flex items-center gap-6">
-                <div className="w-16 h-16 rounded-2xl bg-white text-black flex items-center justify-center shadow-lg shadow-white/5">
-                  {React.cloneElement(category.icon as React.ReactElement, { size: 32 })}
+                <div className="w-16 h-16 rounded-2xl bg-white/10 border border-white/15 flex items-center justify-center shadow-lg shadow-black/40">
+                  {category.emojiBadge || (category.icon ? React.cloneElement(category.icon as React.ReactElement, { size: 32 }) : null)}
                 </div>
                 <div>
                   <span className="text-[10px] font-black text-white/40 uppercase tracking-[0.2em] mb-1 block">Industry Spotlight</span>

@@ -711,7 +711,7 @@ export default function ProductsPage() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-300" size={16} />
             <input
               type="text"
-              placeholder="Search productsâ€¦"
+              placeholder="Search products"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="w-full bg-gray-50 border-none rounded-[.5rem] py-2.5 pl-9 pr-4 outline-none focus:ring-2 focus:ring-gray-200 transition-all text-sm"
@@ -1491,8 +1491,8 @@ function ProductForm({ onClose }: { onClose: () => void }) {
         className="w-full py-3.5 mt-4 bg-[#0D4A3E] text-white rounded-full text-sm font-medium hover:bg-[#0A3D33] transition-colors flex items-center justify-center gap-2 disabled:opacity-60"
       >
         {mutation.isPending
-          ? <><ButtonLoader /> {navigator.onLine ? 'Savingâ€¦' : 'Saving offlineâ€¦'}</>
-          : (navigator.onLine ? 'Save inventory item' : 'ðŸ“¶ Save offline (will sync later)')
+          ? <><ButtonLoader /> {navigator.onLine ? 'Saving' : 'Saving offline'}</>
+          : (navigator.onLine ? 'Save inventory item' : ' Save offline (will sync later)')
         }
       </button>
     </div>
