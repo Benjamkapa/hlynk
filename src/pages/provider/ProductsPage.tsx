@@ -461,9 +461,9 @@ export default function ProductsPage() {
                         const paidAmt = evidence.paidAmount || msgData?.totalAmount;
                         return (
                           <div className="flex flex-col gap-2 p-3 rounded-[.5rem] bg-violet-50 border border-violet-200 text-violet-900 text-xs">
-                            <span className="font-bold flex items-center gap-1.5 text-violet-800">
+                            <span className="font-bold flex items-center capitalize gap-1.5 text-violet-800">
                               <CreditCard size={14} className="text-violet-600" />
-                              DIRECT PAYMENT â€” EVIDENCE PROVIDED
+                              DIRECT PAYMENT EVIDENCE PROVIDED
                             </span>
                             {txCode ? (
                               <div className="flex items-center gap-2 flex-wrap">
@@ -583,7 +583,7 @@ export default function ProductsPage() {
                                 const hasStockIssue = stockLevel !== null && stockLevel < Number(it.quantity || 1)
                                 return (
                                   <li key={idx} className="py-1 flex justify-between items-center gap-2">
-                                    <span className={hasStockIssue ? 'text-amber-700' : ''}>{it.quantity}x {it.name}{hasStockIssue && stockLevel === 0 ? ' âš ï¸' : hasStockIssue ? ` (only ${stockLevel} in stock)` : ''}</span>
+                                    <span className={hasStockIssue ? 'text-amber-700' : ''}>{it.quantity}x {it.name}{hasStockIssue && stockLevel === 0 ? '' : hasStockIssue ? ` (only ${stockLevel} in stock)` : ''}</span>
                                     <span className="font-medium text-gray-800">KES {(it.price * it.quantity).toLocaleString()}</span>
                                   </li>
                                 )
