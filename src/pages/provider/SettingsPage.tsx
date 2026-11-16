@@ -40,7 +40,9 @@ import { providersApi } from "../../lib/api/providers";
 import { getErrorMessage } from "../../lib/utils/error";
 import { useLocation, NavLink, Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import FeatureGate, { canUseCustomSidebarLogo } from "../../components/shared/FeatureGate";
+import FeatureGate, {
+  canUseCustomSidebarLogo,
+} from "../../components/shared/FeatureGate";
 import { hasOfflinePin, clearOfflinePin } from "../../lib/offline/offlinePin";
 import PinSetupModal from "../../components/auth/PinSetupModal";
 import { AnimatePresence } from "framer-motion";
@@ -118,7 +120,9 @@ export default function SettingsPage() {
   const [pinHasPin, setPinHasPin] = useState(() => hasOfflinePin());
   const [showPinSetup, setShowPinSetup] = useState(false);
 
-  const isTrial = Number(user?.subscription?.status) === 2 || user?.subscription?.status === "TRIAL";
+  const isTrial =
+    Number(user?.subscription?.status) === 2 ||
+    user?.subscription?.status === "TRIAL";
   const isCustomLogoAllowed = canUseCustomSidebarLogo(user);
 
   const { data: profile, isLoading } = useQuery({
@@ -692,13 +696,19 @@ export default function SettingsPage() {
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div>
                       <div className="flex items-center gap-2">
-                        <Sparkles size={18} className="text-emerald-700" weight="fill" />
+                        <Sparkles
+                          size={18}
+                          className="text-emerald-700"
+                          weight="fill"
+                        />
                         <h4 className="font-black text-gray-950 text-sm tracking-tight">
                           Brand Logo & Sidebar Icon
                         </h4>
                       </div>
                       <p className="text-xs text-gray-500 font-medium mt-0.5">
-                        Replace the default hlynk icon at the top of your sidebar navigation and mobile header with your preferred image.
+                        Replace the default hlynk icon at the top of your
+                        sidebar navigation and mobile header with your preferred
+                        image.
                       </p>
                     </div>
 
@@ -723,7 +733,9 @@ export default function SettingsPage() {
                           src={
                             logoPreview ||
                             (isCustomLogoAllowed
-                              ? user?.logoUrl || profile?.data?.operationalSettings?.logoUrl || profile?.data?.logoUrl
+                              ? user?.logoUrl ||
+                                profile?.data?.operationalSettings?.logoUrl ||
+                                profile?.data?.logoUrl
                               : null) ||
                             "/fav.png"
                           }
@@ -752,15 +764,21 @@ export default function SettingsPage() {
                               disabled={logoUploading}
                               className="inline-flex items-center gap-2 px-4 py-2 bg-[#0D4A3E] hover:bg-[#0A3D33] text-white text-xs font-bold rounded-xl shadow-sm transition active:scale-95 disabled:opacity-60"
                             >
-                              {logoUploading ? <ButtonLoader size={14} /> : <Camera size={14} />}
+                              {logoUploading ? (
+                                <ButtonLoader size={14} />
+                              ) : (
+                                <Camera size={14} />
+                              )}
                               {logoUploading
                                 ? "Uploading…"
-                                : user?.logoUrl || profile?.data?.operationalSettings?.logoUrl
-                                ? "Change Logo"
-                                : "Upload Brand Logo"}
+                                : user?.logoUrl ||
+                                    profile?.data?.operationalSettings?.logoUrl
+                                  ? "Change Logo"
+                                  : "Upload Brand Logo"}
                             </button>
 
-                            {(user?.logoUrl || profile?.data?.operationalSettings?.logoUrl) && (
+                            {(user?.logoUrl ||
+                              profile?.data?.operationalSettings?.logoUrl) && (
                               <button
                                 type="button"
                                 onClick={handleRemoveLogo}
@@ -772,20 +790,31 @@ export default function SettingsPage() {
                             )}
                           </div>
                           <p className="text-[11px] text-gray-500 font-medium">
-                            Square PNG, JPG, WEBP, or SVG. Transparent background recommended. Max 5MB.
+                            Square PNG, JPG, WEBP, or SVG. Transparent
+                            background recommended. Max 5MB.
                           </p>
                         </>
                       ) : (
                         <div className="p-3.5 rounded-xl bg-amber-50/80 border border-amber-200/70 text-amber-900 text-xs space-y-2">
                           <p className="font-semibold text-[11.5px] leading-relaxed">
-                            Custom sidebar branding is available in the <strong className="font-black text-amber-950">Business Pro</strong> package and during the <strong className="font-black text-amber-950">Free Trial</strong> tier. The Starter plan (KES 4,450 / month) displays the standard hlynk icon.
+                            Custom sidebar branding is available in the{" "}
+                            <strong className="font-black text-amber-950">
+                              Business Pro
+                            </strong>{" "}
+                            package and during the{" "}
+                            <strong className="font-black text-amber-950">
+                              Free Trial
+                            </strong>{" "}
+                            tier. The Starter plan (KES 4,450 / month) displays
+                            the standard hlynk icon.
                           </p>
                           <div>
                             <Link
                               to="/dashboard/subscription"
                               className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white font-bold text-[11px] rounded-lg shadow-sm transition active:scale-95"
                             >
-                              <Sparkles size={12} weight="fill" /> Upgrade to Business Pro to Unlock
+                              <Sparkles size={12} weight="fill" /> Upgrade to
+                              Business Pro to Unlock
                             </Link>
                           </div>
                         </div>
@@ -993,7 +1022,9 @@ export default function SettingsPage() {
                         Direct Payment Configuration
                       </h4>
                       <p className="text-xs text-gray-500 font-medium mt-0.5">
-                        Configure your payment details so customers on your public store page get clear, step-by-step payment instructions (M-Pesa Paybill, Till, Send Money, etc.).
+                        Configure your payment details so customers on your
+                        public store page get clear, step-by-step payment
+                        instructions (M-Pesa Paybill, Till, Send Money, etc.).
                       </p>
                     </div>
                   </div>
@@ -1002,8 +1033,13 @@ export default function SettingsPage() {
                     {/* Enable toggle */}
                     <div className="flex items-center justify-between gap-4">
                       <div>
-                        <p className="text-sm font-bold text-gray-800">Enable Direct Payment Guidance</p>
-                        <p className="text-[11px] text-gray-500 mt-0.5">Show a payment guide card at checkout on your public store page.</p>
+                        <p className="text-sm font-bold text-gray-800">
+                          Enable Direct Payment Guidance
+                        </p>
+                        <p className="text-[11px] text-gray-500 mt-0.5">
+                          Show a payment guide card at checkout on your public
+                          store page.
+                        </p>
                       </div>
                       <button
                         type="button"
@@ -1013,21 +1049,27 @@ export default function SettingsPage() {
                             operationalSettings: {
                               ...formData.operationalSettings,
                               directPayment: {
-                                ...(formData.operationalSettings?.directPayment || {}),
-                                enabled: !(formData.operationalSettings?.directPayment?.enabled !== false),
+                                ...(formData.operationalSettings
+                                  ?.directPayment || {}),
+                                enabled: !(
+                                  formData.operationalSettings?.directPayment
+                                    ?.enabled !== false
+                                ),
                               },
                             },
                           })
                         }
                         className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full transition-colors focus:outline-none ${
-                          formData.operationalSettings?.directPayment?.enabled !== false
+                          formData.operationalSettings?.directPayment
+                            ?.enabled !== false
                             ? "bg-[#0D4A3E]"
                             : "bg-gray-200"
                         }`}
                       >
                         <span
                           className={`inline-block h-5 w-5 mt-0.5 rounded-full bg-white shadow-sm transition-transform ${
-                            formData.operationalSettings?.directPayment?.enabled !== false
+                            formData.operationalSettings?.directPayment
+                              ?.enabled !== false
                               ? "translate-x-5"
                               : "translate-x-0.5"
                           }`}
@@ -1035,7 +1077,8 @@ export default function SettingsPage() {
                       </button>
                     </div>
 
-                    {formData.operationalSettings?.directPayment?.enabled !== false && (
+                    {formData.operationalSettings?.directPayment?.enabled !==
+                      false && (
                       <div className="space-y-4 pt-2 border-t border-gray-100">
                         {/* Method Type */}
                         <div className="space-y-1.5">
@@ -1043,14 +1086,18 @@ export default function SettingsPage() {
                             Payment Method Type *
                           </label>
                           <select
-                            value={formData.operationalSettings?.directPayment?.methodType || "MPESA_PAYBILL"}
+                            value={
+                              formData.operationalSettings?.directPayment
+                                ?.methodType || "MPESA_PAYBILL"
+                            }
                             onChange={(e) =>
                               setFormData({
                                 ...formData,
                                 operationalSettings: {
                                   ...formData.operationalSettings,
                                   directPayment: {
-                                    ...(formData.operationalSettings?.directPayment || {}),
+                                    ...(formData.operationalSettings
+                                      ?.directPayment || {}),
                                     methodType: e.target.value,
                                   },
                                 },
@@ -1058,94 +1105,130 @@ export default function SettingsPage() {
                             }
                             className="hl-select"
                           >
-                            <option value="MPESA_PAYBILL">M-Pesa Paybill (Business Number)</option>
-                            <option value="MPESA_TILL">M-Pesa Till Number (Buy Goods)</option>
-                            <option value="MPESA_POCHI">M-Pesa Send Money / Pochi La Biashara</option>
-                            <option value="BANK_TRANSFER">Bank Transfer / Paybill</option>
+                            <option value="MPESA_PAYBILL">
+                              M-Pesa Paybill (Business Number)
+                            </option>
+                            <option value="MPESA_TILL">
+                              M-Pesa Till Number (Buy Goods)
+                            </option>
+                            <option value="MPESA_POCHI">
+                              M-Pesa Send Money / Pochi La Biashara
+                            </option>
+                            <option value="BANK_TRANSFER">
+                              Bank Transfer / Paybill
+                            </option>
                             <option value="CUSTOM">Custom Instructions</option>
                           </select>
                         </div>
 
                         {/* Business/Till Number */}
-                        {(formData.operationalSettings?.directPayment?.methodType !== "CUSTOM") && (
+                        {formData.operationalSettings?.directPayment
+                          ?.methodType !== "CUSTOM" && (
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="space-y-1.5">
                               <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
-                                {formData.operationalSettings?.directPayment?.methodType === "MPESA_TILL"
+                                {formData.operationalSettings?.directPayment
+                                  ?.methodType === "MPESA_TILL"
                                   ? "Till Number *"
-                                  : formData.operationalSettings?.directPayment?.methodType === "MPESA_POCHI"
-                                  ? "Phone Number *"
-                                  : "Paybill / Business Number *"}
+                                  : formData.operationalSettings?.directPayment
+                                        ?.methodType === "MPESA_POCHI"
+                                    ? "Phone Number *"
+                                    : "Paybill / Business Number *"}
                               </label>
                               <input
                                 type="text"
-                                value={formData.operationalSettings?.directPayment?.businessNumber || ""}
+                                value={
+                                  formData.operationalSettings?.directPayment
+                                    ?.businessNumber || ""
+                                }
                                 onChange={(e) =>
                                   setFormData({
                                     ...formData,
                                     operationalSettings: {
                                       ...formData.operationalSettings,
                                       directPayment: {
-                                        ...(formData.operationalSettings?.directPayment || {}),
+                                        ...(formData.operationalSettings
+                                          ?.directPayment || {}),
                                         businessNumber: e.target.value,
                                       },
                                     },
                                   })
                                 }
                                 placeholder={
-                                  formData.operationalSettings?.directPayment?.methodType === "MPESA_TILL"
+                                  formData.operationalSettings?.directPayment
+                                    ?.methodType === "MPESA_TILL"
                                     ? "e.g. 8765432"
-                                    : formData.operationalSettings?.directPayment?.methodType === "MPESA_POCHI"
-                                    ? "e.g. 0712345678"
-                                    : "e.g. 522522 or 4082140"
+                                    : formData.operationalSettings
+                                          ?.directPayment?.methodType ===
+                                        "MPESA_POCHI"
+                                      ? "e.g. 0712345678"
+                                      : "e.g. 522522 or 4082140"
                                 }
                                 className="w-full bg-white border border-gray-200 rounded-[.5rem] py-3 px-4 outline-none focus:ring-2 focus:ring-emerald-500/20 text-sm font-mono font-bold"
                               />
                             </div>
 
                             {/* Account Number — shown for all method types */}
-                            {formData.operationalSettings?.directPayment?.methodType !== "CUSTOM" && (
+                            {formData.operationalSettings?.directPayment
+                              ?.methodType !== "CUSTOM" && (
                               <div className="space-y-1.5">
                                 <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
-                                  {formData.operationalSettings?.directPayment?.methodType === "BANK_TRANSFER"
+                                  {formData.operationalSettings?.directPayment
+                                    ?.methodType === "BANK_TRANSFER"
                                     ? "Bank Account Number *"
-                                    : formData.operationalSettings?.directPayment?.methodType === "MPESA_PAYBILL"
-                                    ? "Paybill Account Number (Optional)"
-                                    : "Account Number / Name (Optional)"}
+                                    : formData.operationalSettings
+                                          ?.directPayment?.methodType ===
+                                        "MPESA_PAYBILL"
+                                      ? "Paybill Account Number (Optional)"
+                                      : "Account Number / Name (Optional)"}
                                 </label>
                                 <input
                                   type="text"
-                                  value={formData.operationalSettings?.directPayment?.accountNumber || ""}
+                                  value={
+                                    formData.operationalSettings?.directPayment
+                                      ?.accountNumber || ""
+                                  }
                                   onChange={(e) =>
                                     setFormData({
                                       ...formData,
                                       operationalSettings: {
                                         ...formData.operationalSettings,
                                         directPayment: {
-                                          ...(formData.operationalSettings?.directPayment || {}),
+                                          ...(formData.operationalSettings
+                                            ?.directPayment || {}),
                                           accountNumber: e.target.value,
                                         },
                                       },
                                     })
                                   }
                                   placeholder={
-                                    formData.operationalSettings?.directPayment?.methodType === "BANK_TRANSFER"
+                                    formData.operationalSettings?.directPayment
+                                      ?.methodType === "BANK_TRANSFER"
                                       ? "e.g. 01109012345600"
-                                      : formData.operationalSettings?.directPayment?.methodType === "MPESA_PAYBILL"
-                                      ? "e.g. STORE01 (leave empty to use Order #)"
-                                      : "e.g. MYSTORE (shown to customer as reference)"
+                                      : formData.operationalSettings
+                                            ?.directPayment?.methodType ===
+                                          "MPESA_PAYBILL"
+                                        ? "e.g. STORE01 (leave empty to use Order #)"
+                                        : "e.g. MYSTORE (shown to customer as reference)"
                                   }
                                   className="w-full bg-white border border-gray-200 rounded-[.5rem] py-3 px-4 outline-none focus:ring-2 focus:ring-emerald-500/20 text-sm font-mono"
                                 />
-                                {formData.operationalSettings?.directPayment?.methodType === "MPESA_PAYBILL" && (
+                                {formData.operationalSettings?.directPayment
+                                  ?.methodType === "MPESA_PAYBILL" && (
                                   <p className="text-[11px] text-gray-400 font-medium">
-                                    This is shown to customers as the account number to enter during payment (e.g. your store code or your name).
+                                    This is shown to customers as the account
+                                    number to enter during payment (e.g. your
+                                    store code or your name).
                                   </p>
                                 )}
-                                {(formData.operationalSettings?.directPayment?.methodType === "MPESA_TILL" ||
-                                  formData.operationalSettings?.directPayment?.methodType === "MPESA_POCHI") && (
+                                {(formData.operationalSettings?.directPayment
+                                  ?.methodType === "MPESA_TILL" ||
+                                  formData.operationalSettings?.directPayment
+                                    ?.methodType === "MPESA_POCHI") && (
                                   <p className="text-[11px] text-gray-400 font-medium">
-                                    Optional label shown to your customer on the payment screen (e.g. your store name or a short reference).
+                                    Optional label shown to your customer on the
+                                    payment screen (e.g. your store name or a
+                                    short reference).
                                   </p>
                                 )}
                               </div>
@@ -1160,14 +1243,20 @@ export default function SettingsPage() {
                           </label>
                           <input
                             type="text"
-                            value={formData.operationalSettings?.directPayment?.accountName || formData.businessName || ""}
+                            value={
+                              formData.operationalSettings?.directPayment
+                                ?.accountName ||
+                              formData.businessName ||
+                              ""
+                            }
                             onChange={(e) =>
                               setFormData({
                                 ...formData,
                                 operationalSettings: {
                                   ...formData.operationalSettings,
                                   directPayment: {
-                                    ...(formData.operationalSettings?.directPayment || {}),
+                                    ...(formData.operationalSettings
+                                      ?.directPayment || {}),
                                     accountName: e.target.value,
                                   },
                                 },
@@ -1179,21 +1268,26 @@ export default function SettingsPage() {
                         </div>
 
                         {/* Custom Instructions */}
-                        {formData.operationalSettings?.directPayment?.methodType === "CUSTOM" && (
+                        {formData.operationalSettings?.directPayment
+                          ?.methodType === "CUSTOM" && (
                           <div className="space-y-1.5">
                             <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
                               Payment Instructions *
                             </label>
                             <textarea
                               rows={4}
-                              value={formData.operationalSettings?.directPayment?.instructions || ""}
+                              value={
+                                formData.operationalSettings?.directPayment
+                                  ?.instructions || ""
+                              }
                               onChange={(e) =>
                                 setFormData({
                                   ...formData,
                                   operationalSettings: {
                                     ...formData.operationalSettings,
                                     directPayment: {
-                                      ...(formData.operationalSettings?.directPayment || {}),
+                                      ...(formData.operationalSettings
+                                        ?.directPayment || {}),
                                       instructions: e.target.value,
                                     },
                                   },
@@ -1212,14 +1306,18 @@ export default function SettingsPage() {
                           </label>
                           <input
                             type="text"
-                            value={formData.operationalSettings?.directPayment?.footerNote || ""}
+                            value={
+                              formData.operationalSettings?.directPayment
+                                ?.footerNote || ""
+                            }
                             onChange={(e) =>
                               setFormData({
                                 ...formData,
                                 operationalSettings: {
                                   ...formData.operationalSettings,
                                   directPayment: {
-                                    ...(formData.operationalSettings?.directPayment || {}),
+                                    ...(formData.operationalSettings
+                                      ?.directPayment || {}),
                                     footerNote: e.target.value,
                                   },
                                 },
@@ -1232,9 +1330,16 @@ export default function SettingsPage() {
 
                         {/* Info notice */}
                         <div className="flex items-start gap-2.5 rounded-xl border border-emerald-100 bg-emerald-50 p-3">
-                          <CheckSquare size={15} className="mt-0.5 shrink-0 text-emerald-600" />
+                          <CheckSquare
+                            size={15}
+                            className="mt-0.5 shrink-0 text-emerald-600"
+                          />
                           <p className="text-[11px] text-emerald-800 leading-relaxed font-medium">
-                            These payment details will appear as a <strong>step-by-step guided card</strong> in your public store checkout. Customers will be able to copy numbers and upload their receipt screenshot as proof of payment.
+                            These payment details will appear as a{" "}
+                            <strong>step-by-step guided card</strong> in your
+                            public store checkout. Customers will be able to
+                            copy numbers and upload their receipt screenshot as
+                            proof of payment.
                           </p>
                         </div>
                       </div>
