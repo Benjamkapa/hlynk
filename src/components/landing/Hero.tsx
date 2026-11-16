@@ -44,14 +44,16 @@ const BUSINESS_TYPES = [
 
 export default function Hero() {
   return (
-    <section className="relative overflow-hidden bg-transparent pt-10 pb-20 text-white sm:pb-28">
+    <section className="relative overflow-hidden bg-transparent min-h-screen flex items-center text-white">
+
 
       {/* Ambient background glows */}
       <div className="pointer-events-none absolute -top-40 right-[-10%] h-[500px] w-[500px] rounded-full bg-emerald-500/10 blur-[130px]" />
 
       <div className="pointer-events-none absolute bottom-10 left-[-10%] h-[400px] w-[400px] rounded-full bg-teal-500/[0.08] blur-[120px]" />
 
-      <div className="relative mx-auto max-w-7xl px-5 pt-28 sm:px-8 sm:pt-36 lg:px-12">
+      <div className="relative mx-auto max-w-7xl px-5 sm:px-8 lg:px-12 flex flex-col justify-center h-full">
+
 
         <div className="grid items-center gap-14 lg:grid-cols-12 lg:gap-12">
 
