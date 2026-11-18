@@ -44,7 +44,7 @@ const BUSINESS_TYPES = [
 
 export default function Hero() {
   return (
-    <section className="relative overflow-hidden bg-transparent min-h-screen flex items-center text-white pt-[90px]">
+    <section className="relative overflow-hidden bg-transparent min-h-screen flex items-center text-white py-[90px] pb-5">
 
 
       {/* Ambient background glows */}
