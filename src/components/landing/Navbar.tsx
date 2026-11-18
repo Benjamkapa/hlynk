@@ -58,6 +58,7 @@ export default function Navbar() {
           white-space: nowrap;
           position: relative;
         }
+
         .hl-nav-link::after {
           content: '';
           position: absolute;
@@ -68,10 +69,13 @@ export default function Navbar() {
           background-color: #059669;
           transition: width 0.3s ease-in-out;
         }
+
         .hl-nav-link:hover::after {
           width: 100%;
         }
+
         .hl-nav-link.scrolled { color: rgba(255,255,255,0.85); }
+
         .hl-nav-link.scrolled:hover { color: #34D399; }
 
         .hl-btn-ghost {
@@ -91,15 +95,18 @@ export default function Navbar() {
           white-space: nowrap;
           background: transparent;
         }
+
         .hl-btn-ghost:hover {
           background: rgba(255,255,255,0.12);
           border-color: rgba(255,255,255,0.7);
           color: #fff;
         }
+
         .hl-btn-ghost.scrolled {
           border-color: #d1d5db;
           color: #475569;
         }
+
         .hl-btn-ghost.scrolled:hover {
           border-color: #059669;
           color: #059669;
@@ -123,6 +130,7 @@ export default function Navbar() {
           white-space: nowrap;
           box-shadow: 0 4px 16px rgba(13,74,62,0.3);
         }
+
         .hl-btn-primary:hover {
           background: #064E3B;
           transform: translateY(-1px);
@@ -142,6 +150,7 @@ export default function Navbar() {
           transition: color 0.2s;
           border-bottom: 1px solid #f1f5f9;
         }
+
         .hl-mobile-link:hover { color: #059669; }
 
         /* Hamburger: hidden on desktop, shown on mobile */
@@ -158,11 +167,14 @@ export default function Navbar() {
           justify-content: center;
           line-height: 0;
         }
+
         .hl-hamburger.scrolled { color: #fff; }
+
         .hl-hamburger:hover { background: rgba(0,0,0,0.06); }
 
         /* Desktop nav: visible on lg+, hidden below */
         .hl-desktop-nav  { display: flex; }
+        
         .hl-desktop-ctas { display: flex; }
 
         @media (max-width: 1023px) {
