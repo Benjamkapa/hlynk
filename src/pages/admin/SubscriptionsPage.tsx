@@ -46,7 +46,7 @@ export default function SubscriptionsPage() {
 
   const { data: subsRes, isLoading, error: subsError } = useQuery<any>({
     queryKey: ['admin-subscriptions', search, status, planName, page],
-    queryFn: () => adminApi.getSubscriptions({ search, status, planName, page, limit: 5 }),
+    queryFn: () => adminApi.getSubscriptions({ search, status, planName, page, limit: 10 }),
   })
 
   useEffect(() => {
@@ -83,7 +83,7 @@ export default function SubscriptionsPage() {
     <div className="mx-auto max-w-[1400px] space-y-8 pt-2 animate-in fade-in duration-500">
       {/* Header */}
       <header className="border-b border-slate-200 pb-6">
-        <p className="text-xs text-slate-500">{o?.payingProviders || 0} paying businesses</p>
+        <p className="text-xs text-slate-500">{o?.payingProviders - 1} paying businesses</p>
         <h1 className="mt-1 font-serif text-3xl tracking-tight text-slate-900">Subscriptions</h1>
       </header>
 
