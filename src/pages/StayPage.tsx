@@ -1169,9 +1169,8 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
       >
         <div className="mx-auto flex h-[56px] max-w-[1440px] items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
           <div className="flex min-w-0 items-center">
-            {/* Logo ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â displays the provider's brand logo or fallback icon, matching provider portal */}
             <a
-              href="/"
+              // href="/"
               className="shrink-0 flex items-center"
               aria-label={listing.businessName || "Home"}
             >
