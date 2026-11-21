@@ -124,6 +124,34 @@ export const paymentsApi = {
 }
 
 export const adminApi = {
+  // Existing methods (kept unchanged below)
+  // New: update only regional settings (currency & timezone)
+  updateRegionalSettings: (data: { DEFAULT_CURRENCY?: string; TIMEZONE?: string }) =>
+    api.put('/admin/settings', data).then(r => r.data),
+  // Fallback photo upload if /admin/me/photo route is unavailable
+  uploadAdminPhoto: (file: File) => {
+    const formData = new FormData();
+    formData.append('photo', file);
+    return api.post('/admin/profile/photo', formData).then(r => r.data);
+  },
+  // Existing methods
+  getStats: (timeframe?: string) => api.get('/admin/stats', { params: { timeframe } }).then(r => r.data),
+  getHealth: () => api.get('/admin/health').then(r => r.data),
+  getSystemHealth: () => api.get('/admin/health').then(r => r.data),
+  getTenants: (params?: { page?: number; search?: string; status?: string; planName?: string; limit?: number; all?: boolean }) =>
+    api.get('/admin/tenants', { params }).then(r => r.data),
+  // ... (other existing methods omitted for brevity)
+  // New method for admin profile update (different endpoint if needed)
+  updateAdminProfile: (data: any) => api.put('/admin/profile', data).then(r => r.data),
+  // Keep existing updateProfile for backward compatibility
+  updateProfile: (data: any) => api.put('/admin/me', data).then(r => r.data),
+  uploadPhoto: (file: File) => {
+    const formData = new FormData();
+    formData.append('photo', file);
+    return api.post('/admin/me/photo', formData).then(r => r.data);
+  },
+  // ... rest of the object remains unchanged
+
   getStats: (timeframe?: string) => api.get('/admin/stats', { params: { timeframe } }).then(r => r.data),
   getHealth: () => api.get('/admin/health').then(r => r.data),
   getSystemHealth: () => api.get('/admin/health').then(r => r.data),

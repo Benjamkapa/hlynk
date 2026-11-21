@@ -20,7 +20,6 @@ const TABS = [
   { name: 'Security', desc: 'Sign-in and access' },
   { name: 'Notifications', desc: 'Push alerts' },
   { name: 'Regional', desc: 'Currency and timezone' },
-  { name: 'Infrastructure', desc: 'Payments diagnostics' },
 ]
 
 // Tabs where there is nothing to save
@@ -70,7 +69,7 @@ export default function SettingsPage() {
   })
 
   const profileMutation = useMutation({
-    mutationFn: () => adminApi.updateProfile(profileForm),
+    mutationFn: () => adminApi.updateAdminProfile(profileForm),
     onSuccess: () => {
       toast.success('Profile saved')
       refreshUser()
@@ -84,7 +83,7 @@ export default function SettingsPage() {
 
     setUploading(true)
     try {
-      await adminApi.uploadPhoto(file)
+      await (adminApi.uploadPhoto ? adminApi.uploadPhoto(file) : adminApi.uploadAdminPhoto(file))
       await refreshUser()
       toast.success('Profile photo updated')
     } catch (err) {
@@ -94,13 +93,67 @@ export default function SettingsPage() {
     }
   }
 
+  // Save helpers for each tab – only send the fields relevant to that tab
+  const saveGeneral = async () => {
+    const payload = {
+      supportEmail: formState['supportEmail'],
+      platformFeePercentage: formState['platformFeePercentage'],
+      maintenanceMode: !!formState['maintenanceMode'],
+      allowNewProviders: !!formState['allowNewProviders'],
+    };
+    try {
+      await adminApi.updateSettings(payload);
+      toast.success('General settings saved');
+      queryClient.invalidateQueries({ queryKey: ['admin-settings'] });
+    } catch (err) {
+      toast.error(getErrorMessage(err));
+    }
+  };
+
+  const saveSecurity = async () => {
+    const payload = {
+      ENFORCE_2FA: formState['ENFORCE_2FA'] === 'true',
+      INTRUSION_DETECT: formState['INTRUSION_DETECT'] === 'true',
+      SESSION_PERSISTENCE: formState['SESSION_PERSISTENCE'] === 'true',
+    };
+    try {
+      await adminApi.updateSettings(payload);
+      toast.success('Security settings saved');
+      queryClient.invalidateQueries({ queryKey: ['admin-settings'] });
+    } catch (err) {
+      toast.error(getErrorMessage(err));
+    }
+  };
+
+  const saveRegional = async () => {
+  const payload = {
+    DEFAULT_CURRENCY: formState['DEFAULT_CURRENCY'],
+    TIMEZONE: formState['TIMEZONE'],
+  };
+  try {
+    await adminApi.updateRegionalSettings(payload);
+    toast.success('Regional settings saved');
+    queryClient.invalidateQueries({ queryKey: ['admin-settings'] });
+  } catch (err) {
+    toast.error(getErrorMessage(err));
+  }
+};
+
+
   const handleSave = () => {
     if (activeTab === 'Profile') {
-      profileMutation.mutate()
+      profileMutation.mutate();
+    } else if (activeTab === 'General') {
+      saveGeneral();
+    } else if (activeTab === 'Security') {
+      saveSecurity();
+    } else if (activeTab === 'Regional') {
+      saveRegional();
     } else {
-      updateMutation.mutate()
+      // fallback for any other tabs
+      updateMutation.mutate();
     }
-  }
+  };
 
   const runB2cTest = async () => {
     if (!b2cPhone || !b2cAmount) return toast.error('Phone and amount are required')
@@ -285,26 +338,6 @@ export default function SettingsPage() {
               </div>
             )}
 
-            {activeTab === 'Infrastructure' && (
-              <Group title="M-Pesa B2C test">
-                <p className="max-w-2xl text-sm leading-relaxed text-slate-500">
-                  Send a real or sandbox payment from your paybill to the number below to check that disbursements work.
-                  Every test is recorded in the audit log.
-                </p>
-                <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
-                  <InputGroup label="Recipient phone" value={b2cPhone} onChange={setB2cPhone} placeholder="2547XXXXXXXX" mono />
-                  <InputGroup label="Amount (KES)" value={b2cAmount} onChange={setB2cAmount} placeholder="10" mono />
-                </div>
-                <button
-                  onClick={runB2cTest}
-                  disabled={b2cPending}
-                  className="inline-flex h-10 items-center gap-2 rounded bg-[#0D4A3E] px-4 text-sm font-medium text-white transition-colors hover:bg-[#0A3D33] disabled:opacity-60"
-                >
-                  {b2cPending && <ButtonLoader size={14} />}
-                  Send test payment
-                </button>
-              </Group>
-            )}
           </div>
         </section>
       </div>
