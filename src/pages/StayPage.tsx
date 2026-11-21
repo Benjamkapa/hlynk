@@ -1145,7 +1145,7 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
 
   return (
     <div
-      className="relative min-h-screen bg-[#0E1315] pb-28 text-slate-100 overflow-x-clip selection:bg-emerald-500 selection:text-white"
+      className="relative min-h-screen pb-28 text-slate-100 overflow-x-clip selection:bg-emerald-500 selection:text-white"
       style={{ fontFamily: "'DM Sans', Inter, sans-serif" }}
     >
       {/* Floating glass header: slides out on downward scroll and slides back into view on upward scroll. */}
@@ -1159,7 +1159,7 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
           duration: 0.28,
           ease: [0.16, 1, 0.3, 1],
         }}
-        className="sticky top-0 z-[100] border-b border-white/10 bg-[#0E1315]/80 backdrop-blur-2xl shadow-xl shadow-black/30 will-change-transform"
+        className="sticky top-0 z-[100] border-b border-white/10 backdrop-blur-2xl shadow-xl shadow-black/30 will-change-transform"
         style={{
           paddingTop: "max(0.75rem, env(safe-area-inset-top, 0px))",
           paddingLeft: "max(1rem, env(safe-area-inset-left, 1rem))",
@@ -1225,8 +1225,6 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
       </motion.header>
 
       <main className="mx-auto max-w-[1440px] px-4 pb-5 sm:px-6 lg:px-8 lg:pb-7">
-        {/* UNIVERSAL STOREFRONT BANNER
-            Product/service photos stay exclusively inside the catalogue. */}
         <section className="relative mt-1 overflow-hidden rounded-[26px] bg-slate-950">
           <img
             src={listing.bannerUrl || UNIVERSAL_BANNER_IMAGE}
@@ -1240,19 +1238,6 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
 
           <div className="relative flex min-h-[300px] items-end p-6 sm:min-h-[350px] sm:p-9 lg:min-h-[390px]">
             <div className="max-w-2xl">
-              {/* <div className="mb-4 flex flex-wrap items-center gap-2">
-                <span className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.15em] text-white backdrop-blur">
-                  <Sparkles size={12} />
-                  {listing.category || listing.businessType || "Store"}
-                </span>
-
-                {listing.location && (
-                  <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-black/15 px-3 py-1.5 text-[11px] text-white/75 backdrop-blur">
-                    <MapPin size={12} />
-                    {listing.location}
-                  </span>
-                )}
-              </div> */}
 
               <h1
                 className="text-4xl leading-[1.02] text-white sm:text-5xl lg:text-6xl"
@@ -1626,7 +1611,7 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
         </section>
       </main>
 
-      {/* MOBILE / GLOBAL CART BAR ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â glass pill */}
+      {/* MOBILE / GLOBAL CART BAR glass pill */}
       <AnimatePresence>
         {cart.length > 0 && !isCartOpen && (
           <motion.div
@@ -1715,7 +1700,7 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
                 </button>
               </div>
 
-              <div className="flex-1 overflow-y-auto px-5 py-5 sm:px-7">
+              <div className="flex-1 overflow-y-auto px-5 bg-white text-black py-5 sm:px-7">
                 {!cart.length ? (
                   <div className="grid min-h-[50vh] place-items-center text-center">
                     <div>
@@ -1861,7 +1846,7 @@ export default function StoreFront({ isShopMode }: { isShopMode?: boolean }) {
 
                             {/* PAYMENT METHOD SELECTION */}
                             <div>
-                              <label className="mb-2 block text-[11px] font-bold uppercase tracking-[0.12em] text-slate-400">
+                              <label className="mb-2 block text-[11px] font-bold tracking-[0.12em] text-slate-400">
                                 Payment Method
                               </label>
                               {(() => {
@@ -2426,6 +2411,7 @@ function Field({
         onChange={(event) => onChange(event.target.value)}
         placeholder={placeholder}
         className="h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm outline-none transition placeholder:text-slate-400 focus:border-slate-400"
+        // className="h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm text-slate-900 caret-slate-900 outline-none transition placeholder:text-slate-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10"
       />
     </div>
   );

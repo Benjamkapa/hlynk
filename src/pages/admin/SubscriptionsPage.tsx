@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { adminApi } from '../../lib/api/providers'
-import { toast } from 'sonner'
+import { notify } from '../../lib/notify'
 import { Search } from 'lucide-react'
 import Pagination from '../../components/shared/Pagination'
 import InlineLoader from '../../components/shared/InlineLoader'
@@ -50,7 +50,7 @@ export default function SubscriptionsPage() {
   })
 
   useEffect(() => {
-    if (statsError || subsError) toast.error('Failed to load subscription data')
+    if (statsError || subsError) notify('Error', 'Failed to load subscription data')
   }, [statsError, subsError])
 
   const stats: AdminStats = rawStats?.data || rawStats
@@ -62,11 +62,11 @@ export default function SubscriptionsPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-subscriptions'] })
       queryClient.invalidateQueries({ queryKey: ['admin-stats'] })
-      toast.success('Subscription plan updated')
+      notify('Success', 'Subscription plan updated')
       setConfirmUpgradePayload(null)
     },
     onError: () => {
-      toast.error('Failed to update subscription')
+      notify('Error', 'Failed to update subscription')
       setConfirmUpgradePayload(null)
     },
   })
@@ -83,7 +83,7 @@ export default function SubscriptionsPage() {
     <div className="mx-auto max-w-[1400px] space-y-8 pt-2 animate-in fade-in duration-500">
       {/* Header */}
       <header className="border-b border-slate-200 pb-6">
-        <p className="text-xs text-slate-500">{o?.payingProviders - 1} paying businesses</p>
+        <p className="text-xs text-slate-500">{o?.payingProviders - 1   } paying businesses</p>
         <h1 className="mt-1 font-serif text-3xl tracking-tight text-slate-900">Subscriptions</h1>
       </header>
 
@@ -92,7 +92,7 @@ export default function SubscriptionsPage() {
         <div className="p-6 sm:p-8">
           <dt className="text-sm text-slate-500">Active subscriptions</dt>
           <dd className="mt-2 font-serif text-3xl tabular-nums tracking-tight text-slate-900">
-            {o?.payingProviders || 0}
+            {o?.payingProviders - 1 }
           </dd>
         </div>
         <div className="p-6 sm:p-8">
