@@ -135,11 +135,7 @@ export const adminApi = {
     return api.post('/admin/profile/photo', formData).then(r => r.data);
   },
   // Existing methods
-  getStats: (timeframe?: string) => api.get('/admin/stats', { params: { timeframe } }).then(r => r.data),
-  getHealth: () => api.get('/admin/health').then(r => r.data),
-  getSystemHealth: () => api.get('/admin/health').then(r => r.data),
-  getTenants: (params?: { page?: number; search?: string; status?: string; planName?: string; limit?: number; all?: boolean }) =>
-    api.get('/admin/tenants', { params }).then(r => r.data),
+
   // ... (other existing methods omitted for brevity)
   // New method for admin profile update (different endpoint if needed)
   updateAdminProfile: (data: any) => api.put('/admin/profile', data).then(r => r.data),
@@ -152,11 +148,7 @@ export const adminApi = {
   },
   // ... rest of the object remains unchanged
 
-  getStats: (timeframe?: string) => api.get('/admin/stats', { params: { timeframe } }).then(r => r.data),
-  getHealth: () => api.get('/admin/health').then(r => r.data),
-  getSystemHealth: () => api.get('/admin/health').then(r => r.data),
-  getTenants: (params?: { page?: number; search?: string; status?: string; planName?: string; limit?: number; all?: boolean }) =>
-    api.get('/admin/tenants', { params }).then(r => r.data),
+
   suspendTenant: (id: string) => api.put(`/admin/tenants/${id}/suspend`).then(r => r.data),
   activateTenant: (id: string) => api.put(`/admin/tenants/${id}/activate`).then(r => r.data),
   upgradePlan: (id: string, planName: string) =>
@@ -186,12 +178,7 @@ export const adminApi = {
   getActivityLogs: (params?: { page?: number; limit?: number; search?: string; category?: string }) => api.get('/admin/activity', { params }).then(r => r.data),
   getTransactions: (params?: { page?: number; limit?: number; status?: string; method?: string; search?: string; type?: string }) => api.get('/admin/transactions', { params }).then(r => r.data),
   getTransactionDetail: (id: string) => api.get(`/admin/transactions/${id}`).then(r => r.data),
-  updateProfile: (data: any) => api.put('/admin/me', data).then(r => r.data),
-  uploadPhoto: (file: File) => {
-    const formData = new FormData()
-    formData.append('photo', file)
-    return api.post('/admin/me/photo', formData).then(r => r.data)
-  },
+
   generatePromoCode: (data: { planName: string, durationDays: number, maxUses?: number, assignedPhone?: string }) =>
     api.post('/subscriptions/promo/generate', data).then(r => r.data),
   getReviews: (params?: { page?: number; limit?: number; status?: number }) => api.get('/admin/reviews', { params }).then(r => r.data),
