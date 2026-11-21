@@ -1,3 +1,5 @@
+import { toast } from 'sonner';
+
 // src/lib/notify.ts
 /**
  * Show a notification – either a native browser push (if permission granted)
@@ -23,8 +25,5 @@ export const notify = (title: string, message: string) => {
   }
 
   // Fallback to Sonner toast
-  // Require lazily to avoid circular imports if this file is imported elsewhere
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  const { toast } = require('sonner')
   toast.success(`${title}: ${message}`)
 }

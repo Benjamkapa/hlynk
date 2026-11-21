@@ -125,6 +125,12 @@ export const paymentsApi = {
 
 export const adminApi = {
   // Existing methods (kept unchanged below)
+  // Admin stats and health endpoints
+  getStats: (timeframe?: string) => api.get('/admin/stats', { params: { timeframe } }).then(r => r.data),
+  getHealth: () => api.get('/admin/health').then(r => r.data),
+  getSystemHealth: () => api.get('/admin/health').then(r => r.data),
+  getTenants: (params?: { page?: number; search?: string; status?: string; planName?: string; limit?: number; all?: boolean }) =>
+    api.get('/admin/tenants', { params }).then(r => r.data),
   // New: update only regional settings (currency & timezone)
   updateRegionalSettings: (data: { DEFAULT_CURRENCY?: string; TIMEZONE?: string }) =>
     api.put('/admin/settings', data).then(r => r.data),
