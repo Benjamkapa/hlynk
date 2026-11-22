@@ -657,7 +657,7 @@ export default function SystemPerformancePage() {
           </div>
           <div className="flex items-center justify-between py-3">
             <span className="text-sm text-slate-500">Incident rate</span>
-            <span className="font-mono text-sm font-semibold text-slate-900">{display(health.incidentRate, '%')}</span>
+            <span className="font-mono text-sm font-semibold text-slate-900">{display(health.incidentRate )}</span>
           </div>
           <div className="flex items-center justify-between border-t border-slate-100 py-3">
             <span className="text-sm text-slate-500">Application version</span>
