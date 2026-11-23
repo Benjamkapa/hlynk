@@ -51,7 +51,6 @@ const adminNavItems: AdminNavItem[] = [
   { to: "/admin/payments", label: "Payments", icon: Receipt },
   { to: "/admin/storage", label: "Cloud & Backups", icon: HardDrive },
   { to: "/admin/forensic-audit", label: "Audit & Security", icon: ShieldCheck },
-  // { to: "/admin/community-reviews", label: "Reviews", icon: Star },
   { to: "/admin/reports", label: "Reports", icon: BarChart3 },
   { to: "/admin/notifications", label: "Notifications", icon: Bell },
   { to: "/admin/settings", label: "System Settings", icon: Bolt },

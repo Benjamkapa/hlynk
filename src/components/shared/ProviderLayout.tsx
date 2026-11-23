@@ -669,7 +669,10 @@ export default function ProviderLayout() {
                           Profile & Business Info
                         </button>
 
-                        <PwaInstallButton className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold text-emerald-800 bg-emerald-50/70 hover:bg-emerald-100 transition-colors border border-emerald-100" label="Install hlynk App" />
+                        <PwaInstallButton
+                          className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold text-emerald-800 bg-emerald-50/70 hover:bg-emerald-100 transition-colors border border-emerald-100"
+                          label="Install hlynk App"
+                        />
 
                         {!navigator.onLine && hasOfflinePin() && (
                           <button
@@ -1117,9 +1120,7 @@ function MobileBottomNav({
               <p className="text-sm font-bold text-slate-900 truncate">
                 {user?.name || user?.businessName}
               </p>
-              <p className="text-xs text-slate-500 truncate">
-                {user?.email}
-              </p>
+              <p className="text-xs text-slate-500 truncate">{user?.email}</p>
             </div>
           </div>
 
@@ -1127,26 +1128,37 @@ function MobileBottomNav({
           <div className="grid grid-cols-4 gap-y-5 gap-x-1 px-3 pt-5 pb-[max(1.5rem,calc(env(safe-area-inset-bottom,0px)+1rem))]">
             {/* Profile & Settings */}
             <Link
-              to={user?.role === "SUPER_ADMIN" ? "/admin/settings" : "/dashboard/settings"}
+              to={
+                user?.role === "SUPER_ADMIN"
+                  ? "/admin/settings"
+                  : "/dashboard/settings"
+              }
               onClick={() => setShowProfileSheet(false)}
               className="flex flex-col items-center gap-2 no-tap-highlight group active:scale-95 transition-transform"
             >
               <div className="w-[60px] h-[60px] rounded-full border-2 border-slate-200 flex items-center justify-center bg-white transition-colors group-active:bg-slate-100">
                 <Bolt className="w-6 h-6 text-slate-900" strokeWidth={1.75} />
               </div>
-              <span className="text-[12px] leading-tight text-center px-0.5 text-slate-800">Settings</span>
+              <span className="text-[12px] leading-tight text-center px-0.5 text-slate-800">
+                Settings
+              </span>
             </Link>
 
             {/* Lock Screen — offline only */}
             {!navigator.onLine && hasOfflinePin() && (
               <button
-                onClick={() => { setShowProfileSheet(false); lock(); }}
+                onClick={() => {
+                  setShowProfileSheet(false);
+                  lock();
+                }}
                 className="flex flex-col items-center gap-2 no-tap-highlight group active:scale-95 transition-transform"
               >
                 <div className="w-[60px] h-[60px] rounded-full border-2 border-slate-200 flex items-center justify-center bg-white transition-colors group-active:bg-slate-100">
                   <Lock className="w-6 h-6 text-slate-900" strokeWidth={1.75} />
                 </div>
-                <span className="text-[12px] leading-tight text-center px-0.5 text-slate-800">Lock Screen</span>
+                <span className="text-[12px] leading-tight text-center px-0.5 text-slate-800">
+                  Lock Screen
+                </span>
               </button>
             )}
 
@@ -1166,7 +1178,9 @@ function MobileBottomNav({
               <div className="w-[60px] h-[60px] rounded-full border-2 border-red-200 flex items-center justify-center bg-white transition-colors group-active:bg-red-50">
                 <LogOut className="w-6 h-6 text-red-500" strokeWidth={1.75} />
               </div>
-              <span className="text-[12px] leading-tight text-center px-0.5 text-red-500">Log Out</span>
+              <span className="text-[12px] leading-tight text-center px-0.5 text-red-500">
+                Log Out
+              </span>
             </button>
           </div>
         </div>
@@ -1300,7 +1314,9 @@ function MoreSheet({
   // Measure the natural content height (header + grid)
   useEffect(() => {
     const measure = () => {
-      const h = (headerRef.current?.offsetHeight || 0) + (gridRef.current?.offsetHeight || 0);
+      const h =
+        (headerRef.current?.offsetHeight || 0) +
+        (gridRef.current?.offsetHeight || 0);
       if (h) setContentH(h);
     };
     measure();
@@ -1313,14 +1329,22 @@ function MoreSheet({
   // Track "fully open" so the grid only scrolls when the sheet is at the top
   useEffect(() => y.on("change", (v) => setFullyOpen(v <= 2)), [y]);
 
-  const spring = { type: "spring" as const, stiffness: 380, damping: 36, mass: 0.9 };
+  const spring = {
+    type: "spring" as const,
+    stiffness: 380,
+    damping: 36,
+    mass: 0.9,
+  };
 
   useEffect(() => {
     if (open) {
       setVisible(true);
       animate(y, snaps.peek, spring);
     } else {
-      animate(y, snaps.closed, { ...spring, onComplete: () => setVisible(false) });
+      animate(y, snaps.closed, {
+        ...spring,
+        onComplete: () => setVisible(false),
+      });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, sheetH]);
@@ -1392,7 +1416,9 @@ function MoreSheet({
             </motion.div>
 
             <div className="relative flex items-center justify-center px-5 py-2.5">
-              <p className="text-lg font-medium text-slate-900">Quick Actions</p>
+              <p className="text-lg font-medium text-slate-900">
+                Quick Actions
+              </p>
               <button
                 onPointerDown={(e) => e.stopPropagation()}
                 onClick={onClose}
@@ -1421,7 +1447,10 @@ function MoreSheet({
                   key={item.to}
                   initial={false}
                   animate={open ? { opacity: 1, y: 0 } : { opacity: 0, y: 14 }}
-                  transition={{ delay: open ? 0.05 + i * 0.02 : 0, duration: 0.2 }}
+                  transition={{
+                    delay: open ? 0.05 + i * 0.02 : 0,
+                    duration: 0.2,
+                  }}
                 >
                   <NavLink
                     to={item.to}
@@ -1440,7 +1469,9 @@ function MoreSheet({
                         <div className="relative">
                           <div
                             className={`w-[60px] h-[60px] rounded-full border-2 flex items-center justify-center bg-white transition-colors group-active:bg-slate-100 ${
-                              isActive ? "border-emerald-500" : "border-slate-200"
+                              isActive
+                                ? "border-emerald-500"
+                                : "border-slate-200"
                             }`}
                           >
                             <item.icon
@@ -1450,13 +1481,19 @@ function MoreSheet({
                           </div>
                           {item.isLocked && (
                             <div className="absolute -top-0.5 -right-0.5 w-5 h-5 bg-amber-400 rounded-full border-2 border-white flex items-center justify-center">
-                              <Lock size={9} className="text-white" strokeWidth={2.5} />
+                              <Lock
+                                size={9}
+                                className="text-white"
+                                strokeWidth={2.5}
+                              />
                             </div>
                           )}
                         </div>
                         <span
                           className={`text-[12px] leading-tight text-center px-0.5 ${
-                            isActive ? "text-emerald-700 font-medium" : "text-slate-800"
+                            isActive
+                              ? "text-emerald-700 font-medium"
+                              : "text-slate-800"
                           }`}
                         >
                           {item.label}
@@ -1610,6 +1647,31 @@ function FloatingExpiryWidget({
 
   if (user?.role !== "PROVIDER" || !targetEndDate) return null;
 
+  const dragButtonRef = useRef<HTMLButtonElement>(null)
+const [dragBounds, setDragBounds] = useState({ top: 0, bottom: 0 })
+
+  useEffect(() => {
+  const updateDragBounds = () => {
+    const button = dragButtonRef.current
+    if (!button) return
+
+    const rect = button.getBoundingClientRect()
+
+    setDragBounds({
+      top: -rect.top,
+      bottom: window.innerHeight - rect.bottom,
+    })
+  }
+
+  updateDragBounds()
+
+  window.addEventListener("resize", updateDragBounds)
+
+  return () => {
+    window.removeEventListener("resize", updateDragBounds)
+  }
+}, [])
+
   return (
     <div className="fixed bottom-32 lg:bottom-8 right-0 lg:right-0 z-[90] pointer-events-auto">
       <AnimatePresence>
@@ -1661,7 +1723,7 @@ function FloatingExpiryWidget({
         )}
       </AnimatePresence>
 
-      <button
+      {/* <button
         type="button"
         onClick={() => setIsOpen((prev) => !prev)}
         className={`group relative grid h-12 w-12 place-items-center rounded-full shadow-2xl transition-all duration-300 active:scale-95 ${
@@ -1678,7 +1740,37 @@ function FloatingExpiryWidget({
         <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500 text-[9px] font-black font-mono text-slate-950 shadow-md border-2 border-white">
           {daysRemaining}d
         </span>
-      </button>
+      </button> */}
+
+      <motion.button
+        ref={dragButtonRef}
+        type="button"
+        onClick={() => setIsOpen((prev) => !prev)}
+        drag="y"
+        dragConstraints={dragBounds}
+        dragElastic={0}
+        dragMomentum={false}
+        dragTransition={{ power: 0, timeConstant: 0 }}
+        onDragStart={() => {
+          // Prevent accidental click while dragging
+        }}
+        className={`group relative grid h-12 w-12 touch-none cursor-grab active:cursor-grabbing place-items-center rounded-full shadow-2xl transition-colors duration-300 active:scale-95 ${
+          isCritical
+            ? "bg-red-600 text-white shadow-red-600/40 ring-4 ring-red-400/30"
+            : "bg-emerald-900 text-emerald-300 hover:bg-emerald-800 shadow-emerald-950/40 border border-emerald-700/50"
+        }`}
+        title="Provider Subscription Expiry Countdown"
+        aria-label="Provider Subscription Expiry Countdown. Drag vertically to reposition."
+      >
+        <Clock
+          size={20}
+          className="transition-transform group-hover:rotate-12"
+        />
+
+        <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500 text-[9px] font-black font-mono text-slate-950 shadow-md border-2 border-white">
+          {daysRemaining}d
+        </span>
+      </motion.button>
     </div>
   );
 }

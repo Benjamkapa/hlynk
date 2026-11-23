@@ -157,8 +157,8 @@ export const adminApi = {
 
   suspendTenant: (id: string) => api.put(`/admin/tenants/${id}/suspend`).then(r => r.data),
   activateTenant: (id: string) => api.put(`/admin/tenants/${id}/activate`).then(r => r.data),
-  upgradePlan: (id: string, planName: string) =>
-    api.put(`/admin/tenants/${id}/upgrade`, { planName }).then(r => r.data),
+  extendSubscription: (id: string, plan: string, extraDays: number) =>
+    api.put(`/admin/tenants/${id}/extend`, { plan, extraDays }).then(r => r.data),
   createTenant: (data: any) => api.post('/admin/tenants', data).then(r => r.data),
   getUsers: (params?: { page?: number; search?: string; role?: string; limit?: number }) => api.get('/admin/users', { params }).then(r => r.data),
   deleteUser: (id: string) => api.delete(`/admin/users/${id}`).then(r => r.data),

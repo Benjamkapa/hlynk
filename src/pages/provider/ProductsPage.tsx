@@ -1,240 +1,388 @@
-import React, { useState, useEffect } from 'react'
-import { Plus, Search, Filter, Edit, Trash2, Package, TrendingDown, Activity, AlertTriangle, LayoutGrid, List, Camera, FileText, Eye, Share2, ShoppingBag, Phone, MessageSquare, Check, CheckCircle2, Clock, CreditCard, Upload, Trash, CandyCaneIcon, Ban, Clipboard, Tag, Sparkles } from 'lucide-react'
-import { generatePickupCode } from '../../lib/utils/pickupCode'
-import { CameraCapture } from '../../components/shared/CameraCapture'
-import { ConfirmModal } from '../../components/shared/ConfirmModal'
-import { SlideOver } from '../../components/shared/SlideOver'
-import { toast } from 'sonner'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { inventoryApi, providersApi, requestsApi } from '../../lib/api/providers'
-import { getErrorMessage } from '../../lib/utils/error'
-import { getLocalDateString, formatLocalDate } from '../../lib/utils/date'
-import InlineLoader, { ButtonLoader } from '../../components/shared/InlineLoader'
-import { exportToCSV } from '../../lib/utils/export'
-import FeatureGate, { canAccessFeature } from '../../components/shared/FeatureGate'
-import { useAuth } from '../../lib/auth/AuthContext'
-import { useNavigate, useLocation } from 'react-router-dom'
+import React, { useState, useEffect } from "react";
+import {
+  Plus,
+  Search,
+  Filter,
+  Edit,
+  Trash2,
+  Package,
+  TrendingDown,
+  Activity,
+  AlertTriangle,
+  LayoutGrid,
+  List,
+  Camera,
+  FileText,
+  Eye,
+  Share2,
+  ShoppingBag,
+  Phone,
+  MessageSquare,
+  Check,
+  CheckCircle2,
+  Clock,
+  CreditCard,
+  Upload,
+  Trash,
+  CandyCaneIcon,
+  Ban,
+  Clipboard,
+  Tag,
+  Sparkles,
+} from "lucide-react";
+import { generatePickupCode } from "../../lib/utils/pickupCode";
+import { CameraCapture } from "../../components/shared/CameraCapture";
+import { ConfirmModal } from "../../components/shared/ConfirmModal";
+import { SlideOver } from "../../components/shared/SlideOver";
+import { toast } from "sonner";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  inventoryApi,
+  providersApi,
+  requestsApi,
+} from "../../lib/api/providers";
+import { getErrorMessage } from "../../lib/utils/error";
+import { getLocalDateString, formatLocalDate } from "../../lib/utils/date";
+import InlineLoader, {
+  ButtonLoader,
+} from "../../components/shared/InlineLoader";
+import { exportToCSV } from "../../lib/utils/export";
+import FeatureGate, {
+  canAccessFeature,
+} from "../../components/shared/FeatureGate";
+import { useAuth } from "../../lib/auth/AuthContext";
+import { useNavigate, useLocation } from "react-router-dom";
 
-import { keepPreviousData } from '@tanstack/react-query'
-import { PaginatedResponse } from '../../lib/types/api'
-import { cacheInventory, getCachedInventory, enqueuePendingProduct } from '../../lib/offline/db'
-import { useOfflineStatus } from '../../lib/offline/useOfflineStatus'
+import { keepPreviousData } from "@tanstack/react-query";
+import { PaginatedResponse } from "../../lib/types/api";
+import {
+  cacheInventory,
+  getCachedInventory,
+  enqueuePendingProduct,
+} from "../../lib/offline/db";
+import { useOfflineStatus } from "../../lib/offline/useOfflineStatus";
 
 const PRESET_PRODUCT_PHOTOS = [
-  { name: "Fresh Vegetables", url: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=800" },
-  { name: "Groceries", url: "https://images.unsplash.com/photo-1542838132-92c53300491e?w=800" },
-  { name: "Bakery / Bread", url: "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=800" },
-  { name: "Coffee / Drinks", url: "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=800" },
-  { name: "Juice / Smoothie", url: "https://images.unsplash.com/photo-1546173159-315724a31696?w=800" },
-  { name: "Bottled Water", url: "https://images.unsplash.com/photo-1616118132534-381055b6a5cf?w=800" },
-  { name: "Snacks / Chips", url: "https://images.unsplash.com/photo-1566478989037-eec170784d0b?w=800" },
-  { name: "Dairy / Milk", url: "https://images.unsplash.com/photo-1550583724-b2692b85b150?w=800" },
-  { name: "Meat / Butchery", url: "https://images.unsplash.com/photo-1607623814075-e51df1bdc82f?w=800" },
-  { name: "Electronics", url: "https://images.unsplash.com/photo-1468495244123-6c6c332eeece?w=800" },
-  { name: "Mobile Phone", url: "https://images.unsplash.com/photo-1598327105666-5b89351aff97?w=800" },
-  { name: "Laptop", url: "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=800" },
-  { name: "Clothing / Fashion", url: "https://images.unsplash.com/photo-1558769132-cb1aea458c5e?w=800" },
-  { name: "Shoes / Footwear", url: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800" },
-  { name: "Beauty / Cosmetics", url: "https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=800" },
-  { name: "Medicine / Pharmacy", url: "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=800" },
-  { name: "Furniture", url: "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=800" },
-  { name: "Hardware / Tools", url: "https://images.unsplash.com/photo-1581235720704-06d3acfcb36f?w=800" },
-  { name: "Cleaning Products", url: "https://images.unsplash.com/photo-1563453392212-326f5e854473?w=800" },
-  { name: "Stationery", url: "https://images.unsplash.com/photo-1527176930608-09cb256ab504?w=800" },
+  {
+    name: "Fresh Vegetables",
+    url: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=800",
+  },
+  {
+    name: "Groceries",
+    url: "https://images.unsplash.com/photo-1542838132-92c53300491e?w=800",
+  },
+  {
+    name: "Bakery / Bread",
+    url: "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=800",
+  },
+  {
+    name: "Coffee / Drinks",
+    url: "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=800",
+  },
+  {
+    name: "Juice / Smoothie",
+    url: "https://images.unsplash.com/photo-1546173159-315724a31696?w=800",
+  },
+  {
+    name: "Bottled Water",
+    url: "https://images.unsplash.com/photo-1616118132534-381055b6a5cf?w=800",
+  },
+  {
+    name: "Snacks / Chips",
+    url: "https://images.unsplash.com/photo-1566478989037-eec170784d0b?w=800",
+  },
+  {
+    name: "Dairy / Milk",
+    url: "https://images.unsplash.com/photo-1550583724-b2692b85b150?w=800",
+  },
+  {
+    name: "Meat / Butchery",
+    url: "https://images.unsplash.com/photo-1607623814075-e51df1bdc82f?w=800",
+  },
+  {
+    name: "Electronics",
+    url: "https://images.unsplash.com/photo-1468495244123-6c6c332eeece?w=800",
+  },
+  {
+    name: "Mobile Phone",
+    url: "https://images.unsplash.com/photo-1598327105666-5b89351aff97?w=800",
+  },
+  {
+    name: "Laptop",
+    url: "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=800",
+  },
+  {
+    name: "Clothing / Fashion",
+    url: "https://images.unsplash.com/photo-1558769132-cb1aea458c5e?w=800",
+  },
+  {
+    name: "Shoes / Footwear",
+    url: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800",
+  },
+  {
+    name: "Beauty / Cosmetics",
+    url: "https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=800",
+  },
+  {
+    name: "Medicine / Pharmacy",
+    url: "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=800",
+  },
+  {
+    name: "Furniture",
+    url: "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=800",
+  },
+  {
+    name: "Hardware / Tools",
+    url: "https://images.unsplash.com/photo-1581235720704-06d3acfcb36f?w=800",
+  },
+  {
+    name: "Cleaning Products",
+    url: "https://images.unsplash.com/photo-1563453392212-326f5e854473?w=800",
+  },
+  {
+    name: "Stationery",
+    url: "https://images.unsplash.com/photo-1527176930608-09cb256ab504?w=800",
+  },
 ];
 
 export default function ProductsPage() {
-  const { user } = useAuth()
-  const { isOnline } = useOfflineStatus()
-  const navigate = useNavigate()
-  const location = useLocation()
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false)
-  const [editingProduct, setEditingProduct] = useState<any>(null)
-  const [search, setSearch] = useState('')
-  const [page, setPage] = useState(1)
-  const [sortBy, setSortBy] = useState('createdAt')
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
-  const [category, setCategory] = useState('')
-  const [viewMode, setViewMode] = useState<'list' | 'grid'>('grid')
-  const queryClient = useQueryClient()
-  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
+  const { user } = useAuth();
+  const { isOnline } = useOfflineStatus();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [editingProduct, setEditingProduct] = useState<any>(null);
+  const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
+  const [sortBy, setSortBy] = useState("createdAt");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
+  const [category, setCategory] = useState("");
+  const [viewMode, setViewMode] = useState<"list" | "grid">("grid");
+  const queryClient = useQueryClient();
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
-  const { data: productsData, isLoading, error } = useQuery<PaginatedResponse<any> & { stats: any }>({
-    queryKey: ['inventory', search, page, sortBy, sortOrder, category],
+  const {
+    data: productsData,
+    isLoading,
+    error,
+  } = useQuery<PaginatedResponse<any> & { stats: any }>({
+    queryKey: ["inventory", search, page, sortBy, sortOrder, category],
     queryFn: async () => {
       if (!navigator.onLine) {
-        const cached = await getCachedInventory()
+        const cached = await getCachedInventory();
         const filtered = search
-          ? cached.filter((p: any) => p.name?.toLowerCase().includes(search.toLowerCase()) || p.category?.toLowerCase().includes(search.toLowerCase()))
-          : cached
+          ? cached.filter(
+              (p: any) =>
+                p.name?.toLowerCase().includes(search.toLowerCase()) ||
+                p.category?.toLowerCase().includes(search.toLowerCase()),
+            )
+          : cached;
         return {
           items: filtered,
           total: filtered.length,
           page: 1,
           pages: 1,
-          stats: { totalItems: filtered.length, lowStock: 0, totalValue: 0 }
-        }
+          stats: { totalItems: filtered.length, lowStock: 0, totalValue: 0 },
+        };
       }
-      return inventoryApi.list({ search, page, limit: 16, sortBy, sortOrder, category: category || undefined, includeStats: true })
+      return inventoryApi.list({
+        search,
+        page,
+        limit: 16,
+        sortBy,
+        sortOrder,
+        category: category || undefined,
+        includeStats: true,
+      });
     },
     placeholderData: keepPreviousData,
-    refetchInterval: navigator.onLine ? 45_000 : false
-  })
+    refetchInterval: navigator.onLine ? 45_000 : false,
+  });
 
   const { data: profile } = useQuery({
-    queryKey: ['my-profile'],
+    queryKey: ["my-profile"],
     queryFn: providersApi.getMyProfile,
-    staleTime: 1000 * 60 * 30
-  })
+    staleTime: 1000 * 60 * 30,
+  });
 
   const threshold = profile?.data?.operationalSettings?.lowStockThreshold || 10;
   const slug = profile?.data?.slug;
-  const publicStoreUrl = slug ? `${window.location.origin}/store/${slug}` : null;
+  const publicStoreUrl = slug
+    ? `${window.location.origin}/store/${slug}`
+    : null;
 
-  const [isOrdersOpen, setIsOrdersOpen] = useState(false)
-  const [orderSearch, setOrderSearch] = useState('')
-  const [cancelConfirmId, setCancelConfirmId] = useState<string | null>(null)
-  const [cancelVoidSale, setCancelVoidSale] = useState(false)
+  const [isOrdersOpen, setIsOrdersOpen] = useState(false);
+  const [orderSearch, setOrderSearch] = useState("");
+  const [cancelConfirmId, setCancelConfirmId] = useState<string | null>(null);
+  const [cancelVoidSale, setCancelVoidSale] = useState(false);
 
   // Auto-open client orders drawer when deep-linking from notification
   useEffect(() => {
-    if (location.state && ((location.state as any).openOrders || (location.state as any).highlightId)) {
-      setIsOrdersOpen(true)
+    if (
+      location.state &&
+      ((location.state as any).openOrders ||
+        (location.state as any).highlightId)
+    ) {
+      setIsOrdersOpen(true);
     }
-  }, [location.state])
+  }, [location.state]);
 
   const { data: requestsData, refetch: refetchRequests } = useQuery({
-    queryKey: ['requests'],
+    queryKey: ["requests"],
     queryFn: () => requestsApi.list(),
-    refetchInterval: 30_000
-  })
+    refetchInterval: 30_000,
+  });
 
-  const incomingOrders = requestsData?.requests || []
-  const pendingOrdersCount = incomingOrders.filter((r: any) => r.status === 'PENDING').length
+  const incomingOrders = requestsData?.requests || [];
+  const pendingOrdersCount = incomingOrders.filter(
+    (r: any) => r.status === "PENDING",
+  ).length;
 
   const filteredOrders = incomingOrders.filter((req: any) => {
     if (!orderSearch.trim()) return true;
     const q = orderSearch.toLowerCase().trim();
     let msgData: any = null;
-    try { msgData = JSON.parse(req.message); } catch (_) {}
-    const pickup = (msgData?.pickupCode || generatePickupCode(req.id)).toLowerCase();
-    const name = (req.customerName || '').toLowerCase();
-    const phone = (req.customerPhone || '').toLowerCase();
+    try {
+      msgData = JSON.parse(req.message);
+    } catch (_) {}
+    const pickup = (
+      msgData?.pickupCode || generatePickupCode(req.id)
+    ).toLowerCase();
+    const name = (req.customerName || "").toLowerCase();
+    const phone = (req.customerPhone || "").toLowerCase();
     return pickup.includes(q) || name.includes(q) || phone.includes(q);
-  })
+  });
 
   const handleUpdateOrderStatus = async (id: string, newStatus: string) => {
     try {
-      await requestsApi.updateStatus(id, newStatus)
-      toast.success(`Order status updated to ${newStatus}`)
-      refetchRequests()
+      await requestsApi.updateStatus(id, newStatus);
+      toast.success(`Order status updated to ${newStatus}`);
+      refetchRequests();
     } catch (err: any) {
-      toast.error('Failed to update order status')
+      toast.error("Failed to update order status");
     }
-  }
+  };
 
   const handleCancelOrder = async (id: string, voidSale: boolean) => {
     try {
-      await requestsApi.updateStatus(id, 'CANCELLED', voidSale)
-      toast.success(voidSale ? 'Order cancelled and sale voided. Stock restored.' : 'Order cancelled.')
-      setCancelConfirmId(null)
-      setCancelVoidSale(false)
-      refetchRequests()
+      await requestsApi.updateStatus(id, "CANCELLED", voidSale);
+      toast.success(
+        voidSale
+          ? "Order cancelled and sale voided. Stock restored."
+          : "Order cancelled.",
+      );
+      setCancelConfirmId(null);
+      setCancelVoidSale(false);
+      refetchRequests();
       if (voidSale) {
-        queryClient.invalidateQueries({ queryKey: ['inventory'] })
-        queryClient.invalidateQueries({ queryKey: ['sales-history'] })
-        queryClient.invalidateQueries({ queryKey: ['provider-stats'] })
+        queryClient.invalidateQueries({ queryKey: ["inventory"] });
+        queryClient.invalidateQueries({ queryKey: ["sales-history"] });
+        queryClient.invalidateQueries({ queryKey: ["provider-stats"] });
       }
     } catch (err: any) {
-      toast.error('Failed to cancel order')
+      toast.error("Failed to cancel order");
     }
-  }
+  };
 
   const handleDeleteSingleOrder = async (id: string) => {
     try {
-      await requestsApi.delete(id)
-      toast.success('Order deleted')
-      refetchRequests()
+      await requestsApi.delete(id);
+      toast.success("Order deleted");
+      refetchRequests();
     } catch (err: any) {
-      toast.error('Failed to delete order')
+      toast.error("Failed to delete order");
     }
-  }
+  };
 
-  const handleClearOrders = async (status: 'COMPLETED' | 'ALL') => {
-    const confirmMsg = status === 'COMPLETED'
-      ? 'Clear all completed and processed orders?'
-      : 'Clear ALL client orders completely? This action cannot be undone.'
-    if (!window.confirm(confirmMsg)) return
+  const handleClearOrders = async (status: "COMPLETED" | "ALL") => {
+    const confirmMsg =
+      status === "COMPLETED"
+        ? "Clear all completed and processed orders?"
+        : "Clear ALL client orders completely? This action cannot be undone.";
+    if (!window.confirm(confirmMsg)) return;
     try {
-      await requestsApi.clear(status)
-      toast.success(status === 'COMPLETED' ? 'Completed orders cleared' : 'All client orders cleared')
-      refetchRequests()
+      await requestsApi.clear(status);
+      toast.success(
+        status === "COMPLETED"
+          ? "Completed orders cleared"
+          : "All client orders cleared",
+      );
+      refetchRequests();
     } catch (err: any) {
-      toast.error('Failed to clear orders')
+      toast.error("Failed to clear orders");
     }
-  }
+  };
 
   const handleShareStore = () => {
-    if (!canAccessFeature(user, 'store_page')) {
-      toast.error('Public Store / Shop Page is locked on your plan', {
-        description: 'Upgrade to Business Pro to activate your public store link and share it with clients.',
+    if (!canAccessFeature(user, "store_page")) {
+      toast.error("Public Store / Shop Page is locked on your plan", {
+        description:
+          "Upgrade to Business Pro to activate your public store link and share it with clients.",
         action: {
-          label: 'Upgrade Plan',
-          onClick: () => navigate('/dashboard/subscription')
-        }
+          label: "Upgrade Plan",
+          onClick: () => navigate("/dashboard/subscription"),
+        },
       });
       return;
     }
-    if (!publicStoreUrl) return toast.error('Your store link is not ready yet');
-    navigator.clipboard.writeText(publicStoreUrl).then(() => {
-      toast.success('Link copied to clipboard!');
-    }).catch(() => {
-      // toast.info(`Your public store URL is: ${publicStoreUrl}`);
-    });
+    if (!publicStoreUrl) return toast.error("Your store link is not ready yet");
+    navigator.clipboard
+      .writeText(publicStoreUrl)
+      .then(() => {
+        toast.success("Link copied to clipboard!");
+      })
+      .catch(() => {
+        // toast.info(`Your public store URL is: ${publicStoreUrl}`);
+      });
   };
 
   useEffect(() => {
-    if (error) toast.error(getErrorMessage(error))
-  }, [error])
+    if (error) toast.error(getErrorMessage(error));
+  }, [error]);
 
   // Sync with Offline DB for POS use
   useEffect(() => {
     if (productsData?.items && page === 1 && !search && !category) {
-      cacheInventory(productsData.items).catch(err => console.error('Failed to update offline inventory:', err))
+      cacheInventory(productsData.items).catch((err) =>
+        console.error("Failed to update offline inventory:", err),
+      );
     }
-  }, [productsData, page, search, category])
+  }, [productsData, page, search, category]);
 
-  const products = productsData?.items || []
+  const products = productsData?.items || [];
   const stats = productsData?.stats || {
     totalItems: 0,
     lowStock: 0,
-    totalValue: 0
-  }
+    totalValue: 0,
+  };
 
   const handleExport = () => {
-    if (!products.length) return
-    exportToCSV(products, 'inventory_report')
-    toast.success('Inventory report exported')
-  }
+    if (!products.length) return;
+    exportToCSV(products, "inventory_report");
+    toast.success("Inventory report exported");
+  };
 
   const deleteMutation = useMutation({
     mutationFn: inventoryApi.delete,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['inventory'] })
-      toast.success('Product removed from inventory')
-      setConfirmDeleteId(null)
+      queryClient.invalidateQueries({ queryKey: ["inventory"] });
+      toast.success("Product removed from inventory");
+      setConfirmDeleteId(null);
     },
-    onError: (err: any) => toast.error(getErrorMessage(err))
-  })
+    onError: (err: any) => toast.error(getErrorMessage(err)),
+  });
 
   return (
     <div className="space-y-8 pt-4">
-
       {/* Header section */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
         <div>
-          <h1 className="text-xl font-semibold text-gray-900">Products & services</h1>
-          <p className="text-gray-400 text-sm mt-0.5">Track inventory, stock levels, and profit margins</p>
+          <h1 className="text-xl font-semibold text-gray-900">
+            Products & services
+          </h1>
+          <p className="text-gray-400 text-sm mt-0.5">
+            Track inventory, stock levels, and profit margins
+          </p>
         </div>
         <div className="grid grid-cols-4 sm:grid-cols-3 lg:flex lg:flex-wrap gap-4 w-full md:w-auto">
           <button
@@ -252,17 +400,21 @@ export default function ProductsPage() {
           {publicStoreUrl && (
             <button
               onClick={() => {
-                if (!canAccessFeature(user, 'store_page')) {
-                  toast.error('Public Store / Shop Page is locked on your plan', {
-                    description: 'Upgrade to Business Pro to activate your public store and preview it.',
-                    action: {
-                      label: 'Upgrade Plan',
-                      onClick: () => navigate('/dashboard/subscription')
-                    }
-                  });
+                if (!canAccessFeature(user, "store_page")) {
+                  toast.error(
+                    "Public Store / Shop Page is locked on your plan",
+                    {
+                      description:
+                        "Upgrade to Business Pro to activate your public store and preview it.",
+                      action: {
+                        label: "Upgrade Plan",
+                        onClick: () => navigate("/dashboard/subscription"),
+                      },
+                    },
+                  );
                   return;
                 }
-                window.open(publicStoreUrl, '_blank');
+                window.open(publicStoreUrl, "_blank");
               }}
               className="h-9 px-4 rounded-full shadow font-medium text-sm text-gray-600 hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"
               title="Preview your public store catalog"
@@ -288,14 +440,32 @@ export default function ProductsPage() {
 
       {/* Summary strip */}
       <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-px bg-gray-100 rounded-[.5rem] overflow-hidden border border-gray-100">
-        <SummaryCell title="Total items" value={stats.totalItems.toLocaleString()} sub="Unique SKUs" />
+        <SummaryCell
+          title="Total items"
+          value={stats.totalItems.toLocaleString()}
+          sub="Unique SKUs"
+        />
         <FeatureGate feature="low_stock_alerts" variant="tease">
-          <SummaryCell title="Low stock" value={`${stats.lowStock}`} sub="Requires attention" tone={stats.lowStock > 0 ? 'red' : undefined} />
+          <SummaryCell
+            title="Low stock"
+            value={`${stats.lowStock}`}
+            sub="Requires attention"
+            tone={stats.lowStock > 0 ? "red" : undefined}
+          />
         </FeatureGate>
-        <SummaryCell title="Stock value" value={`KES ${stats.totalValue.toLocaleString()}`} sub="Total inventory" />
-        <SummaryCell title="Expiring soon" value={`${stats.expiringSoon || 0}`} sub="Within 30 days" tone={stats.expiringSoon > 0 ? 'amber' : undefined} />
+        <SummaryCell
+          title="Stock value"
+          value={`KES ${stats.totalValue.toLocaleString()}`}
+          sub="Total inventory"
+        />
+        <SummaryCell
+          title="Expiring soon"
+          value={`${stats.expiringSoon || 0}`}
+          sub="Within 30 days"
+          tone={stats.expiringSoon > 0 ? "amber" : undefined}
+        />
       </div>
-      <div className='flex justify-end'>
+      <div className="flex justify-end">
         <button
           onClick={() => {
             setEditingProduct(null);
@@ -310,7 +480,6 @@ export default function ProductsPage() {
 
       {/* Products */}
       <div className="bg-white rounded-[.5rem] border border-gray-100 overflow-hidden">
-
         <SlideOver
           isOpen={isOrdersOpen}
           onClose={() => setIsOrdersOpen(false)}
@@ -322,13 +491,13 @@ export default function ProductsPage() {
                 <span className="text-xs text-gray-400">Order management</span>
                 <div className="flex gap-2">
                   <button
-                    onClick={() => handleClearOrders('COMPLETED')}
+                    onClick={() => handleClearOrders("COMPLETED")}
                     className="px-3 py-1.5 bg-gray-50 text-gray-600 hover:bg-gray-100 rounded-[.5rem] text-xs font-medium transition-colors"
                   >
                     Clear completed
                   </button>
                   <button
-                    onClick={() => handleClearOrders('ALL')}
+                    onClick={() => handleClearOrders("ALL")}
                     className="px-3 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-[.5rem] text-xs font-medium transition-colors"
                   >
                     Clear all
@@ -340,7 +509,10 @@ export default function ProductsPage() {
             {/* Search orders by pickup name, customer name or phone */}
             {incomingOrders.length > 0 && (
               <div className="relative mb-3">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={15} />
+                <Search
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                  size={15}
+                />
                 <input
                   type="text"
                   placeholder="Search by pickup name (e.g. 'Bright Sun'), client or phone…"
@@ -355,27 +527,43 @@ export default function ProductsPage() {
               <div className="text-center py-12 text-gray-400">
                 <ShoppingBag size={32} className="mx-auto text-gray-300 mb-2" />
                 <p className="font-medium text-sm">
-                  {orderSearch ? `No orders matching "${orderSearch}"` : "No incoming orders yet."}
+                  {orderSearch
+                    ? `No orders matching "${orderSearch}"`
+                    : "No incoming orders yet."}
                 </p>
                 <p className="text-xs text-gray-400 mt-1">
-                  {orderSearch ? "Try searching by a different name, phone, or clear search." : "Share your store link with clients to start receiving orders."}
+                  {orderSearch
+                    ? "Try searching by a different name, phone, or clear search."
+                    : "Share your store link with clients to start receiving orders."}
                 </p>
               </div>
             ) : (
               filteredOrders.map((req: any) => {
                 let msgData: any = null;
-                try { msgData = JSON.parse(req.message); } catch (_) { }
+                try {
+                  msgData = JSON.parse(req.message);
+                } catch (_) {}
 
-                let cleanPhone = (req.customerPhone || '').replace(/[^0-9]/g, '');
-                if (cleanPhone.startsWith('0') && (cleanPhone.length === 10 || cleanPhone.length === 9)) {
-                  cleanPhone = '254' + cleanPhone.slice(1);
+                let cleanPhone = (req.customerPhone || "").replace(
+                  /[^0-9]/g,
+                  "",
+                );
+                if (
+                  cleanPhone.startsWith("0") &&
+                  (cleanPhone.length === 10 || cleanPhone.length === 9)
+                ) {
+                  cleanPhone = "254" + cleanPhone.slice(1);
                 }
 
                 return (
-                  <div key={req.id} className="bg-gray-50 border border-gray-100 rounded-[.5rem] p-4 space-y-3 relative group">
+                  <div
+                    key={req.id}
+                    className="bg-gray-50 border border-gray-100 rounded-[.5rem] p-4 space-y-3 relative group"
+                  >
                     {/* PICKUP / CONFIRMATION NAME BADGE */}
                     {(() => {
-                      const pickupName = msgData?.pickupCode || generatePickupCode(req.id);
+                      const pickupName =
+                        msgData?.pickupCode || generatePickupCode(req.id);
                       return (
                         <div className="flex items-center justify-between bg-emerald-50 border border-emerald-200/80 rounded-[.5rem] px-3 py-2 -mt-1 -mx-1">
                           <div className="flex items-center gap-2">
@@ -395,7 +583,9 @@ export default function ProductsPage() {
                             type="button"
                             onClick={() => {
                               navigator.clipboard.writeText(pickupName);
-                              toast.success(`Copied "${pickupName}" to clipboard`);
+                              toast.success(
+                                `Copied "${pickupName}" to clipboard`,
+                              );
                             }}
                             className="px-2 py-1 bg-white border border-emerald-300 hover:bg-emerald-100 rounded text-[10px] font-bold text-emerald-800 transition-colors flex items-center gap-1"
                             title="Copy pickup name"
@@ -408,14 +598,25 @@ export default function ProductsPage() {
 
                     <div className="flex items-start justify-between">
                       <div>
-                        <h4 className="font-semibold text-gray-900 text-sm">{req.customerName}</h4>
-                        <p className="text-xs text-gray-400">{new Date(req.createdAt).toLocaleString()}</p>
+                        <h4 className="font-semibold text-gray-900 text-sm">
+                          {req.customerName}
+                        </h4>
+                        <p className="text-xs text-gray-400">
+                          {new Date(req.createdAt).toLocaleString()}
+                        </p>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className={`text-[10px] font-medium px-2 py-1 rounded-full ${req.status === 'PENDING' ? 'bg-amber-50 text-amber-700' :
-                            req.status === 'COMPLETED' ? 'bg-emerald-50 text-emerald-700' :
-                            req.status === 'CANCELLED' ? 'bg-red-50 text-red-600' : 'bg-gray-100 text-gray-500'
-                          }`}>
+                        <span
+                          className={`text-[10px] font-medium px-2 py-1 rounded-full ${
+                            req.status === "PENDING"
+                              ? "bg-amber-50 text-amber-700"
+                              : req.status === "COMPLETED"
+                                ? "bg-emerald-50 text-emerald-700"
+                                : req.status === "CANCELLED"
+                                  ? "bg-red-50 text-red-600"
+                                  : "bg-gray-100 text-gray-500"
+                          }`}
+                        >
                           {req.status}
                         </span>
                         <button
@@ -439,7 +640,8 @@ export default function ProductsPage() {
                       {cleanPhone && (
                         <a
                           href={`https://wa.me/${cleanPhone}`}
-                          target="_blank" rel="noopener noreferrer"
+                          target="_blank"
+                          rel="noopener noreferrer"
                           className="px-3 py-1.5 bg-green-600 text-white font-medium text-xs rounded-[.5rem] flex items-center gap-1.5 hover:bg-green-700 transition-colors"
                         >
                           <MessageSquare size={13} /> WhatsApp
@@ -449,25 +651,45 @@ export default function ProductsPage() {
 
                     {/* PAYMENT STATUS BADGE */}
                     {(() => {
-                      const payOption = msgData?.paymentOption || (req.salePaymentMethod === 'ONLINE_MPESA' ? 'PAY_UPFRONT' : 'PAY_ON_DELIVERY');
-                      const sStatus = req.saleStatus !== undefined && req.saleStatus !== null ? Number(req.saleStatus) : (payOption === 'PAY_UPFRONT' ? 2 : 1);
-                      const mpesaReceipt = req.mpesaReceipt || msgData?.mpesaReceipt;
+                      const payOption =
+                        msgData?.paymentOption ||
+                        (req.salePaymentMethod === "ONLINE_MPESA"
+                          ? "PAY_UPFRONT"
+                          : "PAY_ON_DELIVERY");
+                      const sStatus =
+                        req.saleStatus !== undefined && req.saleStatus !== null
+                          ? Number(req.saleStatus)
+                          : payOption === "PAY_UPFRONT"
+                            ? 2
+                            : 1;
+                      const mpesaReceipt =
+                        req.mpesaReceipt || msgData?.mpesaReceipt;
 
                       // Direct manual payment (PAY_DIRECT)
-                      if (payOption === 'PAY_DIRECT') {
+                      if (payOption === "PAY_DIRECT") {
                         const evidence = msgData?.paymentEvidence || {};
-                        const txCode = evidence.transactionCode || msgData?.transactionCode || req.transactionCode;
-                        const receiptUrl = evidence.receiptUrl || msgData?.receiptUrl;
-                        const paidAmt = evidence.paidAmount || msgData?.totalAmount;
+                        const txCode =
+                          evidence.transactionCode ||
+                          msgData?.transactionCode ||
+                          req.transactionCode;
+                        const receiptUrl =
+                          evidence.receiptUrl || msgData?.receiptUrl;
+                        const paidAmt =
+                          evidence.paidAmount || msgData?.totalAmount;
                         return (
                           <div className="flex flex-col gap-2 p-3 rounded-[.5rem] bg-violet-50 border border-violet-200 text-violet-900 text-xs">
                             <span className="font-bold flex items-center capitalize gap-1.5 text-violet-800">
-                              <CreditCard size={14} className="text-violet-600" />
+                              <CreditCard
+                                size={14}
+                                className="text-violet-600"
+                              />
                               DIRECT PAYMENT EVIDENCE PROVIDED
                             </span>
                             {txCode ? (
                               <div className="flex items-center gap-2 flex-wrap">
-                                <span className="text-violet-700">Transaction Code:</span>
+                                <span className="text-violet-700">
+                                  Transaction Code:
+                                </span>
                                 <span className="font-mono font-bold text-violet-950 bg-violet-100 px-2 py-0.5 rounded-md select-all tracking-widest">
                                   {txCode}
                                 </span>
@@ -475,7 +697,7 @@ export default function ProductsPage() {
                                   type="button"
                                   onClick={() => {
                                     navigator.clipboard.writeText(txCode);
-                                    toast.success('Transaction code copied');
+                                    toast.success("Transaction code copied");
                                   }}
                                   className="flex items-center gap-1 px-2 py-0.5 rounded bg-white border border-violet-200 text-[10px] font-semibold text-violet-700 hover:bg-violet-50 transition"
                                 >
@@ -483,15 +705,29 @@ export default function ProductsPage() {
                                 </button>
                               </div>
                             ) : (
-                              <span className="text-[10px] text-violet-600 italic">No transaction code provided by customer.</span>
+                              <span className="text-[10px] text-violet-600 italic">
+                                No transaction code provided by customer.
+                              </span>
                             )}
                             {paidAmt && (
-                              <span className="text-violet-700">Paid Amount: <strong className="text-violet-950">KES {Number(paidAmt).toLocaleString()}</strong></span>
+                              <span className="text-violet-700">
+                                Paid Amount:{" "}
+                                <strong className="text-violet-950">
+                                  KES {Number(paidAmt).toLocaleString()}
+                                </strong>
+                              </span>
                             )}
                             {receiptUrl && (
                               <div className="mt-1">
-                                <p className="text-[10px] text-violet-700 font-semibold mb-1">Receipt Screenshot:</p>
-                                <a href={receiptUrl} target="_blank" rel="noopener noreferrer" className="inline-block">
+                                <p className="text-[10px] text-violet-700 font-semibold mb-1">
+                                  Receipt Screenshot:
+                                </p>
+                                <a
+                                  href={receiptUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-block"
+                                >
                                   <img
                                     src={receiptUrl}
                                     alt="Payment receipt"
@@ -504,17 +740,23 @@ export default function ProductsPage() {
                         );
                       }
 
-                      if (payOption === 'PAY_UPFRONT') {
+                      if (payOption === "PAY_UPFRONT") {
                         if (sStatus === 0) {
                           return (
                             <div className="flex flex-col gap-0.5 p-2.5 rounded-[.5rem] bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs">
-                              <span className="font-bold flex items-center gap-1.5 text-emerald-800">
-                                <CheckCircle2 size={14} className="text-emerald-600" />
-                                PAID UPFRONT â€” M-PESA VERIFIED ðŸŽ‰
+                              <span className="font-bold flex items-center capitalize gap-1.5 text-emerald-800">
+                                <CheckCircle2
+                                  size={14}
+                                  className="text-emerald-600"
+                                />
+                                PAID UPFRONT M-PESA VERIFIED
                               </span>
                               {mpesaReceipt && (
                                 <span className="text-[10px] text-emerald-700 font-mono">
-                                  Receipt: <strong className="text-emerald-950">{mpesaReceipt}</strong>
+                                  Receipt:{" "}
+                                  <strong className="text-emerald-950">
+                                    {mpesaReceipt}
+                                  </strong>
                                 </span>
                               )}
                             </div>
@@ -523,30 +765,45 @@ export default function ProductsPage() {
                           return (
                             <div className="flex flex-col gap-0.5 p-2.5 rounded-[.5rem] bg-red-50 border border-red-200 text-red-900 text-xs">
                               <span className="font-bold flex items-center gap-1.5 text-red-800">
-                                <AlertTriangle size={14} className="text-red-600" />
-                                PAY UPFRONT â€” CANCELLED ON PHONE ðŸ”´
+                                <AlertTriangle
+                                  size={14}
+                                  className="text-red-600"
+                                />
+                                PAY UPFRONT CANCELLED ON PHONE
                               </span>
-                              <span className="text-[10px] text-red-700">Customer cancelled the M-Pesa STK prompt.</span>
+                              <span className="text-[10px] text-red-700">
+                                Customer cancelled the M-Pesa STK prompt.
+                              </span>
                             </div>
                           );
                         } else if (sStatus === 4) {
                           return (
                             <div className="flex flex-col gap-0.5 p-2.5 rounded-[.5rem] bg-red-50 border border-red-200 text-red-900 text-xs">
                               <span className="font-bold flex items-center gap-1.5 text-red-800">
-                                <AlertTriangle size={14} className="text-red-600" />
-                                PAY UPFRONT â€” STK PAYMENT FAILED âš ï¸
+                                <AlertTriangle
+                                  size={14}
+                                  className="text-red-600"
+                                />
+                                PAY UPFRONT STK PAYMENT FAILED
                               </span>
-                              <span className="text-[10px] text-red-700">Payment failed or timed out.</span>
+                              <span className="text-[10px] text-red-700">
+                                Payment failed or timed out.
+                              </span>
                             </div>
                           );
                         } else {
                           return (
                             <div className="flex flex-col gap-0.5 p-2.5 rounded-[.5rem] bg-amber-50 border border-amber-200 text-amber-900 text-xs">
                               <span className="font-bold flex items-center gap-1.5 text-amber-800">
-                                <ButtonLoader size={14} className="text-amber-600" />
-                                PAY UPFRONT â€” STK PROMPT SENT â³
+                                <ButtonLoader
+                                  size={14}
+                                  className="text-amber-600"
+                                />
+                                PAY UPFRONT STK PROMPT SENT
                               </span>
-                              <span className="text-[10px] text-amber-700">Awaiting customer M-Pesa PIN entry.</span>
+                              <span className="text-[10px] text-amber-700">
+                                Awaiting customer M-Pesa PIN entry.
+                              </span>
                             </div>
                           );
                         }
@@ -557,7 +814,10 @@ export default function ProductsPage() {
                               <CreditCard size={14} className="text-blue-600" />
                               Pay on Delivery
                             </span>
-                            <span className="text-[10px] text-blue-700">Customer will pay cash or transfer upon receiving items.</span>
+                            <span className="text-[10px] text-blue-700">
+                              Customer will pay cash or transfer upon receiving
+                              items.
+                            </span>
                           </div>
                         );
                       }
@@ -567,37 +827,81 @@ export default function ProductsPage() {
                     {msgData && (
                       <div className="bg-white p-3 rounded-[.5rem] border border-gray-100 text-xs space-y-2">
                         {msgData.deliveryAddress && (
-                          <p className="text-gray-600"><strong>Address/location:</strong> {msgData.deliveryAddress}</p>
+                          <p className="text-gray-600">
+                            <strong>Address/location:</strong>{" "}
+                            {msgData.deliveryAddress}
+                          </p>
                         )}
                         {msgData.notes && (
-                          <p className="text-gray-600"><strong>Notes:</strong> {msgData.notes}</p>
+                          <p className="text-gray-600">
+                            <strong>Notes:</strong> {msgData.notes}
+                          </p>
                         )}
                         {msgData.items && Array.isArray(msgData.items) && (
                           <div>
-                            <strong className="text-gray-700 block mb-1">Items ordered:</strong>
+                            <strong className="text-gray-700 block mb-1">
+                              Items ordered:
+                            </strong>
                             <ul className="divide-y divide-gray-100">
                               {msgData.items.map((it: any, idx: number) => {
                                 // Check stock level for this item in current inventory
-                                const inventoryItem = products.find((p: any) => p.id === it.id && p.type !== 'SERVICE')
-                                const stockLevel = inventoryItem ? Number(inventoryItem.stockLevel) : null
-                                const hasStockIssue = stockLevel !== null && stockLevel < Number(it.quantity || 1)
+                                const inventoryItem = products.find(
+                                  (p: any) =>
+                                    p.id === it.id && p.type !== "SERVICE",
+                                );
+                                const stockLevel = inventoryItem
+                                  ? Number(inventoryItem.stockLevel)
+                                  : null;
+                                const hasStockIssue =
+                                  stockLevel !== null &&
+                                  stockLevel < Number(it.quantity || 1);
                                 return (
-                                  <li key={idx} className="py-1 flex justify-between items-center gap-2">
-                                    <span className={hasStockIssue ? 'text-amber-700' : ''}>{it.quantity}x {it.name}{hasStockIssue && stockLevel === 0 ? '' : hasStockIssue ? ` (only ${stockLevel} in stock)` : ''}</span>
-                                    <span className="font-medium text-gray-800">KES {(it.price * it.quantity).toLocaleString()}</span>
+                                  <li
+                                    key={idx}
+                                    className="py-1 flex justify-between items-center gap-2"
+                                  >
+                                    <span
+                                      className={
+                                        hasStockIssue ? "text-amber-700" : ""
+                                      }
+                                    >
+                                      {it.quantity}x {it.name}
+                                      {hasStockIssue && stockLevel === 0
+                                        ? ""
+                                        : hasStockIssue
+                                          ? ` (only ${stockLevel} in stock)`
+                                          : ""}
+                                    </span>
+                                    <span className="font-medium text-gray-800">
+                                      KES{" "}
+                                      {(
+                                        it.price * it.quantity
+                                      ).toLocaleString()}
+                                    </span>
                                   </li>
-                                )
+                                );
                               })}
                             </ul>
                             {/* Stock warning banner */}
                             {msgData.items.some((it: any) => {
-                              const inv = products.find((p: any) => p.id === it.id && p.type !== 'SERVICE')
-                              return inv && Number(inv.stockLevel) < Number(it.quantity || 1)
+                              const inv = products.find(
+                                (p: any) =>
+                                  p.id === it.id && p.type !== "SERVICE",
+                              );
+                              return (
+                                inv &&
+                                Number(inv.stockLevel) <
+                                  Number(it.quantity || 1)
+                              );
                             }) && (
                               <div className="mt-2 flex items-start gap-2 rounded-[.5rem] bg-amber-50 border border-amber-200 px-2.5 py-2">
-                                <AlertTriangle size={12} className="text-amber-600 flex-shrink-0 mt-0.5" />
+                                <AlertTriangle
+                                  size={12}
+                                  className="text-amber-600 flex-shrink-0 mt-0.5"
+                                />
                                 <p className="text-[10px] text-amber-700 leading-tight">
-                                  One or more items may have insufficient stock. Check inventory before fulfilling.
+                                  One or more items may have insufficient stock.
+                                  Check inventory before fulfilling.
                                 </p>
                               </div>
                             )}
@@ -606,46 +910,58 @@ export default function ProductsPage() {
                         {msgData.totalAmount && (
                           <div className="pt-2 border-t border-gray-100 flex justify-between font-semibold text-sm text-[#0D4A3E]">
                             <span>Total amount</span>
-                            <span>KES {Number(msgData.totalAmount).toLocaleString()}</span>
+                            <span>
+                              KES {Number(msgData.totalAmount).toLocaleString()}
+                            </span>
                           </div>
                         )}
                       </div>
                     )}
 
                     {/* Status actions */}
-                    {req.status !== 'COMPLETED' && req.status !== 'CANCELLED' && (
-                      <div className="flex gap-2 pt-1">
-                        {req.status !== 'COMPLETED' && (
+                    {req.status !== "COMPLETED" &&
+                      req.status !== "CANCELLED" && (
+                        <div className="flex gap-2 pt-1">
+                          {req.status !== "COMPLETED" && (
+                            <button
+                              onClick={() =>
+                                handleUpdateOrderStatus(req.id, "COMPLETED")
+                              }
+                              className="flex-1 py-1.5 bg-emerald-50 text-emerald-700 font-medium text-xs rounded-[.5rem] border border-emerald-100 hover:bg-emerald-100 transition-colors flex items-center justify-center gap-1"
+                            >
+                              <Check size={13} /> Mark completed
+                            </button>
+                          )}
+                          {req.status === "PENDING" && (
+                            <button
+                              onClick={() =>
+                                handleUpdateOrderStatus(req.id, "CONTACTED")
+                              }
+                              className="flex-1 py-1.5 bg-blue-50 text-blue-700 font-medium text-xs rounded-[.5rem] border border-blue-100 hover:bg-blue-100 transition-colors flex items-center justify-center gap-1"
+                            >
+                              Mark contacted
+                            </button>
+                          )}
                           <button
-                            onClick={() => handleUpdateOrderStatus(req.id, 'COMPLETED')}
-                            className="flex-1 py-1.5 bg-emerald-50 text-emerald-700 font-medium text-xs rounded-[.5rem] border border-emerald-100 hover:bg-emerald-100 transition-colors flex items-center justify-center gap-1"
+                            onClick={() => {
+                              setCancelConfirmId(req.id);
+                              setCancelVoidSale(false);
+                            }}
+                            className="py-1.5 px-3 bg-red-50 text-red-600 font-medium text-xs rounded-[.5rem] border border-red-100 hover:bg-red-100 transition-colors flex items-center justify-center gap-1"
+                            title="Cancel this order"
                           >
-                            <Check size={13} /> Mark completed
+                            <Ban size={13} /> Cancel
                           </button>
-                        )}
-                        {req.status === 'PENDING' && (
-                          <button
-                            onClick={() => handleUpdateOrderStatus(req.id, 'CONTACTED')}
-                            className="flex-1 py-1.5 bg-blue-50 text-blue-700 font-medium text-xs rounded-[.5rem] border border-blue-100 hover:bg-blue-100 transition-colors flex items-center justify-center gap-1"
-                          >
-                            Mark contacted
-                          </button>
-                        )}
-                        <button
-                          onClick={() => { setCancelConfirmId(req.id); setCancelVoidSale(false) }}
-                          className="py-1.5 px-3 bg-red-50 text-red-600 font-medium text-xs rounded-[.5rem] border border-red-100 hover:bg-red-100 transition-colors flex items-center justify-center gap-1"
-                          title="Cancel this order"
-                        >
-                          <Ban size={13} /> Cancel
-                        </button>
-                      </div>
-                    )}
+                        </div>
+                      )}
 
                     {/* Cancelled badge */}
-                    {req.status === 'CANCELLED' && (
+                    {req.status === "CANCELLED" && (
                       <div className="flex items-center gap-2 pt-1 px-2.5 py-2 bg-red-50 border border-red-100 rounded-[.5rem]">
                         <Ban size={13} className="text-red-500 flex-shrink-0" />
-                        <span className="text-xs text-red-600 font-medium">This order was cancelled</span>
+                        <span className="text-xs text-red-600 font-medium">
+                          This order was cancelled
+                        </span>
                       </div>
                     )}
 
@@ -653,14 +969,21 @@ export default function ProductsPage() {
                     {cancelConfirmId === req.id && (
                       <div className="mt-2 bg-red-50 border border-red-100 rounded-[.5rem] p-3.5 space-y-3">
                         <div className="flex items-start gap-2">
-                          <AlertTriangle size={14} className="text-red-500 flex-shrink-0 mt-0.5" />
-                          <p className="text-xs font-semibold text-red-800">Cancel this order?</p>
+                          <AlertTriangle
+                            size={14}
+                            className="text-red-500 flex-shrink-0 mt-0.5"
+                          />
+                          <p className="text-xs font-semibold text-red-800">
+                            Cancel this order?
+                          </p>
                         </div>
                         <label className="flex items-start gap-2 cursor-pointer">
                           <input
                             type="checkbox"
                             checked={cancelVoidSale}
-                            onChange={e => setCancelVoidSale(e.target.checked)}
+                            onChange={(e) =>
+                              setCancelVoidSale(e.target.checked)
+                            }
                             className="mt-0.5 accent-red-600"
                           />
                           <span className="text-[11px] text-red-700 leading-tight">
@@ -669,13 +992,18 @@ export default function ProductsPage() {
                         </label>
                         <div className="flex gap-2">
                           <button
-                            onClick={() => { setCancelConfirmId(null); setCancelVoidSale(false) }}
+                            onClick={() => {
+                              setCancelConfirmId(null);
+                              setCancelVoidSale(false);
+                            }}
                             className="flex-1 h-8 rounded-[.5rem] border border-gray-200 bg-white text-gray-500 text-xs font-medium hover:bg-gray-50 transition-colors"
                           >
                             Keep order
                           </button>
                           <button
-                            onClick={() => handleCancelOrder(req.id, cancelVoidSale)}
+                            onClick={() =>
+                              handleCancelOrder(req.id, cancelVoidSale)
+                            }
                             className="flex-1 h-8 rounded-[.5rem] bg-red-600 text-white text-xs font-semibold hover:bg-red-700 transition-colors flex items-center justify-center gap-1"
                           >
                             <Ban size={12} /> Yes, cancel
@@ -703,12 +1031,20 @@ export default function ProductsPage() {
           onClose={() => setEditingProduct(null)}
           title="Edit product"
         >
-          {editingProduct && <EditProductForm product={editingProduct} onClose={() => setEditingProduct(null)} />}
+          {editingProduct && (
+            <EditProductForm
+              product={editingProduct}
+              onClose={() => setEditingProduct(null)}
+            />
+          )}
         </SlideOver>
 
         <div className="p-4 sm:p-5 border-b border-gray-100 flex flex-col md:flex-row gap-3 md:gap-4">
           <div className="relative flex-1 min-w-0">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-300" size={16} />
+            <Search
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-300"
+              size={16}
+            />
             <input
               type="text"
               placeholder="Search products"
@@ -722,104 +1058,38 @@ export default function ProductsPage() {
               <Filter className="ml-2 text-gray-300" size={14} />
               <select
                 value={category}
-                onChange={(e) => { setCategory(e.target.value); setPage(1); }}
+                onChange={(e) => {
+                  setCategory(e.target.value);
+                  setPage(1);
+                }}
                 className="hl-select !bg-transparent !border-none !py-0 !px-1 !pr-6 !h-auto !ring-0 text-xs font-medium text-gray-600 cursor-pointer"
               >
                 <option value="">All categories</option>
                 {[
-                  'Accounting & Tax Services',
-                  'Agrovet',
-                  'Agricultural Cooperative',
-                  'Art & Craft Business',
-                  'Bakery',
-                  'Barber Shop',
-                  'Cafe',
-                  'Car Wash',
-                  'Car Yard',
-                  'Catering Services',
-                  'Church',
-                  'Clinic',
-                  'College',
-                  'Community Organization',
-                  'Construction Services',
-                  'Consultancy',
-                  'Cosmetics Shop',
-                  'Courier Services',
-                  'Cyber Cafe',
-                  'Cyber Security',
-                  'Dairy Business',
-                  'Daycare',
-                  'Dental Clinic',
-                  'Digital Agency',
-                  'Driving School',
-                  'E-commerce Business',
-                  'Electrical Services',
-                  'Electronics Shop',
-                  'Farm',
-                  'Fashion & Boutique',
-                  'Fast Food',
-                  'Financial Services',
-                  'Freelancer',
-                  'Furniture Workshop',
-                  'Garage',
-                  'Guest House',
-                  'Hardware Store',
-                  'Hospital',
-                  'Hotel',
-                  'Insurance Agency',
-                  'Interior Design',
-                  'Internet Service Provider',
-                  'IT Services',
-                  'Legal Services',
-                  'Lounge & Bar',
-                  'Manufacturing',
-                  'Marketing Agency',
-                  'Mechanic Garage',
-                  'Microfinance',
-                  'Mini Mart',
-                  'Mobile Phone Shop',
-                  'Mosque',
-                  'NGO',
-                  'Online Business',
-                  'Optical Clinic',
-                  'Other',
-                  'Pharmacy',
-                  'Plumbing Services',
-                  'Poultry Farm',
-                  'Printing & Branding',
-                  'Real Estate Agency',
-                  'Restaurant',
-                  'Retail Store',
-                  'SACCO',
-                  'Salon',
-                  'School',
-                  'Software Development',
-                  'Spa & Beauty',
-                  'Supermarket',
-                  'Tailoring & Fashion Design',
-                  'Training Centre',
-                  'Transport Services',
-                  'Travel Agency',
-                  'University',
-                  'Veterinary Clinic',
-                  'Welding & Fabrication',
-                  'Wholesale Shop'
-                ].map(c => (
-                  <option key={c} value={c}>{c}</option>
+                  "Retail & Mini Mart",
+                  "Hospitality (Hotels & BnBs)",
+                  "Vehicle Services",
+                  "Personal Care (Salons & Barbers)",
+                  "Food & Beverage",
+                  "Cleaning & Maintenance",
+                ].map((c) => (
+                  <option key={c} value={c}>
+                    {c}
+                  </option>
                 ))}
               </select>
             </div>
 
             <div className="flex bg-gray-50 p-1 rounded-[.5rem] border border-gray-100">
               <button
-                onClick={() => setViewMode('list')}
-                className={`p-1.5 rounded-[.4rem] transition-colors ${viewMode === 'list' ? 'bg-white text-gray-900' : 'text-gray-400 hover:text-gray-600'}`}
+                onClick={() => setViewMode("list")}
+                className={`p-1.5 rounded-[.4rem] transition-colors ${viewMode === "list" ? "bg-white text-gray-900" : "text-gray-400 hover:text-gray-600"}`}
               >
                 <List size={16} />
               </button>
               <button
-                onClick={() => setViewMode('grid')}
-                className={`p-1.5 rounded-[.4rem] transition-colors ${viewMode === 'grid' ? 'bg-white text-gray-900' : 'text-gray-400 hover:text-gray-600'}`}
+                onClick={() => setViewMode("grid")}
+                className={`p-1.5 rounded-[.4rem] transition-colors ${viewMode === "grid" ? "bg-white text-gray-900" : "text-gray-400 hover:text-gray-600"}`}
               >
                 <LayoutGrid size={16} />
               </button>
@@ -827,16 +1097,59 @@ export default function ProductsPage() {
           </div>
         </div>
 
-        {viewMode === 'list' ? (
+        {viewMode === "list" ? (
           <div className="overflow-x-auto">
             <table className="w-full text-left">
               <thead>
                 <tr>
-                  <Th label="Product" active={sortBy === 'name'} order={sortOrder} onClick={() => { setSortBy('name'); setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc') }} />
-                  <Th label="Category" active={sortBy === 'category'} order={sortOrder} onClick={() => { setSortBy('category'); setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc') }} />
-                  <Th label="In stock" align="center" active={sortBy === 'stockLevel'} order={sortOrder} onClick={() => { setSortBy('stockLevel'); setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc') }} />
-                  <Th label="Buying" align="right" active={sortBy === 'buyingPrice'} order={sortOrder} onClick={() => { setSortBy('buyingPrice'); setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc') }} />
-                  <Th label="Selling" align="right" active={sortBy === 'price'} order={sortOrder} onClick={() => { setSortBy('price'); setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc') }} />
+                  <Th
+                    label="Product"
+                    active={sortBy === "name"}
+                    order={sortOrder}
+                    onClick={() => {
+                      setSortBy("name");
+                      setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+                    }}
+                  />
+                  <Th
+                    label="Category"
+                    active={sortBy === "category"}
+                    order={sortOrder}
+                    onClick={() => {
+                      setSortBy("category");
+                      setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+                    }}
+                  />
+                  <Th
+                    label="In stock"
+                    align="center"
+                    active={sortBy === "stockLevel"}
+                    order={sortOrder}
+                    onClick={() => {
+                      setSortBy("stockLevel");
+                      setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+                    }}
+                  />
+                  <Th
+                    label="Buying"
+                    align="right"
+                    active={sortBy === "buyingPrice"}
+                    order={sortOrder}
+                    onClick={() => {
+                      setSortBy("buyingPrice");
+                      setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+                    }}
+                  />
+                  <Th
+                    label="Selling"
+                    align="right"
+                    active={sortBy === "price"}
+                    order={sortOrder}
+                    onClick={() => {
+                      setSortBy("price");
+                      setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+                    }}
+                  />
                   <th className="px-5 py-3 text-right"></th>
                 </tr>
               </thead>
@@ -847,71 +1160,108 @@ export default function ProductsPage() {
                       <InlineLoader message="Loading products..." />
                     </td>
                   </tr>
-                ) : products.length > 0 ? products.map((p: any, i: number) => (
-                  <tr key={p.id ?? i} className="hover:bg-gray-50/60 transition-colors cursor-pointer" onClick={() => setEditingProduct(p)}>
-                    <td className="px-5 py-3.5">
-                      <div className="flex items-center gap-3">
-                        {p.imageUrl ? (
-                          <img src={p.imageUrl} alt={p.name} className="h-10 w-10 rounded-[.5rem] object-cover border border-gray-100" />
-                        ) : (
-                          <div className="h-10 w-10 rounded-[.5rem] bg-gray-50 text-gray-400 flex items-center justify-center font-medium border border-gray-100 text-xs">
-                            {p.name.charAt(0).toUpperCase()}
+                ) : products.length > 0 ? (
+                  products.map((p: any, i: number) => (
+                    <tr
+                      key={p.id ?? i}
+                      className="hover:bg-gray-50/60 transition-colors cursor-pointer"
+                      onClick={() => setEditingProduct(p)}
+                    >
+                      <td className="px-5 py-3.5">
+                        <div className="flex items-center gap-3">
+                          {p.imageUrl ? (
+                            <img
+                              src={p.imageUrl}
+                              alt={p.name}
+                              className="h-10 w-10 rounded-[.5rem] object-cover border border-gray-100"
+                            />
+                          ) : (
+                            <div className="h-10 w-10 rounded-[.5rem] bg-gray-50 text-gray-400 flex items-center justify-center font-medium border border-gray-100 text-xs">
+                              {p.name.charAt(0).toUpperCase()}
+                            </div>
+                          )}
+                          <div>
+                            <span className="font-medium text-gray-900 text-sm block">
+                              {p.name}
+                            </span>
+                            <span className="text-xs text-gray-400 hl-mono">
+                              SKU: {p.sku || "N/A"}
+                            </span>
                           </div>
-                        )}
-                        <div>
-                          <span className="font-medium text-gray-900 text-sm block">{p.name}</span>
-                          <span className="text-xs text-gray-400 hl-mono">SKU: {p.sku || 'N/A'}</span>
                         </div>
-                      </div>
-                    </td>
-                    <td className="px-5 py-3.5">
-                      <div className="flex flex-wrap gap-2">
-                        <span className="text-xs text-gray-500 bg-gray-50 border border-gray-100 px-2 py-1 rounded-full">{p.category}</span>
-                        {p.isPerishable && p.type !== 'SERVICE' && (
-                          <span className={`text-xs px-2 py-1 rounded-full ${p.expiryDate.split('T')[0] < getLocalDateString() ? 'bg-red-50 text-red-600' : 'bg-amber-50 text-amber-600'}`}>
-                            {p.expiryDate.split('T')[0] < getLocalDateString() ? 'Expired' : `Exp: ${formatLocalDate(p.expiryDate)}`}
+                      </td>
+                      <td className="px-5 py-3.5">
+                        <div className="flex flex-wrap gap-2">
+                          <span className="text-xs text-gray-500 bg-gray-50 border border-gray-100 px-2 py-1 rounded-full">
+                            {p.category}
+                          </span>
+                          {p.isPerishable && p.type !== "SERVICE" && (
+                            <span
+                              className={`text-xs px-2 py-1 rounded-full ${p.expiryDate.split("T")[0] < getLocalDateString() ? "bg-red-50 text-red-600" : "bg-amber-50 text-amber-600"}`}
+                            >
+                              {p.expiryDate.split("T")[0] < getLocalDateString()
+                                ? "Expired"
+                                : `Exp: ${formatLocalDate(p.expiryDate)}`}
+                            </span>
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-5 py-3.5 text-center">
+                        {!p.trackStock || p.type === "SERVICE" ? (
+                          <span className="text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full">
+                            {p.type === "SERVICE" ? "Service" : "Unlimited"}
+                          </span>
+                        ) : p.stockLevel <= 0 ? (
+                          <span className="text-[11px] font-bold text-red-600 bg-red-50 px-2 py-0.5 rounded-full hl-mono">
+                            0 (Out of stock)
+                          </span>
+                        ) : (
+                          <span
+                            className={`text-sm font-medium hl-mono ${p.stockLevel <= (p.minLevel ?? threshold) ? "text-amber-600 font-bold" : "text-gray-900"}`}
+                          >
+                            {p.stockLevel}
                           </span>
                         )}
-                      </div>
-                    </td>
-                    <td className="px-5 py-3.5 text-center">
-                      {!p.trackStock || p.type === 'SERVICE' ? (
-                        <span className="text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full">
-                          {p.type === 'SERVICE' ? 'Service' : 'Unlimited'}
-                        </span>
-                      ) : p.stockLevel <= 0 ? (
-                        <span className="text-[11px] font-bold text-red-600 bg-red-50 px-2 py-0.5 rounded-full hl-mono">
-                          0 (Out of stock)
-                        </span>
-                      ) : (
-                        <span className={`text-sm font-medium hl-mono ${p.stockLevel <= (p.minLevel ?? threshold) ? 'text-amber-600 font-bold' : 'text-gray-900'}`}>
-                          {p.stockLevel}
-                        </span>
-                      )}
-                    </td>
-                    <td className="px-5 py-3.5 text-right text-gray-400 text-sm hl-mono">KES {Number(p.buyingPrice || 0).toLocaleString()}</td>
-                    <td className="px-5 py-3.5 text-right font-medium text-gray-900 text-sm hl-mono">KES {Number(p.price).toLocaleString()}</td>
-                    <td className="px-5 py-3.5">
-                      <div className="flex justify-end gap-1">
-                        <button
-                          onClick={(e) => { e.stopPropagation(); setEditingProduct(p) }}
-                          className="p-1.5 rounded-[.5rem] text-gray-300 hover:text-gray-600 hover:bg-gray-100 transition-colors"
-                        >
-                          <Edit size={15} />
-                        </button>
-                        <button
-                          onClick={(e) => { e.stopPropagation(); setConfirmDeleteId(p.id) }}
-                          disabled={deleteMutation.isPending}
-                          className="p-1.5 rounded-[.5rem] text-gray-300 hover:text-red-500 hover:bg-red-50 transition-colors disabled:opacity-50"
-                        >
-                          <Trash2 size={15} />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                )) : (
+                      </td>
+                      <td className="px-5 py-3.5 text-right text-gray-400 text-sm hl-mono">
+                        KES {Number(p.buyingPrice || 0).toLocaleString()}
+                      </td>
+                      <td className="px-5 py-3.5 text-right font-medium text-gray-900 text-sm hl-mono">
+                        KES {Number(p.price).toLocaleString()}
+                      </td>
+                      <td className="px-5 py-3.5">
+                        <div className="flex justify-end gap-1">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setEditingProduct(p);
+                            }}
+                            className="p-1.5 rounded-[.5rem] text-gray-300 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+                          >
+                            <Edit size={15} />
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setConfirmDeleteId(p.id);
+                            }}
+                            disabled={deleteMutation.isPending}
+                            className="p-1.5 rounded-[.5rem] text-gray-300 hover:text-red-500 hover:bg-red-50 transition-colors disabled:opacity-50"
+                          >
+                            <Trash2 size={15} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
                   <tr>
-                    <td colSpan={6} className="py-16 text-center text-sm text-gray-400">No products found.</td>
+                    <td
+                      colSpan={6}
+                      className="py-16 text-center text-sm text-gray-400"
+                    >
+                      No products found.
+                    </td>
                   </tr>
                 )}
               </tbody>
@@ -933,7 +1283,11 @@ export default function ProductsPage() {
                   >
                     <div className="aspect-square relative overflow-hidden bg-gray-50">
                       {p.imageUrl ? (
-                        <img src={p.imageUrl} alt={p.name} className="h-full w-full object-cover" />
+                        <img
+                          src={p.imageUrl}
+                          alt={p.name}
+                          className="h-full w-full object-cover"
+                        />
                       ) : (
                         <div className="h-full w-full flex items-center justify-center text-xl font-semibold text-gray-200">
                           {p.name.charAt(0).toUpperCase()}
@@ -941,13 +1295,19 @@ export default function ProductsPage() {
                       )}
                       <div className="absolute top-2 right-2 flex flex-col gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
                         <button
-                          onClick={(e) => { e.stopPropagation(); setEditingProduct(p) }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setEditingProduct(p);
+                          }}
                           className="h-7 w-7 bg-white rounded-full shadow-sm border border-gray-100 flex items-center justify-center text-gray-400 hover:text-gray-700 transition-colors"
                         >
                           <Edit size={13} />
                         </button>
                         <button
-                          onClick={(e) => { e.stopPropagation(); setConfirmDeleteId(p.id) }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setConfirmDeleteId(p.id);
+                          }}
                           className="h-7 w-7 bg-white rounded-full shadow-sm border border-gray-100 flex items-center justify-center text-gray-400 hover:text-red-500 transition-colors"
                         >
                           <Trash2 size={13} />
@@ -957,21 +1317,29 @@ export default function ProductsPage() {
 
                     <div className="p-3">
                       <div className="mb-2">
-                        <p className="text-[10px] text-gray-400 mb-0.5">{p.category}</p>
-                        <h4 className="text-xs font-medium text-gray-900 leading-tight truncate">{p.name}</h4>
+                        <p className="text-[10px] text-gray-400 mb-0.5">
+                          {p.category}
+                        </p>
+                        <h4 className="text-xs font-medium text-gray-900 leading-tight truncate">
+                          {p.name}
+                        </h4>
                       </div>
                       <div className="flex items-end justify-between">
-                        <p className="text-xs font-semibold text-[#0D4A3E] hl-mono">KES {Number(p.price).toLocaleString()}</p>
-                        {!p.trackStock || p.type === 'SERVICE' ? (
+                        <p className="text-xs font-semibold text-[#0D4A3E] hl-mono">
+                          KES {Number(p.price).toLocaleString()}
+                        </p>
+                        {!p.trackStock || p.type === "SERVICE" ? (
                           <span className="text-[10px] hl-mono text-emerald-600 font-semibold">
-                            {p.type === 'SERVICE' ? 'Service' : 'Unlimited'}
+                            {p.type === "SERVICE" ? "Service" : "Unlimited"}
                           </span>
                         ) : p.stockLevel <= 0 ? (
                           <span className="text-[10px] hl-mono text-red-600 font-bold">
                             Out of stock
                           </span>
                         ) : (
-                          <span className={`text-[10px] hl-mono ${p.stockLevel <= (p.minLevel ?? threshold) ? 'text-amber-600 font-bold' : 'text-gray-400'}`}>
+                          <span
+                            className={`text-[10px] hl-mono ${p.stockLevel <= (p.minLevel ?? threshold) ? "text-amber-600 font-bold" : "text-gray-400"}`}
+                          >
                             {p.stockLevel} in stock
                           </span>
                         )}
@@ -981,7 +1349,9 @@ export default function ProductsPage() {
                 ))}
               </div>
             ) : (
-              <div className="py-16 text-center text-sm text-gray-400">No products found.</div>
+              <div className="py-16 text-center text-sm text-gray-400">
+                No products found.
+              </div>
             )}
           </div>
         )}
@@ -994,7 +1364,7 @@ export default function ProductsPage() {
               </p>
               <div className="flex gap-2">
                 <button
-                  onClick={() => setPage(p => Math.max(1, p - 1))}
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
                   disabled={page === 1}
                   className="h-9 px-3.5 bg-white border border-gray-100 rounded-[.5rem] text-xs font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-40 transition-colors"
                 >
@@ -1004,7 +1374,9 @@ export default function ProductsPage() {
                   {page} / {productsData.pages}
                 </div>
                 <button
-                  onClick={() => setPage(p => Math.min(productsData.pages, p + 1))}
+                  onClick={() =>
+                    setPage((p) => Math.min(productsData.pages, p + 1))
+                  }
                   disabled={page === productsData.pages}
                   className="h-9 px-3.5 bg-white border border-gray-100 rounded-[.5rem] text-xs font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-40 transition-colors"
                 >
@@ -1022,136 +1394,187 @@ export default function ProductsPage() {
         title="Delete product"
         message="Are you sure you want to delete this product? This action cannot be undone."
         confirmText="Delete"
-        onConfirm={() => confirmDeleteId && deleteMutation.mutate(confirmDeleteId)}
+        onConfirm={() =>
+          confirmDeleteId && deleteMutation.mutate(confirmDeleteId)
+        }
         onCancel={() => setConfirmDeleteId(null)}
       />
     </div>
-  )
+  );
 }
 
 // â”€â”€â”€ Table header cell â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-function Th({ label, active, order, onClick, align = 'left' }: any) {
+function Th({ label, active, order, onClick, align = "left" }: any) {
   return (
     <th
       onClick={onClick}
-      className={`px-5 py-3 text-xs font-medium cursor-pointer select-none transition-colors ${align === 'right' ? 'text-right' : align === 'center' ? 'text-center' : 'text-left'
-        } ${active ? 'text-gray-700' : 'text-gray-400 hover:text-gray-600'}`}
+      className={`px-5 py-3 text-xs font-medium cursor-pointer select-none transition-colors ${
+        align === "right"
+          ? "text-right"
+          : align === "center"
+            ? "text-center"
+            : "text-left"
+      } ${active ? "text-gray-700" : "text-gray-400 hover:text-gray-600"}`}
     >
-      {label}{active && (order === 'asc' ? ' â†‘' : ' â†“')}
+      {label}
+      {active && (order === "asc" ? " â†‘" : " â†“")}
     </th>
-  )
+  );
 }
 
 // â”€â”€â”€ Summary cell â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-function SummaryCell({ title, value, sub, tone }: { title: string; value: string; sub: string; tone?: 'red' | 'amber' }) {
-  const toneColor = tone === 'red' ? 'text-red-600' : tone === 'amber' ? 'text-amber-600' : 'text-gray-900'
+function SummaryCell({
+  title,
+  value,
+  sub,
+  tone,
+}: {
+  title: string;
+  value: string;
+  sub: string;
+  tone?: "red" | "amber";
+}) {
+  const toneColor =
+    tone === "red"
+      ? "text-red-600"
+      : tone === "amber"
+        ? "text-amber-600"
+        : "text-gray-900";
   return (
     <div className="bg-white p-6">
       <p className="text-xs text-gray-400 mb-2">{title}</p>
-      <p className={`text-2xl font-semibold hl-mono tracking-tight ${toneColor}`}>{value}</p>
+      <p
+        className={`text-2xl font-semibold hl-mono tracking-tight ${toneColor}`}
+      >
+        {value}
+      </p>
       <p className="text-xs text-gray-400 mt-1">{sub}</p>
     </div>
-  )
+  );
 }
 
 function ProductForm({ onClose }: { onClose: () => void }) {
-  const queryClient = useQueryClient()
+  const queryClient = useQueryClient();
   const [form, setForm] = useState({
-    name: '', category: 'Groceries', buyingPrice: '', price: '', stock: '', minLevel: '5',
-    imageUrl: '', file: null as File | null, isPerishable: false, expiryDate: '', type: 'GOOD',
-    description: '', trackStock: false
-  })
-  const [isCameraOpen, setIsCameraOpen] = useState(false)
-  const [showAllPhotos, setShowAllPhotos] = useState(false)
+    name: "",
+    category: "Groceries",
+    buyingPrice: "",
+    price: "",
+    stock: "",
+    minLevel: "5",
+    imageUrl: "",
+    file: null as File | null,
+    isPerishable: false,
+    expiryDate: "",
+    type: "GOOD",
+    description: "",
+    trackStock: false,
+  });
+  const [isCameraOpen, setIsCameraOpen] = useState(false);
+  const [showAllPhotos, setShowAllPhotos] = useState(false);
 
   const handleImageFile = (file: File) => {
-    const reader = new FileReader()
+    const reader = new FileReader();
     reader.onloadend = () => {
-      setForm(prev => ({ ...prev, imageUrl: reader.result as string, file }))
-      toast.success('Image loaded from clipboard!')
-    }
-    reader.readAsDataURL(file)
-  }
+      setForm((prev) => ({ ...prev, imageUrl: reader.result as string, file }));
+      toast.success("Image loaded from clipboard!");
+    };
+    reader.readAsDataURL(file);
+  };
 
-  const handlePaste = (e: React.ClipboardEvent<HTMLDivElement> | ClipboardEvent) => {
-    const items = (e as React.ClipboardEvent).clipboardData?.items || (e as ClipboardEvent).clipboardData?.items
-    if (!items) return
+  const handlePaste = (
+    e: React.ClipboardEvent<HTMLDivElement> | ClipboardEvent,
+  ) => {
+    const items =
+      (e as React.ClipboardEvent).clipboardData?.items ||
+      (e as ClipboardEvent).clipboardData?.items;
+    if (!items) return;
     for (let i = 0; i < items.length; i++) {
-      const item = items[i]
-      if (item.type.startsWith('image/')) {
-        const file = item.getAsFile()
+      const item = items[i];
+      if (item.type.startsWith("image/")) {
+        const file = item.getAsFile();
         if (file) {
-          handleImageFile(file)
-          e.preventDefault()
-          return
+          handleImageFile(file);
+          e.preventDefault();
+          return;
         }
       }
     }
-  }
+  };
 
   const handleReadClipboard = async () => {
     try {
       if (!navigator.clipboard || !navigator.clipboard.read) {
-        toast.error('Clipboard access not supported. Use Ctrl+V to paste.')
-        return
+        toast.error("Clipboard access not supported. Use Ctrl+V to paste.");
+        return;
       }
-      const items = await navigator.clipboard.read()
-      let found = false
+      const items = await navigator.clipboard.read();
+      let found = false;
       for (const item of items) {
-        const imageType = item.types.find(t => t.startsWith('image/'))
+        const imageType = item.types.find((t) => t.startsWith("image/"));
         if (imageType) {
-          const blob = await item.getType(imageType)
-          const file = new File([blob], `pasted-${Date.now()}.${imageType.split('/')[1] || 'png'}`, { type: imageType })
-          handleImageFile(file)
-          found = true
-          break
+          const blob = await item.getType(imageType);
+          const file = new File(
+            [blob],
+            `pasted-${Date.now()}.${imageType.split("/")[1] || "png"}`,
+            { type: imageType },
+          );
+          handleImageFile(file);
+          found = true;
+          break;
         }
       }
       if (!found) {
-        toast.error('No image found in clipboard. Please copy an image first.')
+        toast.error("No image found in clipboard. Please copy an image first.");
       }
     } catch (err: any) {
-      console.error('Failed to read clipboard:', err)
-      toast.error('Unable to access clipboard. Allow clipboard permissions or press Ctrl+V.')
+      console.error("Failed to read clipboard:", err);
+      toast.error(
+        "Unable to access clipboard. Allow clipboard permissions or press Ctrl+V.",
+      );
     }
-  }
+  };
 
   useEffect(() => {
     const windowPasteHandler = (e: ClipboardEvent) => {
-      handlePaste(e)
-    }
-    window.addEventListener('paste', windowPasteHandler)
-    return () => window.removeEventListener('paste', windowPasteHandler)
-  }, [])
+      handlePaste(e);
+    };
+    window.addEventListener("paste", windowPasteHandler);
+    return () => window.removeEventListener("paste", windowPasteHandler);
+  }, []);
 
   const mutation = useMutation({
     mutationFn: async (data: any) => {
       // â”€â”€ OFFLINE: queue product for later sync â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
       if (!navigator.onLine) {
-        const tempId = 'pending-prod-' + crypto.randomUUID()
-        const payload = { ...data }
-        delete payload.file
+        const tempId = "pending-prod-" + crypto.randomUUID();
+        const payload = { ...data };
+        delete payload.file;
         await enqueuePendingProduct({
           id: tempId,
-          action: 'CREATE',
+          action: "CREATE",
           payload,
           createdAt: Date.now(),
           retries: 0,
-        })
+        });
         // Also add to local inventory cache so it appears immediately in POS
-        await cacheInventory([{
-          id: tempId,
-          name: data.name || 'Unnamed Product',
-          price: Number(data.price || 0),
-          stockLevel: Number(data.stockLevel || 0),
-          category: data.category || 'General',
-          type: data.type || 'PRODUCT',
-          imageUrl: data.imageUrl,
-        }])
-        toast.success('Product saved offline â€” will sync when back online', { duration: 4000 })
-        return { offline: true }
+        await cacheInventory([
+          {
+            id: tempId,
+            name: data.name || "Unnamed Product",
+            price: Number(data.price || 0),
+            stockLevel: Number(data.stockLevel || 0),
+            category: data.category || "General",
+            type: data.type || "PRODUCT",
+            imageUrl: data.imageUrl,
+          },
+        ]);
+        toast.success("Product saved offline â€” will sync when back online", {
+          duration: 4000,
+        });
+        return { offline: true };
       }
 
       // â”€â”€ ONLINE: normal create â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -1166,13 +1589,13 @@ function ProductForm({ onClose }: { onClose: () => void }) {
       return res;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['inventory'] })
-      queryClient.invalidateQueries({ queryKey: ['inventory-pos'] })
-      toast.success('Product added to inventory')
-      onClose()
+      queryClient.invalidateQueries({ queryKey: ["inventory"] });
+      queryClient.invalidateQueries({ queryKey: ["inventory-pos"] });
+      toast.success("Product added to inventory");
+      onClose();
     },
-    onError: (err: any) => toast.error(getErrorMessage(err))
-  })
+    onError: (err: any) => toast.error(getErrorMessage(err)),
+  });
 
   return (
     <div className="space-y-5 pb-16">
@@ -1181,12 +1604,12 @@ function ProductForm({ onClose }: { onClose: () => void }) {
           className="h-28 w-28 rounded-[.5rem] bg-gray-50 border border-dashed border-gray-200 flex items-center justify-center overflow-hidden cursor-pointer hover:border-gray-300 transition-colors group relative outline-none focus:ring-2 focus:ring-[#0D4A3E]"
           onPaste={handlePaste}
           onContextMenu={(e) => {
-            e.preventDefault()
-            handleReadClipboard()
+            e.preventDefault();
+            handleReadClipboard();
           }}
           onClick={() => {
             if (!form.imageUrl) {
-              document.getElementById('image-upload')?.click()
+              document.getElementById("image-upload")?.click();
             }
           }}
           tabIndex={0}
@@ -1194,7 +1617,11 @@ function ProductForm({ onClose }: { onClose: () => void }) {
         >
           {form.imageUrl ? (
             <>
-              <img src={form.imageUrl} alt="Preview" className="h-full w-full object-cover" />
+              <img
+                src={form.imageUrl}
+                alt="Preview"
+                className="h-full w-full object-cover"
+              />
               <div className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                 <Plus className="text-white" size={28} />
               </div>
@@ -1202,8 +1629,12 @@ function ProductForm({ onClose }: { onClose: () => void }) {
           ) : (
             <div className="flex flex-col items-center gap-1 text-gray-400 group-hover:text-gray-500 transition-colors p-2 text-center">
               <Plus size={24} />
-              <span className="text-[11px] font-medium leading-tight">Upload or Paste</span>
-              <span className="text-[9px] text-gray-300">Long-press to paste</span>
+              <span className="text-[11px] font-medium leading-tight">
+                Upload or Paste
+              </span>
+              <span className="text-[9px] text-gray-300">
+                Long-press to paste
+              </span>
             </div>
           )}
           <input
@@ -1212,9 +1643,9 @@ function ProductForm({ onClose }: { onClose: () => void }) {
             accept="image/*"
             className="hidden"
             onChange={(e) => {
-              const file = e.target.files?.[0]
+              const file = e.target.files?.[0];
               if (file) {
-                handleImageFile(file)
+                handleImageFile(file);
               }
             }}
           />
@@ -1223,7 +1654,7 @@ function ProductForm({ onClose }: { onClose: () => void }) {
         <div className="flex gap-2">
           <button
             type="button"
-            onClick={() => document.getElementById('image-upload')?.click()}
+            onClick={() => document.getElementById("image-upload")?.click()}
             className="px-3.5 py-2 bg-gray-50 text-gray-600 rounded-[.5rem] text-xs font-medium hover:bg-gray-100 transition-colors flex items-center gap-1.5"
             title="Upload from device storage"
           >
@@ -1248,7 +1679,7 @@ function ProductForm({ onClose }: { onClose: () => void }) {
           {form.imageUrl && (
             <button
               type="button"
-              onClick={() => setForm({ ...form, imageUrl: '', file: null })}
+              onClick={() => setForm({ ...form, imageUrl: "", file: null })}
               className="px-3.5 py-2 bg-red-50 text-red-600 rounded-[.5rem] text-xs font-medium hover:bg-red-100 transition-colors"
               title="Remove image"
             >
@@ -1261,25 +1692,33 @@ function ProductForm({ onClose }: { onClose: () => void }) {
         <div className="w-full px-1">
           <p className="text-xs text-gray-400 mb-1.5">Or pick a stock photo:</p>
           <div className="flex flex-wrap gap-1">
-            {(showAllPhotos ? PRESET_PRODUCT_PHOTOS : PRESET_PRODUCT_PHOTOS.slice(0, 6)).map((p) => (
+            {(showAllPhotos
+              ? PRESET_PRODUCT_PHOTOS
+              : PRESET_PRODUCT_PHOTOS.slice(0, 6)
+            ).map((p) => (
               <button
                 key={p.name}
                 type="button"
-                onClick={() => setForm({ ...form, imageUrl: p.url, file: null })}
-                className={`px-2 py-0.5 text-[10px] font-medium rounded-full border transition-colors ${form.imageUrl === p.url
-                    ? 'bg-[#0D4A3E] text-white border-[#0D4A3E]'
-                    : 'bg-white hover:bg-gray-50 text-gray-500 border-gray-200'
-                  }`}
+                onClick={() =>
+                  setForm({ ...form, imageUrl: p.url, file: null })
+                }
+                className={`px-2 py-0.5 text-[10px] font-medium rounded-full border transition-colors ${
+                  form.imageUrl === p.url
+                    ? "bg-[#0D4A3E] text-white border-[#0D4A3E]"
+                    : "bg-white hover:bg-gray-50 text-gray-500 border-gray-200"
+                }`}
               >
                 {p.name}
               </button>
             ))}
             <button
               type="button"
-              onClick={() => setShowAllPhotos(v => !v)}
+              onClick={() => setShowAllPhotos((v) => !v)}
               className="px-2 py-0.5 text-[10px] font-medium rounded-full border border-dashed border-gray-300 text-gray-400 hover:text-gray-600 hover:border-gray-400 transition-colors"
             >
-              {showAllPhotos ? 'âˆ’ Less' : `+ ${PRESET_PRODUCT_PHOTOS.length - 6} more`}
+              {showAllPhotos
+                ? "âˆ’ Less"
+                : `+ ${PRESET_PRODUCT_PHOTOS.length - 6} more`}
             </button>
           </div>
         </div>
@@ -1287,19 +1726,34 @@ function ProductForm({ onClose }: { onClose: () => void }) {
         {isCameraOpen && (
           <CameraCapture
             onCapture={(file) => {
-              const reader = new FileReader()
-              reader.onloadend = () => setForm({ ...form, imageUrl: reader.result as string, file: file })
-              reader.readAsDataURL(file)
+              const reader = new FileReader();
+              reader.onloadend = () =>
+                setForm({
+                  ...form,
+                  imageUrl: reader.result as string,
+                  file: file,
+                });
+              reader.readAsDataURL(file);
             }}
             onClose={() => setIsCameraOpen(false)}
           />
         )}
       </div>
 
-      <InputGroup label="Product name" placeholder="e.g. Fresh Milk" value={form.name} onChange={(v: string) => setForm({ ...form, name: v })} />
+      <InputGroup
+        label="Product name"
+        placeholder="e.g. Fresh Milk"
+        value={form.name}
+        onChange={(v: string) => setForm({ ...form, name: v })}
+      />
 
       <div className="space-y-1.5">
-        <label className="text-xs text-gray-500">Category <span className="text-gray-400 font-normal">(pick or type your own)</span></label>
+        <label className="text-xs text-gray-500">
+          Category{" "}
+          <span className="text-gray-400 font-normal">
+            (pick or type your own)
+          </span>
+        </label>
         <input
           list="product-categories"
           value={form.category}
@@ -1309,87 +1763,86 @@ function ProductForm({ onClose }: { onClose: () => void }) {
         />
         <datalist id="product-categories">
           {[
-            'Accounting & Tax Services',
-            'Agrovet',
-            'Agricultural Cooperative',
-            'Art & Craft Business',
-            'Bakery',
-            'Barber Shop',
-            'Cafe',
-            'Car Wash',
-            'Car Yard',
-            'Catering Services',
-            'Church',
-            'Clinic',
-            'College',
-            'Community Organization',
-            'Construction Services',
-            'Consultancy',
-            'Cosmetics Shop',
-            'Courier Services',
-            'Cyber Cafe',
-            'Cyber Security',
-            'Dairy Business',
-            'Daycare',
-            'Dental Clinic',
-            'Digital Agency',
-            'Driving School',
-            'E-commerce Business',
-            'Electrical Services',
-            'Electronics Shop',
-            'Farm',
-            'Fashion & Boutique',
-            'Fast Food',
-            'Financial Services',
-            'Freelancer',
-            'Furniture Workshop',
-            'Garage',
-            'Guest House',
-            'Hardware Store',
-            'Hospital',
-            'Hotel',
-            'Insurance Agency',
-            'Interior Design',
-            'Internet Service Provider',
-            'IT Services',
-            'Legal Services',
-            'Lounge & Bar',
-            'Manufacturing',
-            'Marketing Agency',
-            'Mechanic Garage',
-            'Microfinance',
-            'Mini Mart',
-            'Mobile Phone Shop',
-            'Mosque',
-            'NGO',
-            'Online Business',
-            'Optical Clinic',
-            'Other',
-            'Pharmacy',
-            'Plumbing Services',
-            'Poultry Farm',
-            'Printing & Branding',
-            'Real Estate Agency',
-            'Restaurant',
-            'Retail Store',
-            'SACCO',
-            'Salon',
-            'School',
-            'Software Development',
-            'Spa & Beauty',
-            'Supermarket',
-            'Tailoring & Fashion Design',
-            'Training Centre',
-            'Transport Services',
-            'Travel Agency',
-            'University',
-            'Veterinary Clinic',
-            'Welding & Fabrication',
-            'Wholesale Shop'
-          ]
-            .map(c => (
-              <option key={c} value={c} />
-            ))}
+            "Accounting & Tax Services",
+            "Agrovet",
+            "Agricultural Cooperative",
+            "Art & Craft Business",
+            "Bakery",
+            "Barber Shop",
+            "Cafe",
+            "Car Wash",
+            "Car Yard",
+            "Catering Services",
+            "Church",
+            "Clinic",
+            "College",
+            "Community Organization",
+            "Construction Services",
+            "Consultancy",
+            "Cosmetics Shop",
+            "Courier Services",
+            "Cyber Cafe",
+            "Cyber Security",
+            "Dairy Business",
+            "Daycare",
+            "Dental Clinic",
+            "Digital Agency",
+            "Driving School",
+            "E-commerce Business",
+            "Electrical Services",
+            "Electronics Shop",
+            "Farm",
+            "Fashion & Boutique",
+            "Fast Food",
+            "Financial Services",
+            "Freelancer",
+            "Furniture Workshop",
+            "Garage",
+            "Guest House",
+            "Hardware Store",
+            "Hospital",
+            "Hotel",
+            "Insurance Agency",
+            "Interior Design",
+            "Internet Service Provider",
+            "IT Services",
+            "Legal Services",
+            "Lounge & Bar",
+            "Manufacturing",
+            "Marketing Agency",
+            "Mechanic Garage",
+            "Microfinance",
+            "Mini Mart",
+            "Mobile Phone Shop",
+            "Mosque",
+            "NGO",
+            "Online Business",
+            "Optical Clinic",
+            "Other",
+            "Pharmacy",
+            "Plumbing Services",
+            "Poultry Farm",
+            "Printing & Branding",
+            "Real Estate Agency",
+            "Restaurant",
+            "Retail Store",
+            "SACCO",
+            "Salon",
+            "School",
+            "Software Development",
+            "Spa & Beauty",
+            "Supermarket",
+            "Tailoring & Fashion Design",
+            "Training Centre",
+            "Transport Services",
+            "Travel Agency",
+            "University",
+            "Veterinary Clinic",
+            "Welding & Fabrication",
+            "Wholesale Shop",
+          ].map((c) => (
+            <option key={c} value={c} />
+          ))}
         </datalist>
       </div>
       <div className="space-y-1.5">
@@ -1404,52 +1857,99 @@ function ProductForm({ onClose }: { onClose: () => void }) {
         </select>
       </div>
 
-      <div className={`grid ${form.type === 'GOOD' ? 'grid-cols-2' : 'grid-cols-1'} gap-4`}>
-        {form.type === 'GOOD' && (
-          <InputGroup label="Buying price" inputType="number" placeholder="0.00" mono value={form.buyingPrice} onChange={(v: string) => setForm({ ...form, buyingPrice: v })} />
+      <div
+        className={`grid ${form.type === "GOOD" ? "grid-cols-2" : "grid-cols-1"} gap-4`}
+      >
+        {form.type === "GOOD" && (
+          <InputGroup
+            label="Buying price"
+            inputType="number"
+            placeholder="0.00"
+            mono
+            value={form.buyingPrice}
+            onChange={(v: string) => setForm({ ...form, buyingPrice: v })}
+          />
         )}
-        <InputGroup label="Selling price" inputType="number" placeholder="0.00" mono value={form.price} onChange={(v: string) => setForm({ ...form, price: v })} />
+        <InputGroup
+          label="Selling price"
+          inputType="number"
+          placeholder="0.00"
+          mono
+          value={form.price}
+          onChange={(v: string) => setForm({ ...form, price: v })}
+        />
       </div>
 
-      {form.type === 'GOOD' && (
+      {form.type === "GOOD" && (
         <div className="space-y-3 mt-1">
           <div className="flex items-center justify-between p-3.5 bg-gray-50 rounded-[.5rem] border border-gray-100">
             <div>
-              <label htmlFor="trackStockAdd" className="text-sm font-medium text-gray-800 cursor-pointer block">Track stock quantity</label>
-              <p className="text-xs text-gray-400">Enable to track available units and show out of stock when sold out. Leave off for unlimited / reseller items.</p>
+              <label
+                htmlFor="trackStockAdd"
+                className="text-sm font-medium text-gray-800 cursor-pointer block"
+              >
+                Track stock quantity
+              </label>
+              <p className="text-xs text-gray-400">
+                Enable to track available units and show out of stock when sold
+                out. Leave off for unlimited / reseller items.
+              </p>
             </div>
             <input
               type="checkbox"
               id="trackStockAdd"
               checked={form.trackStock}
-              onChange={(e) => setForm({ ...form, trackStock: e.target.checked })}
+              onChange={(e) =>
+                setForm({ ...form, trackStock: e.target.checked })
+              }
               className="h-4 w-4 accent-[#0D4A3E] rounded border-gray-300 cursor-pointer"
             />
           </div>
 
           {form.trackStock && (
             <div className="grid grid-cols-2 gap-4 animate-in fade-in slide-in-from-top-1">
-              <InputGroup label="Available stock count" inputType="number" placeholder="0" mono value={form.stock} onChange={(v: string) => setForm({ ...form, stock: v })} />
-              <InputGroup label="Low stock alert level" inputType="number" placeholder="5" mono value={form.minLevel} onChange={(v: string) => setForm({ ...form, minLevel: v })} />
+              <InputGroup
+                label="Available stock count"
+                inputType="number"
+                placeholder="0"
+                mono
+                value={form.stock}
+                onChange={(v: string) => setForm({ ...form, stock: v })}
+              />
+              <InputGroup
+                label="Low stock alert level"
+                inputType="number"
+                placeholder="5"
+                mono
+                value={form.minLevel}
+                onChange={(v: string) => setForm({ ...form, minLevel: v })}
+              />
             </div>
           )}
         </div>
       )}
 
-      {form.type === 'GOOD' && (
+      {form.type === "GOOD" && (
         <div className="flex items-center gap-3 bg-gray-50 p-3.5 rounded-[.5rem] border border-gray-100 mt-4">
           <input
             type="checkbox"
             id="isPerishableAdd"
             checked={form.isPerishable}
-            onChange={(e) => setForm({ ...form, isPerishable: e.target.checked })}
+            onChange={(e) =>
+              setForm({ ...form, isPerishable: e.target.checked })
+            }
             className="h-4 w-4 accent-[#0D4A3E] rounded border-gray-300"
           />
-          <label htmlFor="isPerishableAdd" className="text-sm text-gray-700 cursor-pointer">This item is perishable</label>
+          <label
+            htmlFor="isPerishableAdd"
+            className="text-sm text-gray-700 cursor-pointer"
+          >
+            This item is perishable
+          </label>
         </div>
       )}
 
-      {form.type === 'GOOD' && form.isPerishable && (
+      {form.type === "GOOD" && form.isPerishable && (
         <div className="space-y-1.5 animate-in fade-in slide-in-from-top-2">
           <label className="text-xs text-gray-500">Expiry date</label>
           <input
@@ -1462,7 +1962,9 @@ function ProductForm({ onClose }: { onClose: () => void }) {
       )}
 
       <div className="space-y-1.5">
-        <label className="text-xs text-gray-500">Item description (optional)</label>
+        <label className="text-xs text-gray-500">
+          Item description (optional)
+        </label>
         <textarea
           rows={3}
           placeholder="Describe this item (details, features, ingredients, specs). Leave blank if not needed."
@@ -1474,111 +1976,136 @@ function ProductForm({ onClose }: { onClose: () => void }) {
 
       <button
         onClick={() => {
-          if (!form.name || !form.price) return toast.error('Name and price are required')
+          if (!form.name || !form.price)
+            return toast.error("Name and price are required");
           mutation.mutate({
             ...form,
             price: parseFloat(form.price) || 0,
             buyingPrice: parseFloat(form.buyingPrice) || 0,
             trackStock: form.trackStock,
-            stock: form.trackStock ? (form.stock.trim() === '' ? 0 : (parseInt(form.stock) || 0)) : 0,
+            stock: form.trackStock
+              ? form.stock.trim() === ""
+                ? 0
+                : parseInt(form.stock) || 0
+              : 0,
             minLevel: parseInt(form.minLevel) || 5,
             isPerishable: form.isPerishable,
             expiryDate: form.expiryDate || undefined,
-            description: form.description.trim() || undefined
-          })
+            description: form.description.trim() || undefined,
+          });
         }}
         disabled={mutation.isPending}
         className="w-full py-3.5 mt-4 bg-[#0D4A3E] text-white rounded-full text-sm font-medium hover:bg-[#0A3D33] transition-colors flex items-center justify-center gap-2 disabled:opacity-60"
       >
-        {mutation.isPending
-          ? <><ButtonLoader /> {navigator.onLine ? 'Saving' : 'Saving offline'}</>
-          : (navigator.onLine ? 'Save inventory item' : ' Save offline (will sync later)')
-        }
+        {mutation.isPending ? (
+          <>
+            <ButtonLoader /> {navigator.onLine ? "Saving" : "Saving offline"}
+          </>
+        ) : navigator.onLine ? (
+          "Save inventory item"
+        ) : (
+          " Save offline (will sync later)"
+        )}
       </button>
     </div>
-  )
+  );
 }
 
-
-function EditProductForm({ product, onClose }: { product: any; onClose: () => void }) {
-  const queryClient = useQueryClient()
+function EditProductForm({
+  product,
+  onClose,
+}: {
+  product: any;
+  onClose: () => void;
+}) {
+  const queryClient = useQueryClient();
   const [form, setForm] = useState({
     name: product.name,
     category: product.category,
-    type: product.type || 'GOOD',
-    buyingPrice: product.buyingPrice?.toString() || '',
-    price: product.price?.toString() || '',
-    stock: product.stockLevel?.toString() || '',
+    type: product.type || "GOOD",
+    buyingPrice: product.buyingPrice?.toString() || "",
+    price: product.price?.toString() || "",
+    stock: product.stockLevel?.toString() || "",
     minLevel: (product.minLevel ?? 5).toString(),
-    imageUrl: product.imageUrl || '',
+    imageUrl: product.imageUrl || "",
     file: null as File | null,
     isPerishable: !!product.isPerishable,
-    expiryDate: product.expiryDate ? product.expiryDate.split('T')[0] : '',
-    description: product.description || '',
-    trackStock: Boolean(product.trackStock)
-  })
+    expiryDate: product.expiryDate ? product.expiryDate.split("T")[0] : "",
+    description: product.description || "",
+    trackStock: Boolean(product.trackStock),
+  });
   const [isCameraOpen, setIsCameraOpen] = useState(false);
   const [showAllPhotos, setShowAllPhotos] = useState(false);
 
   const handleImageFile = (file: File) => {
-    const reader = new FileReader()
+    const reader = new FileReader();
     reader.onloadend = () => {
-      setForm(prev => ({ ...prev, imageUrl: reader.result as string, file }))
-      toast.success('Image loaded from clipboard!')
-    }
-    reader.readAsDataURL(file)
-  }
+      setForm((prev) => ({ ...prev, imageUrl: reader.result as string, file }));
+      toast.success("Image loaded from clipboard!");
+    };
+    reader.readAsDataURL(file);
+  };
 
-  const handlePaste = (e: React.ClipboardEvent<HTMLDivElement> | ClipboardEvent) => {
-    const items = (e as React.ClipboardEvent).clipboardData?.items || (e as ClipboardEvent).clipboardData?.items
-    if (!items) return
+  const handlePaste = (
+    e: React.ClipboardEvent<HTMLDivElement> | ClipboardEvent,
+  ) => {
+    const items =
+      (e as React.ClipboardEvent).clipboardData?.items ||
+      (e as ClipboardEvent).clipboardData?.items;
+    if (!items) return;
     for (let i = 0; i < items.length; i++) {
-      const item = items[i]
-      if (item.type.startsWith('image/')) {
-        const file = item.getAsFile()
+      const item = items[i];
+      if (item.type.startsWith("image/")) {
+        const file = item.getAsFile();
         if (file) {
-          handleImageFile(file)
-          e.preventDefault()
-          return
+          handleImageFile(file);
+          e.preventDefault();
+          return;
         }
       }
     }
-  }
+  };
 
   const handleReadClipboard = async () => {
     try {
       if (!navigator.clipboard || !navigator.clipboard.read) {
-        toast.error('Clipboard access not supported. Use Ctrl+V to paste.')
-        return
+        toast.error("Clipboard access not supported. Use Ctrl+V to paste.");
+        return;
       }
-      const items = await navigator.clipboard.read()
-      let found = false
+      const items = await navigator.clipboard.read();
+      let found = false;
       for (const item of items) {
-        const imageType = item.types.find(t => t.startsWith('image/'))
+        const imageType = item.types.find((t) => t.startsWith("image/"));
         if (imageType) {
-          const blob = await item.getType(imageType)
-          const file = new File([blob], `pasted-${Date.now()}.${imageType.split('/')[1] || 'png'}`, { type: imageType })
-          handleImageFile(file)
-          found = true
-          break
+          const blob = await item.getType(imageType);
+          const file = new File(
+            [blob],
+            `pasted-${Date.now()}.${imageType.split("/")[1] || "png"}`,
+            { type: imageType },
+          );
+          handleImageFile(file);
+          found = true;
+          break;
         }
       }
       if (!found) {
-        toast.error('No image found in clipboard. Please copy an image first.')
+        toast.error("No image found in clipboard. Please copy an image first.");
       }
     } catch (err: any) {
-      console.error('Failed to read clipboard:', err)
-      toast.error('Unable to access clipboard. Allow clipboard permissions or press Ctrl+V.')
+      console.error("Failed to read clipboard:", err);
+      toast.error(
+        "Unable to access clipboard. Allow clipboard permissions or press Ctrl+V.",
+      );
     }
-  }
+  };
 
   useEffect(() => {
     const windowPasteHandler = (e: ClipboardEvent) => {
-      handlePaste(e)
-    }
-    window.addEventListener('paste', windowPasteHandler)
-    return () => window.removeEventListener('paste', windowPasteHandler)
-  }, [])
+      handlePaste(e);
+    };
+    window.addEventListener("paste", windowPasteHandler);
+    return () => window.removeEventListener("paste", windowPasteHandler);
+  }, []);
 
   const mutation = useMutation({
     mutationFn: async (data: any) => {
@@ -1593,13 +2120,13 @@ function EditProductForm({ product, onClose }: { product: any; onClose: () => vo
       return res;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['inventory'] })
-      queryClient.invalidateQueries({ queryKey: ['inventory-pos'] })
-      toast.success('Product updated')
-      onClose()
+      queryClient.invalidateQueries({ queryKey: ["inventory"] });
+      queryClient.invalidateQueries({ queryKey: ["inventory-pos"] });
+      toast.success("Product updated");
+      onClose();
     },
-    onError: (err: any) => toast.error(getErrorMessage(err))
-  })
+    onError: (err: any) => toast.error(getErrorMessage(err)),
+  });
 
   return (
     <div className="space-y-5 pb-16 ">
@@ -1608,12 +2135,12 @@ function EditProductForm({ product, onClose }: { product: any; onClose: () => vo
           className="h-28 w-28 rounded-[.5rem] bg-gray-50 border border-dashed border-gray-200 flex items-center justify-center overflow-hidden cursor-pointer hover:border-gray-300 transition-colors group relative outline-none focus:ring-2 focus:ring-[#0D4A3E]"
           onPaste={handlePaste}
           onContextMenu={(e) => {
-            e.preventDefault()
-            handleReadClipboard()
+            e.preventDefault();
+            handleReadClipboard();
           }}
           onClick={() => {
             if (!form.imageUrl) {
-              document.getElementById('image-edit-upload')?.click()
+              document.getElementById("image-edit-upload")?.click();
             }
           }}
           tabIndex={0}
@@ -1621,7 +2148,11 @@ function EditProductForm({ product, onClose }: { product: any; onClose: () => vo
         >
           {form.imageUrl ? (
             <>
-              <img src={form.imageUrl} alt="Preview" className="h-full w-full object-cover" />
+              <img
+                src={form.imageUrl}
+                alt="Preview"
+                className="h-full w-full object-cover"
+              />
               <div className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                 <Plus className="text-white" size={28} />
               </div>
@@ -1629,8 +2160,12 @@ function EditProductForm({ product, onClose }: { product: any; onClose: () => vo
           ) : (
             <div className="flex flex-col items-center gap-1 text-gray-400 group-hover:text-gray-500 transition-colors p-2 text-center">
               <Plus size={24} />
-              <span className="text-[11px] font-medium leading-tight">Upload or Paste</span>
-              <span className="text-[9px] text-gray-300">Long-press to paste</span>
+              <span className="text-[11px] font-medium leading-tight">
+                Upload or Paste
+              </span>
+              <span className="text-[9px] text-gray-300">
+                Long-press to paste
+              </span>
             </div>
           )}
           <input
@@ -1639,9 +2174,9 @@ function EditProductForm({ product, onClose }: { product: any; onClose: () => vo
             accept="image/*"
             className="hidden"
             onChange={(e) => {
-              const file = e.target.files?.[0]
+              const file = e.target.files?.[0];
               if (file) {
-                handleImageFile(file)
+                handleImageFile(file);
               }
             }}
           />
@@ -1650,7 +2185,9 @@ function EditProductForm({ product, onClose }: { product: any; onClose: () => vo
         <div className="flex gap-2">
           <button
             type="button"
-            onClick={() => document.getElementById('image-edit-upload')?.click()}
+            onClick={() =>
+              document.getElementById("image-edit-upload")?.click()
+            }
             className="px-3.5 py-2 bg-gray-50 text-gray-600 rounded-[.5rem] text-xs font-medium hover:bg-gray-100 transition-colors flex items-center gap-1.5"
             title="Upload from device storage"
           >
@@ -1675,7 +2212,7 @@ function EditProductForm({ product, onClose }: { product: any; onClose: () => vo
           {form.imageUrl && (
             <button
               type="button"
-              onClick={() => setForm({ ...form, imageUrl: '', file: null })}
+              onClick={() => setForm({ ...form, imageUrl: "", file: null })}
               className="px-3.5 py-2 bg-red-50 text-red-600 rounded-[.5rem] text-xs font-medium hover:bg-red-100 transition-colors"
               title="Remove image"
             >
@@ -1688,25 +2225,33 @@ function EditProductForm({ product, onClose }: { product: any; onClose: () => vo
         <div className="w-full px-1">
           <p className="text-xs text-gray-400 mb-1.5">Or pick a stock photo:</p>
           <div className="flex flex-wrap gap-1">
-            {(showAllPhotos ? PRESET_PRODUCT_PHOTOS : PRESET_PRODUCT_PHOTOS.slice(0, 6)).map((p) => (
+            {(showAllPhotos
+              ? PRESET_PRODUCT_PHOTOS
+              : PRESET_PRODUCT_PHOTOS.slice(0, 6)
+            ).map((p) => (
               <button
                 key={p.name}
                 type="button"
-                onClick={() => setForm({ ...form, imageUrl: p.url, file: null })}
-                className={`px-2 py-0.5 text-[10px] font-medium rounded-full border transition-colors ${form.imageUrl === p.url
-                    ? 'bg-[#0D4A3E] text-white border-[#0D4A3E]'
-                    : 'bg-white hover:bg-gray-50 text-gray-500 border-gray-200'
-                  }`}
+                onClick={() =>
+                  setForm({ ...form, imageUrl: p.url, file: null })
+                }
+                className={`px-2 py-0.5 text-[10px] font-medium rounded-full border transition-colors ${
+                  form.imageUrl === p.url
+                    ? "bg-[#0D4A3E] text-white border-[#0D4A3E]"
+                    : "bg-white hover:bg-gray-50 text-gray-500 border-gray-200"
+                }`}
               >
                 {p.name}
               </button>
             ))}
             <button
               type="button"
-              onClick={() => setShowAllPhotos(v => !v)}
+              onClick={() => setShowAllPhotos((v) => !v)}
               className="px-2 py-0.5 text-[10px] font-medium rounded-full border border-dashed border-gray-300 text-gray-400 hover:text-gray-600 hover:border-gray-400 transition-colors"
             >
-              {showAllPhotos ? 'âˆ’ Less' : `+ ${PRESET_PRODUCT_PHOTOS.length - 6} more`}
+              {showAllPhotos
+                ? "âˆ’ Less"
+                : `+ ${PRESET_PRODUCT_PHOTOS.length - 6} more`}
             </button>
           </div>
         </div>
@@ -1714,19 +2259,34 @@ function EditProductForm({ product, onClose }: { product: any; onClose: () => vo
         {isCameraOpen && (
           <CameraCapture
             onCapture={(file) => {
-              const reader = new FileReader()
-              reader.onloadend = () => setForm({ ...form, imageUrl: reader.result as string, file: file })
-              reader.readAsDataURL(file)
+              const reader = new FileReader();
+              reader.onloadend = () =>
+                setForm({
+                  ...form,
+                  imageUrl: reader.result as string,
+                  file: file,
+                });
+              reader.readAsDataURL(file);
             }}
             onClose={() => setIsCameraOpen(false)}
           />
         )}
       </div>
 
-      <InputGroup label="Product name" placeholder="e.g. Fresh Milk" value={form.name} onChange={(v: string) => setForm({ ...form, name: v })} />
+      <InputGroup
+        label="Product name"
+        placeholder="e.g. Fresh Milk"
+        value={form.name}
+        onChange={(v: string) => setForm({ ...form, name: v })}
+      />
 
       <div className="space-y-1.5">
-        <label className="text-xs text-gray-500">Category <span className="text-gray-400 font-normal">(pick or type your own)</span></label>
+        <label className="text-xs text-gray-500">
+          Category{" "}
+          <span className="text-gray-400 font-normal">
+            (pick or type your own)
+          </span>
+        </label>
         <input
           list="product-categories-edit"
           value={form.category}
@@ -1735,7 +2295,85 @@ function EditProductForm({ product, onClose }: { product: any; onClose: () => vo
           className="hl-select"
         />
         <datalist id="product-categories-edit">
-          {['Accounting & Tax Services', 'Agrovet', 'Agricultural Cooperative', 'Art & Craft Business', 'Bakery', 'Barber Shop', 'Cafe', 'Car Wash', 'Car Yard', 'Catering Services', 'Church', 'Clinic', 'College', 'Community Organization', 'Construction Services', 'Consultancy', 'Cosmetics Shop', 'Courier Services', 'Cyber Cafe', 'Cyber Security', 'Dairy Business', 'Daycare', 'Dental Clinic', 'Digital Agency', 'Driving School', 'E-commerce Business', 'Electrical Services', 'Electronics Shop', 'Farm', 'Fashion & Boutique', 'Fast Food', 'Financial Services', 'Freelancer', 'Furniture Workshop', 'Garage', 'Guest House', 'Hardware Store', 'Hospital', 'Hotel', 'Insurance Agency', 'Interior Design', 'Internet Service Provider', 'IT Services', 'Legal Services', 'Lounge & Bar', 'Manufacturing', 'Marketing Agency', 'Mechanic Garage', 'Microfinance', 'Mini Mart', 'Mobile Phone Shop', 'Mosque', 'NGO', 'Online Business', 'Optical Clinic', 'Other', 'Pharmacy', 'Plumbing Services', 'Poultry Farm', 'Printing & Branding', 'Real Estate Agency', 'Restaurant', 'Retail Store', 'SACCO', 'Salon', 'School', 'Software Development', 'Spa & Beauty', 'Supermarket', 'Tailoring & Fashion Design', 'Training Centre', 'Transport Services', 'Travel Agency', 'University', 'Veterinary Clinic', 'Welding & Fabrication', 'Wholesale Shop'].map(c => (
+          {[
+            "Accounting & Tax Services",
+            "Agrovet",
+            "Agricultural Cooperative",
+            "Art & Craft Business",
+            "Bakery",
+            "Barber Shop",
+            "Cafe",
+            "Car Wash",
+            "Car Yard",
+            "Catering Services",
+            "Church",
+            "Clinic",
+            "College",
+            "Community Organization",
+            "Construction Services",
+            "Consultancy",
+            "Cosmetics Shop",
+            "Courier Services",
+            "Cyber Cafe",
+            "Cyber Security",
+            "Dairy Business",
+            "Daycare",
+            "Dental Clinic",
+            "Digital Agency",
+            "Driving School",
+            "E-commerce Business",
+            "Electrical Services",
+            "Electronics Shop",
+            "Farm",
+            "Fashion & Boutique",
+            "Fast Food",
+            "Financial Services",
+            "Freelancer",
+            "Furniture Workshop",
+            "Garage",
+            "Guest House",
+            "Hardware Store",
+            "Hospital",
+            "Hotel",
+            "Insurance Agency",
+            "Interior Design",
+            "Internet Service Provider",
+            "IT Services",
+            "Legal Services",
+            "Lounge & Bar",
+            "Manufacturing",
+            "Marketing Agency",
+            "Mechanic Garage",
+            "Microfinance",
+            "Mini Mart",
+            "Mobile Phone Shop",
+            "Mosque",
+            "NGO",
+            "Online Business",
+            "Optical Clinic",
+            "Other",
+            "Pharmacy",
+            "Plumbing Services",
+            "Poultry Farm",
+            "Printing & Branding",
+            "Real Estate Agency",
+            "Restaurant",
+            "Retail Store",
+            "SACCO",
+            "Salon",
+            "School",
+            "Software Development",
+            "Spa & Beauty",
+            "Supermarket",
+            "Tailoring & Fashion Design",
+            "Training Centre",
+            "Transport Services",
+            "Travel Agency",
+            "University",
+            "Veterinary Clinic",
+            "Welding & Fabrication",
+            "Wholesale Shop",
+          ].map((c) => (
             <option key={c} value={c} />
           ))}
         </datalist>
@@ -1752,52 +2390,99 @@ function EditProductForm({ product, onClose }: { product: any; onClose: () => vo
         </select>
       </div>
 
-      <div className={`grid ${form.type === 'GOOD' ? 'grid-cols-2' : 'grid-cols-1'} gap-4`}>
-        {form.type === 'GOOD' && (
-          <InputGroup label="Buying price" inputType="number" placeholder="0.00" mono value={form.buyingPrice} onChange={(v: string) => setForm({ ...form, buyingPrice: v })} />
+      <div
+        className={`grid ${form.type === "GOOD" ? "grid-cols-2" : "grid-cols-1"} gap-4`}
+      >
+        {form.type === "GOOD" && (
+          <InputGroup
+            label="Buying price"
+            inputType="number"
+            placeholder="0.00"
+            mono
+            value={form.buyingPrice}
+            onChange={(v: string) => setForm({ ...form, buyingPrice: v })}
+          />
         )}
-        <InputGroup label="Selling price" inputType="number" placeholder="0.00" mono value={form.price} onChange={(v: string) => setForm({ ...form, price: v })} />
+        <InputGroup
+          label="Selling price"
+          inputType="number"
+          placeholder="0.00"
+          mono
+          value={form.price}
+          onChange={(v: string) => setForm({ ...form, price: v })}
+        />
       </div>
 
-      {form.type === 'GOOD' && (
+      {form.type === "GOOD" && (
         <div className="space-y-3 mt-1">
           <div className="flex items-center justify-between p-3.5 bg-gray-50 rounded-[.5rem] border border-gray-100">
             <div>
-              <label htmlFor="trackStockEdit" className="text-sm font-medium text-gray-800 cursor-pointer block">Track stock quantity</label>
-              <p className="text-xs text-gray-400">Enable to track available units and show out of stock when sold out. Leave off for unlimited / reseller items.</p>
+              <label
+                htmlFor="trackStockEdit"
+                className="text-sm font-medium text-gray-800 cursor-pointer block"
+              >
+                Track stock quantity
+              </label>
+              <p className="text-xs text-gray-400">
+                Enable to track available units and show out of stock when sold
+                out. Leave off for unlimited / reseller items.
+              </p>
             </div>
             <input
               type="checkbox"
               id="trackStockEdit"
               checked={form.trackStock}
-              onChange={(e) => setForm({ ...form, trackStock: e.target.checked })}
+              onChange={(e) =>
+                setForm({ ...form, trackStock: e.target.checked })
+              }
               className="h-4 w-4 accent-[#0D4A3E] rounded border-gray-300 cursor-pointer"
             />
           </div>
 
           {form.trackStock && (
             <div className="grid grid-cols-2 gap-4 animate-in fade-in slide-in-from-top-1">
-              <InputGroup label="Current stock" inputType="number" placeholder="0" mono value={form.stock} onChange={(v: string) => setForm({ ...form, stock: v })} />
-              <InputGroup label="Low stock alert level" inputType="number" placeholder="5" mono value={form.minLevel} onChange={(v: string) => setForm({ ...form, minLevel: v })} />
+              <InputGroup
+                label="Current stock"
+                inputType="number"
+                placeholder="0"
+                mono
+                value={form.stock}
+                onChange={(v: string) => setForm({ ...form, stock: v })}
+              />
+              <InputGroup
+                label="Low stock alert level"
+                inputType="number"
+                placeholder="5"
+                mono
+                value={form.minLevel}
+                onChange={(v: string) => setForm({ ...form, minLevel: v })}
+              />
             </div>
           )}
         </div>
       )}
 
-      {form.type === 'GOOD' && (
+      {form.type === "GOOD" && (
         <div className="flex items-center gap-3 bg-gray-50 p-3.5 rounded-[.5rem] border border-gray-100 mt-4">
           <input
             type="checkbox"
             id="isPerishableEdit"
             checked={form.isPerishable}
-            onChange={(e) => setForm({ ...form, isPerishable: e.target.checked })}
+            onChange={(e) =>
+              setForm({ ...form, isPerishable: e.target.checked })
+            }
             className="h-4 w-4 accent-[#0D4A3E] rounded border-gray-300"
           />
-          <label htmlFor="isPerishableEdit" className="text-sm text-gray-700 cursor-pointer">This item is perishable</label>
+          <label
+            htmlFor="isPerishableEdit"
+            className="text-sm text-gray-700 cursor-pointer"
+          >
+            This item is perishable
+          </label>
         </div>
       )}
 
-      {form.type === 'GOOD' && form.isPerishable && (
+      {form.type === "GOOD" && form.isPerishable && (
         <div className="space-y-1.5 animate-in fade-in slide-in-from-top-2">
           <label className="text-xs text-gray-500">Expiry date</label>
           <input
@@ -1810,7 +2495,9 @@ function EditProductForm({ product, onClose }: { product: any; onClose: () => vo
       )}
 
       <div className="space-y-1.5">
-        <label className="text-xs text-gray-500">Item description (optional)</label>
+        <label className="text-xs text-gray-500">
+          Item description (optional)
+        </label>
         <textarea
           rows={3}
           placeholder="Describe this item (details, features, ingredients, specs). Leave blank if not needed."
@@ -1827,35 +2514,46 @@ function EditProductForm({ product, onClose }: { product: any; onClose: () => vo
             price: parseFloat(form.price) || 0,
             buyingPrice: parseFloat(form.buyingPrice) || 0,
             trackStock: form.trackStock,
-            stock: form.trackStock ? (form.stock.trim() === '' ? 0 : (parseInt(form.stock) || 0)) : 0,
+            stock: form.trackStock
+              ? form.stock.trim() === ""
+                ? 0
+                : parseInt(form.stock) || 0
+              : 0,
             minLevel: parseInt(form.minLevel) || 5,
             isPerishable: form.isPerishable,
             expiryDate: form.expiryDate || undefined,
-            description: form.description.trim() || undefined
-          })
+            description: form.description.trim() || undefined,
+          });
         }}
         disabled={mutation.isPending}
         className="w-full py-3.5 mt-4 bg-[#0D4A3E] text-white rounded-[.5rem] text-sm font-medium hover:bg-[#0A3D33] transition-colors"
       >
-        {mutation.isPending ? 'Updatingâ€¦' : 'Update product details'}
+        {mutation.isPending ? "Updatingâ€¦" : "Update product details"}
       </button>
     </div>
-  )
+  );
 }
 
-function InputGroup({ label, placeholder, mono = false, value, onChange, inputType = 'text' }: any) {
+function InputGroup({
+  label,
+  placeholder,
+  mono = false,
+  value,
+  onChange,
+  inputType = "text",
+}: any) {
   return (
     <div className="space-y-1.5">
       <label className="text-xs text-gray-500">{label}</label>
       <input
         type={inputType}
-        min={inputType === 'number' ? '0' : undefined}
-        step={inputType === 'number' ? 'any' : undefined}
+        min={inputType === "number" ? "0" : undefined}
+        step={inputType === "number" ? "any" : undefined}
         value={value}
         onChange={(e) => {
           const val = e.target.value;
-          if (inputType === 'number') {
-            if (val === '' || /^\d*\.?\d*$/.test(val)) {
+          if (inputType === "number") {
+            if (val === "" || /^\d*\.?\d*$/.test(val)) {
               onChange(val);
             }
           } else {
@@ -1863,8 +2561,8 @@ function InputGroup({ label, placeholder, mono = false, value, onChange, inputTy
           }
         }}
         placeholder={placeholder}
-        className={`w-full bg-gray-50 border-none rounded-[.5rem] py-3 px-3.5 outline-none focus:ring-2 focus:ring-gray-200 transition-all text-sm ${mono ? 'hl-mono' : ''}`}
+        className={`w-full bg-gray-50 border-none rounded-[.5rem] py-3 px-3.5 outline-none focus:ring-2 focus:ring-gray-200 transition-all text-sm ${mono ? "hl-mono" : ""}`}
       />
     </div>
-  )
+  );
 }

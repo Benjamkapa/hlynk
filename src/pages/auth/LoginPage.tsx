@@ -1,119 +1,101 @@
-import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import {
-  Building2, MapPin, Phone, Tag,
-  Check, ArrowLeft, Star, WifiOff, RefreshCw,
-  User, AlertCircle
-} from 'lucide-react'
-import { ButtonLoader } from '../../components/shared/InlineLoader'
-import { toast } from 'sonner'
-import { authApi } from '../../lib/api/auth'
-import { useAuth } from '../../lib/auth/AuthContext'
-import { getErrorMessage } from '../../lib/utils/error'
-import { validateKenyanPhone } from '../../lib/validation/phone'
-import GoogleAuthButton from '../../components/auth/GoogleAuthButton'
-import { platformApi, type PlatformReview } from '../../lib/api/platform'
-import { motion, AnimatePresence } from 'framer-motion'
+  Building2,
+  MapPin,
+  Phone,
+  Tag,
+  Check,
+  ArrowLeft,
+  Star,
+  WifiOff,
+  RefreshCw,
+  User,
+  AlertCircle,
+} from "lucide-react";
+import { ButtonLoader } from "../../components/shared/InlineLoader";
+import { toast } from "sonner";
+import { authApi } from "../../lib/api/auth";
+import { useAuth } from "../../lib/auth/AuthContext";
+import { getErrorMessage } from "../../lib/utils/error";
+import { validateKenyanPhone } from "../../lib/validation/phone";
+import GoogleAuthButton from "../../components/auth/GoogleAuthButton";
+import { platformApi, type PlatformReview } from "../../lib/api/platform";
+import { motion, AnimatePresence } from "framer-motion";
 
-const logo = '/logo.png'
-const hlynk = '/hlynk.png'
-const authBg = '/img.png'
+const logo = "/logo.png";
+const hlynk = "/hlynk.png";
+const authBg = "/img.png";
 
 const COUNTIES = [
-  'Baringo', 'Bomet', 'Bungoma', 'Busia', 'Elgeyo/Marakwet', 'Embu', 'Garissa',
-  'Homa Bay', 'Isiolo', 'Kajiado', 'Kakamega', 'Kericho', 'Kiambu', 'Kilifi',
-  'Kirinyaga', 'Kisii', 'Kisumu', 'Kitui', 'Kwale', 'Laikipia', 'Lamu',
-  'Machakos', 'Makueni', 'Mandera', 'Marsabit', 'Meru', 'Migori', 'Mombasa',
-  "Murang'a", 'Nairobi', 'Nakuru', 'Nandi', 'Narok', 'Nyamira', 'Nyandarua',
-  'Nyeri', 'Samburu', 'Siaya', 'Taita/Taveta', 'Tana River', 'Tharaka-Nithi',
-  'Trans Nzoia', 'Turkana', 'Uasin Gishu', 'Vihiga', 'Wajir', 'West Pokot',
-]
+  "Baringo",
+  "Bomet",
+  "Bungoma",
+  "Busia",
+  "Elgeyo/Marakwet",
+  "Embu",
+  "Garissa",
+  "Homa Bay",
+  "Isiolo",
+  "Kajiado",
+  "Kakamega",
+  "Kericho",
+  "Kiambu",
+  "Kilifi",
+  "Kirinyaga",
+  "Kisii",
+  "Kisumu",
+  "Kitui",
+  "Kwale",
+  "Laikipia",
+  "Lamu",
+  "Machakos",
+  "Makueni",
+  "Mandera",
+  "Marsabit",
+  "Meru",
+  "Migori",
+  "Mombasa",
+  "Murang'a",
+  "Nairobi",
+  "Nakuru",
+  "Nandi",
+  "Narok",
+  "Nyamira",
+  "Nyandarua",
+  "Nyeri",
+  "Samburu",
+  "Siaya",
+  "Taita/Taveta",
+  "Tana River",
+  "Tharaka-Nithi",
+  "Trans Nzoia",
+  "Turkana",
+  "Uasin Gishu",
+  "Vihiga",
+  "Wajir",
+  "West Pokot",
+];
 
 const CATEGORIES = [
-  'Accounting & Tax Services',
-  'Agrovet',
-  'Agricultural Cooperative',
-  'Art & Craft Business',
-  'Bakery',
-  'Barber Shop',
-  'Cafe',
-  'Car Wash',
-  'Car Yard',
-  'Catering Services',
-  'Church',
-  'Clinic',
-  'College',
-  'Community Organization',
-  'Construction Services',
-  'Consultancy',
-  'Cosmetics Shop',
-  'Courier Services',
-  'Cyber Cafe',
-  'Cyber Security',
-  'Dairy Business',
-  'Daycare',
-  'Dental Clinic',
-  'Digital Agency',
-  'Driving School',
-  'E-commerce Business',
-  'Electrical Services',
-  'Electronics Shop',
-  'Farm',
-  'Fashion & Boutique',
-  'Fast Food',
-  'Financial Services',
-  'Freelancer',
-  'Furniture Workshop',
-  'Garage',
-  'Guest House',
-  'Hardware Store',
-  'Hospital',
-  'Hotel',
-  'Insurance Agency',
-  'Interior Design',
-  'Internet Service Provider',
-  'IT Services',
-  'Legal Services',
-  'Lounge & Bar',
-  'Manufacturing',
-  'Marketing Agency',
-  'Mechanic Garage',
-  'Microfinance',
-  'Mini Mart',
-  'Mobile Phone Shop',
-  'Mosque',
-  'NGO',
-  'Online Business',
-  'Optical Clinic',
-  'Other',
-  'Pharmacy',
-  'Plumbing Services',
-  'Poultry Farm',
-  'Printing & Branding',
-  'Real Estate Agency',
-  'Restaurant',
-  'Retail Store',
-  'SACCO',
-  'Salon',
-  'School',
-  'Software Development',
-  'Spa & Beauty',
-  'Supermarket',
-  'Tailoring & Fashion Design',
-  'Training Centre',
-  'Transport Services',
-  'Travel Agency',
-  'University',
-  'Veterinary Clinic',
-  'Welding & Fabrication',
-  'Wholesale Shop'
-]
+  "Retail & Mini Mart",
+  "Hospitality (Hotels & BnBs)",
+  "Vehicle Services",
+  "Personal Care (Salons & Barbers)",
+  "Food & Beverage",
+  "Cleaning & Maintenance",
+];
 
 type RegisterFormState = {
-  businessName: string; ownerName: string; phone: string
-  category: string; county: string; location: string; planName: 'LITE' | 'PLUS' | 'MAX'
+  businessName: string;
+  ownerName: string;
+  phone: string;
+  category: string;
+  county: string;
+  location: string;
+  planName: "LITE" | "PLUS" | "MAX";
   referralCode?: string;
-}
+};
 
 function ReviewCard({ review }: { review: any }) {
   return (
@@ -123,7 +105,11 @@ function ReviewCard({ review }: { review: any }) {
           <Star
             key={s}
             size={12}
-            className={review.rating >= s ? 'text-amber-400 fill-amber-400' : 'text-white/20'}
+            className={
+              review.rating >= s
+                ? "text-amber-400 fill-amber-400"
+                : "text-white/20"
+            }
           />
         ))}
       </div>
@@ -136,78 +122,102 @@ function ReviewCard({ review }: { review: any }) {
         </div>
       )}
     </div>
-  )
+  );
 }
 
 function ReviewPanel() {
-  const [reviews, setReviews] = useState<PlatformReview[]>([])
-  const [idx, setIdx] = useState(0)
-  const [isShowing, setIsShowing] = useState(false)
-  const [visible, setVisible] = useState(true)
+  const [reviews, setReviews] = useState<PlatformReview[]>([]);
+  const [idx, setIdx] = useState(0);
+  const [isShowing, setIsShowing] = useState(false);
+  const [visible, setVisible] = useState(true);
 
   useEffect(() => {
-    platformApi.getReviews({ limit: 10 })
-      .then(res => { if (res.items?.length) setReviews(res.items) })
-      .catch(console.error)
-  }, [])
+    platformApi
+      .getReviews({ limit: 10 })
+      .then((res) => {
+        if (res.items?.length) setReviews(res.items);
+      })
+      .catch(console.error);
+  }, []);
 
   useEffect(() => {
-    if (!reviews.length) return
-    const cycleTime = 1000 * 60 * 5
-    const itemDuration = 8000
-    let currentIdx = 0
-    let itemInterval: any
-    let cycleTimeout: any
+    if (!reviews.length) return;
+    const cycleTime = 1000 * 60 * 5;
+    const itemDuration = 8000;
+    let currentIdx = 0;
+    let itemInterval: any;
+    let cycleTimeout: any;
 
     const startReviewLoop = () => {
-      setIsShowing(true)
-      currentIdx = 0
-      setIdx(0)
-      setVisible(true)
+      setIsShowing(true);
+      currentIdx = 0;
+      setIdx(0);
+      setVisible(true);
       itemInterval = setInterval(() => {
-        setVisible(false)
+        setVisible(false);
         setTimeout(() => {
           if (currentIdx >= reviews.length - 1) {
-            clearInterval(itemInterval)
-            setIsShowing(false)
-            cycleTimeout = setTimeout(startReviewLoop, cycleTime)
+            clearInterval(itemInterval);
+            setIsShowing(false);
+            cycleTimeout = setTimeout(startReviewLoop, cycleTime);
           } else {
-            currentIdx++
-            setIdx(currentIdx)
-            setVisible(true)
+            currentIdx++;
+            setIdx(currentIdx);
+            setVisible(true);
           }
-        }, 600)
-      }, itemDuration)
-    }
+        }, 600);
+      }, itemDuration);
+    };
     // Show immediately on desktop instead of waiting 5 minutes for first cycle
-    startReviewLoop()
-    return () => { clearInterval(itemInterval); clearTimeout(cycleTimeout) }
-  }, [reviews.length, reviews])
+    startReviewLoop();
+    return () => {
+      clearInterval(itemInterval);
+      clearTimeout(cycleTimeout);
+    };
+  }, [reviews.length, reviews]);
 
-  if (reviews.length === 0 || !isShowing) return null
+  if (reviews.length === 0 || !isShowing) return null;
 
   return (
     <div className="hidden lg:block">
       <div
         className="bg-white/5 backdrop-blur-[20px] border border-white/10 rounded-br-[.5rem] rounded-tl-[.5rem] rounded-tr-[.5rem] rounded-bl-[1.5rem] p-8 shadow-[0_30px_100px_rgba(0,0,0,0.3)] transition-all duration-1000 animate-in fade-in slide-in-from-bottom-4"
-        style={{ boxShadow: 'inset 0 0 40px rgba(255,255,255,0.05)', background: 'linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 100%)' }}
+        style={{
+          boxShadow: "inset 0 0 40px rgba(255,255,255,0.05)",
+          background:
+            "linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 100%)",
+        }}
       >
         <div className="flex items-center gap-3 mb-6">
-          <span className="text-[8px] tracking-[0.4em] uppercase font-black text-white/30">Community</span>
+          <span className="text-[8px] tracking-[0.4em] uppercase font-black text-white/30">
+            Community
+          </span>
           <div className="h-[1px] flex-1 bg-white/5" />
         </div>
-        <div style={{ opacity: visible ? 1 : 0, transition: 'opacity 0.6s ease' }}>
+        <div
+          style={{ opacity: visible ? 1 : 0, transition: "opacity 0.6s ease" }}
+        >
           <ReviewCard review={reviews[idx]} />
         </div>
       </div>
     </div>
-  )
+  );
 }
 
-function Field({ label, icon: Icon, children }: { label: string; icon: any; children: React.ReactNode }) {
+function Field({
+  label,
+  icon: Icon,
+  children,
+}: {
+  label: string;
+  icon: any;
+  children: React.ReactNode;
+}) {
   return (
     <div className="flex flex-col gap-1.5 group">
-      <label className="text-[12px] font-semibold text-white/35 lg:text-[#64748b] ml-1 transition-colors group-focus-within:text-[#E3A23C] lg:group-focus-within:text-black">{label}</label>
+      <label className="text-[12px] font-semibold text-white/35 lg:text-[#64748b] ml-1 transition-colors group-focus-within:text-[#E3A23C] lg:group-focus-within:text-black">
+        {label}
+      </label>
       <div className="relative">
         <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/30 lg:text-[#94a3b8] pointer-events-none transition-colors group-focus-within:text-[#E3A23C] lg:group-focus-within:text-black">
           <Icon size={14} />
@@ -215,146 +225,189 @@ function Field({ label, icon: Icon, children }: { label: string; icon: any; chil
         {children}
       </div>
     </div>
-  )
+  );
 }
 
 // Dark styling applies on small screens; from the lg breakpoint up it reverts to the
 // original light field treatment used on desktop.
-const inputCls = "w-full h-12 pl-[42px] pr-4 bg-white/5 lg:bg-[#f8fafc] border border-white/10 lg:border-[#f1f5f9] rounded-xl outline-none focus:bg-white/10 lg:focus:bg-white focus:border-[#E3A23C]/50 lg:focus:border-black transition-all text-[14px] font-[inherit] appearance-none text-white lg:text-black placeholder:text-white/25 lg:placeholder:text-slate-400"
+const inputCls =
+  "w-full h-12 pl-[42px] pr-4 bg-white/5 lg:bg-[#f8fafc] border border-white/10 lg:border-[#f1f5f9] rounded-xl outline-none focus:bg-white/10 lg:focus:bg-white focus:border-[#E3A23C]/50 lg:focus:border-black transition-all text-[14px] font-[inherit] appearance-none text-white lg:text-black placeholder:text-white/25 lg:placeholder:text-slate-400";
 
 export default function LoginPage() {
-  const navigate = useNavigate()
-  const { login, user } = useAuth()
-  const [googleLoading, setGoogleLoading] = useState(false)
-  const [formLoading, setFormLoading] = useState(false)
-  const [requiresRegistration, setRequiresRegistration] = useState(false)
-  const [googleCredential, setGoogleCredential] = useState('')
-  const [acceptedEula, setAcceptedEula] = useState(() => localStorage.getItem('hlynk_eula_accepted') === 'true')
+  const navigate = useNavigate();
+  const { login, user } = useAuth();
+  const [googleLoading, setGoogleLoading] = useState(false);
+  const [formLoading, setFormLoading] = useState(false);
+  const [requiresRegistration, setRequiresRegistration] = useState(false);
+  const [googleCredential, setGoogleCredential] = useState("");
+  const [acceptedEula, setAcceptedEula] = useState(
+    () => localStorage.getItem("hlynk_eula_accepted") === "true",
+  );
 
-  const [isOffline, setIsOffline] = useState(() => typeof navigator !== 'undefined' && !navigator.onLine)
+  const [isOffline, setIsOffline] = useState(
+    () => typeof navigator !== "undefined" && !navigator.onLine,
+  );
 
   // Show a security warning if the session was displaced by another admin login
   useEffect(() => {
-    const warning = sessionStorage.getItem('auth_warning')
-    if (warning === 'SESSION_DISPLACED') {
-      sessionStorage.removeItem('auth_warning')
+    const warning = sessionStorage.getItem("auth_warning");
+    if (warning === "SESSION_DISPLACED") {
+      sessionStorage.removeItem("auth_warning");
       toast.error(
-        '🚨 Security Alert: Your admin session was terminated by a new login. If this was NOT you, your Google account may be compromised — change your password immediately and log in here to regain access.',
-        { duration: 20000, id: 'session-displaced' }
-      )
+        "🚨 Security Alert: Your admin session was terminated by a new login. If this was NOT you, your Google account may be compromised — change your password immediately and log in here to regain access.",
+        { duration: 20000, id: "session-displaced" },
+      );
     }
-  }, [])
+  }, []);
 
   useEffect(() => {
-    const handleOnline = () => setIsOffline(false)
-    const handleOffline = () => setIsOffline(true)
-    window.addEventListener('online', handleOnline)
-    window.addEventListener('offline', handleOffline)
+    const handleOnline = () => setIsOffline(false);
+    const handleOffline = () => setIsOffline(true);
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
     return () => {
-      window.removeEventListener('online', handleOnline)
-      window.removeEventListener('offline', handleOffline)
-    }
-  }, [])
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
+    };
+  }, []);
 
   useEffect(() => {
     if (user && !requiresRegistration) {
-      navigate(user.role === 'SUPER_ADMIN' ? '/admin' : '/dashboard', { replace: true })
+      navigate(user.role === "SUPER_ADMIN" ? "/admin" : "/dashboard", {
+        replace: true,
+      });
     }
-  }, [user, requiresRegistration, navigate])
+  }, [user, requiresRegistration, navigate]);
 
-  const urlParams = new URLSearchParams(window.location.search)
-  const isTrialRequest = urlParams.get('trial') === 'true'
-  const requestedPlan = (urlParams.get('plan') as 'LITE' | 'PLUS' | 'MAX') || 'LITE'
-  const requestedDays = urlParams.get('days') || (isTrialRequest ? '14' : '28')
-  const urlReferralCode = urlParams.get('ref')?.trim().toUpperCase() || ''
+  const urlParams = new URLSearchParams(window.location.search);
+  const isTrialRequest = urlParams.get("trial") === "true";
+  const requestedPlan =
+    (urlParams.get("plan") as "LITE" | "PLUS" | "MAX") || "LITE";
+  const requestedDays = urlParams.get("days") || (isTrialRequest ? "14" : "28");
+  const urlReferralCode = urlParams.get("ref")?.trim().toUpperCase() || "";
   if (urlReferralCode) {
-    try { localStorage.setItem('hlynk_referral_code', urlReferralCode) } catch (e) {}
+    try {
+      localStorage.setItem("hlynk_referral_code", urlReferralCode);
+    } catch (e) {}
   }
-  const savedRefCode = typeof window !== 'undefined' ? (localStorage.getItem('hlynk_referral_code') || '') : ''
-  const effectiveRefCode = urlReferralCode || savedRefCode
+  const savedRefCode =
+    typeof window !== "undefined"
+      ? localStorage.getItem("hlynk_referral_code") || ""
+      : "";
+  const effectiveRefCode = urlReferralCode || savedRefCode;
 
-  const [formData, setFormData] = useState<RegisterFormState & { isTrial?: boolean; daysReward?: number }>({
-    businessName: '', ownerName: '', phone: '', category: '', county: '',
-    location: '', planName: requestedPlan, referralCode: effectiveRefCode,
+  const [formData, setFormData] = useState<
+    RegisterFormState & { isTrial?: boolean; daysReward?: number }
+  >({
+    businessName: "",
+    ownerName: "",
+    phone: "",
+    category: "",
+    county: "",
+    location: "",
+    planName: requestedPlan,
+    referralCode: effectiveRefCode,
     isTrial: isTrialRequest || !!effectiveRefCode,
-    daysReward: parseInt(requestedDays)
-  })
+    daysReward: parseInt(requestedDays),
+  });
 
   // Offline connection checker
   const handleConnectionRestored = () => {
-    setIsOffline(false)
-  }
+    setIsOffline(false);
+  };
 
   const handleGoogleAuth = async (credential: string) => {
-    setGoogleLoading(true)
+    setGoogleLoading(true);
     try {
-      const res = await authApi.googleAuth({ credential })
-      if (res.data.action === 'REQUIRES_REGISTRATION') {
-        setGoogleCredential(credential)
-        setFormData(f => ({
+      const res = await authApi.googleAuth({ credential });
+      if (res.data.action === "REQUIRES_REGISTRATION") {
+        setGoogleCredential(credential);
+        setFormData((f) => ({
           ...f,
-          businessName: res.data.existingDetails?.businessName || f.businessName || '',
-          ownerName: res.data.existingDetails?.ownerName || res.data.googleDetails?.name || f.ownerName || '',
-          county: res.data.existingDetails?.county || f.county || '',
-          location: res.data.existingDetails?.location || f.location || '',
-          category: res.data.existingDetails?.category || f.category || '',
-          phone: res.data.existingDetails?.phone || f.phone || '',
+          businessName:
+            res.data.existingDetails?.businessName || f.businessName || "",
+          ownerName:
+            res.data.existingDetails?.ownerName ||
+            res.data.googleDetails?.name ||
+            f.ownerName ||
+            "",
+          county: res.data.existingDetails?.county || f.county || "",
+          location: res.data.existingDetails?.location || f.location || "",
+          category: res.data.existingDetails?.category || f.category || "",
+          phone: res.data.existingDetails?.phone || f.phone || "",
           referralCode: f.referralCode || effectiveRefCode,
-          isTrial: isTrialRequest || !!effectiveRefCode
-        }))
-        setRequiresRegistration(true)
+          isTrial: isTrialRequest || !!effectiveRefCode,
+        }));
+        setRequiresRegistration(true);
         if (res.data.message) {
-          toast.info(res.data.message)
+          toast.info(res.data.message);
         } else {
-          toast.info('Google account verified. Setup your business profile.')
+          toast.info("Google account verified. Setup your business profile.");
         }
       } else {
-        login({ accessToken: res.data.accessToken, refreshToken: res.data.refreshToken }, res.data.user)
-        navigate(res.data.user.role === 'SUPER_ADMIN' ? '/admin' : '/dashboard', { replace: true })
+        login(
+          {
+            accessToken: res.data.accessToken,
+            refreshToken: res.data.refreshToken,
+          },
+          res.data.user,
+        );
+        navigate(
+          res.data.user.role === "SUPER_ADMIN" ? "/admin" : "/dashboard",
+          { replace: true },
+        );
       }
-    } catch (err: any) { toast.error(getErrorMessage(err)) }
-    finally { setGoogleLoading(false) }
-  }
+    } catch (err: any) {
+      toast.error(getErrorMessage(err));
+    } finally {
+      setGoogleLoading(false);
+    }
+  };
 
   const handleRegistrationSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
 
     // 1. Enforce complete information
-    const cleanBusinessName = formData.businessName.trim()
+    const cleanBusinessName = formData.businessName.trim();
     if (!cleanBusinessName || cleanBusinessName.length < 2) {
-      toast.error('Please enter a valid Biashara / Shop name (at least 2 characters).')
-      return
+      toast.error(
+        "Please enter a valid Biashara / Shop name (at least 2 characters).",
+      );
+      return;
     }
 
-    const cleanOwnerName = formData.ownerName.trim()
+    const cleanOwnerName = formData.ownerName.trim();
     if (!cleanOwnerName) {
-      toast.error('Please enter your full name as the shop owner.')
-      return
+      toast.error("Please enter your full name as the shop owner.");
+      return;
     }
 
     if (!formData.county || !formData.county.trim()) {
-      toast.error('Please select the County where your shop is located.')
-      return
+      toast.error("Please select the County where your shop is located.");
+      return;
     }
 
     if (!formData.category || !formData.category.trim()) {
-      toast.error('Please specify your business category.')
-      return
+      toast.error("Please specify your business category.");
+      return;
     }
 
     if (!formData.location || !formData.location.trim()) {
-      toast.error('Please enter your specific Town or Area.')
-      return
+      toast.error("Please enter your specific Town or Area.");
+      return;
     }
 
     // 2. Enforce valid & complete Kenyan M-Pesa phone number
-    const phoneCheck = validateKenyanPhone(formData.phone)
+    const phoneCheck = validateKenyanPhone(formData.phone);
     if (!phoneCheck.isValid) {
-      toast.error(phoneCheck.error || 'Please enter a valid, complete 10-digit Kenyan phone number (07xx or 01xx).')
-      return
+      toast.error(
+        phoneCheck.error ||
+          "Please enter a valid, complete 10-digit Kenyan phone number (07xx or 01xx).",
+      );
+      return;
     }
 
-    setFormLoading(true)
+    setFormLoading(true);
     try {
       const payload = {
         ...formData,
@@ -364,22 +417,35 @@ export default function LoginPage() {
         category: formData.category.trim(),
         location: formData.location.trim(),
         phone: phoneCheck.normalized, // Standard 10-digit 07... or 01... format
-      }
-      const res = await authApi.googleAuth({ credential: googleCredential, registration: payload })
-      login({ accessToken: res.data.accessToken, refreshToken: res.data.refreshToken }, res.data.user)
-      navigate('/dashboard', { replace: true })
+      };
+      const res = await authApi.googleAuth({
+        credential: googleCredential,
+        registration: payload,
+      });
+      login(
+        {
+          accessToken: res.data.accessToken,
+          refreshToken: res.data.refreshToken,
+        },
+        res.data.user,
+      );
+      navigate("/dashboard", { replace: true });
 
       const isTrial = res.data.user.subscription?.status === 2;
       if (isTrial) {
-        toast.success('Your 14-day free trial has started!');
+        toast.success("Your 14-day free trial has started!");
       } else {
-        toast.success('Your shop is now live on hlynk!');
+        toast.success("Your shop is now live on hlynk!");
       }
-    } catch (err: any) { toast.error(getErrorMessage(err)) }
-    finally { setFormLoading(false) }
-  }
+    } catch (err: any) {
+      toast.error(getErrorMessage(err));
+    } finally {
+      setFormLoading(false);
+    }
+  };
 
-  const eulaWarning = () => toast.warning('Please accept the Terms of Service first.')
+  const eulaWarning = () =>
+    toast.warning("Please accept the Terms of Service first.");
 
   return (
     <>
@@ -556,7 +622,7 @@ export default function LoginPage() {
         className="lp-page lp-sans"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ duration: 0.6, ease: 'easeOut' }}
+        transition={{ duration: 0.6, ease: "easeOut" }}
       >
         <motion.div
           className="lp-container"
@@ -572,20 +638,26 @@ export default function LoginPage() {
                 The Smartest Way <br /> to Grow <br /> Your Biashara
               </h1>
               <p className="text-white font-light opacity-90 leading-relaxed max-w-sm drop-shadow-lg mb-10">
-                Stop the guesswork. Use modern tracking to manage stock and double your business profits.
+                Stop the guesswork. Use modern tracking to manage stock and
+                double your business profits.
               </p>
               <div className="flex flex-col gap-5">
                 {[
-                  'M-Pesa Friendly Sales Tracking',
-                  'Zero Manual Record Books Needed',
-                  'Automated Insights to Cut Costs',
-                  'Instant Setup, No Fees to Start',
+                  "M-Pesa Friendly Sales Tracking",
+                  "Zero Manual Record Books Needed",
+                  "Automated Insights to Cut Costs",
+                  "Instant Setup, No Fees to Start",
                 ].map((item) => (
-                  <div key={item} className="flex items-center gap-4 text-white group">
+                  <div
+                    key={item}
+                    className="flex items-center gap-4 text-white group"
+                  >
                     <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center group-hover:bg-white/40 transition-colors">
                       <Check size={14} strokeWidth={3} />
                     </div>
-                    <span className="text-[15px] font-semibold tracking-wide">{item}</span>
+                    <span className="text-[15px] font-semibold tracking-wide">
+                      {item}
+                    </span>
                   </div>
                 ))}
               </div>
@@ -598,48 +670,72 @@ export default function LoginPage() {
 
           {/* ── RIGHT PANEL ──────────────────────────────────────────────────── */}
           <div className="lp-right">
-
             {/* ═══════════════ MOBILE (hidden on lg+) ════════════════════════ */}
             <AnimatePresence mode="wait">
               {!requiresRegistration ? (
                 <motion.div
                   key="mob-login"
                   className="flex flex-col min-h-[100dvh] lg:hidden"
-                  initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
                   transition={{ duration: 0.3 }}
                 >
                   {/* Nav */}
-                  <nav className="mob-nav hidden" style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                  <nav
+                    className="mob-nav hidden"
+                    style={{ display: "flex", justifyContent: "flex-end" }}
+                  >
                     <a
                       href="/"
-                      style={{ display: 'flex', marginTop: '2rem', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.85)', textDecoration: 'none', letterSpacing: '0.05em' }}
+                      style={{
+                        display: "flex",
+                        marginTop: "2rem",
+                        alignItems: "center",
+                        gap: 4,
+                        fontSize: 11,
+                        fontWeight: 600,
+                        color: "rgba(255,255,255,0.85)",
+                        textDecoration: "none",
+                        letterSpacing: "0.05em",
+                      }}
                     >
                       <ArrowLeft size={11} /> Back to Website
                     </a>
                   </nav>
 
                   {/* Hero - Simplified for Mobile but consistent with Desktop */}
-                  <div className="mob-hero" style={{ display: 'block' }}>
-                    <h1 className="mob-hero-title pb-1">The Smartest Way <br /> to Grow <br /> Your <em>Biashara</em></h1>
-                    <p className="mob-hero-sub mt-2 mb-6 ">Stop the guesswork. Use modern tracking to manage stock and double your business profits.</p>
+                  <div className="mob-hero" style={{ display: "block" }}>
+                    <h1 className="mob-hero-title pb-1">
+                      The Smartest Way <br /> to Grow <br /> Your{" "}
+                      <em>Biashara</em>
+                    </h1>
+                    <p className="mob-hero-sub mt-2 mb-6 ">
+                      Stop the guesswork. Use modern tracking to manage stock
+                      and double your business profits.
+                    </p>
                     <div className="flex flex-col gap-2 opacity-80 scale-90 origin-left">
                       {[
-                        'M-Pesa Friendly Sales Tracking',
-                        'Zero Manual Record Books Needed',
-                        'Automated Insights to Cut Costs',
-                        'Instant Setup, No Fees to Start',
+                        "M-Pesa Friendly Sales Tracking",
+                        "Zero Manual Record Books Needed",
+                        "Automated Insights to Cut Costs",
+                        "Instant Setup, No Fees to Start",
                       ].map((item) => (
-                        <div key={item} className="flex items-center gap-3 text-white">
+                        <div
+                          key={item}
+                          className="flex items-center gap-3 text-white"
+                        >
                           <div className="w-7 h-7 rounded-full bg-[#E3A23C] flex items-center justify-center text-[#14181A]">
                             <Check size={10} strokeWidth={4} />
                           </div>
-                          <span className="text-[12px] font-medium tracking-wide">{item}</span>
+                          <span className="text-[12px] font-medium tracking-wide">
+                            {item}
+                          </span>
                         </div>
                       ))}
                     </div>
                   </div>
                   <div className="flex flex-col mt-auto pb-8 z-10 px-6 gap-4">
-
                     {/* EULA card */}
                     <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 flex items-center justify-center border border-white/10 w-full">
                       <label className="flex items-center gap-3 cursor-pointer group">
@@ -647,17 +743,31 @@ export default function LoginPage() {
                           type="checkbox"
                           className="mt-1 accent-[#000] w-5 h-5 cursor-pointer rounded-md border-white/20 flex-shrink-0 bg-white/20"
                           checked={acceptedEula}
-                          onChange={e => {
-                            setAcceptedEula(e.target.checked)
-                            if (e.target.checked) localStorage.setItem('hlynk_eula_accepted', 'true')
-                            else localStorage.removeItem('hlynk_eula_accepted')
+                          onChange={(e) => {
+                            setAcceptedEula(e.target.checked);
+                            if (e.target.checked)
+                              localStorage.setItem(
+                                "hlynk_eula_accepted",
+                                "true",
+                              );
+                            else localStorage.removeItem("hlynk_eula_accepted");
                           }}
                         />
                         <span className="text-[11px] px-1 py-1.5 font-light text-white/90 leading-relaxed">
-                          I agree to the{' '}
-                          <a href="/terms-conditions" className="text-white hover:text-[#E3A23C] font-medium transition-colors">Terms of Service</a>
-                          ,{' and '}
-                          <a href="/privacy-policy" className="text-white hover:text-[#E3A23C] font-medium transition-colors">Privacy Policy</a>
+                          I agree to the{" "}
+                          <a
+                            href="/terms-conditions"
+                            className="text-white hover:text-[#E3A23C] font-medium transition-colors"
+                          >
+                            Terms of Service
+                          </a>
+                          ,{" and "}
+                          <a
+                            href="/privacy-policy"
+                            className="text-white hover:text-[#E3A23C] font-medium transition-colors"
+                          >
+                            Privacy Policy
+                          </a>
                         </span>
                       </label>
                     </div>
@@ -665,31 +775,63 @@ export default function LoginPage() {
                     {/* Google button — blocker overlay when EULA unchecked */}
                     <div className="w-full transition-all text-center duration-300">
                       {isOffline ? (
-                        <OfflineRetryWidget onOnline={handleConnectionRestored} />
+                        <OfflineRetryWidget
+                          onOnline={handleConnectionRestored}
+                        />
                       ) : (
-                        <div className={`google-btn-wrap ${!acceptedEula ? 'opacity-40 grayscale' : 'opacity-100'}`}>
+                        <div
+                          className={`google-btn-wrap ${!acceptedEula ? "opacity-40 grayscale" : "opacity-100"}`}
+                        >
                           {!acceptedEula && (
-                            <div className="google-btn-blocker" onClick={eulaWarning} />
+                            <div
+                              className="google-btn-blocker"
+                              onClick={eulaWarning}
+                            />
                           )}
-                          <MobileGoogleAuth googleLoading={googleLoading} handleGoogleAuth={handleGoogleAuth} disabled={!acceptedEula} />
+                          <MobileGoogleAuth
+                            googleLoading={googleLoading}
+                            handleGoogleAuth={handleGoogleAuth}
+                            disabled={!acceptedEula}
+                          />
                         </div>
                       )}
                     </div>
-
                   </div>
                 </motion.div>
               ) : (
                 <motion.div
                   key="mob-register"
                   className="flex flex-col min-h-[100dvh] lg:hidden"
-                  initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
                   transition={{ duration: 0.35 }}
                 >
-                  <nav className="mob-nav hidden" style={{ display: 'flex' }}>
-                    <img src={hlynk} alt="hlynk" style={{ height: 32, objectFit: 'contain' }} />
+                  <nav className="mob-nav hidden" style={{ display: "flex" }}>
+                    <img
+                      src={hlynk}
+                      alt="hlynk"
+                      style={{ height: 32, objectFit: "contain" }}
+                    />
                     <button
-                      onClick={() => { setRequiresRegistration(false); setGoogleCredential('') }}
-                      style={{ display: 'flex', alignItems: 'center', gap: 4, marginBlock: '2rem', fontSize: 10, fontWeight: 700, background: 'none', border: 'none', color: 'rgba(255,255,255,0.85)', textTransform: 'capitalize', letterSpacing: '0.14em', cursor: 'pointer' }}
+                      onClick={() => {
+                        setRequiresRegistration(false);
+                        setGoogleCredential("");
+                      }}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 4,
+                        marginBlock: "2rem",
+                        fontSize: 10,
+                        fontWeight: 700,
+                        background: "none",
+                        border: "none",
+                        color: "rgba(255,255,255,0.85)",
+                        textTransform: "capitalize",
+                        letterSpacing: "0.14em",
+                        cursor: "pointer",
+                      }}
                     >
                       <ArrowLeft size={10} /> Back
                     </button>
@@ -697,50 +839,168 @@ export default function LoginPage() {
 
                   <div className="mob-form-wrap">
                     <div style={{ marginBottom: 28 }}>
-                      <h2 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 40, fontWeight: 400, color: '#F3EFE6', lineHeight: 1.05, marginBottom: 8 }}>
-                        Setup<br /><em style={{ fontStyle: 'italic', fontWeight: 300 }}>Your Shop</em>
+                      <h2
+                        style={{
+                          fontFamily: "'Cormorant Garamond', serif",
+                          fontSize: 40,
+                          fontWeight: 400,
+                          color: "#F3EFE6",
+                          lineHeight: 1.05,
+                          marginBottom: 8,
+                        }}
+                      >
+                        Setup
+                        <br />
+                        <em style={{ fontStyle: "italic", fontWeight: 300 }}>
+                          Your Shop
+                        </em>
                       </h2>
-                      <p style={{ fontSize: 13, fontWeight: 300, color: 'rgba(255,255,255,0.5)' }}>Tell us about your biashara to get started.</p>
+                      <p
+                        style={{
+                          fontSize: 13,
+                          fontWeight: 300,
+                          color: "rgba(255,255,255,0.5)",
+                        }}
+                      >
+                        Tell us about your biashara to get started.
+                      </p>
                     </div>
 
-                    <form onSubmit={handleRegistrationSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 0, backgroundColor: 'transparent' }} className="innerSection">
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginBottom: 28 }}>
+                    <form
+                      onSubmit={handleRegistrationSubmit}
+                      style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: 0,
+                        backgroundColor: "transparent",
+                      }}
+                      className="innerSection"
+                    >
+                      <div
+                        style={{
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: 16,
+                          marginBottom: 28,
+                        }}
+                      >
                         {formData.referralCode && (
-                          <div style={{ background: '#ecfdf5', border: '1px solid #a7f3d0', color: '#065f46', fontSize: 11, padding: '8px 12px', borderRadius: 8 }}>
-                            🎁 Referral Active: <strong>{formData.referralCode}</strong>
+                          <div
+                            style={{
+                              background: "#ecfdf5",
+                              border: "1px solid #a7f3d0",
+                              color: "#065f46",
+                              fontSize: 11,
+                              padding: "8px 12px",
+                              borderRadius: 8,
+                            }}
+                          >
+                            🎁 Referral Active:{" "}
+                            <strong>{formData.referralCode}</strong>
                           </div>
                         )}
                         <Field label="Biashara Name" icon={Building2}>
-                          <input type="text" value={formData.businessName} onChange={e => setFormData({ ...formData, businessName: e.target.value })} className={inputCls} placeholder="e.g. John's Shop" required />
+                          <input
+                            type="text"
+                            value={formData.businessName}
+                            onChange={(e) =>
+                              setFormData({
+                                ...formData,
+                                businessName: e.target.value,
+                              })
+                            }
+                            className={inputCls}
+                            placeholder="e.g. John's Shop"
+                            required
+                          />
                         </Field>
 
                         <Field label="Owner / Your Name" icon={User}>
-                          <input type="text" value={formData.ownerName} onChange={e => setFormData({ ...formData, ownerName: e.target.value })} className={inputCls} placeholder="e.g. John Doe" required />
+                          <input
+                            type="text"
+                            value={formData.ownerName}
+                            onChange={(e) =>
+                              setFormData({
+                                ...formData,
+                                ownerName: e.target.value,
+                              })
+                            }
+                            className={inputCls}
+                            placeholder="e.g. John Doe"
+                            required
+                          />
                         </Field>
 
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                        <div
+                          style={{
+                            display: "grid",
+                            gridTemplateColumns: "1fr 1fr",
+                            gap: 12,
+                          }}
+                        >
                           <Field label="County" icon={MapPin}>
-                            <select value={formData.county} onChange={e => setFormData({ ...formData, county: e.target.value })} className={inputCls} required>
-                              <option value="" className="bg-[#14181A] lg:bg-white">County?</option>
-                              {COUNTIES.map(c => <option key={c} className="bg-[#14181A] lg:bg-white">{c}</option>)}
+                            <select
+                              value={formData.county}
+                              onChange={(e) =>
+                                setFormData({
+                                  ...formData,
+                                  county: e.target.value,
+                                })
+                              }
+                              className={inputCls}
+                              required
+                            >
+                              <option
+                                value=""
+                                className="bg-[#14181A] lg:bg-white"
+                              >
+                                County?
+                              </option>
+                              {COUNTIES.map((c) => (
+                                <option
+                                  key={c}
+                                  className="bg-[#14181A] lg:bg-white"
+                                >
+                                  {c}
+                                </option>
+                              ))}
                             </select>
                           </Field>
                           <Field label="Category" icon={Tag}>
                             <input
                               list="reg-categories-mobile"
                               value={formData.category}
-                              onChange={e => setFormData({ ...formData, category: e.target.value })}
+                              onChange={(e) =>
+                                setFormData({
+                                  ...formData,
+                                  category: e.target.value,
+                                })
+                              }
                               className={inputCls}
                               placeholder="e.g. Salon, Mkokoteni, Retail…"
                               required
                             />
                             <datalist id="reg-categories-mobile">
-                              {CATEGORIES.map(c => <option key={c} value={c} />)}
+                              {CATEGORIES.map((c) => (
+                                <option key={c} value={c} />
+                              ))}
                             </datalist>
                           </Field>
                         </div>
                         <Field label="Town / Area" icon={MapPin}>
-                          <input type="text" value={formData.location} onChange={e => setFormData({ ...formData, location: e.target.value })} className={inputCls} placeholder="e.g. Utoma, Beirut" required />
+                          <input
+                            type="text"
+                            value={formData.location}
+                            onChange={(e) =>
+                              setFormData({
+                                ...formData,
+                                location: e.target.value,
+                              })
+                            }
+                            className={inputCls}
+                            placeholder="e.g. Utoma, Beirut"
+                            required
+                          />
                         </Field>
 
                         <div className="flex flex-col gap-1.5">
@@ -750,16 +1010,19 @@ export default function LoginPage() {
                               inputMode="tel"
                               autoComplete="tel"
                               value={formData.phone}
-                              onChange={e => {
-                                const cleaned = e.target.value.replace(/[^\d\s\+]/g, '')
-                                setFormData({ ...formData, phone: cleaned })
+                              onChange={(e) => {
+                                const cleaned = e.target.value.replace(
+                                  /[^\d\s\+]/g,
+                                  "",
+                                );
+                                setFormData({ ...formData, phone: cleaned });
                               }}
                               className={`${inputCls} ${
                                 formData.phone
                                   ? validateKenyanPhone(formData.phone).isValid
-                                    ? 'border-emerald-500/60 focus:border-emerald-500'
-                                    : 'border-amber-400/60 focus:border-amber-400'
-                                  : ''
+                                    ? "border-emerald-500/60 focus:border-emerald-500"
+                                    : "border-amber-400/60 focus:border-amber-400"
+                                  : ""
                               }`}
                               placeholder="07xx xxx xxx"
                               maxLength={14}
@@ -770,25 +1033,35 @@ export default function LoginPage() {
                             <div className="flex items-center gap-1.5 px-1 text-[11px] transition-all">
                               {validateKenyanPhone(formData.phone).isValid ? (
                                 <span className="text-emerald-400 flex items-center gap-1 font-medium">
-                                  <Check size={12} className="stroke-[3]" /> Valid phone number
+                                  <Check size={12} className="stroke-[3]" />{" "}
+                                  Valid phone number
                                   {/* <Check size={12} className="stroke-[3]" /> Valid phone number ({validateKenyanPhone(formData.phone).normalized}) */}
                                 </span>
                               ) : (
                                 <span className="text-amber-400 flex items-center gap-1">
-                                  <AlertCircle size={12} /> {validateKenyanPhone(formData.phone).error}
+                                  <AlertCircle size={12} />{" "}
+                                  {validateKenyanPhone(formData.phone).error}
                                 </span>
                               )}
                             </div>
                           ) : (
                             <span className="text-[11px] px-1 text-white/40">
-                              Enter a 10-digit Kenyan mobile number (e.g. 0712 345 678 or 0110 123 456)
+                              Enter a 10-digit Kenyan mobile number (e.g. 0712
+                              345 678 or 0110 123 456)
                             </span>
                           )}
                         </div>
-
                       </div>
-                      <button type="submit" disabled={formLoading} className="lp-btn-submit">
-                        {formLoading ? <ButtonLoader size={18} /> : 'Launch My Biashara'}
+                      <button
+                        type="submit"
+                        disabled={formLoading}
+                        className="lp-btn-submit"
+                      >
+                        {formLoading ? (
+                          <ButtonLoader size={18} />
+                        ) : (
+                          "Launch My Biashara"
+                        )}
                       </button>
                     </form>
                   </div>
@@ -800,32 +1073,54 @@ export default function LoginPage() {
             <div className="hidden lg:flex w-full max-w-[380px] mx-auto flex-col h-full">
               <div className="lp-right-logo flex justify-center mb-12">
                 <img src={hlynk} alt="hlynk" className="h-12 object-contain" />
-                <span style={{ color: '#00694B', fontWeight: 'bold', fontSize: '1.5rem', fontFamily: "'Nunito', sans-serif", margin: '5px' }}>lynk</span>
+                <span
+                  style={{
+                    color: "#00694B",
+                    fontWeight: "bold",
+                    fontSize: "1.5rem",
+                    fontFamily: "'Nunito', sans-serif",
+                    margin: "5px",
+                  }}
+                >
+                  lynk
+                </span>
               </div>
 
               <AnimatePresence mode="wait">
                 {!requiresRegistration ? (
                   <motion.div
                     key="desktop-login"
-                    initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -20 }}
                     transition={{ duration: 0.35 }}
                   >
                     <div className="lp-right-heading text-center mb-10">
-                      <h2 className="lp-serif text-[52px] leading-tight text-black mb-2">Welcome Back</h2>
-                      <p className="text-[#94a3b8] font-light text-[15px]">Your business dashboard is just one click away.</p>
+                      <h2 className="lp-serif text-[52px] leading-tight text-black mb-2">
+                        Welcome Back
+                      </h2>
+                      <p className="text-[#94a3b8] font-light text-[15px]">
+                        Your business dashboard is just one click away.
+                      </p>
                     </div>
 
                     <div className="auth-card desktop-only">
                       <div className="auth-blur p-6 rounded-2xl">
-
                         {isOffline ? (
                           <div className="mb-6">
-                            <OfflineRetryWidget onOnline={handleConnectionRestored} />
+                            <OfflineRetryWidget
+                              onOnline={handleConnectionRestored}
+                            />
                           </div>
                         ) : (
-                          <div className={`google-btn-wrap mb-6 transition-all duration-300 ${!acceptedEula ? 'opacity-50 grayscale' : ''}`}>
+                          <div
+                            className={`google-btn-wrap mb-6 transition-all duration-300 ${!acceptedEula ? "opacity-50 grayscale" : ""}`}
+                          >
                             {!acceptedEula && (
-                              <div className="google-btn-blocker" onClick={eulaWarning} />
+                              <div
+                                className="google-btn-blocker"
+                                onClick={eulaWarning}
+                              />
                             )}
                             <GoogleAuthButton
                               text="continue_with"
@@ -838,7 +1133,9 @@ export default function LoginPage() {
                         {/* Divider */}
                         <div className="flex items-center gap-4 mb-6">
                           <div className="h-[1px] flex-1 bg-[#f1f5f9]" />
-                          <span className="text-[9px] text-[#cbd5e1] tracking-[0.34em] font-bold uppercase">Biashara Hub</span>
+                          <span className="text-[9px] text-[#cbd5e1] tracking-[0.34em] font-bold uppercase">
+                            Biashara Hub
+                          </span>
                           <div className="h-[1px] flex-1 bg-[#f1f5f9]" />
                         </div>
 
@@ -848,24 +1145,41 @@ export default function LoginPage() {
                             type="checkbox"
                             className="mt-1 accent-black w-5 h-5 cursor-pointer rounded-md border-gray-200 flex-shrink-0"
                             checked={acceptedEula}
-                            onChange={e => {
-                              setAcceptedEula(e.target.checked)
-                              if (e.target.checked) localStorage.setItem('hlynk_eula_accepted', 'true')
-                              else localStorage.removeItem('hlynk_eula_accepted')
+                            onChange={(e) => {
+                              setAcceptedEula(e.target.checked);
+                              if (e.target.checked)
+                                localStorage.setItem(
+                                  "hlynk_eula_accepted",
+                                  "true",
+                                );
+                              else
+                                localStorage.removeItem("hlynk_eula_accepted");
                             }}
                           />
                           <span className="text-[11px] px-1 py-1.5 leading-relaxed font-light text-slate-500">
-                            I agree to the{' '}
-                            <a href="/terms-conditions" className="hover:text-emerald-600 hover:underline font-medium transition-colors">Terms of Service</a>
-                            {' & '}
-                            <a href="/privacy-policy" className="hover:text-emerald-600 hover:underline font-medium transition-colors">Privacy Policy</a>
+                            I agree to the{" "}
+                            <a
+                              href="/terms-conditions"
+                              className="hover:text-emerald-600 hover:underline font-medium transition-colors"
+                            >
+                              Terms of Service
+                            </a>
+                            {" & "}
+                            <a
+                              href="/privacy-policy"
+                              className="hover:text-emerald-600 hover:underline font-medium transition-colors"
+                            >
+                              Privacy Policy
+                            </a>
                           </span>
                         </label>
-
                       </div>
                     </div>
 
-                    <a href="/" className="hidden lg:flex items-center mt-8 cursor-pointer text-black font-normal pl-5 hover:underline">
+                    <a
+                      href="/"
+                      className="hidden lg:flex items-center mt-8 cursor-pointer text-black font-normal pl-5 hover:underline"
+                    >
                       <ArrowLeft size={12} className="mr-2" />
                       Back to Website
                     </a>
@@ -873,52 +1187,131 @@ export default function LoginPage() {
                 ) : (
                   <motion.div
                     key="desktop-register"
-                    initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -20 }}
                     transition={{ duration: 0.35 }}
                   >
-                    <form onSubmit={handleRegistrationSubmit} className="flex flex-col h-full">
+                    <form
+                      onSubmit={handleRegistrationSubmit}
+                      className="flex flex-col h-full"
+                    >
                       <div className="text-center mb-6">
-                        <h2 className="lp-serif text-[42px] leading-tight text-black mb-2">Setup Shop</h2>
-                        <p className="text-gray-400 font-light text-sm">Tell us about your biashara to get started.</p>
+                        <h2 className="lp-serif text-[42px] leading-tight text-black mb-2">
+                          Setup Shop
+                        </h2>
+                        <p className="text-gray-400 font-light text-sm">
+                          Tell us about your biashara to get started.
+                        </p>
                       </div>
                       <div className="flex flex-col gap-3.5 mb-6">
                         {formData.referralCode && (
                           <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs px-3 py-2 rounded-lg flex items-center justify-between">
-                            <span>🎁 Referral Active: <strong>{formData.referralCode}</strong></span>
-                            <span className="text-[10px] text-emerald-600 bg-white px-2 py-0.5 rounded border border-emerald-100 font-medium">Applied</span>
+                            <span>
+                              🎁 Referral Active:{" "}
+                              <strong>{formData.referralCode}</strong>
+                            </span>
+                            <span className="text-[10px] text-emerald-600 bg-white px-2 py-0.5 rounded border border-emerald-100 font-medium">
+                              Applied
+                            </span>
                           </div>
                         )}
                         <Field label="Biashara Name" icon={Building2}>
-                          <input type="text" value={formData.businessName} onChange={e => setFormData({ ...formData, businessName: e.target.value })} className={inputCls} placeholder="e.g. Mama Mboga Pro" required />
+                          <input
+                            type="text"
+                            value={formData.businessName}
+                            onChange={(e) =>
+                              setFormData({
+                                ...formData,
+                                businessName: e.target.value,
+                              })
+                            }
+                            className={inputCls}
+                            placeholder="e.g. Mama Mboga Pro"
+                            required
+                          />
                         </Field>
 
                         <Field label="Owner / Your Full Name" icon={User}>
-                          <input type="text" value={formData.ownerName} onChange={e => setFormData({ ...formData, ownerName: e.target.value })} className={inputCls} placeholder="e.g. Jane Doe" required />
+                          <input
+                            type="text"
+                            value={formData.ownerName}
+                            onChange={(e) =>
+                              setFormData({
+                                ...formData,
+                                ownerName: e.target.value,
+                              })
+                            }
+                            className={inputCls}
+                            placeholder="e.g. Jane Doe"
+                            required
+                          />
                         </Field>
 
                         <div className="grid grid-cols-2 gap-3.5">
                           <Field label="County Location" icon={MapPin}>
-                            <select value={formData.county} onChange={e => setFormData({ ...formData, county: e.target.value })} className={inputCls} required>
-                              <option value="" className="bg-[#14181A] lg:bg-white">Where is your shop?</option>
-                              {COUNTIES.map(c => <option key={c} className="bg-[#14181A] lg:bg-white">{c}</option>)}
+                            <select
+                              value={formData.county}
+                              onChange={(e) =>
+                                setFormData({
+                                  ...formData,
+                                  county: e.target.value,
+                                })
+                              }
+                              className={inputCls}
+                              required
+                            >
+                              <option
+                                value=""
+                                className="bg-[#14181A] lg:bg-white"
+                              >
+                                Where is your shop?
+                              </option>
+                              {COUNTIES.map((c) => (
+                                <option
+                                  key={c}
+                                  className="bg-[#14181A] lg:bg-white"
+                                >
+                                  {c}
+                                </option>
+                              ))}
                             </select>
                           </Field>
                           <Field label="Biashara Category" icon={Tag}>
                             <input
                               list="reg-categories-desktop"
                               value={formData.category}
-                              onChange={e => setFormData({ ...formData, category: e.target.value })}
+                              onChange={(e) =>
+                                setFormData({
+                                  ...formData,
+                                  category: e.target.value,
+                                })
+                              }
                               className={inputCls}
                               placeholder="e.g. Salon, Mkokoteni, Retail…"
                               required
                             />
                             <datalist id="reg-categories-desktop">
-                              {CATEGORIES.map(c => <option key={c} value={c} />)}
+                              {CATEGORIES.map((c) => (
+                                <option key={c} value={c} />
+                              ))}
                             </datalist>
                           </Field>
                         </div>
                         <Field label="Specific Town/Area" icon={MapPin}>
-                          <input type="text" value={formData.location} onChange={e => setFormData({ ...formData, location: e.target.value })} className={inputCls} placeholder="e.g. Westlands, Nairobi" required />
+                          <input
+                            type="text"
+                            value={formData.location}
+                            onChange={(e) =>
+                              setFormData({
+                                ...formData,
+                                location: e.target.value,
+                              })
+                            }
+                            className={inputCls}
+                            placeholder="e.g. Westlands, Nairobi"
+                            required
+                          />
                         </Field>
 
                         <div className="flex flex-col gap-1.5">
@@ -928,16 +1321,19 @@ export default function LoginPage() {
                               inputMode="tel"
                               autoComplete="tel"
                               value={formData.phone}
-                              onChange={e => {
-                                const cleaned = e.target.value.replace(/[^\d\s\+]/g, '')
-                                setFormData({ ...formData, phone: cleaned })
+                              onChange={(e) => {
+                                const cleaned = e.target.value.replace(
+                                  /[^\d\s\+]/g,
+                                  "",
+                                );
+                                setFormData({ ...formData, phone: cleaned });
                               }}
                               className={`${inputCls} ${
                                 formData.phone
                                   ? validateKenyanPhone(formData.phone).isValid
-                                    ? 'border-emerald-500/60 focus:border-emerald-500'
-                                    : 'border-amber-400/60 focus:border-amber-400'
-                                  : ''
+                                    ? "border-emerald-500/60 focus:border-emerald-500"
+                                    : "border-amber-400/60 focus:border-amber-400"
+                                  : ""
                               }`}
                               placeholder="07xx xxx xxx"
                               maxLength={14}
@@ -948,28 +1344,45 @@ export default function LoginPage() {
                             <div className="flex items-center gap-1.5 px-1 text-[11px] transition-all">
                               {validateKenyanPhone(formData.phone).isValid ? (
                                 <span className="text-emerald-600 flex items-center gap-1 font-medium">
-                                  <Check size={12} className="stroke-[3]" /> Valid phone number
+                                  <Check size={12} className="stroke-[3]" />{" "}
+                                  Valid phone number
                                   {/* <Check size={12} className="stroke-[3]" /> Valid M-Pesa number ({validateKenyanPhone(formData.phone).normalized}) */}
                                 </span>
                               ) : (
                                 <span className="text-amber-600 flex items-center gap-1">
-                                  <AlertCircle size={12} /> 
+                                  <AlertCircle size={12} />
                                   {/* <AlertCircle size={12} /> {validateKenyanPhone(formData.phone).error} */}
                                 </span>
                               )}
                             </div>
                           ) : (
                             <span className="text-[11px] px-1 text-slate-400">
-                              Enter a 10-digit Kenyan mobile number (e.g. 0712 345 678 or 0110 123 456)
+                              Enter a 10-digit Kenyan mobile number (e.g. 0712
+                              345 678 or 0110 123 456)
                             </span>
                           )}
                         </div>
-
                       </div>
-                      <button type="submit" disabled={formLoading} className="lp-btn-submit">
-                        {formLoading ? <ButtonLoader size={18} /> : 'Launch My biashara'}
+                      <button
+                        type="submit"
+                        disabled={formLoading}
+                        className="lp-btn-submit"
+                      >
+                        {formLoading ? (
+                          <ButtonLoader size={18} />
+                        ) : (
+                          "Launch My biashara"
+                        )}
                       </button>
-                      <button type="button" disabled={formLoading} onClick={() => { setRequiresRegistration(false); setGoogleCredential('') }} className="text-left mt-6 cursor-pointer text-black font-normal pl-2 text-xs hover:underline">
+                      <button
+                        type="button"
+                        disabled={formLoading}
+                        onClick={() => {
+                          setRequiresRegistration(false);
+                          setGoogleCredential("");
+                        }}
+                        className="text-left mt-6 cursor-pointer text-black font-normal pl-2 text-xs hover:underline"
+                      >
                         Back to Login
                       </button>
                     </form>
@@ -977,12 +1390,11 @@ export default function LoginPage() {
                 )}
               </AnimatePresence>
             </div>
-
           </div>
         </motion.div>
       </motion.div>
     </>
-  )
+  );
 }
 
 function MobileGoogleAuth({
@@ -990,9 +1402,9 @@ function MobileGoogleAuth({
   handleGoogleAuth,
   disabled,
 }: {
-  googleLoading: boolean
-  handleGoogleAuth: (credential: string) => void
-  disabled?: boolean
+  googleLoading: boolean;
+  handleGoogleAuth: (credential: string) => void;
+  disabled?: boolean;
 }) {
   return (
     <GoogleAuthButton
@@ -1002,36 +1414,38 @@ function MobileGoogleAuth({
       disabled={googleLoading || disabled}
       className=""
     />
-  )
+  );
 }
 
 function OfflineRetryWidget({ onOnline }: { onOnline: () => void }) {
-  const [countdown, setCountdown] = useState(15)
-  const [attempts, setAttempts] = useState(0)
+  const [countdown, setCountdown] = useState(15);
+  const [attempts, setAttempts] = useState(0);
 
   useEffect(() => {
     const timer = setInterval(() => {
       setCountdown((prev) => {
         if (prev <= 1) {
-          checkConnection()
-          return 15
+          checkConnection();
+          return 15;
         }
-        return prev - 1
-      })
-    }, 1000)
-    return () => clearInterval(timer)
-  }, [attempts])
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [attempts]);
 
   const checkConnection = () => {
-    setAttempts((prev) => prev + 1)
-    if (typeof navigator !== 'undefined' && navigator.onLine) {
-      toast.success('Connection restored!')
-      onOnline()
+    setAttempts((prev) => prev + 1);
+    if (typeof navigator !== "undefined" && navigator.onLine) {
+      toast.success("Connection restored!");
+      onOnline();
     } else {
-      setCountdown(15)
-      toast.error('Still offline', { description: 'Please check your internet connection.' })
+      setCountdown(15);
+      toast.error("Still offline", {
+        description: "Please check your internet connection.",
+      });
     }
-  }
+  };
 
   return (
     <div className="w-full p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-center flex flex-col items-center gap-3">
@@ -1039,9 +1453,12 @@ function OfflineRetryWidget({ onOnline }: { onOnline: () => void }) {
         <WifiOff size={20} />
       </div>
       <div>
-        <h4 className="text-sm font-semibold text-[#14181A] lg:text-slate-900">Connection Required</h4>
+        <h4 className="text-sm font-semibold text-[#14181A] lg:text-slate-900">
+          Connection Required
+        </h4>
         <p className="text-xs text-slate-500 mt-0.5">
-          Checking internet connection. Retrying in <span className="font-bold text-amber-600">{countdown}s</span>
+          Checking internet connection. Retrying in{" "}
+          <span className="font-bold text-amber-600">{countdown}s</span>
           {attempts > 0 && ` (Attempt ${attempts})`}
         </p>
       </div>
@@ -1053,5 +1470,5 @@ function OfflineRetryWidget({ onOnline }: { onOnline: () => void }) {
         <RefreshCw size={14} /> Try Again Now
       </button>
     </div>
-  )
+  );
 }
