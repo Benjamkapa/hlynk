@@ -471,7 +471,7 @@ export default function LoginPage() {
         }
         .lp-left {
           flex: 1; margin: .5em; position: relative; border-radius: 2rem;
-          background-image: url(${authBg}); background-size: cover;
+          // background-image: url(${authBg}); background-size: cover;
           background-position: center; background-attachment: fixed;
           display: flex; flex-direction: column; justify-content: space-between;
           padding: 60px; overflow: hidden;
