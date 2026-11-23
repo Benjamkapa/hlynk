@@ -134,6 +134,9 @@ export const adminApi = {
   // New: update only regional settings (currency & timezone)
   updateRegionalSettings: (data: { DEFAULT_CURRENCY?: string; TIMEZONE?: string }) =>
     api.put('/admin/settings', data).then(r => r.data),
+    // New method to upgrade a tenant's plan
+    upgradePlan: (tenantId: string, plan: string) =>
+      api.put(`/admin/tenants/${tenantId}/plan`, { plan }).then(r => r.data),
   // Fallback photo upload if /admin/me/photo route is unavailable
   uploadAdminPhoto: (file: File) => {
     const formData = new FormData();
