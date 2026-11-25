@@ -12,6 +12,7 @@ export default function BroadcastTool() {
   const [title, setTitle] = useState('')
   const [message, setMessage] = useState('')
   const [type, setType] = useState<'info' | 'warning' | 'success'>('info')
+  const [sendEmail, setSendEmail] = useState(true)
   const [sending, setSending] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
@@ -90,7 +91,8 @@ export default function BroadcastTool() {
         emails: target === 'specific' ? finalEmails : undefined,
         title: title.trim(),
         message: message.trim(),
-        type
+        type,
+        sendEmail
       })
       toast.success(res.data.message || 'Broadcast sent successfully')
       setTitle('')
@@ -359,9 +361,20 @@ export default function BroadcastTool() {
 
               {/* Footer Actions */}
               <div className="pt-2 flex flex-col sm:flex-row justify-between sm:items-center gap-3 border-t border-gray-50">
-                <span className="text-[11px] text-gray-400">
-                  Delivered to in-app notification center and push notifications
-                </span>
+                <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                  <span className="text-[11px] text-gray-400">
+                    Delivered to in-app notification center and push.
+                  </span>
+                  <label className="inline-flex items-center gap-1.5 cursor-pointer text-[11px] font-medium text-emerald-800 bg-emerald-50/80 px-2.5 py-1 rounded-md border border-emerald-100 hover:bg-emerald-50 transition-colors">
+                    <input
+                      type="checkbox"
+                      checked={sendEmail}
+                      onChange={e => setSendEmail(e.target.checked)}
+                      className="rounded border-emerald-300 text-emerald-600 focus:ring-emerald-500 h-3.5 w-3.5"
+                    />
+                    <span>Also send as <strong>Email Announcement</strong> (Brevo)</span>
+                  </label>
+                </div>
                 <button
                   type="submit"
                   disabled={sending}

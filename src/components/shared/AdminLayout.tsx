@@ -100,7 +100,7 @@ export default function AdminLayout() {
             {!isCollapsed && (
               <div className="flex flex-col min-w-0">
                 <span className="text-sm font-extrabold text-slate-900 tracking-wider leading-none">
-                  hlynk Inc.
+                  hlyn.
                 </span>
                 <span className="text-[10px] font-semibold text-emerald-700 tracking-widest mt-1">
                   Super Admin
