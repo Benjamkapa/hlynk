@@ -70,7 +70,7 @@ export default function BroadcastTool() {
       return
     }
 
-    if (!title.trim()) return toast.error('Please enter a notification title')
+    // if (!title.trim()) return toast.error('Please enter a notification title')
     if (!message.trim()) return toast.error('Please enter message content')
 
     let finalEmails = selectedEmails
