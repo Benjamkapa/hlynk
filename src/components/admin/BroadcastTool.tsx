@@ -70,7 +70,6 @@ export default function BroadcastTool() {
       return
     }
 
-    // if (!title.trim()) return toast.error('Please enter a notification title')
     if (!message.trim()) return toast.error('Please enter message content')
 
     let finalEmails = selectedEmails
@@ -303,12 +302,12 @@ export default function BroadcastTool() {
               {/* Title & Severity */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div className="sm:col-span-2 space-y-1">
-                  <label className="text-xs font-medium text-gray-700">Notice Title</label>
+                  <label className="text-xs font-medium text-gray-700">Notice Title <span className="text-gray-400 font-normal">(optional)</span></label>
                   <input
                     type="text"
                     value={title}
                     onChange={e => setTitle(e.target.value)}
-                    placeholder="e.g. Scheduled System Maintenance"
+                    placeholder="Optional — leave blank to send just the message"
                     className="w-full px-3 py-2 text-xs border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
                   />
                 </div>
