@@ -28,6 +28,7 @@ import {
   X,
 } from 'lucide-react'
 import { getErrorMessage } from '../../lib/utils/error'
+import ClickableCard from '../../components/shared/ClickableCard'
 import { useEffect, useMemo, useState } from 'react'
 import type { ElementType } from 'react'
 
@@ -117,7 +118,6 @@ function StatusPill({ status, label }: { status: HealthStatus; label?: string })
     </span>
   )
 }
-
 function MetricCard({
   label,
   value,
@@ -127,22 +127,27 @@ function MetricCard({
   caption,
   points,
   metricKey,
-  cardBg = 'bg-[#FFFEFA] border-amber-200/70',
+  cardBg = 'bg-[#FFFDF8] shadow-sm',
+  className = '',
 }: {
-  label: string
-  value: string
-  unit?: string
-  status: HealthStatus
-  icon: ElementType
-  caption: string
-  points: Point[]
-  metricKey: MetricKey
-  cardBg?: string
+  label: string;
+  value: string;
+  unit?: string;
+  status: HealthStatus;
+  icon: ElementType;
+  caption: string;
+  points: Point[];
+  metricKey: MetricKey;
+  cardBg?: string;
+  className?: string;
 }) {
-  const spark = points.slice(-24)
+  const spark = points.slice(-24);
 
   return (
-    <article className={`rounded-xl p-5 shadow-sm transition-shadow hover:shadow-md ${cardBg}`}>
+    <ClickableCard
+      to="/admin/system-performance"
+      className={`p-5 shadow-sm transition-shadow hover:shadow-md ${cardBg} ${className}`}
+    >
       <div className="flex items-start justify-between gap-3">
         <div className="flex min-w-0 items-center gap-3">
           <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#0D4A3E]/[0.08] text-[#0D4A3E]">
@@ -153,11 +158,17 @@ function MetricCard({
             <p className="mt-0.5 text-xs text-slate-400">{caption}</p>
           </div>
         </div>
-        <span className={`mt-1 h-2 w-2 shrink-0 rounded-full ${
-          status === 'healthy' ? 'bg-emerald-500' :
-          status === 'warning' ? 'bg-amber-500' :
-          status === 'critical' ? 'bg-red-500' : 'bg-slate-300'
-        }`} />
+        <span
+          className={`mt-1 h-2 w-2 shrink-0 rounded-full ${
+            status === 'healthy'
+              ? 'bg-emerald-500'
+              : status === 'warning'
+              ? 'bg-amber-500'
+              : status === 'critical'
+              ? 'bg-red-500'
+              : 'bg-slate-300'
+          }`}
+        />
       </div>
 
       <div className="mt-5 flex items-end justify-between gap-3">
@@ -184,8 +195,8 @@ function MetricCard({
           )}
         </div>
       </div>
-    </article>
-  )
+    </ClickableCard>
+  );
 }
 
 function CapacityCard({
@@ -206,7 +217,7 @@ function CapacityCard({
     safe >= 70 ? 'bg-amber-500' : 'bg-[#0D4A3E]'
 
   return (
-    <div className="rounded-lg border border-slate-200 bg-white p-4">
+    <div className="rounded-lg bg-[#FFFDF8] p-4 shadow-sm">
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2 text-sm font-medium text-slate-700">
           <Icon size={16} className="text-slate-400" />
@@ -377,7 +388,7 @@ export default function SystemPerformancePage() {
     : null
 
   return (
-    <main className="mx-auto max-w-[1500px] space-y-7 pb-10 text-slate-900">
+    <main className="w-full space-y-7 pb-10 text-slate-900">
       {/* Page heading and primary actions */}
       <header className="flex flex-col gap-5 border-b border-slate-200 pb-6 lg:flex-row lg:items-end lg:justify-between">
         <div>
@@ -458,13 +469,13 @@ export default function SystemPerformancePage() {
         </div>
 
         {isLoading ? (
-          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <div className="grid grid-cols-4 gap-0">
             {[1, 2, 3, 4].map((item) => (
               <div key={item} className="h-36 animate-pulse rounded-xl border border-slate-200 bg-white" />
             ))}
           </div>
         ) : (
-          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <div className="grid grid-cols-4 gap-0">
             <MetricCard
               label="API response"
               value={display(health.apiLatency)}
@@ -619,7 +630,7 @@ export default function SystemPerformancePage() {
           </div>
         </section>
 
-        <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+        <section className="rounded-xl bg-[#FFFDF8] p-5 shadow-sm sm:p-6">
           <div className="flex items-center justify-between">
             <div>
               <h2 className="font-semibold text-slate-900">Infrastructure capacity</h2>
@@ -652,7 +663,7 @@ export default function SystemPerformancePage() {
 
       {/* Operational status */}
       <div className="grid gap-5 lg:grid-cols-3">
-        <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+        <section className="rounded-xl bg-[#FFFDF8] p-5 shadow-sm">
           <div className="flex items-center gap-2">
             <ShieldCheck size={18} className="text-[#0D4A3E]" />
             <h2 className="font-semibold text-slate-900">Service health</h2>
@@ -671,7 +682,7 @@ export default function SystemPerformancePage() {
           </div>
         </section>
 
-        <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+        <section className="rounded-xl bg-[#FFFDF8] p-5 shadow-sm">
           <div className="flex items-center gap-2">
             <Server size={18} className="text-[#0D4A3E]" />
             <h2 className="font-semibold text-slate-900">Cluster availability</h2>
@@ -689,7 +700,7 @@ export default function SystemPerformancePage() {
           <p className="mt-3 text-xs text-slate-400">{nodes.length} node{nodes.length === 1 ? '' : 's'} reporting to the health endpoint</p>
         </section>
 
-        <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+        <section className="rounded-xl bg-[#FFFDF8] p-5 shadow-sm">
           <div className="flex items-center gap-2">
             <ShieldCheck size={18} className="text-[#0D4A3E]" />
             <h2 className="font-semibold text-slate-900">M-Pesa integration</h2>

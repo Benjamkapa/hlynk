@@ -1,5 +1,5 @@
-
 import { useMemo, useState } from 'react'
+import ClickableCard from '../../components/shared/ClickableCard'
 import {
   HardDrive,
   Search,
@@ -11,11 +11,9 @@ import {
   Users,
   LayoutGrid,
   List,
-  CheckCircle2,
   AlertCircle,
   Cloud,
   RefreshCw,
-  CheckCircle,
   Clock,
   Folder,
   ShieldCheck,
@@ -31,17 +29,26 @@ import { ConfirmModal } from '../../components/shared/ConfirmModal'
 type MediaType = 'ALL' | 'IMAGE' | 'DOCUMENT'
 type ViewMode = 'grid' | 'list'
 
+type MediaFile = {
+  name: string
+  path: string
+  url?: string
+  type: Exclude<MediaType, 'ALL'>
+  folder?: string
+  size?: number
+  ownerName?: string
+}
+
 export default function CloudStoragePage() {
   const [view, setView] = useState<ViewMode>('grid')
   const [search, setSearch] = useState('')
   const [filterFolder, setFilterFolder] = useState('all')
   const [filterType, setFilterType] = useState<MediaType>('ALL')
-  const [confirmDelete, setConfirmDelete] = useState<any>(null)
+  const [confirmDelete, setConfirmDelete] = useState<MediaFile | null>(null)
   const [triggeringBackup, setTriggeringBackup] = useState(false)
 
   const queryClient = useQueryClient()
 
-  // Backup status
   const {
     data: backupStatusRes,
     isLoading: isBackupLoading,
@@ -54,7 +61,6 @@ export default function CloudStoragePage() {
 
   const backupData = backupStatusRes?.data
 
-  // Media files
   const {
     data: mediaRes,
     isLoading,
@@ -65,26 +71,21 @@ export default function CloudStoragePage() {
     queryFn: adminApi.getMedia,
   })
 
-  const media = mediaRes?.data || []
+  const media: MediaFile[] = mediaRes?.data ?? []
 
-  // Manual backup
   const handleTriggerManualBackup = async () => {
     setTriggeringBackup(true)
-
     const toastId = toast.loading('Creating database backup...')
 
     try {
       const res: any = await adminApi.triggerCloudBackup()
-
-      toast.success(
-        res?.message || 'Backup completed successfully.',
-        { id: toastId }
-      )
-
+      toast.success(res?.message || 'Backup completed successfully.', {
+        id: toastId,
+      })
       await refetchBackupStatus()
     } catch (err: any) {
       toast.error(
-        err.response?.data?.message || err.message || 'Backup failed.',
+        err?.response?.data?.message || err?.message || 'Backup failed.',
         { id: toastId }
       )
     } finally {
@@ -92,7 +93,6 @@ export default function CloudStoragePage() {
     }
   }
 
-  // Delete file
   const deleteMutation = useMutation({
     mutationFn: (path: string) => adminApi.deleteMedia(path),
     onSuccess: () => {
@@ -105,73 +105,50 @@ export default function CloudStoragePage() {
     },
   })
 
-  // Helpers
   const formatSize = (bytes = 0) => {
-    if (!bytes) return '0 B'
-
+    if (!Number.isFinite(bytes) || bytes <= 0) return '0 B'
     const units = ['B', 'KB', 'MB', 'GB', 'TB']
     const index = Math.min(
       Math.floor(Math.log(bytes) / Math.log(1024)),
       units.length - 1
     )
-
-    return `${(bytes / Math.pow(1024, index)).toFixed(index === 0 ? 0 : 2)} ${units[index]}`
+    return `${(bytes / 1024 ** index).toFixed(index === 0 ? 0 : 2)} ${units[index]}`
   }
 
   const formatDate = (date?: string) => {
     if (!date) return 'Not available'
-
     const parsed = new Date(date)
-
     return Number.isNaN(parsed.getTime())
       ? 'Not available'
       : parsed.toLocaleString()
   }
 
   const totalSize = media.reduce(
-    (total: number, file: any) => total + (file.size || 0),
+    (total, file) => total + (Number(file.size) || 0),
     0
   )
 
-  const folders = useMemo(() => {
-    return [
-      'all',
-      ...Array.from(
-        new Set(
-          media
-            .map((file: any) => file.folder)
-            .filter(Boolean)
-        )
-      ),
-    ] as string[]
-  }, [media])
+  const folders = useMemo(
+    () => ['all', ...Array.from(new Set(media.map((file) => file.folder).filter(Boolean) as string[]))],
+    [media]
+  )
 
   const filteredMedia = useMemo(() => {
     const term = search.trim().toLowerCase()
-
-    return media.filter((file: any) => {
+    return media.filter((file) => {
       const matchesSearch =
         !term ||
         file.name?.toLowerCase().includes(term) ||
         file.path?.toLowerCase().includes(term)
-
       const matchesFolder =
         filterFolder === 'all' || file.folder === filterFolder
-
-      const matchesType =
-        filterType === 'ALL' || file.type === filterType
-
+      const matchesType = filterType === 'ALL' || file.type === filterType
       return matchesSearch && matchesFolder && matchesType
     })
   }, [media, search, filterFolder, filterType])
 
-  const imageCount = media.filter(
-    (file: any) => file.type === 'IMAGE'
-  ).length
-
-  const documentCount = media.filter(
-    (file: any) => file.type === 'DOCUMENT'
-  ).length
+  const imageCount = media.filter((file) => file.type === 'IMAGE').length
+  const documentCount = media.filter((file) => file.type === 'DOCUMENT').length
 
   const clearFilters = () => {
     setSearch('')
@@ -191,7 +168,7 @@ export default function CloudStoragePage() {
     accent = false,
   }: {
     name: string
-    icon: any
+    icon: React.ElementType
     connected?: boolean
     error?: string
     description: string
@@ -203,23 +180,19 @@ export default function CloudStoragePage() {
           className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${
             accent
               ? 'bg-emerald-100 text-emerald-700'
-              : 'bg-white text-gray-600 border border-gray-100'
+              : 'border border-gray-100 bg-white text-gray-600'
           }`}
         >
           <Icon size={17} />
         </div>
-
         <div className="min-w-0">
           <p className="text-sm font-semibold text-gray-800">{name}</p>
           <p className="mt-0.5 text-xs text-gray-500">{description}</p>
           {error && !connected && (
-            <p className="mt-1 text-xs text-amber-700 break-words">
-              {error}
-            </p>
+            <p className="mt-1 break-words text-xs text-amber-700">{error}</p>
           )}
         </div>
       </div>
-
       <span
         className={`inline-flex shrink-0 items-center gap-1.5 rounded-full px-2 py-1 text-[11px] font-medium ${
           connected
@@ -237,7 +210,7 @@ export default function CloudStoragePage() {
     </div>
   )
 
-  const FileIcon = ({ file }: { file: any }) => (
+  const FileIcon = ({ file }: { file: MediaFile }) => (
     <div
       className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${
         file.type === 'IMAGE'
@@ -247,30 +220,29 @@ export default function CloudStoragePage() {
             : 'bg-gray-100 text-gray-500'
       }`}
     >
-      {file.type === 'IMAGE' ? (
-        <ImageIcon size={19} />
-      ) : (
-        <FileText size={19} />
-      )}
+      {file.type === 'IMAGE' ? <ImageIcon size={19} /> : <FileText size={19} />}
     </div>
   )
 
-  const FileActions = ({ file }: { file: any }) => (
+  const FileActions = ({ file }: { file: MediaFile }) => (
     <div className="flex items-center gap-1">
-      <a
-        href={file.url}
-        target="_blank"
-        rel="noreferrer"
-        title="Open file"
-        className="flex h-9 w-9 items-center justify-center rounded-lg text-gray-400 transition hover:bg-emerald-50 hover:text-emerald-700"
-      >
-        <ExternalLink size={16} />
-      </a>
-
+      {file.url && (
+        <a
+          href={file.url}
+          target="_blank"
+          rel="noreferrer"
+          title="Open file"
+          aria-label={`Open ${file.name}`}
+          className="flex h-9 w-9 items-center justify-center rounded-lg text-gray-400 transition hover:bg-emerald-50 hover:text-emerald-700"
+        >
+          <ExternalLink size={16} />
+        </a>
+      )}
       <button
         type="button"
         onClick={() => setConfirmDelete(file)}
         title="Delete file"
+        aria-label={`Delete ${file.name}`}
         className="flex h-9 w-9 items-center justify-center rounded-lg text-gray-400 transition hover:bg-red-50 hover:text-red-600"
       >
         <Trash2 size={16} />
@@ -280,29 +252,24 @@ export default function CloudStoragePage() {
 
   return (
     <div className="space-y-6 pb-12 pt-2">
-
-      {/* Page heading */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <div className="mb-1 flex items-center gap-2 text-xs font-medium text-emerald-700">
             <HardDrive size={14} />
             Storage management
           </div>
-
           <h1 className="text-2xl font-semibold tracking-tight text-gray-900">
             Cloud Storage
           </h1>
-
           <p className="mt-1 text-sm text-gray-500">
             Manage uploaded files and monitor your database backups.
           </p>
         </div>
-
         <button
           type="button"
           onClick={() => {
-            refetchMedia()
-            refetchBackupStatus()
+            void refetchMedia()
+            void refetchBackupStatus()
           }}
           className="inline-flex h-10 items-center justify-center gap-2 self-start rounded-lg border border-gray-200 bg-white px-4 text-sm font-medium text-gray-700 transition hover:bg-gray-50 sm:self-auto"
         >
@@ -311,9 +278,11 @@ export default function CloudStoragePage() {
         </button>
       </div>
 
-      {/* Storage summary */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-        <div className="rounded-xl bg-[#C8F3DC] p-4 shadow-sm">
+        <ClickableCard
+          to="/admin/cloud-storage"
+          className="rounded-xl bg-[#C8F3DC] p-4 shadow-sm"
+        >
           <div className="flex items-center gap-2 text-emerald-950/75">
             <Database size={16} />
             <span className="text-xs font-medium">Total files</span>
@@ -322,9 +291,12 @@ export default function CloudStoragePage() {
             {media.length}
           </p>
           <p className="mt-1 text-xs text-emerald-900/70">Stored objects</p>
-        </div>
+        </ClickableCard>
 
-        <div className="rounded-xl bg-[#CBE6FF] p-4 shadow-sm">
+        <ClickableCard
+          to="/admin/cloud-storage"
+          className="rounded-xl bg-[#CBE6FF] p-4 shadow-sm"
+        >
           <div className="flex items-center gap-2 text-sky-950/75">
             <HardDrive size={16} />
             <span className="text-xs font-medium">Storage used</span>
@@ -333,7 +305,7 @@ export default function CloudStoragePage() {
             {formatSize(totalSize)}
           </p>
           <p className="mt-1 text-xs text-sky-900/70">Combined file size</p>
-        </div>
+        </ClickableCard>
 
         <div className="col-span-2 rounded-xl bg-[#FCE8B2] p-4 shadow-sm sm:col-span-1">
           <div className="flex items-center gap-2 text-amber-950/75">
@@ -354,14 +326,12 @@ export default function CloudStoragePage() {
         </div>
       </div>
 
-      {/* Backup management */}
       <section className="overflow-hidden rounded-xl bg-white shadow-sm">
         <div className="flex flex-col gap-3 bg-[#FCEFD9] p-4 sm:flex-row sm:items-center sm:justify-between sm:px-5">
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#C8F3DC] text-emerald-900">
               <Database size={19} />
             </div>
-
             <div>
               <h2 className="text-sm font-semibold text-gray-900">
                 Database backups
@@ -371,11 +341,10 @@ export default function CloudStoragePage() {
               </p>
             </div>
           </div>
-
           <div className="flex flex-wrap items-center gap-2">
             <button
               type="button"
-              onClick={() => refetchBackupStatus()}
+              onClick={() => void refetchBackupStatus()}
               disabled={isBackupLoading}
               className="inline-flex h-9 items-center gap-2 rounded-lg border border-gray-200 px-3 text-xs font-medium text-gray-600 transition hover:bg-gray-50 disabled:opacity-50"
             >
@@ -385,7 +354,6 @@ export default function CloudStoragePage() {
               />
               Refresh status
             </button>
-
             <button
               type="button"
               onClick={handleTriggerManualBackup}
@@ -410,7 +378,6 @@ export default function CloudStoragePage() {
             error={backupData?.minio?.error}
             description={`${backupData?.minio?.files?.length || 0} stored snapshots`}
           />
-
           <BackupTarget
             name="Cloudflare R2"
             icon={Cloud}
@@ -437,25 +404,20 @@ export default function CloudStoragePage() {
         </div>
       </section>
 
-      {/* File manager */}
       <section className="overflow-hidden rounded-xl border border-gray-200 bg-white">
-
-        {/* File manager heading */}
         <div className="flex flex-col gap-3 border-b border-gray-100 p-4 sm:flex-row sm:items-center sm:justify-between sm:px-5">
           <div>
-            <h2 className="text-sm font-semibold text-gray-900">
-              Stored files
-            </h2>
+            <h2 className="text-sm font-semibold text-gray-900">Stored files</h2>
             <p className="mt-1 text-xs text-gray-500">
               {filteredMedia.length} of {media.length} files
             </p>
           </div>
-
           <div className="flex items-center gap-1 self-start rounded-lg border border-gray-200 bg-gray-50 p-1">
             <button
               type="button"
               onClick={() => setView('grid')}
               aria-label="Grid view"
+              aria-pressed={view === 'grid'}
               className={`flex h-8 w-9 items-center justify-center rounded-md transition ${
                 view === 'grid'
                   ? 'bg-white text-emerald-700 shadow-sm'
@@ -464,11 +426,11 @@ export default function CloudStoragePage() {
             >
               <LayoutGrid size={16} />
             </button>
-
             <button
               type="button"
               onClick={() => setView('list')}
               aria-label="List view"
+              aria-pressed={view === 'list'}
               className={`flex h-8 w-9 items-center justify-center rounded-md transition ${
                 view === 'list'
                   ? 'bg-white text-emerald-700 shadow-sm'
@@ -480,7 +442,6 @@ export default function CloudStoragePage() {
           </div>
         </div>
 
-        {/* Filters */}
         <div className="space-y-3 border-b border-gray-100 bg-gray-50/50 p-4 sm:p-5">
           <div className="grid gap-3 md:grid-cols-[minmax(220px,1fr)_200px_auto]">
             <div className="relative">
@@ -496,7 +457,6 @@ export default function CloudStoragePage() {
                 className="h-10 w-full rounded-lg border border-gray-200 bg-white pl-9 pr-3 text-sm text-gray-700 outline-none transition placeholder:text-gray-400 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/10"
               />
             </div>
-
             <div className="relative">
               <Folder
                 size={15}
@@ -514,7 +474,6 @@ export default function CloudStoragePage() {
                 ))}
               </select>
             </div>
-
             {hasActiveFilters && (
               <button
                 type="button"
@@ -528,11 +487,13 @@ export default function CloudStoragePage() {
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
-            {([
-              { value: 'ALL', label: 'All files', count: media.length },
-              { value: 'IMAGE', label: 'Images', count: imageCount },
-              { value: 'DOCUMENT', label: 'Documents', count: documentCount },
-            ] as const).map((type) => (
+            {(
+              [
+                { value: 'ALL', label: 'All files', count: media.length },
+                { value: 'IMAGE', label: 'Images', count: imageCount },
+                { value: 'DOCUMENT', label: 'Documents', count: documentCount },
+              ] as const
+            ).map((type) => (
               <button
                 key={type.value}
                 type="button"
@@ -558,14 +519,11 @@ export default function CloudStoragePage() {
           </div>
         </div>
 
-        {/* File content */}
         <div className="p-4 sm:p-5">
           {isLoading ? (
             <div className="flex min-h-[260px] flex-col items-center justify-center gap-3">
               <InlineLoader size={36} message="Loading files..." />
-              <p className="text-xs text-gray-400">
-                Retrieving stored files
-              </p>
+              <p className="text-xs text-gray-400">Retrieving stored files</p>
             </div>
           ) : isError ? (
             <div className="flex min-h-[260px] flex-col items-center justify-center text-center">
@@ -578,7 +536,7 @@ export default function CloudStoragePage() {
               </p>
               <button
                 type="button"
-                onClick={() => refetchMedia()}
+                onClick={() => void refetchMedia()}
                 className="mt-4 rounded-lg bg-emerald-600 px-4 py-2 text-xs font-semibold text-white hover:bg-emerald-700"
               >
                 Try again
@@ -589,17 +547,14 @@ export default function CloudStoragePage() {
               <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-gray-100 text-gray-400">
                 <Folder size={22} />
               </div>
-
               <h3 className="text-sm font-semibold text-gray-800">
                 {hasActiveFilters ? 'No matching files' : 'No files yet'}
               </h3>
-
               <p className="mt-1 max-w-xs text-xs leading-5 text-gray-500">
                 {hasActiveFilters
                   ? 'Try changing your search or filters to find what you need.'
                   : 'Files uploaded to your Hlynk storage will appear here.'}
               </p>
-
               {hasActiveFilters && (
                 <button
                   type="button"
@@ -612,14 +567,13 @@ export default function CloudStoragePage() {
             </div>
           ) : view === 'grid' ? (
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
-              {filteredMedia.map((file: any) => (
+              {filteredMedia.map((file) => (
                 <div
                   key={file.path}
                   className="group min-w-0 overflow-hidden rounded-xl border border-gray-200 bg-white transition hover:border-emerald-200 hover:shadow-sm"
                 >
-                  {/* Preview */}
                   <div className="relative flex aspect-[16/10] items-center justify-center overflow-hidden bg-gray-50">
-                    {file.type === 'IMAGE' ? (
+                    {file.type === 'IMAGE' && file.url ? (
                       <img
                         src={file.url}
                         alt={file.name}
@@ -634,13 +588,11 @@ export default function CloudStoragePage() {
                         </span>
                       </div>
                     )}
-
                     <div className="absolute right-3 top-3 flex gap-1 opacity-100 transition sm:opacity-0 sm:group-hover:opacity-100">
                       <FileActions file={file} />
                     </div>
                   </div>
 
-                  {/* Details */}
                   <div className="space-y-3 p-3.5">
                     <div className="min-w-0">
                       <p
@@ -656,7 +608,6 @@ export default function CloudStoragePage() {
                         {file.path}
                       </p>
                     </div>
-
                     <div className="flex items-center justify-between border-t border-gray-100 pt-3">
                       <div className="flex min-w-0 items-center gap-1.5 text-xs text-gray-500">
                         <Users size={13} className="shrink-0" />
@@ -664,7 +615,6 @@ export default function CloudStoragePage() {
                           {file.ownerName || 'Platform'}
                         </span>
                       </div>
-
                       <span className="shrink-0 text-xs font-medium text-gray-700">
                         {formatSize(file.size)}
                       </span>
@@ -678,29 +628,16 @@ export default function CloudStoragePage() {
               <table className="w-full min-w-[650px] text-left">
                 <thead>
                   <tr className="border-b border-gray-100">
-                    <th className="px-3 py-3 text-xs font-medium text-gray-500">
-                      File
-                    </th>
-                    <th className="px-3 py-3 text-xs font-medium text-gray-500">
-                      Folder
-                    </th>
-                    <th className="px-3 py-3 text-xs font-medium text-gray-500">
-                      Type
-                    </th>
-                    <th className="px-3 py-3 text-xs font-medium text-gray-500">
-                      Owner
-                    </th>
-                    <th className="px-3 py-3 text-xs font-medium text-gray-500">
-                      Size
-                    </th>
-                    <th className="px-3 py-3 text-right text-xs font-medium text-gray-500">
-                      Actions
-                    </th>
+                    <th className="px-3 py-3 text-xs font-medium text-gray-500">File</th>
+                    <th className="px-3 py-3 text-xs font-medium text-gray-500">Folder</th>
+                    <th className="px-3 py-3 text-xs font-medium text-gray-500">Type</th>
+                    <th className="px-3 py-3 text-xs font-medium text-gray-500">Owner</th>
+                    <th className="px-3 py-3 text-xs font-medium text-gray-500">Size</th>
+                    <th className="px-3 py-3 text-right text-xs font-medium text-gray-500">Actions</th>
                   </tr>
                 </thead>
-
                 <tbody className="divide-y divide-gray-100">
-                  {filteredMedia.map((file: any) => (
+                  {filteredMedia.map((file) => (
                     <tr
                       key={file.path}
                       className="transition hover:bg-gray-50/70"
@@ -724,25 +661,20 @@ export default function CloudStoragePage() {
                           </div>
                         </div>
                       </td>
-
                       <td className="px-3 py-3 text-xs text-gray-600">
                         {file.folder || '—'}
                       </td>
-
                       <td className="px-3 py-3">
                         <span className="rounded-md bg-gray-100 px-2 py-1 text-[11px] font-medium text-gray-600">
                           {file.type}
                         </span>
                       </td>
-
                       <td className="px-3 py-3 text-xs text-gray-600">
                         {file.ownerName || 'Platform'}
                       </td>
-
                       <td className="px-3 py-3 text-xs font-medium text-gray-700">
                         {formatSize(file.size)}
                       </td>
-
                       <td className="px-3 py-3">
                         <div className="flex justify-end">
                           <FileActions file={file} />
@@ -756,28 +688,22 @@ export default function CloudStoragePage() {
           )}
         </div>
 
-        {/* Footer */}
         {!isLoading && !isError && media.length > 0 && (
           <div className="flex flex-col gap-1 border-t border-gray-100 bg-gray-50/50 px-4 py-3 text-xs text-gray-500 sm:flex-row sm:items-center sm:justify-between sm:px-5">
             <span>
               Showing {filteredMedia.length} of {media.length} files
             </span>
-            <span>
-              Total storage: {formatSize(totalSize)}
-            </span>
+            <span>Total storage: {formatSize(totalSize)}</span>
           </div>
         )}
       </section>
 
-      {/* Storage information */}
       <div className="flex items-start gap-3 rounded-xl border border-gray-200 bg-white p-4">
         <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-50 text-emerald-700">
           <ShieldCheck size={18} />
         </div>
         <div>
-          <p className="text-sm font-medium text-gray-800">
-            Storage management
-          </p>
+          <p className="text-sm font-medium text-gray-800">Storage management</p>
           <p className="mt-1 text-xs leading-5 text-gray-500">
             Manage your uploaded media and monitor the status of your configured
             backup destinations from this page. Deleting a file permanently
@@ -786,17 +712,16 @@ export default function CloudStoragePage() {
         </div>
       </div>
 
-      {/* Delete confirmation */}
       <ConfirmModal
         isOpen={!!confirmDelete}
         onClose={() => setConfirmDelete(null)}
-        onConfirm={() =>
-          confirmDelete && deleteMutation.mutate(confirmDelete.path)
-        }
+        onConfirm={() => {
+          if (confirmDelete) deleteMutation.mutate(confirmDelete.path)
+        }}
         title="Delete file?"
         message={`Are you sure you want to permanently delete "${confirmDelete?.name}"? Any links referencing this file may stop working.`}
         confirmText="Delete file"
-        isDestructive={true}
+        isDestructive
         isLoading={deleteMutation.isPending}
       />
     </div>

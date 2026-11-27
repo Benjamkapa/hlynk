@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { Plus, Search, Eye, Trash2, Loader2 } from "lucide-react";
+import { Plus, Search, Eye, Trash2, Loader2, ArrowUpRight } from "lucide-react";
+import { Link } from "react-router-dom";
 import { SlideOver } from "../../components/shared/SlideOver";
 import { ConfirmModal } from "../../components/shared/ConfirmModal";
 import { toast } from "sonner";
@@ -191,35 +192,50 @@ export default function ProvidersPage() {
 
         {/* Key figures */}
         <dl className="col-span-3 grid grid-cols-3 xl:col-span-4 xl:grid-cols-1">
-          <div className="min-w-0 bg-[#C8F3DC] p-3 sm:p-6 xl:p-8">
-            <dt className="text-xs text-emerald-950/75 sm:text-sm">
-              Total businesses
-            </dt>
-            <dd className="mt-2 break-words font-serif text-2xl tabular-nums tracking-tight text-emerald-950 sm:text-3xl">
-              {stats?.overview?.totalProviders || 0}
-            </dd>
-          </div>
+          <Link to="/admin/subscriptions" className="group block min-w-0 bg-[#C8F3DC] p-3 transition-colors hover:bg-[#B2ECCD] sm:p-6 xl:p-8">
+            <div className="flex items-start justify-between">
+              <div>
+                <dt className="text-xs text-emerald-950/75 sm:text-sm">
+                  Total businesses
+                </dt>
+                <dd className="mt-2 break-words font-serif text-2xl tabular-nums tracking-tight text-emerald-950 sm:text-3xl">
+                  {stats?.overview?.totalProviders || 0}
+                </dd>
+              </div>
+              <ArrowUpRight size={16} className="mt-1 text-emerald-700/40 transition-colors group-hover:text-emerald-800" />
+            </div>
+          </Link>
 
-          <div className="min-w-0 bg-[#FCE8B2] p-3 sm:p-6 xl:p-8">
-            <dt className="text-xs text-amber-950/75 sm:text-sm">Active today</dt>
-            <dd className="mt-2 break-words font-serif text-2xl tabular-nums tracking-tight text-amber-950 sm:text-3xl">
-              {stats?.overview?.activeToday || 0}
-            </dd>
-          </div>
+          <Link to="/admin/subscriptions?status=ACTIVE" className="group block min-w-0 bg-[#FCE8B2] p-3 transition-colors hover:bg-[#F8DC94] sm:p-6 xl:p-8">
+            <div className="flex items-start justify-between">
+              <div>
+                <dt className="text-xs text-amber-950/75 sm:text-sm">Active today</dt>
+                <dd className="mt-2 break-words font-serif text-2xl tabular-nums tracking-tight text-amber-950 sm:text-3xl">
+                  {stats?.overview?.activeToday || 0}
+                </dd>
+              </div>
+              <ArrowUpRight size={16} className="mt-1 text-amber-700/40 transition-colors group-hover:text-amber-800" />
+            </div>
+          </Link>
 
-          <div className="min-w-0 bg-[#CBE6FF] p-3 sm:p-6 xl:p-8">
-            <dt className="text-xs text-sky-950/75 sm:text-sm">
-              Latest registration
-            </dt>
-            <dd className="mt-2 break-words text-sm font-medium text-sky-950 sm:text-lg">
-              {latest?.name || "None yet"}
-            </dd>
-            {latest && (
-              <p className="mt-1 text-xs text-sky-900/75">
-                {planLabel(latest.plan)} plan
-              </p>
-            )}
-          </div>
+          <Link to="/admin/businesses" className="group block min-w-0 bg-[#CBE6FF] p-3 transition-colors hover:bg-[#B3D8FF] sm:p-6 xl:p-8">
+            <div className="flex items-start justify-between">
+              <div>
+                <dt className="text-xs text-sky-950/75 sm:text-sm">
+                  Latest registration
+                </dt>
+                <dd className="mt-2 break-words text-sm font-medium text-sky-950 sm:text-lg">
+                  {latest?.name || "None yet"}
+                </dd>
+                {latest && (
+                  <p className="mt-1 text-xs text-sky-900/75">
+                    {planLabel(latest.plan)} plan
+                  </p>
+                )}
+              </div>
+              <ArrowUpRight size={16} className="mt-1 text-sky-700/40 transition-colors group-hover:text-sky-800" />
+            </div>
+          </Link>
         </dl>
       </section>
 

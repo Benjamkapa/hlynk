@@ -273,6 +273,7 @@ export default function AdminDashboardPage() {
             value={`KES ${kes(stats?.revenue?.platformVolume)}`}
             note="Total sales processed on the platform"
             bgClass="bg-[#FCE8B2]"
+            to="/admin/financials"
           />
 
           <Figure
@@ -280,6 +281,7 @@ export default function AdminDashboardPage() {
             value={`KES ${kes(stats?.revenue?.mpesaCollections)}`}
             note="M-Pesa inflow through the system paybill"
             bgClass="bg-[#C8F3DC]"
+            to="/admin/payments"
           />
 
           <Figure
@@ -287,6 +289,7 @@ export default function AdminDashboardPage() {
             value={String(stats?.overview?.totalProviders || 0)}
             note={`${stats?.overview?.payingProviders || 0} on a paid subscription`}
             bgClass="bg-[#CBE6FF]"
+            to="/admin/subscriptions?status=ACTIVE"
           />
         </dl>
       </section>
@@ -491,21 +494,44 @@ function Figure({
   value,
   note,
   bgClass = "bg-[#FFFEFA]",
+  to,
 }: {
   label: string;
   value: string;
   note: string;
   bgClass?: string;
+  to?: string;
 }) {
-  return (
-    <div className={`p-6 sm:p-8 ${bgClass}`}>
-      <dt className="text-sm text-slate-600">{label}</dt>
+  const content = (
+    <>
+      <dt className="flex items-center justify-between gap-2 text-sm text-slate-600">
+        <span>{label}</span>
+        {to && (
+          <ArrowUpRight
+            size={15}
+            className="shrink-0 text-slate-500 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-slate-900"
+          />
+        )}
+      </dt>
       <dd className="mt-2 font-serif text-2xl tabular-nums tracking-tight text-slate-900 sm:text-3xl">
         {value}
       </dd>
       <p className="mt-1.5 text-xs text-slate-500">{note}</p>
-    </div>
+    </>
   );
+
+  if (to) {
+    return (
+      <Link
+        to={to}
+        className={`group block p-6 sm:p-8 ${bgClass} transition-all hover:brightness-95 focus:outline-none`}
+      >
+        {content}
+      </Link>
+    );
+  }
+
+  return <div className={`p-6 sm:p-8 ${bgClass}`}>{content}</div>;
 }
 
 function StatusRow({

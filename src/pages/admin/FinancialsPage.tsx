@@ -10,7 +10,9 @@ import {
   Lock,
   Unlock,
   Check,
+  ArrowUpRight,
 } from "lucide-react";
+import { Link } from "react-router-dom";
 import PayoutsManager from "../../components/admin/PayoutsManager";
 import {
   ResponsiveContainer,
@@ -321,6 +323,7 @@ export default function FinancialsPage() {
                   label="Platform fees"
                   value={`KES ${kes(vault?.platformNetPotential)}`}
                   note="Net potential, 15% share"
+                  to="/admin/payments"
                 />
               </div>
 
@@ -329,6 +332,7 @@ export default function FinancialsPage() {
                   label="Vendor dues"
                   value={`KES ${kes(vault?.pendingVendor)}`}
                   note="Unsettled vendor volume"
+                  to="/admin/payments"
                 />
               </div>
 
@@ -337,6 +341,7 @@ export default function FinancialsPage() {
                   label="Referral dues"
                   value={`KES ${kes(vault?.pendingReferral)}`}
                   note="Claimable commission"
+                  to="/admin/payments"
                 />
               </div>
             </dl>
@@ -806,18 +811,37 @@ function Figure({
   label,
   value,
   note,
+  to,
 }: {
   label: string;
   value: string;
   note: string;
+  to?: string;
 }) {
-  return (
-    <div className="p-6 sm:p-8">
+  const inner = (
+    <>
       <dt className="text-sm text-slate-500">{label}</dt>
       <dd className="mt-2 font-serif text-2xl tabular-nums tracking-tight text-slate-900 sm:text-3xl">
         {value}
       </dd>
       <p className="mt-1.5 text-xs text-slate-500">{note}</p>
+    </>
+  );
+
+  if (to) {
+    return (
+      <Link to={to} className="group block p-6 transition-colors hover:bg-black/[0.03] sm:p-8">
+        <div className="flex items-start justify-between">
+          <div>{inner}</div>
+          <ArrowUpRight size={16} className="mt-1 text-slate-300 transition-colors group-hover:text-slate-600" />
+        </div>
+      </Link>
+    );
+  }
+
+  return (
+    <div className="p-6 sm:p-8">
+      {inner}
     </div>
   );
 }

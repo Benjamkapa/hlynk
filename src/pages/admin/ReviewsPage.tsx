@@ -55,7 +55,7 @@ export default function ReviewsPage() {
       </header>
 
       {/* Registry */}
-      <section className="overflow-hidden rounded-xl bg-white shadow-sm">
+      <section className="overflow-hidden rounded-xl bg-[#FFFDF8] shadow-sm">
         <div className="flex flex-col gap-3 bg-[#FCEFD9] px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
           <h2 className="text-sm font-semibold text-slate-900">All reviews</h2>
           <select

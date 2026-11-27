@@ -284,8 +284,8 @@ export default function PaymentsPage() {
       </div>
 
       {activeTab === "ledger" ? (
-        <section className="overflow-hidden rounded-md border border-slate-200 bg-white">
-          <div className="flex flex-col gap-3 border-b border-slate-200 px-6 py-4 lg:flex-row lg:items-center lg:justify-between">
+        <section className="overflow-hidden rounded-xl bg-[#FFFDF8] shadow-sm">
+          <div className="flex flex-col gap-3 bg-[#FCEFD9] px-6 py-4 lg:flex-row lg:items-center lg:justify-between">
             <h2 className="text-sm font-semibold text-slate-900">
               All transactions
             </h2>
