@@ -127,6 +127,7 @@ function MetricCard({
   caption,
   points,
   metricKey,
+  cardBg = 'bg-[#FFFEFA] border-amber-200/70',
 }: {
   label: string
   value: string
@@ -136,11 +137,12 @@ function MetricCard({
   caption: string
   points: Point[]
   metricKey: MetricKey
+  cardBg?: string
 }) {
   const spark = points.slice(-24)
 
   return (
-    <article className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm transition-shadow hover:shadow-md">
+    <article className={`rounded-xl p-5 shadow-sm transition-shadow hover:shadow-md ${cardBg}`}>
       <div className="flex items-start justify-between gap-3">
         <div className="flex min-w-0 items-center gap-3">
           <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#0D4A3E]/[0.08] text-[#0D4A3E]">
@@ -472,6 +474,7 @@ export default function SystemPerformancePage() {
               caption="Application response time"
               points={history}
               metricKey="api"
+              cardBg="bg-[#C8F3DC]"
             />
             <MetricCard
               label="Database"
@@ -482,6 +485,7 @@ export default function SystemPerformancePage() {
               caption="Database response time"
               points={history}
               metricKey="db"
+              cardBg="bg-[#CBE6FF]"
             />
             <MetricCard
               label="CPU utilisation"
@@ -492,6 +496,7 @@ export default function SystemPerformancePage() {
               caption="Processor load"
               points={history}
               metricKey="cpu"
+              cardBg="bg-[#FCE8B2]"
             />
             <MetricCard
               label="M-Pesa gateway"
@@ -502,6 +507,7 @@ export default function SystemPerformancePage() {
               caption={health.safaricomStatus || 'Payment gateway status unknown'}
               points={history}
               metricKey="mpesa"
+              cardBg="bg-[#DFD7FF]"
             />
           </div>
         )}
@@ -700,8 +706,8 @@ export default function SystemPerformancePage() {
       </div>
 
       {/* Cluster node inventory */}
-      <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-        <div className="flex flex-col gap-4 border-b border-slate-200 p-5 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+      <section className="overflow-hidden rounded-xl bg-[#FFFDF8] shadow-sm">
+        <div className="flex flex-col gap-4 bg-[#FCEFD9] p-5 sm:flex-row sm:items-center sm:justify-between sm:px-6">
           <div>
             <div className="flex items-center gap-2">
               <Server size={18} className="text-[#0D4A3E]" />
@@ -742,7 +748,7 @@ export default function SystemPerformancePage() {
         ) : filteredNodes.length ? (
           <div className="overflow-x-auto">
             <table className="w-full min-w-[620px] text-left">
-              <thead className="bg-slate-50">
+              <thead className="bg-[#DFECFF]">
                 <tr className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
                   <th className="px-6 py-3">Node</th>
                   <th className="px-6 py-3">Region</th>

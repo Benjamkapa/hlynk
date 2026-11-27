@@ -167,35 +167,35 @@ export default function SystemNotificationsPage() {
             : { dot: "bg-slate-400", title: "Push alerts are off", body: "Turn them on to get instant alerts, even when this portal is closed." };
 
   return (
-    <div className="mx-auto max-w-[1400px] space-y-8 pt-2 animate-in fade-in duration-500">
+    <div className="w-full space-y-8 pt-2 animate-in fade-in duration-500">
       {/* Header */}
-      <header className="border-b border-slate-200 pb-6">
-        <p className="text-xs text-slate-500">
+      <header className="pb-4">
+        <p className="inline-block rounded-full bg-[#CBE6FF] px-3 py-0.5 text-xs font-semibold text-sky-950">
           {total} {total === 1 ? "notification" : "notifications"}
         </p>
-        <h1 className="mt-1 font-serif text-3xl tracking-tight text-slate-900">System notifications</h1>
+        <h1 className="mt-2 font-serif text-3xl tracking-tight text-slate-900">System notifications</h1>
       </header>
 
       {/* Figures */}
-      <dl className="grid grid-cols-3 divide-x divide-slate-200 overflow-hidden rounded-md border border-slate-200 bg-white">
-        <div className="p-5 sm:p-6">
-          <dt className="text-sm text-slate-500">On this page</dt>
-          <dd className="mt-1 font-serif text-2xl tabular-nums text-slate-900 sm:text-3xl">{items.length}</dd>
+      <dl className="grid grid-cols-3 overflow-hidden rounded-xl bg-white shadow-sm">
+        <div className="bg-[#C8F3DC] p-5 sm:p-6">
+          <dt className="text-sm text-emerald-950/75">On this page</dt>
+          <dd className="mt-1 font-serif text-2xl tabular-nums text-emerald-950 sm:text-3xl">{items.length}</dd>
         </div>
-        <div className="p-5 sm:p-6">
-          <dt className="text-sm text-slate-500">Unread</dt>
-          <dd className="mt-1 font-serif text-2xl tabular-nums text-slate-900 sm:text-3xl">{unreadCount}</dd>
+        <div className="bg-[#FCE8B2] p-5 sm:p-6">
+          <dt className="text-sm text-amber-950/75">Unread</dt>
+          <dd className="mt-1 font-serif text-2xl tabular-nums text-amber-950 sm:text-3xl">{unreadCount}</dd>
         </div>
-        <div className="p-5 sm:p-6">
-          <dt className="text-sm text-slate-500">Critical</dt>
-          <dd className={`mt-1 font-serif text-2xl tabular-nums sm:text-3xl ${dangerCount > 0 ? "text-red-600" : "text-slate-900"}`}>
+        <div className="bg-[#FFD6DF] p-5 sm:p-6">
+          <dt className="text-sm text-rose-950/75">Critical</dt>
+          <dd className={`mt-1 font-serif text-2xl tabular-nums sm:text-3xl ${dangerCount > 0 ? "text-rose-700" : "text-rose-950"}`}>
             {dangerCount}
           </dd>
         </div>
       </dl>
 
       {/* Push alerts */}
-      <section className="flex flex-col gap-4 rounded-md border border-slate-200 bg-white px-6 py-5 lg:flex-row lg:items-center lg:justify-between">
+      <section className="flex flex-col gap-4 rounded-xl bg-[#DFD7FF] px-6 py-5 shadow-sm lg:flex-row lg:items-center lg:justify-between">
         <div className="flex items-start gap-3">
           <span className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${pushCopy.dot}`} />
           <div>
@@ -230,8 +230,8 @@ export default function SystemNotificationsPage() {
 
       {/* Feed + detail */}
       <div className={`grid gap-6 ${selected ? "xl:grid-cols-[minmax(0,1fr)_380px]" : "grid-cols-1"}`}>
-        <section className="min-w-0 overflow-hidden rounded-md border border-slate-200 bg-white">
-          <div className="flex flex-col gap-3 border-b border-slate-200 px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
+        <section className="min-w-0 overflow-hidden rounded-xl bg-white shadow-sm">
+          <div className="flex flex-col gap-3 bg-[#FCEFD9] px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
             <h2 className="text-sm font-semibold text-slate-900">Activity</h2>
             <div className="flex items-center gap-3">
               {isFetching && !isLoading && (
@@ -372,12 +372,12 @@ export default function SystemNotificationsPage() {
 
         {/* Desktop detail panel */}
         {selected && (
-          <aside className="hidden h-fit overflow-hidden rounded-md border border-slate-200 bg-white xl:sticky xl:top-4 xl:block">
-            <div className="flex items-center justify-between border-b border-slate-200 px-5 py-3">
+          <aside className="hidden h-fit overflow-hidden rounded-xl bg-white shadow-sm xl:sticky xl:top-4 xl:block">
+            <div className="flex items-center justify-between bg-[#FCEFD9] px-5 py-3">
               <h2 className="text-sm font-semibold text-slate-900">Details</h2>
               <button
                 onClick={() => setSelected(null)}
-                className="rounded p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-700"
+                className="rounded p-1 text-amber-900/60 hover:bg-[#FCE8B2] hover:text-slate-900"
                 aria-label="Close details"
               >
                 <X size={16} />
@@ -442,9 +442,9 @@ function NotificationDetail({
         </div>
       </div>
 
-      <p className="text-sm leading-relaxed text-slate-700">{item.message}</p>
+      <p className="rounded-xl bg-[#CBE6FF]/55 p-3.5 text-sm leading-relaxed text-slate-800">{item.message}</p>
 
-      <dl className="divide-y divide-slate-100 border-y border-slate-200 text-sm">
+      <dl className="divide-y divide-amber-100/80 rounded-xl bg-[#FCEFD9]/50 px-4 text-sm">
         {item.shopName && (
           <div className="flex justify-between gap-4 py-3">
             <dt className="text-slate-500">Business</dt>
@@ -487,7 +487,7 @@ function NotificationDetail({
       <button
         onClick={() => onDelete(item.id)}
         disabled={deleting}
-        className="flex h-10 w-full items-center justify-center gap-2 rounded-full border border-red-200 bg-white text-sm font-medium text-red-600 transition-colors hover:bg-red-50 disabled:opacity-50"
+        className="flex h-10 w-full items-center justify-center gap-2 rounded-full bg-[#FFD6DF] text-sm font-semibold text-rose-900 transition-colors hover:bg-[#FFC2D0] disabled:opacity-50"
       >
         {deleting ? <ButtonLoader size={14} /> : <Trash2 size={14} />}
         Delete notification

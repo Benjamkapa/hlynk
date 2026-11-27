@@ -41,22 +41,22 @@ export default function ReviewsPage() {
   const isFiltered = status !== ''
 
   return (
-    <div className="mx-auto max-w-[1400px] space-y-8 pt-2 animate-in fade-in duration-500">
+    <div className="w-full space-y-8 pt-2 animate-in fade-in duration-500">
       {/* Header */}
-      <header className="border-b border-slate-200 pb-6">
-        <p className="text-xs text-slate-500">
+      <header className="pb-4">
+        <p className="inline-block rounded-full bg-[#FCE8B2] px-3 py-0.5 text-xs font-semibold text-amber-950">
           {pagination.total} {pagination.total === 1 ? 'review' : 'reviews'}
           {isFiltered ? ' in this view' : ''}
         </p>
-        <h1 className="mt-1 font-serif text-3xl tracking-tight text-slate-900">Reviews</h1>
+        <h1 className="mt-2 font-serif text-3xl tracking-tight text-slate-900">Reviews</h1>
         <p className="mt-2 max-w-xl text-sm text-slate-500">
           Approved reviews appear on the public sign-in page. Hidden reviews don't.
         </p>
       </header>
 
       {/* Registry */}
-      <section className="overflow-hidden rounded-md border border-slate-200 bg-white">
-        <div className="flex flex-col gap-3 border-b border-slate-200 px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
+      <section className="overflow-hidden rounded-xl bg-white shadow-sm">
+        <div className="flex flex-col gap-3 bg-[#FCEFD9] px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
           <h2 className="text-sm font-semibold text-slate-900">All reviews</h2>
           <select
             value={status}
@@ -77,7 +77,7 @@ export default function ReviewsPage() {
         <div className="overflow-x-auto">
           <table className="w-full min-w-[820px] text-left">
             <thead>
-              <tr className="border-b border-slate-200 text-xs text-slate-500">
+              <tr className="bg-[#DFECFF] text-xs font-semibold text-sky-950/80">
                 <th className="px-6 py-3 font-medium">Reviewer</th>
                 <th className="px-6 py-3 font-medium">Review</th>
                 <th className="px-6 py-3 font-medium">Status</th>

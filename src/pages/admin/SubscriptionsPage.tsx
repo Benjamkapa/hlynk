@@ -80,38 +80,38 @@ export default function SubscriptionsPage() {
   const o: any = stats?.overview
 
   return (
-    <div className="mx-auto max-w-[1400px] space-y-8 pt-2 animate-in fade-in duration-500">
+    <div className="w-full space-y-8 pt-2 animate-in fade-in duration-500">
       {/* Header */}
-      <header className="border-b border-slate-200 pb-6">
-        <p className="text-xs text-slate-500">{o?.payingProviders - 1   } paying businesses</p>
-        <h1 className="mt-1 font-serif text-3xl tracking-tight text-slate-900">Subscriptions</h1>
+      <header className="pb-4">
+        <p className="inline-block rounded-full bg-[#C8F3DC] px-3 py-0.5 text-xs font-semibold text-emerald-900">{o?.payingProviders - 1   } paying businesses</p>
+        <h1 className="mt-2 font-serif text-3xl tracking-tight text-slate-900">Subscriptions</h1>
       </header>
 
       {/* Figures */}
-      <dl className="grid grid-cols-3 divide-y divide-slate-200 overflow-hidden rounded-md border border-slate-200 bg-white md:divide-x md:divide-y-0">
-        <div className="p-6 sm:p-8">
-          <dt className="text-sm text-slate-500">Active subscriptions</dt>
-          <dd className="mt-2 font-serif text-3xl tabular-nums tracking-tight text-slate-900">
+      <dl className="grid grid-cols-3 overflow-hidden rounded-xl bg-[#FFFDF8] shadow-sm">
+        <div className="bg-[#C8F3DC] p-6 sm:p-8">
+          <dt className="text-sm text-emerald-950/75">Active subscriptions</dt>
+          <dd className="mt-2 font-serif text-3xl tabular-nums tracking-tight text-emerald-950">
             {o?.payingProviders - 1 }
           </dd>
         </div>
-        <div className="p-6 sm:p-8">
-          <dt className="text-sm text-slate-500">Monthly revenue</dt>
-          <dd className="mt-2 font-serif text-3xl tabular-nums tracking-tight text-slate-900">
+        <div className="bg-[#FCE8B2] p-6 sm:p-8">
+          <dt className="text-sm text-amber-950/75">Monthly revenue</dt>
+          <dd className="mt-2 font-serif text-3xl tabular-nums tracking-tight text-amber-950">
             KES {Number(o?.revenueThisMonth || 0).toLocaleString()}
           </dd>
         </div>
-        <div className="p-6 sm:p-8">
-          <dt className="text-sm text-slate-500">Expiring in the next 14 days</dt>
-          <dd className="mt-2 font-serif text-3xl tabular-nums tracking-tight text-slate-900">
+        <div className="bg-[#FFDCCB] p-6 sm:p-8">
+          <dt className="text-sm text-rose-950/75">Expiring in the next 14 days</dt>
+          <dd className="mt-2 font-serif text-3xl tabular-nums tracking-tight text-rose-950">
             {o?.expiringSoon || 0}
           </dd>
         </div>
       </dl>
 
       {/* Registry */}
-      <section className="overflow-hidden rounded-md border border-slate-200 bg-white">
-        <div className="flex flex-col gap-3 border-b border-slate-200 px-6 py-4 lg:flex-row lg:items-center lg:justify-between">
+      <section className="overflow-hidden rounded-xl bg-[#FFFDF8] shadow-sm">
+        <div className="flex flex-col gap-3 bg-[#FCEFD9] px-6 py-4 lg:flex-row lg:items-center lg:justify-between">
           <h2 className="text-sm font-semibold text-slate-900">All subscriptions</h2>
           <div className="flex flex-wrap gap-2">
             <label className="relative block w-full sm:w-64">

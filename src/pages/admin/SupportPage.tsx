@@ -66,8 +66,8 @@ export default function SupportPage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 bg-white rounded-lg border border-gray-100 shadow-sm overflow-hidden flex flex-col">
-          <div className="p-6 border-b border-gray-50 flex justify-between items-center">
+        <div className="lg:col-span-2 bg-white rounded-xl shadow-sm overflow-hidden flex flex-col">
+          <div className="p-6 bg-[#FCEFD9] flex justify-between items-center">
             <div>
               <h3 className="font-black text-gray-900 flex items-center gap-2">
                 <TrendingUp size={18} className="text-emerald-500" />

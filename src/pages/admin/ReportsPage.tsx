@@ -95,15 +95,15 @@ export default function ReportsPage() {
   }
 
   return (
-    <div className="mx-auto max-w-[1400px] space-y-8 pt-2 animate-in fade-in duration-500">
+    <div className="w-full space-y-8 pt-2 animate-in fade-in duration-500">
       {/* Header */}
-      <header className="border-b border-slate-200 pb-6">
-        <p className="text-xs text-slate-500">Exports, queries and schedules</p>
-        <h1 className="mt-1 font-serif text-3xl tracking-tight text-slate-900">Reports</h1>
+      <header className="pb-4">
+        <p className="inline-block rounded-full bg-[#CBE6FF] px-3 py-0.5 text-xs font-semibold text-sky-950">Exports, queries and schedules</p>
+        <h1 className="mt-2 font-serif text-3xl tracking-tight text-slate-900">Reports</h1>
       </header>
 
       {/* Dossier */}
-      <section className="overflow-hidden rounded-md bg-[#0D4A3E] text-white">
+      <section className="overflow-hidden rounded-xl bg-gradient-to-br from-[#0F5947] to-[#176B55] text-white shadow-sm">
         <div className="flex flex-col gap-6 p-6 sm:p-8 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-2xl">
             <p className="text-sm text-emerald-100/70">Full export</p>
@@ -137,8 +137,8 @@ export default function ReportsPage() {
       </section>
 
       {/* Query builder */}
-      <section className="rounded-md border border-slate-200 bg-white">
-        <div className="border-b border-slate-200 px-6 py-4">
+      <section className="overflow-hidden rounded-xl bg-[#FFFDF8] shadow-sm">
+        <div className="bg-[#FCEFD9] px-6 py-4">
           <h2 className="text-sm font-semibold text-slate-900">Custom query</h2>
           <p className="mt-0.5 text-xs text-slate-500">Pick a table and columns, run it, then export the result</p>
         </div>

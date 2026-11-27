@@ -58,8 +58,8 @@ export default function SystemEventsPage() {
         </div>
       </div>
 
-      <div className="bg-white rounded-lg border border-gray-100 shadow-sm overflow-hidden">
-        <div className="p-5 border-b border-gray-50 flex flex-wrap gap-3 items-center">
+      <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+        <div className="p-5 bg-[#FCEFD9] flex flex-wrap gap-3 items-center">
           <div className="inline-flex items-center gap-2 px-3 py-2 rounded-md bg-gray-50 border border-gray-100 text-gray-500 text-[10px] font-black uppercase tracking-widest">
             <Filter size={14} /> Filters
           </div>

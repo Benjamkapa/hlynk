@@ -141,7 +141,7 @@ export default function HelpPage() {
   const active = visible.find((g) => g.id === activeId) ?? visible[0]
 
   return (
-    <div className="mx-auto max-w-[1400px] space-y-8 pt-2 animate-in fade-in duration-500">
+    <div className="w-full space-y-8 pt-2 animate-in fade-in duration-500">
       {/* Header */}
       <header className="flex flex-col gap-4 border-b border-slate-200 pb-6 sm:flex-row sm:items-end sm:justify-between">
         <div>
@@ -188,12 +188,12 @@ export default function HelpPage() {
                   key={g.id}
                   onClick={() => setActiveId(g.id)}
                   aria-current={on ? 'page' : undefined}
-                  className={`border-l-2 px-3 py-2.5 text-left transition-colors ${
-                    on ? 'border-[#0D4A3E] text-slate-900' : 'border-transparent text-slate-500 hover:text-slate-900'
+                  className={`rounded-xl px-3.5 py-2.5 text-left transition-colors ${
+                    on ? 'bg-[#C8F3DC] text-emerald-950' : 'text-slate-600 hover:bg-[#FCE8B2]/50 hover:text-slate-900'
                   }`}
                 >
                   <span className={`block text-sm ${on ? 'font-semibold' : 'font-medium'}`}>{g.title}</span>
-                  <span className="mt-0.5 block text-xs text-slate-400">{g.desc}</span>
+                  <span className={`mt-0.5 block text-xs ${on ? 'text-emerald-900/75' : 'text-slate-400'}`}>{g.desc}</span>
                 </button>
               )
             })}
@@ -201,8 +201,8 @@ export default function HelpPage() {
 
           {/* Article */}
           {active && (
-            <article className="overflow-hidden rounded-md border border-slate-200 bg-white">
-              <div className="border-b border-slate-200 px-6 py-6 sm:px-8">
+            <article className="overflow-hidden rounded-xl bg-white shadow-sm">
+              <div className="bg-[#FCEFD9] px-6 py-6 sm:px-8">
                 <p className="text-xs text-slate-500">{active.title}</p>
                 <h2 className="mt-1 font-serif text-2xl tracking-tight text-slate-900">{active.heading}</h2>
               </div>

@@ -182,32 +182,32 @@ export default function PaymentsPage() {
   };
 
   return (
-    <div className="mx-auto max-w-[1400px] space-y-8 pt-2 animate-in fade-in duration-500">
+    <div className="w-full space-y-8 pt-2 animate-in fade-in duration-500">
       {/* Header */}
-      <header className="flex flex-col gap-4 border-b border-slate-200 pb-6 sm:flex-row sm:items-end sm:justify-between">
+      <header className="flex flex-col gap-4 pb-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="text-xs text-slate-500">
+          <p className="inline-block rounded-full bg-[#FCE8B2] px-3 py-0.5 text-xs font-semibold text-amber-950">
             {pendingCount === 1
               ? "1 vendor transfer"
               : `${pendingCount} vendor transfers`}{" "}
             awaiting settlement
           </p>
-          <h1 className="mt-1 font-serif text-3xl tracking-tight text-slate-900">
+          <h1 className="mt-2 font-serif text-3xl tracking-tight text-slate-900">
             Treasury
           </h1>
         </div>
         <button
           onClick={exportCsv}
-          className="inline-flex h-10 items-center gap-2 rounded border border-slate-300 bg-white px-4 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50"
+          className="inline-flex h-10 items-center gap-2 rounded-lg bg-[#C8F3DC] px-4 text-sm font-semibold text-emerald-900 transition-colors hover:bg-[#B2ECCD]"
         >
           <Download size={16} /> Export ledger
         </button>
       </header>
 
       {/* Settlement + figures */}
-      <section className="grid grid-cols-3 overflow-hidden rounded-md border border-slate-200 bg-white xl:grid-cols-12">
+      <section className="grid grid-cols-3 overflow-hidden rounded-xl bg-[#FFFDF8] shadow-sm xl:grid-cols-12">
         {/* Pending payouts */}
-        <div className="col-span-3 flex flex-col justify-between gap-8 bg-[#0D4A3E] p-6 text-white sm:p-8 xl:col-span-7">
+        <div className="col-span-3 flex flex-col justify-between gap-8 bg-gradient-to-br from-[#0F5947] to-[#176B55] p-6 text-white sm:p-8 xl:col-span-7">
           <div>
             <p className="text-sm text-emerald-100/70">Awaiting settlement</p>
 
@@ -230,30 +230,30 @@ export default function PaymentsPage() {
         </div>
 
         {/* Key figures */}
-        <dl className="col-span-3 grid grid-cols-3 divide-x divide-slate-200 xl:col-span-5 xl:grid-cols-1 xl:divide-x-0 xl:divide-y">
-          <div className="min-w-0 p-3 sm:p-6 xl:p-8">
-            <dt className="text-xs text-slate-500 sm:text-sm">
+        <dl className="col-span-3 grid grid-cols-3 xl:col-span-5 xl:grid-cols-1">
+          <div className="min-w-0 bg-[#CBE6FF] p-3 sm:p-6 xl:p-8">
+            <dt className="text-xs text-sky-950/75 sm:text-sm">
               Volume, last 24 hours
             </dt>
-            <dd className="mt-2 break-words font-serif text-xl tabular-nums tracking-tight text-slate-900 sm:text-3xl">
+            <dd className="mt-2 break-words font-serif text-xl tabular-nums tracking-tight text-sky-950 sm:text-3xl">
               KES {kes(s?.totalVolume24h)}
             </dd>
           </div>
 
-          <div className="min-w-0 p-3 sm:p-6 xl:p-8">
-            <dt className="text-xs text-slate-500 sm:text-sm">
+          <div className="min-w-0 bg-[#C8F3DC] p-3 sm:p-6 xl:p-8">
+            <dt className="text-xs text-emerald-950/75 sm:text-sm">
               Payment success rate
             </dt>
-            <dd className="mt-2 break-words font-serif text-xl tabular-nums tracking-tight text-slate-900 sm:text-3xl">
+            <dd className="mt-2 break-words font-serif text-xl tabular-nums tracking-tight text-emerald-950 sm:text-3xl">
               {s?.successRate || 0}%
             </dd>
           </div>
 
-          <div className="min-w-0 p-3 sm:p-6 xl:p-8">
-            <dt className="text-xs text-slate-500 sm:text-sm">
+          <div className="min-w-0 bg-[#FCE8B2] p-3 sm:p-6 xl:p-8">
+            <dt className="text-xs text-amber-950/75 sm:text-sm">
               Revenue this month, after payouts
             </dt>
-            <dd className="mt-2 break-words font-serif text-xl tabular-nums tracking-tight text-slate-900 sm:text-3xl">
+            <dd className="mt-2 break-words font-serif text-xl tabular-nums tracking-tight text-amber-950 sm:text-3xl">
               KES {kes(s?.overview?.revenueThisMonth)}
             </dd>
           </div>

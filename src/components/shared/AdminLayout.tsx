@@ -87,12 +87,12 @@ export default function AdminLayout() {
 
       {/* Sidebar */}
       <aside
-        className={`fixed lg:static inset-y-0 left-0 z-50 flex flex-col bg-white border-r border-slate-200/80 shadow-sm transition-all duration-300 ease-in-out ${
+        className={`fixed lg:static inset-y-0 left-0 z-50 flex flex-col bg-[#FFFDF8] border-r border-slate-200/80 shadow-sm transition-all duration-300 ease-in-out ${
           isCollapsed ? "w-20" : "w-64"
         } ${mobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}`}
       >
         {/* Header / Brand */}
-        <div className="h-16 lg:h-20 flex items-center justify-between px-4 border-b border-slate-100 flex-shrink-0 pt-[max(1.5rem,calc(env(safe-area-inset-top,0px)+0.75rem))] lg:pt-0 min-h-[calc(4.5rem+env(safe-area-inset-top,0px))] lg:min-h-[5rem]">
+        <div className="h-16 lg:h-20 flex items-center justify-between px-4 border-b border-amber-100/80 bg-[#FCEFD9]/50 flex-shrink-0 pt-[max(1.5rem,calc(env(safe-area-inset-top,0px)+0.75rem))] lg:pt-0 min-h-[calc(4.5rem+env(safe-area-inset-top,0px))] lg:min-h-[5rem]">
           <div className="flex items-center gap-3 overflow-hidden">
             <div className="">
               <img src="/hlynk.png" className="h-[40px]" alt="hlynk Logo" />
@@ -123,8 +123,8 @@ export default function AdminLayout() {
                 className={({ isActive }) =>
                   `flex items-center gap-3 px-3 py-2.5 rounded-xl font-semibold text-xs transition-all ${
                     isActive
-                      ? "bg-emerald-50 text-[#00694B] font-bold border border-emerald-100/60 shadow-sm"
-                      : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
+                      ? "bg-[#C8F3DC] text-[#0A4D38] font-bold shadow-sm"
+                      : "text-slate-600 hover:text-slate-900 hover:bg-[#FCE8B2]/60"
                   } ${isCollapsed ? "justify-center" : ""}`
                 }
                 title={isCollapsed ? item.label : undefined}
@@ -137,7 +137,7 @@ export default function AdminLayout() {
         </nav>
 
         {/* Sidebar Footer / User Info & Logout */}
-        <div className="p-3 border-t border-slate-100 flex-shrink-0">
+        <div className="p-3 border-t border-amber-100/80 bg-[#FCEFD9]/40 flex-shrink-0">
           {!isCollapsed && (
             <div className="mb-3 px-2 flex items-center justify-between">
               <div className="min-w-0">
@@ -175,7 +175,7 @@ export default function AdminLayout() {
           onToggleCollapse={() => setIsCollapsed((v) => !v)}
         />
 
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 bg-slate-50/30 text-slate-900 pb-28 lg:pb-8 max-w-full overflow-x-hidden">
+        <main className="flex-1 overflow-y-auto p-3 sm:p-4 lg:px-5 lg:py-6 bg-slate-50/30 text-slate-900 pb-28 lg:pb-8 max-w-full overflow-x-hidden">
           <Outlet />
         </main>
       </div>
@@ -269,20 +269,20 @@ function AdminMobileBottomNav({
       >
         <div>
           {/* User identity card */}
-          <div className="flex items-center gap-3 px-5 py-4 border-b border-slate-100">
+          <div className="flex items-center gap-3 px-5 py-4 bg-[#FCEFD9]">
             <img
               src={avatarFor(user)}
               alt="Profile"
               className="w-12 h-12 rounded-full object-cover border border-emerald-600/20 flex-shrink-0"
             />
             <div className="min-w-0">
-              <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">
+              <p className="text-[9px] font-black text-amber-900/60 uppercase tracking-widest leading-none mb-1">
                 Signed in as
               </p>
               <p className="text-sm font-bold text-slate-900 truncate">
                 {user?.name || "Administrator"}
               </p>
-              <p className="text-xs text-slate-500 truncate">{user?.email}</p>
+              <p className="text-xs text-slate-600 truncate">{user?.email}</p>
             </div>
           </div>
 
@@ -293,8 +293,8 @@ function AdminMobileBottomNav({
               onClick={() => setShowProfileSheet(false)}
               className="flex flex-col items-center gap-2 no-tap-highlight group active:scale-95 transition-transform"
             >
-              <div className="w-[60px] h-[60px] rounded-full border-2 border-slate-200 flex items-center justify-center bg-white transition-colors group-active:bg-slate-100">
-                <Bolt className="w-6 h-6 text-slate-900" strokeWidth={1.75} />
+              <div className="w-[60px] h-[60px] rounded-full flex items-center justify-center bg-[#CBE6FF] transition-colors group-active:bg-[#B5DAFF]">
+                <Bolt className="w-6 h-6 text-sky-950" strokeWidth={1.75} />
               </div>
               <span className="text-[12px] leading-tight text-center px-0.5 text-slate-800">
                 Settings
@@ -306,8 +306,8 @@ function AdminMobileBottomNav({
               onClick={() => setShowProfileSheet(false)}
               className="flex flex-col items-center gap-2 no-tap-highlight group active:scale-95 transition-transform"
             >
-              <div className="w-[60px] h-[60px] rounded-full border-2 border-slate-200 flex items-center justify-center bg-white transition-colors group-active:bg-slate-100">
-                <AppWindowMac className="w-6 h-6 text-slate-900" strokeWidth={1.75} />
+              <div className="w-[60px] h-[60px] rounded-full flex items-center justify-center bg-[#C8F3DC] transition-colors group-active:bg-[#B2ECCD]">
+                <AppWindowMac className="w-6 h-6 text-emerald-950" strokeWidth={1.75} />
               </div>
               <span className="text-[12px] leading-tight text-center px-0.5 text-slate-800">
                 Provider UI
@@ -321,10 +321,10 @@ function AdminMobileBottomNav({
               }}
               className="flex flex-col items-center gap-2 no-tap-highlight group active:scale-95 transition-transform"
             >
-              <div className="w-[60px] h-[60px] rounded-full border-2 border-red-200 flex items-center justify-center bg-white transition-colors group-active:bg-red-50">
-                <LogOut className="w-6 h-6 text-red-500" strokeWidth={1.75} />
+              <div className="w-[60px] h-[60px] rounded-full flex items-center justify-center bg-[#FFD6DF] transition-colors group-active:bg-[#FFC2D0]">
+                <LogOut className="w-6 h-6 text-rose-700" strokeWidth={1.75} />
               </div>
-              <span className="text-[12px] leading-tight text-center px-0.5 text-red-500">
+              <span className="text-[12px] leading-tight text-center px-0.5 text-rose-700">
                 Log Out
               </span>
             </button>
@@ -543,7 +543,7 @@ function MoreSheet({
           {/* Header (always a drag zone) */}
           <div
             ref={headerRef}
-            className="bg-slate-50 flex-shrink-0 select-none"
+            className="bg-[#FCEFD9] flex-shrink-0 select-none"
             style={{ touchAction: "none" }}
             onPointerDown={(e) => dragControls.start(e)}
           >
@@ -551,7 +551,7 @@ function MoreSheet({
               className="flex justify-center pt-2.5 pb-1 cursor-grab active:cursor-grabbing"
               onTap={toggleHeight}
             >
-              <div className="h-[4px] w-10 rounded-full bg-slate-300" />
+              <div className="h-[4px] w-10 rounded-full bg-amber-300" />
             </motion.div>
 
             <div className="relative flex items-center justify-center px-5 py-2.5">
@@ -571,49 +571,62 @@ function MoreSheet({
               ref={gridRef}
               className="grid grid-cols-3 gap-y-5 gap-x-1 px-3 pt-5 pb-[max(1.25rem,calc(env(safe-area-inset-bottom,0px)+0.75rem))]"
             >
-              {items.map((item, i) => (
-                <motion.div
-                  key={item.to}
-                  initial={false}
-                  animate={open ? { opacity: 1, y: 0 } : { opacity: 0, y: 14 }}
-                  transition={{ delay: open ? 0.05 + i * 0.02 : 0, duration: 0.2 }}
-                >
-                  <NavLink
-                    to={item.to}
-                    end={item.end}
-                    onClick={(e) => {
-                      if (didDrag.current) {
-                        e.preventDefault();
-                        return;
-                      }
-                      onClose();
-                    }}
-                    className="flex flex-col items-center gap-2 no-tap-highlight group active:scale-95 transition-transform"
+              {items.map((item, i) => {
+                const tileColors = [
+                  { bg: "bg-[#C8F3DC]", icon: "text-emerald-950" },
+                  { bg: "bg-[#CBE6FF]", icon: "text-sky-950" },
+                  { bg: "bg-[#FCE8B2]", icon: "text-amber-950" },
+                  { bg: "bg-[#FFDCCB]", icon: "text-orange-950" },
+                  { bg: "bg-[#DFD7FF]", icon: "text-violet-950" },
+                  { bg: "bg-[#FFD6DF]", icon: "text-rose-950" },
+                ];
+                const tile = tileColors[i % tileColors.length];
+                return (
+                  <motion.div
+                    key={item.to}
+                    initial={false}
+                    animate={open ? { opacity: 1, y: 0 } : { opacity: 0, y: 14 }}
+                    transition={{ delay: open ? 0.05 + i * 0.02 : 0, duration: 0.2 }}
                   >
-                    {({ isActive }) => (
-                      <>
-                        <div
-                          className={`w-[60px] h-[60px] rounded-full border-2 flex items-center justify-center bg-white transition-colors group-active:bg-slate-100 ${
-                            isActive ? "border-emerald-500" : "border-slate-200"
-                          }`}
-                        >
-                          <item.icon
-                            className={`w-6 h-6 ${isActive ? "text-emerald-700" : "text-slate-900"}`}
-                            strokeWidth={1.75}
-                          />
-                        </div>
-                        <span
-                          className={`text-[12px] leading-tight text-center px-0.5 ${
-                            isActive ? "text-emerald-700 font-medium" : "text-slate-800"
-                          }`}
-                        >
-                          {item.label}
-                        </span>
-                      </>
-                    )}
-                  </NavLink>
-                </motion.div>
-              ))}
+                    <NavLink
+                      to={item.to}
+                      end={item.end}
+                      onClick={(e) => {
+                        if (didDrag.current) {
+                          e.preventDefault();
+                          return;
+                        }
+                        onClose();
+                      }}
+                      className="flex flex-col items-center gap-2 no-tap-highlight group active:scale-95 transition-transform"
+                    >
+                      {({ isActive }) => (
+                        <>
+                          <div
+                            className={`w-[60px] h-[60px] rounded-full flex items-center justify-center transition-colors ${
+                              isActive
+                                ? "bg-emerald-500 text-white shadow-sm"
+                                : `${tile.bg} ${tile.icon}`
+                            }`}
+                          >
+                            <item.icon
+                              className={`w-6 h-6 ${isActive ? "text-white" : tile.icon}`}
+                              strokeWidth={1.75}
+                            />
+                          </div>
+                          <span
+                            className={`text-[12px] leading-tight text-center px-0.5 ${
+                              isActive ? "text-emerald-700 font-semibold" : "text-slate-800"
+                            }`}
+                          >
+                            {item.label}
+                          </span>
+                        </>
+                      )}
+                    </NavLink>
+                  </motion.div>
+                );
+              })}
             </div>
           </div>
         </div>

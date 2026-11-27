@@ -161,7 +161,7 @@ export default function FinancialsPage() {
   const items: any[] = txData?.data?.items || [];
 
   return (
-    <div className="mx-auto max-w-[1400px] space-y-8 pt-2 animate-in fade-in duration-500">
+    <div className="w-full space-y-8 pt-2 animate-in fade-in duration-500">
       {/* Header */}
       <header className="flex flex-col gap-4 border-b border-slate-200 pb-0 sm:flex-row sm:items-end sm:justify-between">
         <div className="pb-6">
@@ -200,9 +200,9 @@ export default function FinancialsPage() {
       ) : (
         <>
           {/* Vault + liabilities */}
-          <section className="grid grid-cols-3 overflow-hidden rounded-md border border-slate-200 bg-white xl:grid-cols-12">
+          <section className="grid grid-cols-3 overflow-hidden rounded-xl bg-[#FFFDF8] shadow-sm xl:grid-cols-12">
             {/* Vault balance and revenue chart */}
-            <div className="col-span-3 bg-[#0D4A3E] p-6 text-white sm:p-8 xl:col-span-8">
+            <div className="col-span-3 bg-gradient-to-br from-[#0F5947] to-[#176B55] p-6 text-white sm:p-8 xl:col-span-8">
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div>
                   <p className="text-sm text-emerald-100/70">Vault balance</p>
@@ -315,8 +315,8 @@ export default function FinancialsPage() {
             </div>
 
             {/* Key figures */}
-            <dl className="col-span-3 grid grid-cols-3 divide-x divide-slate-200 xl:col-span-4 xl:grid-cols-1 xl:divide-x-0 xl:divide-y">
-              <div className="min-w-0 [&>*]:min-w-0">
+            <dl className="col-span-3 grid grid-cols-3 xl:col-span-4 xl:grid-cols-1">
+              <div className="min-w-0 bg-[#C8F3DC] [&>*]:min-w-0">
                 <Figure
                   label="Platform fees"
                   value={`KES ${kes(vault?.platformNetPotential)}`}
@@ -324,7 +324,7 @@ export default function FinancialsPage() {
                 />
               </div>
 
-              <div className="min-w-0 [&>*]:min-w-0">
+              <div className="min-w-0 bg-[#FCE8B2] [&>*]:min-w-0">
                 <Figure
                   label="Vendor dues"
                   value={`KES ${kes(vault?.pendingVendor)}`}
@@ -332,7 +332,7 @@ export default function FinancialsPage() {
                 />
               </div>
 
-              <div className="min-w-0 [&>*]:min-w-0">
+              <div className="min-w-0 bg-[#CBE6FF] [&>*]:min-w-0">
                 <Figure
                   label="Referral dues"
                   value={`KES ${kes(vault?.pendingReferral)}`}
@@ -343,8 +343,8 @@ export default function FinancialsPage() {
           </section>
 
           {/* Payments log */}
-          <section className="overflow-hidden rounded-md border border-slate-200 bg-white">
-            <div className="flex flex-col gap-3 border-b border-slate-200 px-6 py-4 xl:flex-row xl:items-center xl:justify-between">
+          <section className="overflow-hidden rounded-xl bg-[#FFFDF8] shadow-sm">
+            <div className="flex flex-col gap-3 bg-[#FCEFD9] px-6 py-4 xl:flex-row xl:items-center xl:justify-between">
               <div className="flex items-center gap-3">
                 <h2 className="text-sm font-semibold text-slate-900">
                   Payments

@@ -106,11 +106,11 @@ export default function BroadcastTool() {
   }
 
   return (
-    <div className="bg-white rounded-lg border border-gray-100 shadow-sm overflow-hidden transition-all duration-200">
+    <div className="bg-[#FFFDF8] rounded-xl shadow-sm overflow-hidden transition-all duration-200">
       {/* Header bar */}
-      <div className="px-5 py-3.5 border-b border-gray-50 flex flex-col sm:flex-row justify-between sm:items-center gap-3 bg-white">
+      <div className="px-5 py-3.5 flex flex-col sm:flex-row justify-between sm:items-center gap-3 bg-[#FCEFD9]">
         <div className="flex items-center gap-3">
-          <div className="h-8 w-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+          <div className="h-8 w-8 rounded-lg bg-[#C8F3DC] text-emerald-900 flex items-center justify-center shrink-0">
             <Bell size={16} />
           </div>
           <div>

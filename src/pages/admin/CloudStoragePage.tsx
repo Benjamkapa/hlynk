@@ -313,52 +313,52 @@ export default function CloudStoragePage() {
 
       {/* Storage summary */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-        <div className="rounded-xl border border-gray-200 bg-white p-4">
-          <div className="flex items-center gap-2 text-gray-500">
+        <div className="rounded-xl bg-[#C8F3DC] p-4 shadow-sm">
+          <div className="flex items-center gap-2 text-emerald-950/75">
             <Database size={16} />
             <span className="text-xs font-medium">Total files</span>
           </div>
-          <p className="mt-3 text-2xl font-semibold text-gray-900">
+          <p className="mt-3 text-2xl font-semibold text-emerald-950">
             {media.length}
           </p>
-          <p className="mt-1 text-xs text-gray-400">Stored objects</p>
+          <p className="mt-1 text-xs text-emerald-900/70">Stored objects</p>
         </div>
 
-        <div className="rounded-xl border border-gray-200 bg-white p-4">
-          <div className="flex items-center gap-2 text-gray-500">
+        <div className="rounded-xl bg-[#CBE6FF] p-4 shadow-sm">
+          <div className="flex items-center gap-2 text-sky-950/75">
             <HardDrive size={16} />
             <span className="text-xs font-medium">Storage used</span>
           </div>
-          <p className="mt-3 text-2xl font-semibold text-gray-900">
+          <p className="mt-3 text-2xl font-semibold text-sky-950">
             {formatSize(totalSize)}
           </p>
-          <p className="mt-1 text-xs text-gray-400">Combined file size</p>
+          <p className="mt-1 text-xs text-sky-900/70">Combined file size</p>
         </div>
 
-        <div className="col-span-2 rounded-xl border border-gray-200 bg-white p-4 sm:col-span-1">
-          <div className="flex items-center gap-2 text-gray-500">
+        <div className="col-span-2 rounded-xl bg-[#FCE8B2] p-4 shadow-sm sm:col-span-1">
+          <div className="flex items-center gap-2 text-amber-950/75">
             <ImageIcon size={16} />
             <span className="text-xs font-medium">File breakdown</span>
           </div>
           <div className="mt-3 flex items-center gap-4">
             <div>
-              <p className="text-xl font-semibold text-gray-900">{imageCount}</p>
-              <p className="text-xs text-gray-400">Images</p>
+              <p className="text-xl font-semibold text-amber-950">{imageCount}</p>
+              <p className="text-xs text-amber-900/70">Images</p>
             </div>
-            <div className="h-8 w-px bg-gray-100" />
+            <div className="h-8 w-px bg-amber-900/15" />
             <div>
-              <p className="text-xl font-semibold text-gray-900">{documentCount}</p>
-              <p className="text-xs text-gray-400">Documents</p>
+              <p className="text-xl font-semibold text-amber-950">{documentCount}</p>
+              <p className="text-xs text-amber-900/70">Documents</p>
             </div>
           </div>
         </div>
       </div>
 
       {/* Backup management */}
-      <section className="overflow-hidden rounded-xl border border-gray-200 bg-white">
-        <div className="flex flex-col gap-3 border-b border-gray-100 p-4 sm:flex-row sm:items-center sm:justify-between sm:px-5">
+      <section className="overflow-hidden rounded-xl bg-white shadow-sm">
+        <div className="flex flex-col gap-3 bg-[#FCEFD9] p-4 sm:flex-row sm:items-center sm:justify-between sm:px-5">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-50 text-emerald-700">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#C8F3DC] text-emerald-900">
               <Database size={19} />
             </div>
 

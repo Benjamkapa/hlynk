@@ -133,7 +133,7 @@ export default function UserOperationsPage() {
   ]
 
   return (
-    <div className="mx-auto max-w-[1400px] space-y-8 pt-2 animate-in fade-in duration-500">
+    <div className="w-full space-y-8 pt-2 animate-in fade-in duration-500">
       {/* Header */}
       <header className="flex flex-col gap-4 border-b border-slate-200 sm:flex-row sm:items-end sm:justify-between">
         <div className="pb-6">
@@ -162,18 +162,18 @@ export default function UserOperationsPage() {
 
       {/* Online summary */}
       {tab !== 'BROADCAST' && (
-        <dl className="grid grid-cols-2 divide-slate-200 overflow-hidden rounded-md border border-slate-200 bg-white max-md:divide-y md:grid-cols-4 md:divide-x [&>*:nth-child(odd)]:max-md:border-r [&>*:nth-child(odd)]:max-md:border-slate-200">
-          <Stat label="Online now" value={sessions.length} live />
-          <Stat label="Staff" value={countRole('STAFF')} />
-          <Stat label="Providers" value={countRole('PROVIDER')} />
-          <Stat label="Customers" value={countRole('CUSTOMER')} />
+        <dl className="grid grid-cols-2 overflow-hidden rounded-xl bg-[#FFFDF8] shadow-sm md:grid-cols-4">
+          <Stat label="Online now" value={sessions.length} live bgClass="bg-[#C8F3DC]" />
+          <Stat label="Staff" value={countRole('STAFF')} bgClass="bg-[#CBE6FF]" />
+          <Stat label="Providers" value={countRole('PROVIDER')} bgClass="bg-[#FCE8B2]" />
+          <Stat label="Customers" value={countRole('CUSTOMER')} bgClass="bg-[#FFD6DF]" />
         </dl>
       )}
 
       {/* ── Directory ── */}
       {tab === 'DIRECTORY' && (
-        <section className="overflow-hidden rounded-md border border-slate-200 bg-white">
-          <div className="flex flex-col gap-3 border-b border-slate-200 px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
+        <section className="overflow-hidden rounded-xl bg-[#FFFDF8] shadow-sm">
+          <div className="flex flex-col gap-3 bg-[#FCEFD9] px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
             <h2 className="text-sm font-semibold text-slate-900">
               All users <span className="ml-1 font-normal text-slate-400">{pagination.total}</span>
             </h2>
@@ -489,10 +489,10 @@ export default function UserOperationsPage() {
   )
 }
 
-function Stat({ label, value, live }: { label: string; value: number; live?: boolean }) {
+function Stat({ label, value, live, bgClass = 'bg-[#FFFEFA]' }: { label: string; value: number; live?: boolean; bgClass?: string }) {
   return (
-    <div className="px-6 py-5">
-      <dt className="flex items-center gap-2 text-sm text-slate-500">
+    <div className={`px-6 py-5 ${bgClass}`}>
+      <dt className="flex items-center gap-2 text-sm text-slate-600">
         {live && <span className="h-2 w-2 rounded-full bg-emerald-500" />}
         {label}
       </dt>

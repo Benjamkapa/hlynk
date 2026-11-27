@@ -94,7 +94,7 @@ export default function ProvidersPage() {
   const filtered = !!(search || status || planName);
 
   return (
-    <div className="mx-auto max-w-[1400px] space-y-8 pt-2 animate-in fade-in duration-500">
+    <div className="w-full space-y-8 pt-2 animate-in fade-in duration-500">
       {/* Header */}
       <header className="flex flex-col gap-4 border-b border-slate-200 pb-6 sm:flex-row sm:items-end sm:justify-between">
         <div>
@@ -105,18 +105,12 @@ export default function ProvidersPage() {
             Businesses
           </h1>
         </div>
-        <button
-          onClick={() => setIsAddModalOpen(true)}
-          className="inline-flex h-10 items-center gap-2 rounded bg-[#0D4A3E] px-4 text-sm font-medium text-white transition-colors hover:bg-[#0A3D33]"
-        >
-          <Plus size={16} /> Add business
-        </button>
       </header>
 
       {/* Growth + figures */}
-      <section className="grid grid-cols-3 overflow-hidden rounded-md border border-slate-200 bg-white xl:grid-cols-12">
+      <section className="grid grid-cols-3 overflow-hidden rounded-xl bg-[#FFFDF8] shadow-sm xl:grid-cols-12">
         {/* Registration growth */}
-        <div className="col-span-3 bg-[#0D4A3E] p-6 text-white sm:p-8 xl:col-span-8">
+        <div className="col-span-3 bg-gradient-to-br from-[#0F5947] to-[#176B55] p-6 text-white sm:p-8 xl:col-span-8">
           <p className="text-sm text-emerald-100/70">
             New registrations, last 8 weeks
           </p>
@@ -196,32 +190,32 @@ export default function ProvidersPage() {
         </div>
 
         {/* Key figures */}
-        <dl className="col-span-3 grid grid-cols-3 divide-x divide-slate-200 xl:col-span-4 xl:grid-cols-1 xl:divide-x-0 xl:divide-y">
-          <div className="min-w-0 p-3 sm:p-6 xl:p-8">
-            <dt className="text-xs text-slate-500 sm:text-sm">
+        <dl className="col-span-3 grid grid-cols-3 xl:col-span-4 xl:grid-cols-1">
+          <div className="min-w-0 bg-[#C8F3DC] p-3 sm:p-6 xl:p-8">
+            <dt className="text-xs text-emerald-950/75 sm:text-sm">
               Total businesses
             </dt>
-            <dd className="mt-2 break-words font-serif text-2xl tabular-nums tracking-tight text-slate-900 sm:text-3xl">
+            <dd className="mt-2 break-words font-serif text-2xl tabular-nums tracking-tight text-emerald-950 sm:text-3xl">
               {stats?.overview?.totalProviders || 0}
             </dd>
           </div>
 
-          <div className="min-w-0 p-3 sm:p-6 xl:p-8">
-            <dt className="text-xs text-slate-500 sm:text-sm">Active today</dt>
-            <dd className="mt-2 break-words font-serif text-2xl tabular-nums tracking-tight text-slate-900 sm:text-3xl">
+          <div className="min-w-0 bg-[#FCE8B2] p-3 sm:p-6 xl:p-8">
+            <dt className="text-xs text-amber-950/75 sm:text-sm">Active today</dt>
+            <dd className="mt-2 break-words font-serif text-2xl tabular-nums tracking-tight text-amber-950 sm:text-3xl">
               {stats?.overview?.activeToday || 0}
             </dd>
           </div>
 
-          <div className="min-w-0 p-3 sm:p-6 xl:p-8">
-            <dt className="text-xs text-slate-500 sm:text-sm">
+          <div className="min-w-0 bg-[#CBE6FF] p-3 sm:p-6 xl:p-8">
+            <dt className="text-xs text-sky-950/75 sm:text-sm">
               Latest registration
             </dt>
-            <dd className="mt-2 break-words text-sm font-medium text-slate-900 sm:text-lg">
+            <dd className="mt-2 break-words text-sm font-medium text-sky-950 sm:text-lg">
               {latest?.name || "None yet"}
             </dd>
             {latest && (
-              <p className="mt-1 text-xs text-slate-500">
+              <p className="mt-1 text-xs text-sky-900/75">
                 {planLabel(latest.plan)} plan
               </p>
             )}
@@ -230,8 +224,8 @@ export default function ProvidersPage() {
       </section>
 
       {/* Registry */}
-      <section className="overflow-hidden rounded-md border border-slate-200 bg-white">
-        <div className="flex flex-col gap-3 border-b border-slate-200 px-6 py-4 lg:flex-row lg:items-center lg:justify-between">
+      <section className="overflow-hidden rounded-xl bg-[#FFFDF8] shadow-sm">
+        <div className="flex flex-col gap-3 bg-[#FCEFD9] px-6 py-4 lg:flex-row lg:items-center lg:justify-between">
           <h2 className="text-sm font-semibold text-slate-900">
             All businesses
           </h2>

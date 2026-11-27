@@ -111,12 +111,12 @@ export default function AdminDashboardPage() {
   });
 
   return (
-    <div className="mx-auto max-w-[1400px] space-y-8 pt-2 animate-in fade-in duration-500">
+    <div className="w-full space-y-8 pt-2 animate-in fade-in duration-500">
       {/* ── Header ─────────────────────────────────────────────── */}
-      <header className="flex flex-col gap-4 border-b border-slate-200 pb-6 sm:flex-row sm:items-end sm:justify-between">
+      <header className="flex flex-col gap-4 pb-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="text-xs text-slate-500">{today}</p>
-          <h1 className="mt-1 font-serif text-3xl tracking-tight text-slate-900">
+          <p className="inline-block rounded-full bg-[#FCE8B2] px-3 py-0.5 text-xs font-semibold text-amber-950">{today}</p>
+          <h1 className="mt-2 font-serif text-3xl tracking-tight text-slate-900">
             Platform overview
           </h1>
         </div>
@@ -169,9 +169,9 @@ export default function AdminDashboardPage() {
         </div>
       </header>
 
-      <section className="grid grid-cols-3 overflow-hidden rounded-md border border-slate-200 bg-white xl:grid-cols-12">
+      <section className="grid grid-cols-3 overflow-hidden rounded-xl bg-[#FFFDF8] shadow-sm xl:grid-cols-12">
         {/* Revenue */}
-        <div className="col-span-3 bg-[#0D4A3E] p-6 text-white sm:p-8 xl:col-span-8">
+        <div className="col-span-3 bg-gradient-to-br from-[#0F5947] to-[#176B55] p-6 text-white sm:p-8 xl:col-span-8">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
               <p className="text-sm text-emerald-100/70">
@@ -267,23 +267,26 @@ export default function AdminDashboardPage() {
         </div>
 
         {/* Key figures */}
-        <dl className="col-span-3 grid grid-cols-3 divide-x divide-slate-200 xl:col-span-4 xl:grid-cols-1 xl:divide-x-0 xl:divide-y">
+        <dl className="col-span-3 grid grid-cols-3 xl:col-span-4 xl:grid-cols-1">
           <Figure
             label="Gross merchandise volume"
             value={`KES ${kes(stats?.revenue?.platformVolume)}`}
             note="Total sales processed on the platform"
+            bgClass="bg-[#FCE8B2]"
           />
 
           <Figure
             label="Paybill collections"
             value={`KES ${kes(stats?.revenue?.mpesaCollections)}`}
             note="M-Pesa inflow through the system paybill"
+            bgClass="bg-[#C8F3DC]"
           />
 
           <Figure
             label="Businesses"
             value={String(stats?.overview?.totalProviders || 0)}
             note={`${stats?.overview?.payingProviders || 0} on a paid subscription`}
+            bgClass="bg-[#CBE6FF]"
           />
         </dl>
       </section>
@@ -291,19 +294,19 @@ export default function AdminDashboardPage() {
       {/* ── Ledger + operations ────────────────────────────────── */}
       <div className="grid grid-cols-1 gap-8 xl:grid-cols-3">
         {/* Ledger */}
-        <section className="overflow-hidden rounded-md border border-slate-200 bg-white xl:col-span-2">
-          <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4">
+        <section className="overflow-hidden rounded-xl bg-[#FFFDF8] shadow-sm xl:col-span-2">
+          <div className="flex items-center justify-between bg-[#FCEFD9] px-6 py-4">
             <div>
               <h2 className="text-sm font-semibold text-slate-900">
                 Recent transactions
               </h2>
-              <p className="mt-0.5 text-xs text-slate-500">
+              <p className="mt-0.5 text-xs text-slate-600">
                 Platform-wide, most recent first
               </p>
             </div>
             <Link
               to="/admin/forensic-audit"
-              className="inline-flex items-center gap-1 text-xs font-medium text-[#0D4A3E] hover:underline"
+              className="inline-flex items-center gap-1 rounded-full bg-[#C8F3DC] px-3 py-1 text-xs font-semibold text-emerald-900 hover:bg-[#B2ECCD]"
             >
               Full audit <ArrowUpRight size={13} />
             </Link>
@@ -312,7 +315,7 @@ export default function AdminDashboardPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-left">
               <thead>
-                <tr className="border-b border-slate-200 text-xs text-slate-500">
+                <tr className="bg-[#DFECFF] text-xs font-semibold text-sky-950/80">
                   <th className="px-6 py-3 font-medium">Reference</th>
                   <th className="px-6 py-3 font-medium">Business</th>
                   <th className="px-6 py-3 font-medium">Type</th>
@@ -402,12 +405,12 @@ export default function AdminDashboardPage() {
         {/* Operations column */}
         <div className="space-y-8">
           {/* System status */}
-          <section className="rounded-md border border-slate-200 bg-white">
-            <div className="border-b border-slate-200 px-6 py-4">
-              <h2 className="text-sm font-semibold text-slate-900">
+          <section className="overflow-hidden rounded-xl bg-[#FFFDF8] shadow-sm">
+            <div className="bg-[#C8F3DC] px-6 py-4">
+              <h2 className="text-sm font-semibold text-emerald-950">
                 System status
               </h2>
-              <p className="mt-0.5 text-xs text-slate-500">
+              <p className="mt-0.5 text-xs text-emerald-900/75">
                 Refreshes every 30 seconds
               </p>
             </div>
@@ -437,9 +440,9 @@ export default function AdminDashboardPage() {
           </section>
 
           {/* Activity */}
-          <section className="rounded-md border border-slate-200 bg-white">
-            <div className="border-b border-slate-200 px-6 py-4">
-              <h2 className="text-sm font-semibold text-slate-900">
+          <section className="overflow-hidden rounded-xl bg-[#FFFDF8] shadow-sm">
+            <div className="bg-[#FFD6DF] px-6 py-4">
+              <h2 className="text-sm font-semibold text-rose-950">
                 Recent activity
               </h2>
             </div>
@@ -487,14 +490,16 @@ function Figure({
   label,
   value,
   note,
+  bgClass = "bg-[#FFFEFA]",
 }: {
   label: string;
   value: string;
   note: string;
+  bgClass?: string;
 }) {
   return (
-    <div className="p-6 sm:p-8">
-      <dt className="text-sm text-slate-500">{label}</dt>
+    <div className={`p-6 sm:p-8 ${bgClass}`}>
+      <dt className="text-sm text-slate-600">{label}</dt>
       <dd className="mt-2 font-serif text-2xl tabular-nums tracking-tight text-slate-900 sm:text-3xl">
         {value}
       </dd>

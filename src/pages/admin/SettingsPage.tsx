@@ -190,14 +190,14 @@ export default function SettingsPage() {
   const current = TABS.find((t) => t.name === activeTab);
 
   return (
-    <div className="mx-auto max-w-[1400px] space-y-8 pt-2 animate-in fade-in duration-500">
+    <div className="w-full space-y-8 pt-2 animate-in fade-in duration-500">
       {/* Header */}
-      <header className="flex flex-col gap-4 border-b border-slate-200 pb-6 sm:flex-row sm:items-end sm:justify-between">
+      <header className="flex flex-col gap-4 pb-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="text-xs text-slate-500">
+          <p className="inline-block rounded-full bg-[#DFD7FF] px-3 py-0.5 text-xs font-semibold text-violet-950">
             Platform and administrator controls
           </p>
-          <h1 className="mt-1 font-serif text-3xl tracking-tight text-slate-900">
+          <h1 className="mt-2 font-serif text-3xl tracking-tight text-slate-900">
             Settings
           </h1>
         </div>
@@ -225,10 +225,10 @@ export default function SettingsPage() {
                 key={tab.name}
                 onClick={() => setActiveTab(tab.name)}
                 aria-current={active ? "page" : undefined}
-                className={`shrink-0 border-b-2 px-3 py-2.5 text-left transition-colors lg:border-b-0 lg:border-l-2 ${
+                className={`shrink-0 rounded-xl px-3.5 py-2.5 text-left transition-colors ${
                   active
-                    ? "border-[#0D4A3E] text-slate-900"
-                    : "border-transparent text-slate-500 hover:text-slate-900"
+                    ? "bg-[#C8F3DC] text-emerald-950"
+                    : "text-slate-600 hover:bg-[#FCE8B2]/50 hover:text-slate-900"
                 }`}
               >
                 <span
@@ -236,7 +236,7 @@ export default function SettingsPage() {
                 >
                   {tab.name}
                 </span>
-                <span className="mt-0.5 hidden text-xs text-slate-400 lg:block">
+                <span className={`mt-0.5 hidden text-xs lg:block ${active ? "text-emerald-900/75" : "text-slate-400"}`}>
                   {tab.desc}
                 </span>
               </button>
@@ -245,8 +245,8 @@ export default function SettingsPage() {
         </nav>
 
         {/* Content */}
-        <section className="min-w-0 flex-1 overflow-hidden rounded-md border border-slate-200 bg-white">
-          <div className="border-b border-slate-200 px-6 py-4">
+        <section className="min-w-0 flex-1 overflow-hidden rounded-xl bg-white shadow-sm">
+          <div className="bg-[#FCEFD9] px-6 py-4">
             <h2 className="text-sm font-semibold text-slate-900">
               {activeTab}
             </h2>

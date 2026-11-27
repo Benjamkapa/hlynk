@@ -20,11 +20,19 @@ const LIVE_POLL_HEALTH_MS = 15_000
 type Tone = 'red' | 'emerald' | 'blue' | 'amber' | 'slate'
 
 const DOT: Record<Tone, string> = {
-  red: 'bg-red-500',
+  red: 'bg-rose-500',
   emerald: 'bg-emerald-500',
   blue: 'bg-sky-500',
   amber: 'bg-amber-500',
-  slate: 'bg-slate-300',
+  slate: 'bg-violet-400',
+}
+
+const EVENT_PILL: Record<Tone, string> = {
+  red: 'bg-[#FFD6DF] text-rose-900',
+  emerald: 'bg-[#C8F3DC] text-emerald-900',
+  blue: 'bg-[#CBE6FF] text-sky-900',
+  amber: 'bg-[#FCE8B2] text-amber-900',
+  slate: 'bg-[#DFD7FF] text-violet-900',
 }
 
 function logTone(logName: string, action: string): Tone {
@@ -37,7 +45,7 @@ function logTone(logName: string, action: string): Tone {
 }
 
 const selectCls =
-  'rounded border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 outline-none focus:border-[#0D4A3E]'
+  'rounded border border-amber-200/90 bg-[#FFFEFA] px-3 py-2 text-sm text-slate-700 outline-none focus:border-emerald-500'
 
 export default function AuditSecurityPage() {
   const queryClient = useQueryClient()
@@ -172,15 +180,15 @@ export default function AuditSecurityPage() {
   const currentIP = healthData?.adminIpSecurity?.currentIP || '127.0.0.1'
 
   return (
-    <div className="mx-auto max-w-[1400px] space-y-8 pt-2 animate-in fade-in duration-500">
+    <div className="w-full space-y-8 pt-2 animate-in fade-in duration-500">
       {/* Header */}
-      <header className="flex flex-col gap-4 border-b border-slate-200 pb-6 sm:flex-row sm:items-end sm:justify-between">
+      <header className="flex flex-col gap-4 pb-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="flex items-center gap-2 text-xs text-slate-500">
-            <span className="h-2 w-2 rounded-full bg-emerald-500" />
+          <p className="inline-flex items-center gap-2 rounded-full bg-[#C8F3DC] px-3 py-1 text-xs font-semibold text-emerald-900">
+            <span className="h-2 w-2 rounded-full bg-emerald-600" />
             Live · updates every 10 seconds
           </p>
-          <h1 className="mt-1 font-serif text-3xl tracking-tight text-slate-900">Audit &amp; security</h1>
+          <h1 className="mt-2 font-serif text-3xl tracking-tight text-slate-900">Audit &amp; security</h1>
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
@@ -219,7 +227,7 @@ export default function AuditSecurityPage() {
 
           <button
             onClick={handleIncidentReport}
-            className="inline-flex items-center gap-2 rounded border border-red-200 bg-white px-3 py-1.5 text-xs font-medium text-red-600 transition-colors hover:bg-red-50"
+            className="inline-flex items-center gap-2 rounded-lg bg-[#FFD6DF] px-3.5 py-2 text-xs font-semibold text-rose-900 transition-colors hover:bg-[#FFC2D0]"
           >
             <ShieldAlert size={13} /> Report incident
           </button>
@@ -227,61 +235,65 @@ export default function AuditSecurityPage() {
       </header>
 
       {/* Status strip */}
-      <section className="overflow-hidden rounded-md border border-slate-200 bg-white">
-        <dl className="grid grid-cols-2 divide-slate-200 max-md:divide-y md:grid-cols-4 md:divide-x [&>*:nth-child(odd)]:max-md:border-r [&>*:nth-child(odd)]:max-md:border-slate-200">
+      <section className="overflow-hidden rounded-xl bg-[#FFFDF8] shadow-sm">
+        <dl className="grid grid-cols-2 md:grid-cols-4">
           <Stat
             label="Server"
             value={serverStatus}
             note={`Uptime ${Math.floor(uptime / 3600)}h ${Math.floor((uptime % 3600) / 60)}m`}
             tone={degraded ? 'amber' : 'emerald'}
+            bgClass={degraded ? 'bg-[#FCE8B2]' : 'bg-[#C8F3DC]'}
           />
           <Stat
             label="Database latency"
             value={healthData?.dbLatency || '<10ms'}
             note={`API ${healthData?.apiLatency || '<12ms'}`}
+            bgClass="bg-[#CBE6FF]"
           />
           <Stat
             label="Security alerts"
             value={String(alerts)}
             note={alerts > 0 ? 'Needs attention' : 'No threats detected'}
             tone={alerts > 0 ? 'red' : undefined}
+            bgClass={alerts > 0 ? 'bg-[#FFC9D4]' : 'bg-[#FFDCCB]'}
           />
           <Stat
             label="Failed logins, 24h"
             value={String(failedLogins)}
             note="Rate limiting active"
             tone={failedLogins > 5 ? 'amber' : undefined}
+            bgClass="bg-[#FCE8B2]"
           />
         </dl>
 
-        <div className="flex flex-col gap-1 border-t border-slate-200 bg-slate-50 px-6 py-3 text-sm sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-slate-600">Admin access is limited to approved IP addresses.</p>
-          <p className="flex items-center gap-2 text-slate-500">
-            Your IP <span className="text-slate-900 hl-mono">{currentIP}</span>
-            <span className="text-slate-300">·</span>
-            <span className="flex items-center gap-1.5 text-emerald-700">
-              <span className="h-2 w-2 rounded-full bg-emerald-500" /> Whitelisted
+        <div className="flex flex-col gap-1 bg-[#DFD7FF] px-6 py-3 text-sm sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-violet-950 font-medium">Admin access is limited to approved IP addresses.</p>
+          <p className="flex items-center gap-2 text-violet-900/80">
+            Your IP <span className="text-violet-950 font-semibold hl-mono">{currentIP}</span>
+            <span className="text-violet-400">·</span>
+            <span className="flex items-center gap-1.5 text-emerald-800 font-semibold">
+              <span className="h-2 w-2 rounded-full bg-emerald-600" /> Whitelisted
             </span>
           </p>
         </div>
       </section>
 
       {/* Audit log */}
-      <section className="overflow-hidden rounded-md border border-slate-200 bg-white">
-        <div className="flex flex-col gap-3 border-b border-slate-200 px-6 py-4 xl:flex-row xl:items-center xl:justify-between">
+      <section className="overflow-hidden rounded-xl bg-[#FFFDF8] shadow-sm">
+        <div className="flex flex-col gap-3 bg-[#FCEFD9] px-6 py-4 xl:flex-row xl:items-center xl:justify-between">
           <h2 className="text-sm font-semibold text-slate-900">
-            Audit log <span className="ml-1 font-normal text-slate-400">{logsData?.pagination?.total || 0}</span>
+            Audit log <span className="ml-1.5 rounded-full bg-[#FCE8B2] px-2.5 py-0.5 text-xs font-semibold text-amber-950">{logsData?.pagination?.total || 0}</span>
           </h2>
 
           <div className="flex flex-wrap items-center gap-2">
             <label className="relative block w-full sm:w-64">
-              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-amber-500" />
               <input
                 type="text"
                 placeholder="Search user, business or action"
                 value={search}
                 onChange={(e) => handleFilterChange(setSearch, e.target.value)}
-                className="w-full rounded border border-slate-300 bg-white py-2 pl-8 pr-3 text-sm outline-none placeholder:text-slate-400 focus:border-[#0D4A3E]"
+                className="w-full rounded border border-amber-200/90 bg-[#FFFEFA] py-2 pl-8 pr-3 text-sm outline-none placeholder:text-slate-400 focus:border-emerald-500"
               />
             </label>
             <select value={category} onChange={(e) => handleFilterChange(setCategory, e.target.value)} className={selectCls}>
@@ -308,14 +320,14 @@ export default function AuditSecurityPage() {
             <button
               onClick={() => refetchLogs()}
               title="Refresh"
-              className="inline-flex items-center gap-2 rounded border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 transition-colors hover:bg-slate-50"
+              className="inline-flex items-center gap-2 rounded bg-[#CBE6FF] px-3 py-2 text-sm font-medium text-sky-900 transition-colors hover:bg-[#B5DAFF]"
             >
               <RefreshCcw size={13} className={logsFetching ? 'animate-spin' : ''} />
             </button>
             <button
               onClick={handleLogExport}
               disabled={!items.length}
-              className="inline-flex items-center gap-2 rounded border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 transition-colors hover:bg-slate-50 disabled:opacity-50"
+              className="inline-flex items-center gap-2 rounded bg-[#C8F3DC] px-3 py-2 text-sm font-medium text-emerald-900 transition-colors hover:bg-[#B2ECCD] disabled:opacity-50"
             >
               <FileText size={13} /> Export CSV
             </button>
@@ -325,7 +337,7 @@ export default function AuditSecurityPage() {
         <div className="overflow-x-auto">
           <table className="w-full min-w-[860px] text-left">
             <thead>
-              <tr className="border-b border-slate-200 text-xs text-slate-500">
+              <tr className="bg-[#DFECFF] text-xs font-semibold text-sky-950/80">
                 <th className="px-6 py-3 font-medium">Time</th>
                 <th className="px-6 py-3 font-medium">User</th>
                 <th className="px-6 py-3 font-medium">Business</th>
@@ -334,7 +346,7 @@ export default function AuditSecurityPage() {
                 <th className="px-6 py-3" />
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-amber-100/70">
               {logsLoading ? (
                 <tr>
                   <td colSpan={6} className="py-16 text-center">
@@ -354,7 +366,7 @@ export default function AuditSecurityPage() {
                     <tr
                       key={log.id}
                       onClick={() => setSelectedLog(log)}
-                      className="cursor-pointer transition-colors hover:bg-slate-50"
+                      className="cursor-pointer transition-colors hover:bg-[#FFF8EB]"
                     >
                       <td className="whitespace-nowrap px-6 py-3.5">
                         <p className="text-sm text-slate-900">{formatDate(log.createdAt)}</p>
@@ -366,11 +378,11 @@ export default function AuditSecurityPage() {
                       </td>
                       <td className="px-6 py-3.5 text-sm text-slate-700">{log.tenant?.businessName || 'Platform'}</td>
                       <td className="px-6 py-3.5">
-                        <p className="flex items-center gap-2 text-sm text-slate-900">
+                        <span className={`inline-flex items-center gap-2 rounded-full px-2.5 py-0.5 text-xs font-semibold ${EVENT_PILL[tone]}`}>
                           <span className={`h-2 w-2 shrink-0 rounded-full ${DOT[tone]}`} />
                           {log.logName || log.action}
-                        </p>
-                        <p className="mt-0.5 max-w-sm truncate text-xs text-slate-500">{log.details}</p>
+                        </span>
+                        <p className="mt-1 max-w-sm truncate text-xs text-slate-500">{log.details}</p>
                       </td>
                       <td className="whitespace-nowrap px-6 py-3.5 text-xs text-slate-500 hl-mono">
                         {log.ipAddress || '127.0.0.1'}
@@ -484,16 +496,18 @@ function Stat({
   value,
   note,
   tone,
+  bgClass = 'bg-[#FFFEFA]',
 }: {
   label: string
   value: string
   note: string
   tone?: 'emerald' | 'amber' | 'red'
+  bgClass?: string
 }) {
-  const color = tone === 'red' ? 'text-red-600' : tone === 'amber' ? 'text-amber-600' : 'text-slate-900'
+  const color = tone === 'red' ? 'text-rose-700' : tone === 'amber' ? 'text-amber-700' : tone === 'emerald' ? 'text-emerald-800' : 'text-slate-900'
   return (
-    <div className="px-6 py-5">
-      <dt className="text-sm text-slate-500">{label}</dt>
+    <div className={`px-6 py-5 ${bgClass}`}>
+      <dt className="text-sm text-slate-600">{label}</dt>
       <dd className={`mt-1.5 font-serif text-3xl tabular-nums tracking-tight ${color}`}>{value}</dd>
       <p className="mt-1 text-xs text-slate-500">{note}</p>
     </div>
