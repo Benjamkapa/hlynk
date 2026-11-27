@@ -18,11 +18,11 @@ export default function BroadcastTool() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const searchRef = useRef<HTMLDivElement>(null)
 
-  // Suggestions search query
+  // Suggestions search query (loads immediately when "specific" is active so admin can browse & multi-select)
   const { data: suggestionsRes, isLoading: searching } = useQuery({
-    queryKey: ['broadcast-user-search', searchQuery],
-    queryFn: () => api.get('/notifications/search-users', { params: { query: searchQuery } }).then(r => r.data),
-    enabled: target === 'specific' && searchQuery.trim().length >= 2,
+    queryKey: ['broadcast-user-search', searchQuery.trim()],
+    queryFn: () => api.get('/notifications/search-users', { params: { query: searchQuery.trim() } }).then(r => r.data),
+    enabled: target === 'specific',
     staleTime: 30000
   })
 
@@ -106,9 +106,9 @@ export default function BroadcastTool() {
   }
 
   return (
-    <div className="bg-[#FFFDF8] rounded-xl shadow-sm overflow-hidden transition-all duration-200">
+    <div className="bg-[#FFFDF8] rounded-xl shadow-sm transition-all duration-200">
       {/* Header bar */}
-      <div className="px-5 py-3.5 flex flex-col sm:flex-row justify-between sm:items-center gap-3 bg-[#FCEFD9]">
+      <div className={`px-5 py-3.5 flex flex-col sm:flex-row justify-between sm:items-center gap-3 bg-[#FCEFD9] ${isCollapsed ? 'rounded-xl' : 'rounded-t-xl'}`}>
         <div className="flex items-center gap-3">
           <div className="h-8 w-8 rounded-lg bg-[#C8F3DC] text-emerald-900 flex items-center justify-center shrink-0">
             <Bell size={16} />
@@ -241,7 +241,7 @@ export default function BroadcastTool() {
                     </div>
                   )}
 
-                  {/* Search input with live suggestion popover */}
+                  {/* Search input with live multi-select dropdown */}
                   <div className="relative" ref={searchRef}>
                     <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                     <input
@@ -252,42 +252,112 @@ export default function BroadcastTool() {
                         setIsDropdownOpen(true)
                       }}
                       onFocus={() => setIsDropdownOpen(true)}
-                      placeholder="Type vendor business name or email to search..."
-                      className="w-full pl-9 pr-8 py-2 text-xs border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 bg-white"
+                      placeholder="Click to browse providers or type business name, owner, or email..."
+                      className="w-full pl-9 pr-16 py-2 text-xs border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 bg-white"
                     />
-                    {searching && (
-                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
-                        <ButtonLoader size={13} />
-                      </span>
-                    )}
+                    <div className="absolute right-2.5 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
+                      {searching && (
+                        <span className="text-gray-400">
+                          <ButtonLoader size={13} />
+                        </span>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => setIsDropdownOpen(v => !v)}
+                        className="text-[11px] font-medium text-emerald-700 hover:text-emerald-900 px-1.5 py-0.5 rounded hover:bg-emerald-50 transition-colors"
+                      >
+                        {isDropdownOpen ? 'Done' : 'Browse'}
+                      </button>
+                    </div>
 
-                    {isDropdownOpen && suggestions.length > 0 && searchQuery.trim().length >= 2 && (
-                      <div className="absolute left-0 right-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-52 overflow-y-auto divide-y divide-gray-50">
-                        {suggestions.map((u: any) => {
-                          const isSelected = selectedEmails.includes(u.email)
-                          return (
-                            <button
-                              key={u.id || u.email}
-                              type="button"
-                              onClick={() => {
-                                if (!isSelected) addEmail(u.email)
-                                setSearchQuery('')
-                                setIsDropdownOpen(false)
-                              }}
-                              className="w-full px-3 py-2 text-left hover:bg-gray-50 flex items-center justify-between text-xs transition-colors"
-                            >
-                              <div className="truncate pr-2">
-                                <p className="font-medium text-gray-900 truncate">{u.name}</p>
-                                <p className="text-[11px] text-gray-400 truncate">{u.email}</p>
-                              </div>
-                              {isSelected ? (
-                                <Check size={14} className="text-emerald-600 shrink-0" />
-                              ) : (
-                                <span className="text-[10px] text-emerald-600 font-semibold shrink-0">Add</span>
+                    {isDropdownOpen && (
+                      <div className="absolute left-0 right-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 overflow-hidden">
+                        {suggestions.length > 0 && (
+                          <div className="px-3 py-1.5 bg-gray-50 border-b border-gray-100 flex items-center justify-between text-[11px]">
+                            <span className="text-gray-500">
+                              Showing {suggestions.length} {suggestions.length === 1 ? 'user' : 'users'}
+                            </span>
+                            <div className="flex items-center gap-2">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const visibleEmails = suggestions.map((u: any) => u.email).filter(Boolean)
+                                  setSelectedEmails(prev => Array.from(new Set([...prev, ...visibleEmails])))
+                                }}
+                                className="font-semibold text-emerald-700 hover:text-emerald-900"
+                              >
+                                Select all shown
+                              </button>
+                              {selectedEmails.length > 0 && (
+                                <button
+                                  type="button"
+                                  onClick={() => setSelectedEmails([])}
+                                  className="text-gray-400 hover:text-red-600"
+                                >
+                                  Clear
+                                </button>
                               )}
-                            </button>
-                          )
-                        })}
+                            </div>
+                          </div>
+                        )}
+
+                        <div className="max-h-60 overflow-y-auto divide-y divide-gray-50">
+                          {searching && suggestions.length === 0 ? (
+                            <div className="px-3 py-4 text-center text-xs text-gray-400">
+                              Loading providers...
+                            </div>
+                          ) : suggestions.length === 0 ? (
+                            <div className="px-3 py-4 text-center text-xs text-gray-400">
+                              No matching users found
+                            </div>
+                          ) : (
+                            suggestions.map((u: any) => {
+                              const isSelected = selectedEmails.includes(u.email)
+                              const primaryLabel = u.businessName
+                                ? `${u.businessName}${u.name ? ` · ${u.name}` : ''}`
+                                : u.name || u.email
+                              return (
+                                <button
+                                  key={u.id || u.email}
+                                  type="button"
+                                  onClick={() => {
+                                    if (isSelected) {
+                                      removeEmail(u.email)
+                                    } else {
+                                      addEmail(u.email)
+                                    }
+                                  }}
+                                  className={`w-full px-3 py-2 text-left flex items-center justify-between text-xs transition-colors ${
+                                    isSelected ? 'bg-emerald-50/60 hover:bg-emerald-50' : 'hover:bg-gray-50'
+                                  }`}
+                                >
+                                  <div className="flex items-center gap-2.5 min-w-0 pr-2">
+                                    <span
+                                      className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 transition-colors ${
+                                        isSelected
+                                          ? 'bg-emerald-600 border-emerald-600 text-white'
+                                          : 'border-gray-300 bg-white'
+                                      }`}
+                                    >
+                                      {isSelected && <Check size={11} strokeWidth={3} />}
+                                    </span>
+                                    <div className="min-w-0">
+                                      <p className="font-medium text-gray-900 truncate">{primaryLabel}</p>
+                                      <p className="text-[11px] text-gray-400 truncate">{u.email}</p>
+                                    </div>
+                                  </div>
+                                  <span
+                                    className={`text-[10px] font-semibold shrink-0 ${
+                                      isSelected ? 'text-emerald-700' : 'text-gray-400'
+                                    }`}
+                                  >
+                                    {isSelected ? 'Selected' : 'Select'}
+                                  </span>
+                                </button>
+                              )
+                            })
+                          )}
+                        </div>
                       </div>
                     )}
                   </div>
