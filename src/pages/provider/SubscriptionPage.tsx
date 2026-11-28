@@ -49,7 +49,7 @@ const PLANS = [
       "Public Stay Booking (/stay/:slug)",
       "KCB Buni Direct Settlement",
       "Unlimited Staff Accounts",
-      "Staff Audit Logs & Activity Tracking",
+      // "Staff Audit Logs & Activity Tracking",
       "Custom Roles & Permissions",
       "Custom Brand Logo & Sidebar Icon",
     ],
@@ -94,7 +94,7 @@ const FEATURE_COMPARISON = [
   },
   { name: "Public Stay Booking Page (/stay)", starter: false, pro: true },
   { name: "KCB Buni Direct Settlement", starter: false, pro: true },
-  { name: "Staff Audit Logs & Activity Tracking", starter: false, pro: true },
+  // { name: "Staff Audit Logs & Activity Tracking", starter: false, pro: true },
   { name: "Roles & Permissions", starter: false, pro: true },
   // { name: 'Support Level', starter: 'Priority', pro: 'Dedicated Manager' },
 ];

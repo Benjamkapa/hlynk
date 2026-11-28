@@ -25,7 +25,7 @@ const routeTitles: Record<string, string> = {
   '/dashboard/subscription': 'Subscription Plan',
   '/dashboard/staff': 'Staff & Team',
   '/dashboard/developer': 'M-Pesa & API Settings',
-  '/dashboard/logs': 'Audit Logs',
+  // '/dashboard/logs': 'Audit Logs',
   '/dashboard/hospitality': 'Rental Overview',
   '/dashboard/hospitality/properties': 'Units & Assets',
   '/dashboard/hospitality/bookings': 'Bookings & Reservations',

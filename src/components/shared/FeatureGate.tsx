@@ -63,13 +63,15 @@ export function canAccessFeature(user: any, feature: Feature): boolean {
   const planRaw = user?.subscription?.planName || 'LITE';
   const plan = planRaw.toUpperCase();
 
-  // If the backend says status=2/TRIAL, it IS a trial — trust it.
-  // The backend daemon is responsible for flipping the status when the trial ends.
-  // We do NOT re-calculate expiry from trialEndDate here because it can be null for
-  // older accounts, which would incorrectly gate features for active trial users.
+  // A user is on trial if:
+  //   - status = 2  (old "TRIAL" status code from activate_trial.js)
+  //   - status string = 'TRIAL'
+  //   - planName = 'TRIAL'  (set by extend_trial.js / trial:extend script)
+  // All three cases get full system access — the backend daemon flips status
+  // when the trial period expires, so we trust the backend completely here.
   const statusNum = Number(user?.subscription?.status);
   const statusStr = String(user?.subscription?.status || '');
-  const isTrial = statusNum === 2 || statusStr === 'TRIAL';
+  const isTrial = statusNum === 2 || statusStr === 'TRIAL' || plan === 'TRIAL';
 
   const featurePlans = FEATURE_PLANS[feature];
   if (!featurePlans) return true;

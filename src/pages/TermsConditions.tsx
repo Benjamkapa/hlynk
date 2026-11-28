@@ -75,7 +75,8 @@ export default function TermsConditions() {
                     <tr>
                       <td className="px-4 py-3 font-semibold text-slate-800">Business Pro</td>
                       <td className="px-4 py-3">KES 8,200</td>
-                      <td className="px-4 py-3">Everything in Starter, plus Unlimited Inventory, Public Store/Shop Page, Public Stay Booking, KCB Buni Direct Settlement, Unlimited Staff Accounts, Audit Logs & Activity Tracking, Custom Roles & Permissions</td>
+                      <td className="px-4 py-3">Everything in Starter, plus Unlimited Inventory, Public Store/Shop Page, Public Stay Booking, KCB Buni Direct Settlement, Unlimited Staff Accounts, Custom Roles & Permissions</td>
+                      {/* <td className="px-4 py-3">Everything in Starter, plus Unlimited Inventory, Public Store/Shop Page, Public Stay Booking, KCB Buni Direct Settlement, Unlimited Staff Accounts, Audit Logs & Activity Tracking, Custom Roles & Permissions</td> */}
                     </tr>
                   </tbody>
                 </table>
@@ -107,7 +108,8 @@ export default function TermsConditions() {
               <h2 className="text-xl font-black text-slate-900 mb-4">4. Plan Features and Access</h2>
               <p className="mb-4">Access to certain features is restricted by your subscription plan:</p>
               <ul className="list-disc pl-6 space-y-2">
-                <li><strong>Business Pro-only features</strong> include: Public Store/Shop pages (<code>/store/:slug</code>, <code>/shop/:slug</code>), Public Stay Booking pages (<code>/stay/:slug</code>), KCB Buni Direct Bank Settlement, Unlimited Staff Accounts, Staff Audit Logs & Activity Tracking, and Custom Roles & Permissions.</li>
+                <li><strong>Business Pro-only features</strong> include: Public Store/Shop pages (<code>/store/:slug</code>, <code>/shop/:slug</code>), Public Stay Booking pages (<code>/stay/:slug</code>), KCB Buni Direct Bank Settlement, Unlimited Staff Accounts, and Custom Roles & Permissions.</li>
+                {/* <li><strong>Business Pro-only features</strong> include: Public Store/Shop pages (<code>/store/:slug</code>, <code>/shop/:slug</code>), Public Stay Booking pages (<code>/stay/:slug</code>), KCB Buni Direct Bank Settlement, Unlimited Staff Accounts, Staff Audit Logs & Activity Tracking, and Custom Roles & Permissions.</li> */}
                 <li>Attempting to access Business Pro features on a Starter plan will result in an upgrade prompt. No unauthorised access to gated features is permitted.</li>
                 <li>Staff accounts operate within the permissions defined by the business owner. hlynk is not responsible for the scope of access granted by business owners to their staff.</li>
                 <li>Staff accounts are strictly prohibited from viewing or managing business billing and subscription information.</li>

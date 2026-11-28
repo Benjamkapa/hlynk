@@ -43,8 +43,14 @@ export default function SubscriptionGuard({ children }: { children?: React.React
   const isPastGracePeriod = endDate ? (endDate + (24 * 60 * 60 * 1000)) < now : false
 
   const statusNum = Number(subscription?.status)
-  const isTrial = statusNum === 2
-  const isTrialExpired = trialEndDateMs ? trialEndDateMs < now : false
+  const planName = String(subscription?.planName || '').toUpperCase()
+  // isTrial is true when:
+  //   status = 2  (old trial status code from activate_trial.js)
+  //   planName = 'TRIAL'  (set by trial:extend script — status stays 0/ACTIVE)
+  const isTrial = statusNum === 2 || planName === 'TRIAL'
+  // For trial expiry: use endDate (set by trial:extend) or trialEndDate (set by activate_trial)
+  const trialExpiry = trialEndDateMs ?? endDate
+  const isTrialExpired = isTrial ? (trialExpiry ? trialExpiry < now : false) : false
 
   // Account is completely locked if:
   // - status=1 (EXPIRED), OR

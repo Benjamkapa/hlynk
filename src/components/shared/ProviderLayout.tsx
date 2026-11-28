@@ -304,13 +304,13 @@ export default function ProviderLayout() {
           icon: Bell,
           permission: "overview",
         },
-        {
-          to: "/dashboard/logs",
-          label: "Audit Log",
-          icon: ShieldCheck,
-          permission: "logs",
-          plan: "MAX",
-        },
+        // {
+        //   to: "/dashboard/logs",
+        //   label: "Audit Log",
+        //   icon: ShieldCheck,
+        //   permission: "logs",
+        //   plan: "MAX",
+        // },
         {
           to: "/dashboard/subscription",
           label: "Subscription",

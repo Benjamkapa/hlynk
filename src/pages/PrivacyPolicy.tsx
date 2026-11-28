@@ -137,7 +137,7 @@ export default function PrivacyPolicy() {
                 </p>
                 <ul className="list-disc pl-5 text-xs text-emerald-800 space-y-1">
                   <li><strong>Positive Assistance Purpose:</strong> Support remote access is strictly restricted to positive, helpful operational purposes — such as diagnosing technical issues, helping configure modules, resolving inventory or billing glitches, and verifying system health.</li>
-                  <li><strong>Security & Audit Logging:</strong> Every remote support access session is automatically logged in system security audit logs with the administrator's identity, timestamp, and actions performed.</li>
+                  {/* <li><strong>Security & Audit Logging:</strong> Every remote support access session is automatically logged in system security audit logs with the administrator's identity, timestamp, and actions performed.</li> */}
                   <li><strong>Data Confidentiality:</strong> All administrative access is bound by strict confidentiality obligations and complies with the Kenya Data Protection Act 2019 (DPA 2019).</li>
                 </ul>
               </div>
